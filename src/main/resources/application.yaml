@@ -1,0 +1,7 @@
+
+spring:
+  datasource:
+    url: jdbc:sqlite:baywatch.db
+    driver-class-name: org.sqlite.JDBC
+    username: baywatch
+    password: hasselhoff
