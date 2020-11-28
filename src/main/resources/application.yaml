@@ -1,7 +1,17 @@
 
 spring:
   datasource:
-    url: jdbc:sqlite:baywatch.db
+    url: jdbc:sqlite:./target/baywatch.db
     driver-class-name: org.sqlite.JDBC
     username: baywatch
     password: hasselhoff
+
+# Avoid infinite stacktrace due to reactor
+logging:
+  exception-conversion-word: "%wEx{full, reactor.core.publisher}"
+  level:
+    org.jooq.Constants: WARN
+    fr.ght1pc9kc: DEBUG
+    reactor.netty.http.server.AccessLog: INFO
+#    org.springframework.boot.autoconfigure: DEBUG
+#    org.jooq: DEBUG

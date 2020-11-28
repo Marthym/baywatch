@@ -15,6 +15,13 @@
 
     <properties>
         <java.version>11</java.version>
+
+        <db.driver>org.sqlite.JDBC</db.driver>
+        <db.url>jdbc:sqlite::memory:?cache=shared</db.url>
+        <db.username>security</db.username>
+        <db.password>security</db.password>
+
+        <noexception.version>1.6.2</noexception.version>
     </properties>
 
     <dependencies>
@@ -43,6 +50,16 @@
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.machinezoo.noexception</groupId>
+            <artifactId>noexception</artifactId>
+            <version>${noexception.version}</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -71,6 +88,62 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>security</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>migrate</goal>
+                        </goals>
+                        <configuration>
+                            <url>${db.url}</url>
+                            <user>${db.username}</user>
+                            <password>${db.password}</password>
+                            <placeholderReplacement>false</placeholderReplacement>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq-codegen-maven</artifactId>
+                <executions>
+                    <execution>
+                        <id>jooq-codegen-security</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <logging>WARN</logging>
+                            <jdbc>
+                                <driver>${db.driver}</driver>
+                                <url>${db.url}</url>
+                                <user>${db.username}</user>
+                                <password>${db.password}</password>
+                            </jdbc>
+                            <generator>
+                                <database>
+                                    <name>org.jooq.meta.sqlite.SQLiteDatabase</name>
+                                    <includes>.*</includes>
+                                    <excludes>FLYWAY_SCHEMA_HISTORY</excludes>
+                                </database>
+                                <generate>
+                                    <generatedAnnotation>true</generatedAnnotation>
+                                    <records>true</records>
+                                </generate>
+                                <target>
+                                    <packageName>fr.ght1pc9kc.baywatch.dsl</packageName>
+                                    <directory>target/generated-sources</directory>
+                                </target>
+                            </generator>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

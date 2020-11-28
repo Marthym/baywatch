@@ -1,5 +1,7 @@
 HELP.md
 target/
+*.db
+.attach_*
 
 ### STS ###
 .apt_generated

@@ -2,11 +2,11 @@ package fr.ght1pc9kc.baywatch;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
 
-import javax.sql.DataSource;
+import java.time.Clock;
 
 @SpringBootApplication
 public class BaywatchApplication {
@@ -15,14 +15,13 @@ public class BaywatchApplication {
         SpringApplication.run(BaywatchApplication.class, args);
     }
 
-//    @ConfigurationProperties("spring.datasource")
-//    public DataSourceProperties defaultDataSourceProperties() {
-//        return new DataSourceProperties();
-//    }
-//
-//    @Bean
-//    public DataSource defaultDataSource(DataSourceProperties properties) {
-//        return properties.initializeDataSourceBuilder().build();
-//    }
+    @Bean
+    Clock getSystemUTCClock() {
+        return Clock.systemUTC();
+    }
 
+    @Bean
+    Scheduler getDatabaseScheduler() {
+        return Schedulers.boundedElastic();
+    }
 }
