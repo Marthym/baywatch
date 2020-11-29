@@ -1,7 +1,7 @@
-package fr.ght1pc9kc.baywatch.scrapper;
+package fr.ght1pc9kc.baywatch.domain.scrapper;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.model.News;
+import fr.ght1pc9kc.baywatch.api.model.News;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
@@ -21,8 +21,14 @@ import java.util.Locale;
 
 @Slf4j
 @AllArgsConstructor
-public final class FeedParser {
-    private static final DateTimeFormatter FEED_DATE_FORMAT = DateTimeFormatter.ofPattern("EEE, d MMM yyyy HH:mm:ss Z", Locale.US);
+public final class DefaultFeedParser {
+    private static final DateTimeFormatter FEED_DATE_FORMAT =
+            DateTimeFormatter.ofPattern("EEE, d MMM yyyy HH:mm:ss Z", Locale.US);
+    private static final String ITEM = "item";
+    private static final String TITLE = "title";
+    private static final String DESCRIPTION = "description";
+    private static final String LINK = "link";
+    private static final String PUB_DATE = "pubDate";
     private final InputStream is;
 
     public Flux<News> itemToFlux() {
@@ -36,24 +42,24 @@ public final class FeedParser {
                 if (nextEvent.isStartElement()) {
                     StartElement startElement = nextEvent.asStartElement();
                     switch (startElement.getName().getLocalPart()) {
-                        case "item":
+                        case ITEM:
                             bldr = News.builder();
                             break;
-                        case "title":
+                        case TITLE:
                             if (bldr == null) {
                                 break;
                             }
                             nextEvent = reader.nextEvent();
                             bldr = bldr.title(nextEvent.asCharacters().getData());
                             break;
-                        case "description":
+                        case DESCRIPTION:
                             if (bldr == null) {
                                 break;
                             }
                             nextEvent = reader.nextEvent();
                             bldr = bldr.description(nextEvent.asCharacters().getData());
                             break;
-                        case "link":
+                        case LINK:
                             if (bldr == null) {
                                 break;
                             }
@@ -62,7 +68,7 @@ public final class FeedParser {
                             URL url = Exceptions.wrap().get(() -> new URL(data));
                             bldr = bldr.link(url);
                             break;
-                        case "pubDate":
+                        case PUB_DATE:
                             if (bldr == null) {
                                 break;
                             }
@@ -75,7 +81,7 @@ public final class FeedParser {
                 }
                 if (nextEvent.isEndElement() && bldr != null) {
                     EndElement endElement = nextEvent.asEndElement();
-                    if (endElement.getName().getLocalPart().equals("item")) {
+                    if (endElement.getName().getLocalPart().equals(ITEM)) {
                         sink.next(bldr.build());
                     }
                 }

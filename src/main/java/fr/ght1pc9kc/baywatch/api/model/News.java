@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.model;
+package fr.ght1pc9kc.baywatch.api.model;
 
 import lombok.Builder;
 import lombok.Value;

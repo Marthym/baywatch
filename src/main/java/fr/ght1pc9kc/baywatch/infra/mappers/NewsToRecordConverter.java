@@ -1,7 +1,7 @@
-package fr.ght1pc9kc.baywatch.mappers;
+package fr.ght1pc9kc.baywatch.infra.mappers;
 
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
-import fr.ght1pc9kc.baywatch.model.News;
+import fr.ght1pc9kc.baywatch.api.model.News;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 

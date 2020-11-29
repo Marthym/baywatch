@@ -1,14 +1,12 @@
-package fr.ght1pc9kc.baywatch.scrapper;
+package fr.ght1pc9kc.baywatch.domain.scrapper;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
-import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
-import fr.ght1pc9kc.baywatch.model.Feed;
-import fr.ght1pc9kc.baywatch.model.News;
+import fr.ght1pc9kc.baywatch.api.FeedPersistencePort;
+import fr.ght1pc9kc.baywatch.api.NewsPersistencePort;
+import fr.ght1pc9kc.baywatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.api.model.News;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jooq.DSLContext;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.MediaType;
@@ -17,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -28,29 +27,22 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
-import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
-import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
 @AllArgsConstructor
 public final class FeedScrapperService implements Runnable {
 
-    private final ThreadFactory threadFactory = new CustomizableThreadFactory("scrapper-");
     private final ScheduledExecutorService scheduleExecutor = Executors.newSingleThreadScheduledExecutor(
             new CustomizableThreadFactory("scrapSchec-"));
-    private final Executor scrapperExecutor = Executors.newFixedThreadPool(
-            4, new CustomizableThreadFactory("scrapper-"));
+    private final Scheduler scrapperScheduler = Schedulers.newBoundedElastic(4, Integer.MAX_VALUE, "scrapper");
     private final WebClient http = WebClient.create();
     private final Clock clock;
-    private final Scheduler databaseScheduler;
-    private final DSLContext dsl;
-    private final ConversionService conversionService;
+    private final FeedPersistencePort feedRepository;
+    private final NewsPersistencePort newsRepository;
 
     @PostConstruct
     private void startScrapping() {
@@ -65,50 +57,24 @@ public final class FeedScrapperService implements Runnable {
                 toNextScrapping.getSeconds(), scrappingFrequency.getSeconds(), TimeUnit.DAYS);
         log.info("Next scrapping in {}h {}m {}s",
                 toNextScrapping.toHoursPart(), toNextScrapping.toMinutesPart(), toNextScrapping.toSecondsPart());
-        Executors.newSingleThreadExecutor(threadFactory).submit(this);
+        Schedulers.newSingle("scrapper", true)
+                .schedule(this);
     }
 
     @Override
     public void run() {
         log.info("Start scrapping ...");
-        readAllFeed()
+
+        feedRepository.list().publishOn(scrapperScheduler)
                 .flatMap(this::wgetFeedNews)
                 .buffer(100)
-                .publishOn(databaseScheduler)
-                .subscribe(news -> {
-                    List<NewsRecord> records = news.stream()
-                            .map(n -> conversionService.convert(n, NewsRecord.class))
-                            .collect(Collectors.toList());
-                    try {
-                        dsl.loadInto(NEWS)
-                                .batchAll()
-                                .onErrorIgnore()
-                                .loadRecords(records)
-                                .fieldsCorresponding()
-                                .execute();
-//                        dsl.batchInsert(records).execute();
-                    } catch (Exception e) {
-                        log.error("{}: {}", e.getClass(), e.getLocalizedMessage());
-                        log.debug("STACKTRACE", e);
-                    }
-                });
-    }
-
-    private Flux<Feed> readAllFeed() {
-        return Flux.<FeedsRecord>create(sink -> {
-            AtomicInteger count = new AtomicInteger(0);
-            dsl.selectFrom(FEEDS).fetchLazy().forEach(r -> {
-                sink.next(r);
-                count.incrementAndGet();
-            });
-            log.debug("Complete read for {} feed.", count.get());
-            sink.complete();
-        }).subscribeOn(databaseScheduler)
-                .map(fr -> conversionService.convert(fr, Feed.class));
+                .flatMap(newsRepository::create)
+                .subscribe();
     }
 
     private Flux<News> wgetFeedNews(Feed feed) {
         try {
+            log.debug("Scrapping feed {} ...", feed.getUrl().getHost());
             PipedOutputStream osPipe = new PipedOutputStream();
             PipedInputStream isPipe = new PipedInputStream(osPipe);
 
@@ -126,7 +92,7 @@ public final class FeedScrapperService implements Runnable {
                         osPipe.close();
                     })).subscribe(DataBufferUtils.releaseConsumer());
 
-            return new FeedParser(isPipe).itemToFlux();
+            return new DefaultFeedParser(isPipe).itemToFlux();
         } catch (IOException | URISyntaxException e) {
             log.error("{}: {}", e.getClass(), e.getLocalizedMessage());
             log.debug("STACKTRACE", e);
