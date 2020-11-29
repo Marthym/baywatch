@@ -19,12 +19,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Scheduler;
 
 import javax.annotation.PostConstruct;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
@@ -36,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
+import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 
 @Slf4j
 @Service
@@ -80,7 +79,18 @@ public final class FeedScrapperService implements Runnable {
                     List<NewsRecord> records = news.stream()
                             .map(n -> conversionService.convert(n, NewsRecord.class))
                             .collect(Collectors.toList());
-                    dsl.batchInsert(records).execute();
+                    try {
+                        dsl.loadInto(NEWS)
+                                .batchAll()
+                                .onErrorIgnore()
+                                .loadRecords(records)
+                                .fieldsCorresponding()
+                                .execute();
+//                        dsl.batchInsert(records).execute();
+                    } catch (Exception e) {
+                        log.error("{}: {}", e.getClass(), e.getLocalizedMessage());
+                        log.debug("STACKTRACE", e);
+                    }
                 });
     }
 
@@ -101,10 +111,9 @@ public final class FeedScrapperService implements Runnable {
         try {
             PipedOutputStream osPipe = new PipedOutputStream();
             PipedInputStream isPipe = new PipedInputStream(osPipe);
-            XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
-            XMLEventReader reader = xmlInputFactory.createXMLEventReader(isPipe, StandardCharsets.UTF_8.displayName());
 
             Flux<DataBuffer> buffers = http.get()
+                    .uri(feed.getUrl().toURI())
                     .accept(MediaType.APPLICATION_ATOM_XML)
                     .accept(MediaType.APPLICATION_RSS_XML)
                     .acceptCharset(StandardCharsets.UTF_8)
@@ -117,8 +126,8 @@ public final class FeedScrapperService implements Runnable {
                         osPipe.close();
                     })).subscribe(DataBufferUtils.releaseConsumer());
 
-            return new FeedParser(reader).itemToFlux();
-        } catch (IOException | XMLStreamException e) {
+            return new FeedParser(isPipe).itemToFlux();
+        } catch (IOException | URISyntaxException e) {
             log.error("{}: {}", e.getClass(), e.getLocalizedMessage());
             log.debug("STACKTRACE", e);
         }

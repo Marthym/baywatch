@@ -12,7 +12,9 @@ public class NewsToRecordConverter implements Converter<News, NewsRecord> {
     @Override
     public NewsRecord convert(News source) {
         NewsRecord newsRecord = NEWS.newRecord();
-        newsRecord.setNewsFeedId(source.getId());
+        if (source.getId() != 0) {
+            newsRecord.setNewsFeedId(source.getId());
+        }
         newsRecord.setNewsDescription(source.getDescription());
         newsRecord.setNewsLink(source.getLink().toString());
         newsRecord.setNewsPublication(source.getPublication().toString());
