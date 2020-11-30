@@ -12,7 +12,7 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -29,9 +29,8 @@ public final class DefaultFeedParser {
     private static final String DESCRIPTION = "description";
     private static final String LINK = "link";
     private static final String PUB_DATE = "pubDate";
-    private final InputStream is;
 
-    public Flux<News> itemToFlux() {
+    public Flux<News> parse(InputStream is) {
         return Flux.create(Exceptions.wrap().consumer(sink -> {
             XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
             XMLEventReader reader = xmlInputFactory.createXMLEventReader(is, StandardCharsets.UTF_8.displayName());
@@ -65,8 +64,7 @@ public final class DefaultFeedParser {
                             }
                             nextEvent = reader.nextEvent();
                             String data = nextEvent.asCharacters().getData();
-                            URL url = Exceptions.wrap().get(() -> new URL(data));
-                            bldr = bldr.link(url);
+                            bldr = bldr.link(URI.create(data));
                             break;
                         case PUB_DATE:
                             if (bldr == null) {

@@ -7,6 +7,7 @@ import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.MediaType;
@@ -21,7 +22,6 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
@@ -34,10 +34,11 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @AllArgsConstructor
+@DependsOn({"flyway", "flywayInitializer"}) // Wait after Flyway migrations
 public final class FeedScrapperService implements Runnable {
 
     private final ScheduledExecutorService scheduleExecutor = Executors.newSingleThreadScheduledExecutor(
-            new CustomizableThreadFactory("scrapSchec-"));
+            new CustomizableThreadFactory("scrapSched-"));
     private final Scheduler scrapperScheduler = Schedulers.newBoundedElastic(4, Integer.MAX_VALUE, "scrapper");
     private final WebClient http = WebClient.create();
     private final Clock clock;
@@ -79,7 +80,7 @@ public final class FeedScrapperService implements Runnable {
             PipedInputStream isPipe = new PipedInputStream(osPipe);
 
             Flux<DataBuffer> buffers = http.get()
-                    .uri(feed.getUrl().toURI())
+                    .uri(feed.getUrl())
                     .accept(MediaType.APPLICATION_ATOM_XML)
                     .accept(MediaType.APPLICATION_RSS_XML)
                     .acceptCharset(StandardCharsets.UTF_8)
@@ -92,8 +93,8 @@ public final class FeedScrapperService implements Runnable {
                         osPipe.close();
                     })).subscribe(DataBufferUtils.releaseConsumer());
 
-            return new DefaultFeedParser(isPipe).itemToFlux();
-        } catch (IOException | URISyntaxException e) {
+            return new DefaultFeedParser(isPipe).parse();
+        } catch (IOException e) {
             log.error("{}: {}", e.getClass(), e.getLocalizedMessage());
             log.debug("STACKTRACE", e);
         }

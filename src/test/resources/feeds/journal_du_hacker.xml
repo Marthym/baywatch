@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+    <channel>
+        <title>Journal du hacker</title>
+        <description></description>
+        <link>https://www.journalduhacker.net/</link>
+
+        <item>
+            <title>DBaaS: Tout comprendre des bases de donn&#233;es manag&#233;es</title>
+            <link>https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/vzuiyr</guid>
+            <author>rayed</author>
+            <pubDate>Mon, 30 Nov 2020 16:58:26 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/vzuiyr/dbaas_tout_comprendre_des_bases_de_donn_es</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/vzuiyr/dbaas_tout_comprendre_des_bases_de_donn_es&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>web</category>
+            <category>nosql</category>
+            <category>sql</category>
+        </item>
+        <item>
+            <title>PostgreSQL Session 13 : les conf&#233;rences en libre acc&#232;s !</title>
+            <link>https://dali.bo/retour_pgsession13</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/iuq1ub</guid>
+            <author>laurar</author>
+            <pubDate>Mon, 30 Nov 2020 15:33:58 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/iuq1ub/postgresql_session_13_les_conf_rences_en</comments>
+            <description>
+                &#60;p&#62;Il y a 2 semaines, nous organisions nos journ&#233;es d&#8217;ateliers et de conf&#233;rences
+                d&#233;di&#233;s &#224; PostgreSQL. Voici notre retour, agr&#233;ment&#233; de liens utiles et de
+                conseils pour un &#233;v&#233;nement en ligne.&#60;/p&#62;
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/iuq1ub/postgresql_session_13_les_conf_rences_en&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>postgresql</category>
+        </item>
+        <item>
+            <title>R&#233;sum&#233; des offres d&#39;emploi de la semaine 48</title>
+            <link>https://blog.linuxjobs.fr/index.php?article398/resume-des-offres-d-emploi-de-la-semaine-48-2020</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/msi8l6</guid>
+            <author>carlchenet</author>
+            <pubDate>Mon, 30 Nov 2020 14:16:21 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/msi8l6/r_sum_des_offres_demploi_de_la_semaine_48</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/msi8l6/r_sum_des_offres_demploi_de_la_semaine_48&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>offre d&#39;emploi</category>
+            <category>emploi</category>
+        </item>
+        <item>
+            <title>H&#233;berger et ex&#233;cuter un script Python sur Google Cloud Platform</title>
+            <link>https://blog.shevarezo.fr/post/2020/11/30/heberger-executer-script-python-google-cloud-platform</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/qv7qkv</guid>
+            <author>ShevAbam</author>
+            <pubDate>Mon, 30 Nov 2020 13:56:15 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/qv7qkv/h_berger_et_ex_cuter_un_script_python_sur</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/qv7qkv/h_berger_et_ex_cuter_un_script_python_sur&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>python</category>
+        </item>
+        <item>
+            <title>Param&#232;tres nomm&#233;s en PHP 8</title>
+            <link>https://www.arsouyes.org/blog/2020/40_Parametres_Nomme_PHP8/</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/axpdbb</guid>
+            <author>arsouyes</author>
+            <pubDate>Mon, 30 Nov 2020 10:14:23 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/axpdbb/param_tres_nomm_s_en_php_8</comments>
+            <description>
+                &#60;p&#62;Parce que parfois (souvent ?) on doit appeler des librairies avec des fonctions aux tr&#232;s
+                nombreux arguments (dont certains avec des valeurs par d&#233;faut) et que &#231;a n&#8217;est pas
+                franchement super lisible &#224; froid, on a invent&#233; &#8220;les param&#232;tres nomm&#233;s&#8221;.
+                C&#8217;est maintenant disponible nativement en php 8.&#60;/p&#62;
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/axpdbb/param_tres_nomm_s_en_php_8&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>programmation</category>
+            <category>php</category>
+        </item>
+        <item>
+            <title>Kubernetes avec RancherOS et RKE &#8211; partie 2</title>
+            <link>https://blog.zwindler.fr/2020/11/30/kubernetes-avec-rancheros-et-rke-partie-2/</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/v06ani</guid>
+            <author>zwindler</author>
+            <pubDate>Mon, 30 Nov 2020 12:35:08 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/v06ani/kubernetes_avec_rancheros_et_rke_partie_2</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/v06ani/kubernetes_avec_rancheros_et_rke_partie_2&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>conteneurs</category>
+        </item>
+        <item>
+            <title>Episode #028 : un business model hybride entre SaaS et service sur mesure</title>
+            <link>https://www.themature.dev/articles/028-pascal-alberty</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/vhha9x</guid>
+            <author>carlchenet</author>
+            <pubDate>Mon, 30 Nov 2020 17:40:38 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/vhha9x/episode_028_un_business_model_hybride</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/vhha9x/episode_028_un_business_model_hybride&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>dev</category>
+            <category>podcast</category>
+        </item>
+        <item>
+            <title>Comment cr&#233;er une bonne API Web - Partie 3</title>
+            <link>https://shadoware.org/post/creation-api-3</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/z5nng0</guid>
+            <author>ulrichvdh</author>
+            <pubDate>Mon, 30 Nov 2020 11:52:56 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/z5nng0/comment_cr_er_une_bonne_api_web_partie_3</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/z5nng0/comment_cr_er_une_bonne_api_web_partie_3&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>dev</category>
+            <category>web</category>
+        </item>
+        <item>
+            <title>Cr&#233;er une toile de confiance avec GnuPG</title>
+            <link>https://net-security.fr/security/creer-une-toile-de-confiance-avec-gnupg/</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/5eb80b</guid>
+            <author>mrigonnaux</author>
+            <pubDate>Mon, 30 Nov 2020 08:30:19 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/5eb80b/cr_er_une_toile_de_confiance_avec_gnupg</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/5eb80b/cr_er_une_toile_de_confiance_avec_gnupg&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>chiffrement</category>
+        </item>
+        <item>
+            <title>Sortie de Proxmox VE 6.3</title>
+            <link>https://linuxfr.org/news/sortie-de-proxmox-ve-6-3</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/niydnb</guid>
+            <author>fatalerrors</author>
+            <pubDate>Mon, 30 Nov 2020 15:00:13 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/niydnb/sortie_de_proxmox_ve_6_3</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/niydnb/sortie_de_proxmox_ve_6_3&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>virtualisation</category>
+        </item>
+        <item>
+            <title>Meetup Azure + MUG Nantes sur AKS le 01/12/2020</title>
+            <link>http://thomasrannou.azurewebsites.net/2020/11/24/meetup-azure-mug-nantes-sur-aks-le-01-12-2020/</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/5orwzm</guid>
+            <author>ThomasRannou</author>
+            <pubDate>Mon, 30 Nov 2020 09:02:05 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/5orwzm/meetup_azure_mug_nantes_sur_aks_le_01_12</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/5orwzm/meetup_azure_mug_nantes_sur_aks_le_01_12&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>infonuagique</category>
+            <category>événements</category>
+        </item>
+        <item>
+            <title>Tester les ACLs sur un cluster Consul avec Vagrant</title>
+            <link>https://blog.wescale.fr/2020/11/30/kubernetes-sur-aws-eks-ecs-ou-nomad/</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/c5mmtf</guid>
+            <author>Cascador</author>
+            <pubDate>Mon, 30 Nov 2020 14:14:31 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/c5mmtf/tester_les_acls_sur_un_cluster_consul_avec</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/c5mmtf/tester_les_acls_sur_un_cluster_consul_avec&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>sysadmin</category>
+            <category>virtualisation</category>
+        </item>
+        <item>
+            <title>THM Dogcat - &#201;pisode 1 (Un hacker en train de hacker)</title>
+            <link>https://www.youtube.com/watch?v=JMpUj6heesM</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/fdh3tw</guid>
+            <author>KhaosFarbauti</author>
+            <pubDate>Mon, 30 Nov 2020 08:33:55 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/fdh3tw/thm_dogcat_pisode_1_un_hacker_en_train_de</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/fdh3tw/thm_dogcat_pisode_1_un_hacker_en_train_de&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>sécurité</category>
+            <category>vidéo</category>
+            <category>formation</category>
+        </item>
+        <item>
+            <title>Liens int&#233;ressants Journal du hacker semaine #48</title>
+            <link>
+                https://blog.journalduhacker.net/index.php?article299/liens-interessants-journal-du-hacker-semaine-48-2020
+            </link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/h9nqaj</guid>
+            <author>Cascador</author>
+            <pubDate>Mon, 30 Nov 2020 07:55:11 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/h9nqaj/liens_int_ressants_journal_du_hacker</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/h9nqaj/liens_int_ressants_journal_du_hacker&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>journal du hacker</category>
+        </item>
+        <item>
+            <title>Comment faciliter le dialogue entre designer et dev ?</title>
+            <link>https://www.jesuisundev.com/dialogue-designer-developpeur/</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/hcw4yt</guid>
+            <author>jesuisundev</author>
+            <pubDate>Mon, 30 Nov 2020 05:42:28 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/hcw4yt/comment_faciliter_le_dialogue_entre</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/hcw4yt/comment_faciliter_le_dialogue_entre&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>dev</category>
+        </item>
+        <item>
+            <title>Label Num&#233;rique Inclusif ?</title>
+            <link>https://tkpx.eu/2020/11/29/label-numerique-inclusif/</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/pk0ttq</guid>
+            <author>tkpx</author>
+            <pubDate>Sun, 29 Nov 2020 18:21:55 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/pk0ttq/label_num_rique_inclusif</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/pk0ttq/label_num_rique_inclusif&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>politique</category>
+            <category>formation</category>
+        </item>
+        <item>
+            <title>Le protocole Gemini, revenir &#224; du simple et s&#251;r pour distribuer l&#39;information en ligne
+                ?
+            </title>
+            <link>https://www.bortzmeyer.org/gemini.html</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/0jakam</guid>
+            <author>Cascador</author>
+            <pubDate>Sun, 29 Nov 2020 20:53:13 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/0jakam/le_protocole_gemini_revenir_du_simple_et_s</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/0jakam/le_protocole_gemini_revenir_du_simple_et_s&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>web</category>
+            <category>pensées du libre</category>
+        </item>
+        <item>
+            <title>Substitution de Liskov : le polymorphisme aux petits oignons.</title>
+            <link>https://itexpert.fr/blog/principe-substitution-liskov/</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/ju8hr8</guid>
+            <author>ITExpert</author>
+            <pubDate>Sun, 29 Nov 2020 13:01:01 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/ju8hr8/substitution_de_liskov_le_polymorphisme</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/ju8hr8/substitution_de_liskov_le_polymorphisme&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>programmation</category>
+            <category>architecture</category>
+        </item>
+        <item>
+            <title>Le m&#233;tier de d&#233;veloppeur Cloud</title>
+            <link>https://mcorbin.fr/posts/2020-11-29-developpeur-cloud/</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/cmiuzs</guid>
+            <author>mcorbin</author>
+            <pubDate>Sun, 29 Nov 2020 12:05:11 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/cmiuzs/le_m_tier_de_d_veloppeur_cloud</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/cmiuzs/le_m_tier_de_d_veloppeur_cloud&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>dev</category>
+            <category>infonuagique</category>
+        </item>
+        <item>
+            <title>[Tutoriel] Installer Raspberry Pi OS 64 bits sur Raspberry Pi 4</title>
+            <link>https://www.pofilo.fr/post/20201129-raspberry-pi-4-64bits/</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/sqinym</guid>
+            <author>pofilo</author>
+            <pubDate>Sun, 29 Nov 2020 12:51:43 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/sqinym/tutoriel_installer_raspberry_pi_os_64</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/sqinym/tutoriel_installer_raspberry_pi_os_64&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>distributions linux</category>
+            <category>nano-ordinateur</category>
+        </item>
+        <item>
+            <title>Agenda du Libre pour la semaine 49 de l&#8217;ann&#233;e 2020</title>
+            <link>https://linuxfr.org/news/agenda-du-libre-pour-la-semaine-49-de-l-annee-2020</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/z3erfu</guid>
+            <author>Cascador</author>
+            <pubDate>Sun, 29 Nov 2020 18:15:35 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/z3erfu/agenda_du_libre_pour_la_semaine_49_de_l_ann_e</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/z3erfu/agenda_du_libre_pour_la_semaine_49_de_l_ann_e&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>événements</category>
+            <category>communauté</category>
+        </item>
+        <item>
+            <title>GNU Guix 1.2.0 est publi&#233;</title>
+            <link>https://linuxfr.org/news/gnu-guix-1-2-0-est-publie</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/m73gd2</guid>
+            <author>Cascador</author>
+            <pubDate>Sun, 29 Nov 2020 14:16:13 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/m73gd2/gnu_guix_1_2_0_est_publi</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/m73gd2/gnu_guix_1_2_0_est_publi&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>linux</category>
+        </item>
+        <item>
+            <title>Simuler de la perte de paquet et de la latence sous Linux avec tc</title>
+            <link>https://lord.re/posts/212-simuler-de-la-perte-de-paquet-ou-de-la-latence-sous-linux-avec-tc/</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/wg4goj</guid>
+            <author>Lord</author>
+            <pubDate>Sat, 28 Nov 2020 22:21:31 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/wg4goj/simuler_de_la_perte_de_paquet_et_de_la</comments>
+            <description>
+                &#60;p&#62;Le minimum de commandes utilisant &#60;strong&#62;tc&#60;/strong&#62; pour ajouter de la
+                latence ou de la perte de paquet sur une machine Linux.&#60;/p&#62;
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/wg4goj/simuler_de_la_perte_de_paquet_et_de_la&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>linux</category>
+            <category>réseau</category>
+        </item>
+        <item>
+            <title>Cracker un mot de passe</title>
+            <link>https://zythom.fr/2020/11/cracker-un-mot-de-passe/</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/63hend</guid>
+            <author>Cascador</author>
+            <pubDate>Sat, 28 Nov 2020 17:02:30 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/63hend/cracker_un_mot_de_passe</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/63hend/cracker_un_mot_de_passe&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>sécurité</category>
+        </item>
+        <item>
+            <title>Les nouvelles fonctionnalit&#233;s de PHP 8</title>
+            <link>https://linuxfr.org/news/les-nouvelles-fonctionnalites-de-php-8</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/icksur</guid>
+            <author>Cascador</author>
+            <pubDate>Sat, 28 Nov 2020 20:40:49 +0100</pubDate>
+            <comments>https://www.journalduhacker.net/s/icksur/les_nouvelles_fonctionnalit_s_de_php_8</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/icksur/les_nouvelles_fonctionnalit_s_de_php_8&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>php</category>
+        </item>
+    </channel>
+</rss>

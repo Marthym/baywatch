@@ -1,8 +1,8 @@
 
 spring:
   datasource:
-    url: jdbc:sqlite:/home/marthym/workspace/baywatch/target/baywatch.db
-    driver-class-name: org.sqlite.JDBC
+    url: jdbc:h2:file:./target/baywatch
+    driver-class-name: org.h2.Driver
     username: baywatch
     password: hasselhoff
 

@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.mappers;
 
-import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -11,15 +11,12 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 public class NewsToRecordConverter implements Converter<News, NewsRecord> {
     @Override
     public NewsRecord convert(News source) {
-        NewsRecord newsRecord = NEWS.newRecord();
-        if (source.getId() != 0) {
-            newsRecord.setNewsFeedId(source.getId());
-        }
-        newsRecord.setNewsDescription(source.getDescription());
-        newsRecord.setNewsLink(source.getLink().toString());
-        newsRecord.setNewsPublication(source.getPublication().toString());
-        newsRecord.setNewsTitle(source.getTitle());
-        newsRecord.setNewsStared(Boolean.compare(source.isStared(), false));
-        return newsRecord;
+        return NEWS.newRecord()
+                .setNewsFeedId((source.getId() != 0) ? source.getId() : null)
+                .setNewsDescription(source.getDescription())
+                .setNewsLink(source.getLink().toString())
+                .setNewsPublication(DateUtils.toLocalDateTime(source.getPublication()))
+                .setNewsTitle(source.getTitle())
+                .setNewsStared(source.isStared());
     }
 }
