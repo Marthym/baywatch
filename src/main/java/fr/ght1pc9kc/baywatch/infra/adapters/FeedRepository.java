@@ -30,11 +30,13 @@ public class FeedRepository implements FeedPersistencePort {
         return Flux.<FeedsRecord>create(sink -> {
             AtomicInteger count = new AtomicInteger(0);
             Cursor<FeedsRecord> feedsCursor = dsl.selectFrom(FEEDS).fetchLazy();
+
             sink.onRequest(n -> feedsCursor.fetchNext(Long.valueOf(n).intValue())
                     .forEach(r -> {
                         sink.next(r);
                         count.incrementAndGet();
                     }));
+
             log.debug("Complete read for {} feed.", count.get());
             sink.complete();
         }).subscribeOn(databaseScheduler).map(fr -> conversionService.convert(fr, Feed.class));

@@ -93,7 +93,7 @@ public final class FeedScrapperService implements Runnable {
                         osPipe.close();
                     })).subscribe(DataBufferUtils.releaseConsumer());
 
-            return new DefaultFeedParser(isPipe).parse();
+            return new DefaultFeedParser().parse(isPipe);
         } catch (IOException e) {
             log.error("{}: {}", e.getClass(), e.getLocalizedMessage());
             log.debug("STACKTRACE", e);
