@@ -12,7 +12,7 @@ public class NewsToRecordConverter implements Converter<News, NewsRecord> {
     @Override
     public NewsRecord convert(News source) {
         return NEWS.newRecord()
-                .setNewsFeedId((source.getId() != 0) ? source.getId() : null)
+                .setNewsId(source.getId())
                 .setNewsDescription(source.getDescription())
                 .setNewsLink(source.getLink().toString())
                 .setNewsPublication(DateUtils.toLocalDateTime(source.getPublication()))

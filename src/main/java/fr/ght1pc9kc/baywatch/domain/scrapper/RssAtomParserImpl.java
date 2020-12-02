@@ -1,9 +1,11 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper;
 
 import com.machinezoo.noexception.Exceptions;
+import fr.ght1pc9kc.baywatch.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.model.News;
-import lombok.AllArgsConstructor;
+import fr.ght1pc9kc.baywatch.api.scrapper.FeedParserPlugin;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 import javax.xml.namespace.QName;
@@ -18,11 +20,15 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
-@AllArgsConstructor
-public final class DefaultFeedParser {
+@Component
+public final class RssAtomParserImpl implements RssAtomParser {
 
     private static final String ITEM = "item";
     private static final String ENTRY = "entry";
@@ -32,74 +38,80 @@ public final class DefaultFeedParser {
     private static final String LINK = "link";
     private static final String PUB_DATE = "pubDate";
     private static final String UPDATED = "updated";
+    private static final QName HREF = new QName("href");
+
+    private final Map<String, FeedParserPlugin> plugins;
+
+    public RssAtomParserImpl(List<FeedParserPlugin> plugins) {
+        this.plugins = plugins.stream()
+                .collect(Collectors.toUnmodifiableMap(FeedParserPlugin::pluginForDomain, Function.identity()));
+    }
 
     public Flux<News> parse(InputStream is) {
         return Flux.create(Exceptions.wrap().consumer(sink -> {
             XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
             XMLEventReader reader = xmlInputFactory.createXMLEventReader(is, StandardCharsets.UTF_8.displayName());
+            FeedParserPlugin plugin = plugins.get("*");
 
             News.NewsBuilder bldr = null;
             while (reader.hasNext()) {
-                XMLEvent nextEvent = reader.nextEvent();
+                final XMLEvent nextEvent = reader.nextEvent();
                 if (nextEvent.isStartElement()) {
-                    StartElement startElement = nextEvent.asStartElement();
+                    final StartElement startElement = nextEvent.asStartElement();
+                    XMLEvent textEvent;
                     switch (startElement.getName().getLocalPart()) {
                         case ENTRY:
                         case ITEM:
-                            bldr = News.builder();
+                            bldr = plugin.handleItemEvent();
                             break;
                         case TITLE:
                             if (bldr == null) {
                                 break;
                             }
-                            nextEvent = reader.nextEvent();
-                            bldr = bldr.title(nextEvent.asCharacters().getData());
+                            String title = reader.getElementText();
+                            bldr = plugin.handleTitleEvent(bldr, title);
                             break;
                         case CONTENT:
                         case DESCRIPTION:
                             if (bldr == null) {
                                 break;
                             }
-                            nextEvent = reader.nextEvent();
-                            bldr = bldr.description(nextEvent.asCharacters().getData());
+                            bldr = plugin.handleDescriptionEvent(bldr, reader.getElementText());
                             break;
                         case LINK:
+                            String href = Optional.ofNullable(startElement.getAttributeByName(HREF))
+                                    .map(Attribute::getValue)
+                                    .orElseGet(Exceptions.wrap().supplier(reader::getElementText));
+                            URI link = URI.create(href.trim());
                             if (bldr == null) {
+                                plugin = plugins.getOrDefault(link.getHost(), plugin);
                                 break;
                             }
-                            String href = Optional.ofNullable(startElement.getAttributeByName(new QName("href")))
-                                    .map(Attribute::getValue)
-                                    .orElseGet(Exceptions.wrap().supplier(() -> {
-                                        XMLEvent next = reader.nextEvent();
-                                        return next.asCharacters().getData();
-                                    }));
-                            bldr = bldr.link(URI.create(href.trim()));
+                            bldr = plugin.handleLinkEvent(bldr, link);
                             break;
                         case UPDATED:
                             if (bldr == null) {
                                 break;
                             }
-                            nextEvent = reader.nextEvent();
-                            String updated = nextEvent.asCharacters().getData();
+                            String updated = reader.getElementText();
                             Instant updatedAt = DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(updated, Instant::from);
-                            bldr = bldr.publication(updatedAt);
+                            bldr = plugin.handlePublicationEvent(bldr, updatedAt);
                             break;
                         case PUB_DATE:
                             if (bldr == null) {
                                 break;
                             }
-                            nextEvent = reader.nextEvent();
-                            String pubDate = nextEvent.asCharacters().getData();
+                            String pubDate = reader.getElementText();
                             Instant datetime = DateTimeFormatter.RFC_1123_DATE_TIME.parse(pubDate, Instant::from);
-                            bldr = bldr.publication(datetime);
+                            bldr = plugin.handlePublicationEvent(bldr, datetime);
                             break;
                     }
                 }
                 if (nextEvent.isEndElement() && bldr != null) {
-                    EndElement endElement = nextEvent.asEndElement();
+                    final EndElement endElement = nextEvent.asEndElement();
                     String localPart = endElement.getName().getLocalPart();
                     if (ITEM.equals(localPart) || ENTRY.equals(localPart)) {
-                        sink.next(bldr.build());
+                        sink.next(plugin.handleEndEvent(bldr));
                     }
                 }
             }

@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.domain.scrapper;
 import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.api.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.api.NewsPersistencePort;
+import fr.ght1pc9kc.baywatch.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import lombok.AllArgsConstructor;
@@ -44,6 +45,7 @@ public final class FeedScrapperService implements Runnable {
     private final Clock clock;
     private final FeedPersistencePort feedRepository;
     private final NewsPersistencePort newsRepository;
+    private final RssAtomParser feedParser;
 
     @PostConstruct
     private void startScrapping() {
@@ -66,7 +68,8 @@ public final class FeedScrapperService implements Runnable {
     public void run() {
         log.info("Start scrapping ...");
 
-        feedRepository.list().publishOn(scrapperScheduler)
+        feedRepository.list()
+                .publishOn(scrapperScheduler)
                 .flatMap(this::wgetFeedNews)
                 .buffer(100)
                 .flatMap(newsRepository::create)
@@ -93,7 +96,7 @@ public final class FeedScrapperService implements Runnable {
                         osPipe.close();
                     })).subscribe(DataBufferUtils.releaseConsumer());
 
-            return new DefaultFeedParser().parse(isPipe);
+            return feedParser.parse(isPipe);
         } catch (IOException e) {
             log.error("{}: {}", e.getClass(), e.getLocalizedMessage());
             log.debug("STACKTRACE", e);

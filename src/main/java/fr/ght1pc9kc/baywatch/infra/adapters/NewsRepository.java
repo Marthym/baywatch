@@ -34,6 +34,7 @@ public class NewsRepository implements NewsPersistencePort {
         return Mono.fromCallable(() ->
                 dsl.loadInto(NEWS)
                         .batchAll()
+                        .onDuplicateKeyIgnore()
                         .onErrorIgnore()
                         .loadRecords(records)
                         .fieldsCorresponding()

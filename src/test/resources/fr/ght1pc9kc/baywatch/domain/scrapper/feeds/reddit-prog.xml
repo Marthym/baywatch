@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <category term="programming" label="r/programming"/>
+    <updated>2020-12-02T18:23:51+00:00</updated>
+    <icon>https://www.redditstatic.com/icon.png/</icon>
+    <id>/r/programming/top/.rss</id>
+    <link rel="self" href="https://www.reddit.com/r/programming/top/.rss" type="application/atom+xml"/>
+    <link rel="alternate" href="https://www.reddit.com/r/programming/top/" type="text/html"/>
+    <logo>https://b.thumbs.redditmedia.com/2rTE46grzsr-Ll3Q.png</logo>
+    <subtitle>Computer Programming</subtitle>
+    <title>liens vedettes : programming</title>
+    <entry>
+        <author>
+            <name>/u/TimvdLippe</name>
+            <uri>https://www.reddit.com/user/TimvdLippe</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/TimvdLippe&quot;&gt;
+            /u/TimvdLippe &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://googleprojectzero.blogspot.com/2020/12/an-ios-zero-click-radio-proximity.html&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k4wa47/an_ios_zeroclick_radio_proximity_exploit_odyssey/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k4wa47</id>
+        <link href="https://www.reddit.com/r/programming/comments/k4wa47/an_ios_zeroclick_radio_proximity_exploit_odyssey/"/>
+        <updated>2020-12-01T22:53:41+00:00</updated>
+        <title>An iOS zero-click radio proximity exploit odyssey - an unauthenticated kernel memory corruption
+            vulnerability which causes all iOS devices in radio-proximity to reboot, with no user interaction
+        </title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/iamapizza</name>
+            <uri>https://www.reddit.com/user/iamapizza</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/iamapizza&quot;&gt;
+            /u/iamapizza &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://arstechnica.com/gadgets/2020/12/salesforce-acquires-slack-for-27-7-billion/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k4wslt/salesforce_acquires_slack_for_277_billion/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k4wslt</id>
+        <link href="https://www.reddit.com/r/programming/comments/k4wslt/salesforce_acquires_slack_for_277_billion/"/>
+        <updated>2020-12-01T23:20:29+00:00</updated>
+        <title>Salesforce acquires Slack for $27.7 billion</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/JustKeepSwimmingJKS</name>
+            <uri>https://www.reddit.com/user/JustKeepSwimmingJKS</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/JustKeepSwimmingJKS&quot;&gt;
+            /u/JustKeepSwimmingJKS &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.cortex.dev/post/serverless-machine-learning-aws-lambda&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k4q6wq/why_we_built_our_own_serverless_ml/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k4q6wq</id>
+        <link href="https://www.reddit.com/r/programming/comments/k4q6wq/why_we_built_our_own_serverless_ml/"/>
+        <updated>2020-12-01T18:00:43+00:00</updated>
+        <title>Why we built our own serverless ML platform—instead of using AWS Lambda</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/alexeyr</name>
+            <uri>https://www.reddit.com/user/alexeyr</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/alexeyr&quot;&gt;
+            /u/alexeyr &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.baekdal.com/thoughts/inside-story-what-i-did-to-get-gdpr-compliant/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k4t7gs/what_i_did_to_get_gdpr_compliant/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k4t7gs</id>
+        <link href="https://www.reddit.com/r/programming/comments/k4t7gs/what_i_did_to_get_gdpr_compliant/"/>
+        <updated>2020-12-01T20:22:00+00:00</updated>
+        <title>What I did to get GDPR Compliant</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/AttackOfTheThumbs</name>
+            <uri>https://www.reddit.com/user/AttackOfTheThumbs</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/AttackOfTheThumbs&quot;&gt;
+            /u/AttackOfTheThumbs &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://eev.ee/blog/2020/11/30/gamedev-from-scratch-0-groundwork/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k4q2w9/gamedev_from_scratch_not_a_tutorial_but_it_offers/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k4q2w9</id>
+        <link href="https://www.reddit.com/r/programming/comments/k4q2w9/gamedev_from_scratch_not_a_tutorial_but_it_offers/"/>
+        <updated>2020-12-01T17:55:35+00:00</updated>
+        <title>Gamedev from scratch. Not a tutorial, but it offers insight for the interested</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/magenta_placenta</name>
+            <uri>https://www.reddit.com/user/magenta_placenta</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/magenta_placenta&quot;&gt;
+            /u/magenta_placenta &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://securityreport.com/source-code-used-by-central-banks-and-stock-exchanges-leaked-online/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k4uuia/source_code_used_by_central_banks_and_stock/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k4uuia</id>
+        <link href="https://www.reddit.com/r/programming/comments/k4uuia/source_code_used_by_central_banks_and_stock/"/>
+        <updated>2020-12-01T21:42:10+00:00</updated>
+        <title>Source code used by Central Banks and Stock Exchanges leaked online</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/Poddster</name>
+            <uri>https://www.reddit.com/user/Poddster</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/Poddster&quot;&gt;
+            /u/Poddster &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://twitter.com/richgel999/status/1334061416433807360&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k57yyh/divorce_proceedings_might_cause_an_opensource/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k57yyh</id>
+        <link href="https://www.reddit.com/r/programming/comments/k57yyh/divorce_proceedings_might_cause_an_opensource/"/>
+        <updated>2020-12-02T12:00:44+00:00</updated>
+        <title>Divorce proceedings might cause an open-source project be seized and re-licensed</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/DaGrokLife</name>
+            <uri>https://www.reddit.com/user/DaGrokLife</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/DaGrokLife&quot;&gt;
+            /u/DaGrokLife &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://github.com/oasislinux/oasis&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k4uefv/oasis_a_small_staticallylinked_linux_system/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k4uefv</id>
+        <link href="https://www.reddit.com/r/programming/comments/k4uefv/oasis_a_small_staticallylinked_linux_system/"/>
+        <updated>2020-12-01T21:20:23+00:00</updated>
+        <title>Oasis: a small statically-linked Linux system</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/alexeyr</name>
+            <uri>https://www.reddit.com/user/alexeyr</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/alexeyr&quot;&gt;
+            /u/alexeyr &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://slack.engineering/scaling-datastores-at-slack-with-vitess/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k4sdxq/scaling_datastores_at_slack_with_vitess/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k4sdxq</id>
+        <link href="https://www.reddit.com/r/programming/comments/k4sdxq/scaling_datastores_at_slack_with_vitess/"/>
+        <updated>2020-12-01T19:43:19+00:00</updated>
+        <title>Scaling Datastores at Slack with Vitess</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/alexeyr</name>
+            <uri>https://www.reddit.com/user/alexeyr</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/alexeyr&quot;&gt;
+            /u/alexeyr &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;http://databasearchitects.blogspot.com/2020/11/taming-deep-recursion.html&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k4sgr3/taming_deep_recursion_using_explicit_split_stacks/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k4sgr3</id>
+        <link href="https://www.reddit.com/r/programming/comments/k4sgr3/taming_deep_recursion_using_explicit_split_stacks/"/>
+        <updated>2020-12-01T19:46:54+00:00</updated>
+        <title>Taming Deep Recursion (using explicit split stacks)</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/mtlynch</name>
+            <uri>https://www.reddit.com/user/mtlynch</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/mtlynch&quot;&gt;
+            /u/mtlynch &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://mtlynch.io/code-review-love/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k5cbln/how_to_make_your_code_reviewer_fall_in_love_with/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k5cbln</id>
+        <link href="https://www.reddit.com/r/programming/comments/k5cbln/how_to_make_your_code_reviewer_fall_in_love_with/"/>
+        <updated>2020-12-02T16:20:41+00:00</updated>
+        <title>How to Make Your Code Reviewer Fall in Love with You</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/iamapizza</name>
+            <uri>https://www.reddit.com/user/iamapizza</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/iamapizza&quot;&gt;
+            /u/iamapizza &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://gallery.ecr.aws&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k54ysy/aws_release_their_own_public_docker_registry/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k54ysy</id>
+        <link href="https://www.reddit.com/r/programming/comments/k54ysy/aws_release_their_own_public_docker_registry/"/>
+        <updated>2020-12-02T07:43:24+00:00</updated>
+        <title>AWS release their own public Docker registry</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/grauenwolf</name>
+            <uri>https://www.reddit.com/user/grauenwolf</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/grauenwolf&quot;&gt;
+            /u/grauenwolf &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.infoq.com/news/2020/12/aspnet-core-improvement-dotnet-5/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k5bjgr/only_rust_is_faster_than_net_5aspnet_core_at_grpc/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k5bjgr</id>
+        <link href="https://www.reddit.com/r/programming/comments/k5bjgr/only_rust_is_faster_than_net_5aspnet_core_at_grpc/"/>
+        <updated>2020-12-02T15:42:10+00:00</updated>
+        <title>Only Rust is faster than .NET 5/ASP.NET Core at gRPC</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/yayaya14</name>
+            <uri>https://www.reddit.com/user/yayaya14</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/yayaya14&quot;&gt;
+            /u/yayaya14 &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://russianaicup.ru/?locale=en&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k54c2i/game_ai_development_contest_build_your_bot_for/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k54c2i</id>
+        <link href="https://www.reddit.com/r/programming/comments/k54c2i/game_ai_development_contest_build_your_bot_for/"/>
+        <updated>2020-12-02T06:53:55+00:00</updated>
+        <title>Game AI development contest - build your bot for Starcraft-like strategy game</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/DaGrokLife</name>
+            <uri>https://www.reddit.com/user/DaGrokLife</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/DaGrokLife&quot;&gt;
+            /u/DaGrokLife &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://observablehq.com/@makio135/creative-coding&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k54lfm/observable_creative_coding/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k54lfm</id>
+        <link href="https://www.reddit.com/r/programming/comments/k54lfm/observable_creative_coding/"/>
+        <updated>2020-12-02T07:14:15+00:00</updated>
+        <title>Observable &amp; creative coding</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/phostershop</name>
+            <uri>https://www.reddit.com/user/phostershop</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/phostershop&quot;&gt;
+            /u/phostershop &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;http://stlab.cc/2020/12/01/forest-introduction.html&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k4xffd/forest_an_introduction/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k4xffd</id>
+        <link href="https://www.reddit.com/r/programming/comments/k4xffd/forest_an_introduction/"/>
+        <updated>2020-12-01T23:55:24+00:00</updated>
+        <title>Forest: An Introduction</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/DaGrokLife</name>
+            <uri>https://www.reddit.com/user/DaGrokLife</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/DaGrokLife&quot;&gt;
+            /u/DaGrokLife &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://memalign.github.io/m/dungeon/index.html&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k4ud7y/dungeon_memalign_tiny_mobilefriendly_interactive/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k4ud7y</id>
+        <link href="https://www.reddit.com/r/programming/comments/k4ud7y/dungeon_memalign_tiny_mobilefriendly_interactive/"/>
+        <updated>2020-12-01T21:18:36+00:00</updated>
+        <title>Dungeon Memalign - Tiny, mobile-friendly interactive fiction game w/source</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/levelUp_01</name>
+            <uri>https://www.reddit.com/user/levelUp_01</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/levelUp_01&quot;&gt;
+            /u/levelUp_01 &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://youtu.be/-jiOPKt7avE&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k4r50q/what_are_probabilistic_data_structures_and_bloom/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k4r50q</id>
+        <link href="https://www.reddit.com/r/programming/comments/k4r50q/what_are_probabilistic_data_structures_and_bloom/"/>
+        <updated>2020-12-01T18:45:16+00:00</updated>
+        <title>What are Probabilistic Data Structures? (and Bloom Filters)</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/lihaoyi</name>
+            <uri>https://www.reddit.com/user/lihaoyi</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/lihaoyi&quot;&gt;
+            /u/lihaoyi &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.lihaoyi.com/post/MessagebasedParallelismwithActors.html&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k54wdi/messagebased_parallelism_with_actors/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k54wdi</id>
+        <link href="https://www.reddit.com/r/programming/comments/k54wdi/messagebased_parallelism_with_actors/"/>
+        <updated>2020-12-02T07:37:56+00:00</updated>
+        <title>Message-based Parallelism with Actors</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/susam</name>
+            <uri>https://www.reddit.com/user/susam</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/susam&quot;&gt;
+            /u/susam &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://spxy.org/cc/clpc/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k4qubu/common_lisp_programming_challenge_for_december/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k4qubu</id>
+        <link href="https://www.reddit.com/r/programming/comments/k4qubu/common_lisp_programming_challenge_for_december/"/>
+        <updated>2020-12-01T18:31:09+00:00</updated>
+        <title>Common Lisp Programming Challenge for December 2020</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/thescriptninja</name>
+            <uri>https://www.reddit.com/user/thescriptninja</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/thescriptninja&quot;&gt;
+            /u/thescriptninja &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://kwoc.kossiitkgp.org&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k57m12/we_are_conducting_a_gsoclike_opensource_program/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k57m12</id>
+        <link href="https://www.reddit.com/r/programming/comments/k57m12/we_are_conducting_a_gsoclike_opensource_program/"/>
+        <updated>2020-12-02T11:31:41+00:00</updated>
+        <title>We are conducting a GSoC-like open-source program for students</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/SamNwutobo</name>
+            <uri>https://www.reddit.com/user/SamNwutobo</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/SamNwutobo&quot;&gt;
+            /u/SamNwutobo &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://github.com/sammycage/lunasvg&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k5461h/lunasvg_is_a_standalone_c_library_to_create/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k5461h</id>
+        <link href="https://www.reddit.com/r/programming/comments/k5461h/lunasvg_is_a_standalone_c_library_to_create/"/>
+        <updated>2020-12-02T06:40:51+00:00</updated>
+        <title>lunasvg is a standalone c++ library to create, animate, manipulate and render SVG files. Enjoy!!!</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/noncopy</name>
+            <uri>https://www.reddit.com/user/noncopy</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/noncopy&quot;&gt;
+            /u/noncopy &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://lispcookbook.github.io/cl-cookbook/packages.html#accessing-symbols-from-a-package&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k4xjcx/common_lisp_and/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k4xjcx</id>
+        <link href="https://www.reddit.com/r/programming/comments/k4xjcx/common_lisp_and/"/>
+        <updated>2020-12-02T00:01:22+00:00</updated>
+        <title>common lisp : and ::</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/callos05</name>
+            <uri>https://www.reddit.com/user/callos05</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/callos05&quot;&gt;
+            /u/callos05 &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://thegreatgamers.com/beat-the-scalpers-get-a-ps5-with-this-simple-trick/&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k4yn7i/a_simple_programme_that_can_help_beat_scalpers/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k4yn7i</id>
+        <link href="https://www.reddit.com/r/programming/comments/k4yn7i/a_simple_programme_that_can_help_beat_scalpers/"/>
+        <updated>2020-12-02T01:02:36+00:00</updated>
+        <title>A simple programme that can help beat scalpers this holiday period</title>
+    </entry>
+    <entry>
+        <author>
+            <name>/u/ustropo</name>
+            <uri>https://www.reddit.com/user/ustropo</uri>
+        </author>
+        <category term="programming" label="r/programming"/>
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/ustropo&quot;&gt;
+            /u/ustropo &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://medium.com/vacatronics/webassembly-in-go-vs-javascript-a-benchmark-6deb28f24e9d?source=friends_link&amp;amp;sk=6a12153dcc84f42459e288135aea4afa&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k4x7cm/webassembly_in_go_vs_javascript_a_benchmark/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        </content>
+        <id>t3_k4x7cm</id>
+        <link href="https://www.reddit.com/r/programming/comments/k4x7cm/webassembly_in_go_vs_javascript_a_benchmark/"/>
+        <updated>2020-12-01T23:43:05+00:00</updated>
+        <title>WebAssembly in Go vs JavaScript: A Benchmark</title>
+    </entry>
+</feed>

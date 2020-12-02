@@ -10,9 +10,9 @@ import java.util.Collection;
 @Value
 @Builder
 public class Feed {
-    int id;
-    String name;
-    URI url;
-    Instant lastWatch;
-    Collection<Folder> folders;
+    public int id;
+    public String name;
+    public URI url;
+    public Instant lastWatch;
+    public Collection<Folder> folders;
 }
