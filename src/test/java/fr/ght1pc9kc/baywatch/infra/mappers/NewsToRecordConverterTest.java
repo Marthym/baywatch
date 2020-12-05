@@ -17,7 +17,7 @@ class NewsToRecordConverterTest {
 
     @Test
     void should_convert_News_pojo_to_NewsRecord_with_id() {
-        UUID uuid = UUID.randomUUID();
+        String uuid = UUID.randomUUID().toString();
         NewsRecord actual = tested.convert(News.builder()
                 .id(uuid)
                 .title("Obiwan")

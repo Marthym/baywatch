@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.domain.scrapper;
 
 import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.api.RssAtomParser;
+import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.scrapper.FeedParserPlugin;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +48,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
                 .collect(Collectors.toUnmodifiableMap(FeedParserPlugin::pluginForDomain, Function.identity()));
     }
 
-    public Flux<News> parse(InputStream is) {
+    public Flux<News> parse(Feed feed, InputStream is) {
         return Flux.create(Exceptions.wrap().consumer(sink -> {
             XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
             XMLEventReader reader = xmlInputFactory.createXMLEventReader(is, StandardCharsets.UTF_8.displayName());
@@ -58,7 +59,6 @@ public final class RssAtomParserImpl implements RssAtomParser {
                 final XMLEvent nextEvent = reader.nextEvent();
                 if (nextEvent.isStartElement()) {
                     final StartElement startElement = nextEvent.asStartElement();
-                    XMLEvent textEvent;
                     switch (startElement.getName().getLocalPart()) {
                         case ENTRY:
                         case ITEM:
@@ -111,6 +111,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
                     final EndElement endElement = nextEvent.asEndElement();
                     String localPart = endElement.getName().getLocalPart();
                     if (ITEM.equals(localPart) || ENTRY.equals(localPart)) {
+                        bldr.feedId(feed.id);
                         sink.next(plugin.handleEndEvent(bldr));
                     }
                 }

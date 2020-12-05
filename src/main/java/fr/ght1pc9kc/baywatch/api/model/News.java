@@ -6,12 +6,12 @@ import lombok.Value;
 
 import java.net.URI;
 import java.time.Instant;
-import java.util.UUID;
 
 @Value
 @Builder
 public class News {
-    public @NonNull UUID id;
+    public @NonNull String id;
+    public Integer feedId;
     public String title;
     public String description;
     public Instant publication;

@@ -11,7 +11,7 @@ public interface FeedParserPlugin {
     String pluginForDomain();
 
     default News.NewsBuilder handleItemEvent() {
-        return News.builder().id(UUID.randomUUID());
+        return News.builder().id(UUID.randomUUID().toString());
     }
 
     default News.NewsBuilder handleTitleEvent(@Nonnull News.NewsBuilder builder, String title) {

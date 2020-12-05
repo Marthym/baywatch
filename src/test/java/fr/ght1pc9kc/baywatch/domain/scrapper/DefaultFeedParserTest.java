@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper;
 
+import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.domain.scrapper.plugins.DefaultParserPlugin;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,7 +30,8 @@ class DefaultFeedParserTest {
         try (InputStream is = DefaultFeedParserTest.class.getResourceAsStream(feedFile)) {
             assertThat(is).isNotNull();
 
-            List<News> actuals = tested.parse(is).collectList().block();
+            Feed feed = Feed.builder().build();
+            List<News> actuals = tested.parse(feed, is).collectList().block();
 
             assertThat(actuals).hasSize(expectedFeedCount);
 

@@ -1,7 +1,9 @@
 package fr.ght1pc9kc.baywatch.infra.adapters;
 
+import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.api.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
+import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 
 @Slf4j
 @Component
@@ -26,9 +29,13 @@ public class NewsRepository implements NewsPersistencePort {
     private final ConversionService conversionService;
 
     @Override
-    public Mono<Void> create(Collection<News> toCreate) {
+    public Mono<Void> persist(Collection<News> toCreate) {
         List<NewsRecord> records = toCreate.stream()
                 .map(n -> conversionService.convert(n, NewsRecord.class))
+                .collect(Collectors.toList());
+
+        List<NewsFeedsRecord> newsFeedsRecords = toCreate.stream()
+                .map(n -> conversionService.convert(n, NewsFeedsRecord.class))
                 .collect(Collectors.toList());
 
         return Mono.fromCallable(() ->
@@ -44,7 +51,17 @@ public class NewsRepository implements NewsPersistencePort {
                     log.info("Load {} News with {} error(s) and {} ignored",
                             loader.processed(), loader.errors().size(), loader.ignored());
                     return loader;
-                }).then();
+                })
+                .map(Exceptions.wrap().function(x ->
+                        dsl.loadInto(NEWS_FEEDS)
+                                .batchAll()
+                                .onDuplicateKeyIgnore()
+                                .onErrorIgnore()
+                                .loadRecords(newsFeedsRecords)
+                                .fieldsCorresponding()
+                                .execute()))
+                .subscribeOn(databaseScheduler)
+                .then();
 
     }
 }

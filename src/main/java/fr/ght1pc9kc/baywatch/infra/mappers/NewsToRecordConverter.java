@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.mappers;
 
 import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import org.jooq.tools.StringUtils;
 import org.springframework.core.convert.converter.Converter;
@@ -13,7 +14,7 @@ public class NewsToRecordConverter implements Converter<News, NewsRecord> {
     @Override
     public NewsRecord convert(News source) {
         return NEWS.newRecord()
-                .setNewsId(source.getId())
+                .setNewsId(Hasher.sha3(source.link.toString()))
                 .setNewsDescription(source.getDescription())
                 .setNewsLink(source.getLink().toString())
                 .setNewsPublication(DateUtils.toLocalDateTime(source.getPublication()))

@@ -6,5 +6,5 @@ import reactor.core.publisher.Mono;
 import java.util.Collection;
 
 public interface NewsPersistencePort {
-    Mono<Void> create(Collection<News> toCreate);
+    Mono<Void> persist(Collection<News> toCreate);
 }

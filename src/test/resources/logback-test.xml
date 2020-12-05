@@ -6,8 +6,8 @@
         </encoder>
     </appender>
 
-    <root level="WARN">
+    <root level="OFF">
         <appender-ref ref="STDOUT"/>
     </root>
-<!--    <logger name="fr.ght1pc9kc" level="DEBUG"/>-->
+    <logger name="fr.ght1pc9kc" level="DEBUG"/>
 </configuration>

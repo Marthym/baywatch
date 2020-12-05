@@ -85,7 +85,7 @@ public final class FeedScrapperService implements Runnable {
                 .flatMap(this::wgetFeedNews)
                 .sequential()
                 .buffer(100)
-                .flatMap(newsRepository::create)
+                .flatMap(newsRepository::persist)
                 .doOnError(e -> {
                     log.error("{}: {}", e.getClass(), e.getLocalizedMessage());
                     log.debug("STACKTRACE", e);
@@ -98,7 +98,7 @@ public final class FeedScrapperService implements Runnable {
         try {
             log.debug("Start scrapping feed {} ...", feed.getUrl().getHost());
             PipedOutputStream osPipe = new PipedOutputStream();
-            PipedInputStream isPipe = new PipedInputStream(osPipe);
+            PipedInputStream isFeedPayload = new PipedInputStream(osPipe);
 
             Flux<DataBuffer> buffers = http.get()
                     .uri(feed.getUrl())
@@ -108,7 +108,6 @@ public final class FeedScrapperService implements Runnable {
                     .retrieve()
                     .bodyToFlux(DataBuffer.class)
                     .doFirst(() -> log.trace("Receiving data from {}...", feed.url.getHost()))
-                    //FIXME: Faudrait surement faire remonter à l'appelant pour faire quelque chose de l'erreur et pour ne pas parser
                     .onErrorResume(e -> {
                         log.error("{}", e.getLocalizedMessage());
                         log.debug("STACKTRACE", e);
@@ -117,13 +116,16 @@ public final class FeedScrapperService implements Runnable {
 
             DataBufferUtils.write(buffers, osPipe)
                     .doFinally(Exceptions.wrap().consumer(signal -> {
-                        isPipe.close();
                         osPipe.flush();
                         osPipe.close();
                         log.debug("Finish Scrapping feed {}.", feed.getUrl().getHost());
                     })).subscribe(DataBufferUtils.releaseConsumer());
 
-            return feedParser.parse(isPipe);
+            return feedParser.parse(feed, isFeedPayload)
+                    .doFinally(Exceptions.wrap().consumer(signal -> {
+                        isFeedPayload.close();
+                        log.trace("Finish Parsing feed {}.", feed.getUrl().getHost());
+                    }));
         } catch (IOException e) {
             log.error("{}: {}", e.getClass(), e.getLocalizedMessage());
             log.debug("STACKTRACE", e);

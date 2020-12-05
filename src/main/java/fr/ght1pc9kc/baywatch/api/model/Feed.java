@@ -10,7 +10,7 @@ import java.util.Collection;
 @Value
 @Builder
 public class Feed {
-    public int id;
+    public Integer id;
     public String name;
     public URI url;
     public Instant lastWatch;

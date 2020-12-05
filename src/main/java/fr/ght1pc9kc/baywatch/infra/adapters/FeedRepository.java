@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.FeedPersistencePort;
+import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,6 @@ public class FeedRepository implements FeedPersistencePort {
                         count.incrementAndGet();
                     }));
 
-            log.debug("Complete read for {} feed.", count.get());
             sink.complete();
         }).subscribeOn(databaseScheduler).map(fr -> conversionService.convert(fr, Feed.class));
     }

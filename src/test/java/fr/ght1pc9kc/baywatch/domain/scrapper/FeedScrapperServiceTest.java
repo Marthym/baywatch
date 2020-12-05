@@ -28,6 +28,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -50,10 +51,10 @@ class FeedScrapperServiceTest {
 
         mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/feeds/journal_du_hacker.xml")));
         mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/feeds/spring-blog.xml")));
-        verify(rssAtomParserMock, times(2)).parse(any());
+        verify(rssAtomParserMock, times(2)).parse(any(Feed.class), any());
         verify(newsPersistenceMock,
                 times(1).description("Expect only one call because of the buffer to 100")
-        ).create(anyCollection());
+        ).persist(anyCollection());
     }
 
     @Test
@@ -76,10 +77,23 @@ class FeedScrapperServiceTest {
 
         mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/error/dark-vader.xml")));
         mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/feeds/spring-blog.xml")));
-        verify(rssAtomParserMock, times(1)).parse(any());
+        verify(rssAtomParserMock, times(2)).parse(any(Feed.class), any());
         verify(newsPersistenceMock,
                 times(1).description("Expect only one call because of the buffer to 100")
-        ).create(anyCollection());
+        ).persist(anyCollection());
+    }
+
+    @Test
+    void should_fail_on_persistence() {
+        reset(newsPersistenceMock);
+        when(newsPersistenceMock.persist(anyCollection())).thenReturn(Mono.error(new RuntimeException()).then());
+
+        tested.startScrapping();
+        tested.shutdownScrapping();
+
+        mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/error/dark-vader.xml")));
+        mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/feeds/spring-blog.xml")));
+        verify(rssAtomParserMock, times(2)).parse(any(Feed.class), any());
     }
 
     @BeforeAll
@@ -102,15 +116,15 @@ class FeedScrapperServiceTest {
     @BeforeEach
     void setUp() {
         newsPersistenceMock = mock(NewsPersistencePort.class);
-        when(newsPersistenceMock.create(anyCollection())).thenReturn(Mono.just("").then());
+        when(newsPersistenceMock.persist(anyCollection())).thenReturn(Mono.just("").then());
 
         rssAtomParserMock = spy(new RssAtomParser() {
             @Override
-            public Flux<News> parse(InputStream is) {
+            public Flux<News> parse(Feed feed, InputStream is) {
                 // Must consume the inputstream
                 Exceptions.wrap().get(() -> IOUtils.toByteArray(is));
                 return Flux.just(News.builder()
-                        .id(UUID.randomUUID())
+                        .id(UUID.randomUUID().toString())
                         .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
                         .build());
             }
