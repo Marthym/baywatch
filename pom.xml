@@ -25,7 +25,7 @@
         <noexception.version>1.6.2</noexception.version>
         <findbugs.version>3.0.2</findbugs.version>
         <wiremock.version>2.27.2</wiremock.version>
-        <testy-box.version>1.3.0-SNAPSHOT</testy-box.version>
+        <testy-box.version>1.3.0</testy-box.version>
     </properties>
 
     <dependencies>
@@ -100,6 +100,7 @@
             <groupId>fr.irun</groupId>
             <artifactId>testy-jooq-box</artifactId>
             <version>${testy-box.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

@@ -8,6 +8,7 @@ import fr.irun.testy.jooq.WithDslContext;
 import fr.irun.testy.jooq.WithInMemoryDatasource;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -17,6 +18,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Disabled
 class FeedRepositoryTest {
     private static final WithInMemoryDatasource wDs = WithInMemoryDatasource.builder().build();
     private static final WithDatabaseLoaded wBaywatchDb = WithDatabaseLoaded.builder()

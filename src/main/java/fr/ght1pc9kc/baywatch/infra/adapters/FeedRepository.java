@@ -10,8 +10,10 @@ import org.jooq.DSLContext;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
@@ -39,5 +41,10 @@ public class FeedRepository implements FeedPersistencePort {
 
             sink.complete();
         }).subscribeOn(databaseScheduler).map(fr -> conversionService.convert(fr, Feed.class));
+    }
+
+    @Override
+    public Mono<Void> persist(Collection<Feed> toCreate) {
+        return null;
     }
 }

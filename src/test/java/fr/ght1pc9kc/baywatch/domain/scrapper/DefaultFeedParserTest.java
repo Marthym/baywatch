@@ -8,7 +8,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 
@@ -16,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class DefaultFeedParserTest {
 
-    RssAtomParserImpl tested = new RssAtomParserImpl(List.of(new DefaultParserPlugin()));
+    private final RssAtomParserImpl tested = new RssAtomParserImpl(List.of(new DefaultParserPlugin()));
 
     @ParameterizedTest
     @CsvSource({
@@ -37,9 +36,10 @@ class DefaultFeedParserTest {
 
             News actual = Objects.requireNonNull(actuals).get(0);
             assertThat(actual).isNotNull();
-            assertThat(actual.id).isNotNull();
-            assertThat(actual.description).isEqualTo("");
-            assertThat(actual.link).isEqualTo(URI.create("http://blog.ght1pc9kc.fr/"));
+            assertThat(actual.id).isNotEmpty().hasSize(36);
+            assertThat(actual.title).isNotEmpty();
+            assertThat(actual.description).isNotEmpty();
+            assertThat(actual.link).isNotNull();
         }
     }
 }

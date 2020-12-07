@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.mappers;
 
 import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import org.junit.jupiter.api.Test;
 
@@ -17,12 +18,13 @@ class NewsToRecordConverterTest {
 
     @Test
     void should_convert_News_pojo_to_NewsRecord_with_id() {
-        String uuid = UUID.randomUUID().toString();
+        URI link = URI.create("https://blog.ght1pc9kc.fr/index.xml");
+        String uuid = Hasher.sha3(link.toString());
         NewsRecord actual = tested.convert(News.builder()
                 .id(uuid)
                 .title("Obiwan")
                 .description("Kenobi")
-                .link(URI.create("https://blog.ght1pc9kc.fr/index.xml"))
+                .link(link)
                 .publication(PUBLICATION)
                 .stared(false)
                 .build());
@@ -31,7 +33,7 @@ class NewsToRecordConverterTest {
                 .setNewsId(uuid)
                 .setNewsTitle("Obiwan")
                 .setNewsDescription("Kenobi")
-                .setNewsLink(URI.create("https://blog.ght1pc9kc.fr/index.xml").toString())
+                .setNewsLink(link.toString())
                 .setNewsPublication(DateUtils.toLocalDateTime(PUBLICATION))
                 .setNewsStared(false)
         );
