@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.infra.adapters;
+package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.api.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
@@ -32,7 +32,6 @@ public class FeedRepository implements FeedPersistencePort {
         return Flux.<FeedsRecord>create(sink -> {
             AtomicInteger count = new AtomicInteger(0);
             Cursor<FeedsRecord> feedsCursor = dsl.selectFrom(FEEDS).fetchLazy();
-
             sink.onRequest(n -> feedsCursor.fetchNext(Long.valueOf(n).intValue())
                     .forEach(r -> {
                         sink.next(r);
@@ -40,7 +39,9 @@ public class FeedRepository implements FeedPersistencePort {
                     }));
 
             sink.complete();
-        }).subscribeOn(databaseScheduler).map(fr -> conversionService.convert(fr, Feed.class));
+        })
+                .limitRequest(Integer.MAX_VALUE) // Long.MAX_VALUE.intValue() == -1
+                .subscribeOn(databaseScheduler).map(fr -> conversionService.convert(fr, Feed.class));
     }
 
     @Override

@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.infra.adapters;
+package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
 import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.api.NewsPersistencePort;
