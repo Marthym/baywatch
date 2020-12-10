@@ -13,8 +13,10 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 public class NewsToRecordConverter implements Converter<News, NewsRecord> {
     @Override
     public NewsRecord convert(News source) {
+        String newsId = (source.id == null) ? Hasher.sha3(source.link.toString()) : source.id;
+
         return NEWS.newRecord()
-                .setNewsId(Hasher.sha3(source.link.toString()))
+                .setNewsId(newsId)
                 .setNewsDescription(source.getDescription())
                 .setNewsLink(source.getLink().toString())
                 .setNewsPublication(DateUtils.toLocalDateTime(source.getPublication()))
