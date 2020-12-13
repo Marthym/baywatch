@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.Cursor;
 import org.jooq.DSLContext;
+import org.jooq.Result;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -14,7 +15,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
 import java.util.Collection;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 
@@ -30,17 +30,16 @@ public class FeedRepository implements FeedPersistencePort {
     @SuppressWarnings("ReactiveStreamsNullableInLambdaInTransform")
     public Flux<Feed> list() {
         return Flux.<FeedsRecord>create(sink -> {
-            AtomicInteger count = new AtomicInteger(0);
             Cursor<FeedsRecord> feedsCursor = dsl.selectFrom(FEEDS).fetchLazy();
-            sink.onRequest(n -> feedsCursor.fetchNext(Long.valueOf(n).intValue())
-                    .forEach(r -> {
-                        sink.next(r);
-                        count.incrementAndGet();
-                    }));
-
-            sink.complete();
+            sink.onRequest(n -> {
+                Result<FeedsRecord> rs = feedsCursor.fetchNext(Long.valueOf(n).intValue());
+                rs.forEach(sink::next);
+                if (rs.size() < n) {
+                    sink.complete();
+                }
+            });
         })
-                .limitRequest(Integer.MAX_VALUE) // Long.MAX_VALUE.intValue() == -1
+                .limitRate(Integer.MAX_VALUE - 1) // Long.MAX_VALUE.intValue() == -1
                 .subscribeOn(databaseScheduler).map(fr -> conversionService.convert(fr, Feed.class));
     }
 

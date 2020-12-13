@@ -23,16 +23,12 @@ import wiremock.org.apache.commons.io.IOUtils;
 import java.io.InputStream;
 import java.net.URI;
 import java.time.Clock;
+import java.util.Collections;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class FeedScrapperServiceTest {
 
@@ -145,7 +141,7 @@ class FeedScrapperServiceTest {
         ));
 
         tested = new FeedScrapperService(Clock.systemUTC(),
-                feedPersistenceMock, newsPersistenceMock, rssAtomParserMock);
+                feedPersistenceMock, newsPersistenceMock, rssAtomParserMock, Collections.emptyList());
     }
 
     @AfterAll

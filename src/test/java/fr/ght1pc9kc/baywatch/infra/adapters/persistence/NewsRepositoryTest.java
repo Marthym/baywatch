@@ -1,10 +1,12 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.api.model.News;
-import fr.ght1pc9kc.baywatch.dsl.tables.Feeds;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.infra.mappers.NewsFeedsToRecordConverter;
 import fr.ght1pc9kc.baywatch.infra.mappers.NewsToRecordConverter;
+import fr.ght1pc9kc.baywatch.infra.mappers.RecordToNewsConverter;
+import fr.ght1pc9kc.baywatch.infra.samples.FeedRecordSamples;
+import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;
 import fr.irun.testy.core.extensions.ChainedExtension;
 import fr.irun.testy.jooq.WithDatabaseLoaded;
 import fr.irun.testy.jooq.WithDslContext;
@@ -21,9 +23,9 @@ import reactor.core.scheduler.Schedulers;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
-import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,11 +39,10 @@ class NewsRepositoryTest {
     private static final WithDslContext wDslContext = WithDslContext.builder()
             .setDatasourceExtension(wDs).build();
     private static final WithSampleDataLoaded wSamples = WithSampleDataLoaded.builder(wDslContext)
-            .addDataset((RelationalDataSet<FeedsRecord>) () -> Collections.singletonList(FEEDS.newRecord()
-                    .setFeedId(42)
-                    .setFeedName("Jedi")
-                    .setFeedUrl("http://obiwan.kenobi.jedi/")
-            )).build();
+            .addDataset((RelationalDataSet<FeedsRecord>) () -> Collections.singletonList(FeedRecordSamples.JEDI))
+            .addDataset(NewsRecordSamples.SAMPLE)
+            .addDataset(NewsRecordSamples.NewsFeedsRecordSample.SAMPLE)
+            .build();
 
     @RegisterExtension
     @SuppressWarnings("unused")
@@ -59,6 +60,7 @@ class NewsRepositoryTest {
     void setUp(DSLContext dslContext) {
         DefaultConversionService defaultConversionService = new DefaultConversionService();
         defaultConversionService.addConverter(new NewsToRecordConverter());
+        defaultConversionService.addConverter(new RecordToNewsConverter());
         defaultConversionService.addConverter(new NewsFeedsToRecordConverter());
         tested = new NewsRepository(Schedulers.immediate(), dslContext, defaultConversionService);
     }
@@ -91,5 +93,11 @@ class NewsRepositoryTest {
                     .and(NEWS_FEEDS.NEFE_FEED_ID.eq(42)));
             assertThat(actual).isEqualTo(1);
         }
+    }
+
+    @Test
+    void should_list_news() {
+        List<News> actuals = tested.list().collectList().block();
+        assertThat(actuals).isNotEmpty();
     }
 }

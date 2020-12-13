@@ -6,6 +6,7 @@ import fr.ght1pc9kc.baywatch.api.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.api.scrapper.PreScrappingAction;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -30,10 +31,12 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -46,11 +49,13 @@ public final class FeedScrapperService implements Runnable {
     private final Scheduler scrapperScheduler =
             Schedulers.newBoundedElastic(4, Integer.MAX_VALUE, "scrapper");
     private final WebClient http = WebClient.create();
+    private final CountDownLatch lock = new CountDownLatch(1);
+
     private final Clock clock;
     private final FeedPersistencePort feedRepository;
     private final NewsPersistencePort newsRepository;
     private final RssAtomParser feedParser;
-    private final CountDownLatch lock = new CountDownLatch(1);
+    private final Collection<PreScrappingAction> preScrappingActions;
 
     @PostConstruct
     void startScrapping() {
@@ -72,7 +77,9 @@ public final class FeedScrapperService implements Runnable {
     @SneakyThrows
     void shutdownScrapping() {
         scheduleExecutor.shutdown();
-        lock.await(60, TimeUnit.SECONDS);
+        if (!lock.await(60, TimeUnit.SECONDS)) {
+            log.warn("Unable to stop threads gracefully ! Threads was killed !");
+        }
         scrapperScheduler.dispose();
         log.info("All scrapper tasks finished and stopped !");
     }
@@ -80,7 +87,9 @@ public final class FeedScrapperService implements Runnable {
     @Override
     public void run() {
         log.info("Start scrapping ...");
-        feedRepository.list()
+
+        Flux.concat(preScrappingActions.stream().map(PreScrappingAction::call).collect(Collectors.toList()))
+                .thenMany(feedRepository.list())
                 .parallel(4).runOn(scrapperScheduler)
                 .flatMap(this::wgetFeedNews)
                 .sequential()

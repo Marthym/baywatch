@@ -3,13 +3,17 @@ package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.api.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.api.model.search.Criteria;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
+import fr.ght1pc9kc.baywatch.infra.search.JooqSearchVisitor;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jooq.DSLContext;
+import org.jooq.*;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
@@ -63,5 +67,35 @@ public class NewsRepository implements NewsPersistencePort {
                 .subscribeOn(databaseScheduler)
                 .then();
 
+    }
+
+    @Override
+    public Flux<News> list(Criteria searchCriteria) {
+        Condition conditions = searchCriteria.visit(new JooqSearchVisitor());
+        return Flux.create(sink -> {
+            Cursor<Record> cursor = dsl.select(NEWS.fields()).select(NEWS_FEEDS.NEFE_FEED_ID)
+                    .from(NEWS, NEWS_FEEDS)
+                    .where(NEWS.NEWS_ID.eq(NEWS_FEEDS.NEFE_NEWS_ID), conditions)
+                    .fetchLazy();
+            sink.onRequest(n -> {
+                int count = Long.valueOf(n).intValue();
+                Result<Record> rs = cursor.fetchNext(count);
+                rs.forEach(sink::next);
+                if (rs.size() < count) {
+                    sink.complete();
+                }
+            });
+        }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
+                .map(r -> (News) conversionService.convert(r, TypeDescriptor.valueOf(Record.class), TypeDescriptor.valueOf(News.class)));
+    }
+
+    @Override
+    public Mono<Integer> delete(Collection<String> ids) {
+        return Mono.fromCallable(() ->
+                dsl.transactionResult(tx -> {
+                    DSLContext txDsl = tx.dsl();
+                    txDsl.deleteFrom(NEWS_FEEDS).where(NEWS_FEEDS.NEFE_NEWS_ID.in(ids)).execute();
+                    return txDsl.deleteFrom(NEWS).where(NEWS.NEWS_ID.in(ids)).execute();
+                }));
     }
 }
