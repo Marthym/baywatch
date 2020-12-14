@@ -2,8 +2,8 @@ package fr.ght1pc9kc.baywatch.api.model.search;
 
 public abstract class Criteria {
 
-    public static NoCriteria none() {
-        return NoCriteria.NONE;
+    public static NoCriterion none() {
+        return NoCriterion.NONE;
     }
 
     public static Criteria and(Criteria left, Criteria right) {
@@ -14,8 +14,8 @@ public abstract class Criteria {
         return new OrOperation(left, right);
     }
 
-    public static Field field(String name) {
-        return new Field(name);
+    public static CriterionProperty property(String property) {
+        return new CriterionProperty(property);
     }
 
     public Criteria and(Criteria right) {
@@ -29,7 +29,7 @@ public abstract class Criteria {
     public abstract <R> R visit(Visitor<R> visitor);
 
     public interface Visitor<R> {
-        R visitNoCriteria(NoCriteria none);
+        R visitNoCriteria(NoCriterion none);
 
         R visitAnd(AndOperation operation);
 
@@ -41,7 +41,7 @@ public abstract class Criteria {
 
         <T> R visitLowerThan(LowerThanOperation<T> operation);
 
-        default <T> R visitValue(Value<T> value) {
+        default <T> R visitValue(CriterionValue<T> value) {
             throw new IllegalStateException("Value not implemented in visitor");
         }
     }

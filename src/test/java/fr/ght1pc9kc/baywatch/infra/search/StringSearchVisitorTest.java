@@ -21,12 +21,12 @@ class StringSearchVisitorTest {
 
     private static Stream<Arguments> provideSCriteria() {
         return Stream.of(
-                Arguments.of(Criteria.field("jedi").eq("Obiwan")
-                                .and(Criteria.field("age").gt(40).or(Criteria.field("age").lt(20))),
+                Arguments.of(Criteria.property("jedi").eq("Obiwan")
+                                .and(Criteria.property("age").gt(40).or(Criteria.property("age").lt(20))),
                         "(jedi = \"Obiwan\" and (age > \"40\" or age < \"20\"))"),
-                Arguments.of(Criteria.field("jedi").eq("Obiwan")
-                                .and(Criteria.field("age").gt(40))
-                                .or(Criteria.field("age").lt(20)),
+                Arguments.of(Criteria.property("jedi").eq("Obiwan")
+                                .and(Criteria.property("age").gt(40))
+                                .or(Criteria.property("age").lt(20)),
                         "((jedi = \"Obiwan\" and age > \"40\") or age < \"20\")")
         );
     }

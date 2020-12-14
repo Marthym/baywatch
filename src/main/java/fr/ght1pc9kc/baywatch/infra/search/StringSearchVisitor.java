@@ -4,7 +4,7 @@ import fr.ght1pc9kc.baywatch.api.model.search.*;
 
 public class StringSearchVisitor implements Criteria.Visitor<String> {
     @Override
-    public String visitNoCriteria(NoCriteria none) {
+    public String visitNoCriteria(NoCriterion none) {
         return "";
     }
 
@@ -20,21 +20,21 @@ public class StringSearchVisitor implements Criteria.Visitor<String> {
 
     @Override
     public <T> String visitEqual(EqualOperation<T> operation) {
-        return operation.field.name + " = " + operation.value.visit(this);
+        return operation.field.property + " = " + operation.value.visit(this);
     }
 
     @Override
     public <T> String visitGreaterThan(GreaterThanOperation<T> operation) {
-        return operation.field.name + " > " + operation.value.visit(this);
+        return operation.field.property + " > " + operation.value.visit(this);
     }
 
     @Override
     public <T> String visitLowerThan(LowerThanOperation<T> operation) {
-        return operation.field.name + " < " + operation.value.visit(this);
+        return operation.field.property + " < " + operation.value.visit(this);
     }
 
     @Override
-    public <T> String visitValue(Value<T> value) {
+    public <T> String visitValue(CriterionValue<T> value) {
         return "\"" + value.value.toString() + "\"";
     }
 }

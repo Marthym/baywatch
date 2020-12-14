@@ -4,6 +4,6 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public abstract class BiOperand<T> extends Criteria {
-    public Field field;
-    public Value<T> value;
+    public CriterionProperty field;
+    public CriterionValue<T> value;
 }

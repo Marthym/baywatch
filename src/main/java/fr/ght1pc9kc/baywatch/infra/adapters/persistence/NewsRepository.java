@@ -6,6 +6,7 @@ import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.search.Criteria;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
+import fr.ght1pc9kc.baywatch.infra.mappers.NewsToRecordConverter;
 import fr.ght1pc9kc.baywatch.infra.search.JooqSearchVisitor;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -71,7 +72,7 @@ public class NewsRepository implements NewsPersistencePort {
 
     @Override
     public Flux<News> list(Criteria searchCriteria) {
-        Condition conditions = searchCriteria.visit(new JooqSearchVisitor());
+        Condition conditions = searchCriteria.visit(new JooqSearchVisitor(NewsToRecordConverter.PROPERTIES_MAPPING::get));
         return Flux.create(sink -> {
             Cursor<Record> cursor = dsl.select(NEWS.fields()).select(NEWS_FEEDS.NEFE_FEED_ID)
                     .from(NEWS, NEWS_FEEDS)

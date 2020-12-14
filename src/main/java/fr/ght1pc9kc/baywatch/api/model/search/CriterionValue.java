@@ -1,15 +1,18 @@
 package fr.ght1pc9kc.baywatch.api.model.search;
 
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.Value;
 
 @Value
+@Getter(AccessLevel.PACKAGE)
 @EqualsAndHashCode(callSuper = true)
-public class NoCriteria extends Criteria {
-    static final NoCriteria NONE = new NoCriteria();
+public class CriterionValue<T> extends Criteria {
+    public T value;
 
     @Override
     public <R> R visit(Visitor<R> visitor) {
-        return visitor.visitNoCriteria(this);
+        return visitor.visitValue(this);
     }
 }

@@ -22,8 +22,8 @@ public class PurgeNewsAction implements PreScrappingAction {
     @Override
     public Mono<Void> call() {
         LocalDateTime maxPublicationPasDate = LocalDateTime.now(clock).minus(Period.ofMonths(3));
-        Criteria criteria = Criteria.field("publication").lt(maxPublicationPasDate)
-                .and(Criteria.field("stared").eq(false));
+        Criteria criteria = Criteria.property("publication").lt(maxPublicationPasDate)
+                .and(Criteria.property("stared").eq(false));
         return newsPersistence.list(criteria)
                 .map(n -> n.id)
                 .buffer(500)

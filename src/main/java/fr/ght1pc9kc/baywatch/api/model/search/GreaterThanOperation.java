@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 @lombok.Value
 @EqualsAndHashCode(callSuper = true)
 public class GreaterThanOperation<T> extends BiOperand<T> {
-    public GreaterThanOperation(Field criteria, Value<T> value) {
+    public GreaterThanOperation(CriterionProperty criteria, CriterionValue<T> value) {
         super(criteria, value);
     }
 
