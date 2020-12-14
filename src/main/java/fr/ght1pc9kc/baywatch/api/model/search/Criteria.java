@@ -14,6 +14,10 @@ public abstract class Criteria {
         return new OrOperation(left, right);
     }
 
+    public static Criteria not(Criteria criteria) {
+        return new NotOperation(criteria);
+    }
+
     public static CriterionProperty property(String property) {
         return new CriterionProperty(property);
     }
@@ -32,6 +36,8 @@ public abstract class Criteria {
         R visitNoCriteria(NoCriterion none);
 
         R visitAnd(AndOperation operation);
+
+        R visitNot(NotOperation operation);
 
         R visitOr(OrOperation operation);
 

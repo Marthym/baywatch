@@ -14,6 +14,11 @@ public class StringSearchVisitor implements Criteria.Visitor<String> {
     }
 
     @Override
+    public String visitNot(NotOperation operation) {
+        return "not (" + operation.criteria.visit(this) + ")";
+    }
+
+    @Override
     public String visitOr(OrOperation operation) {
         return "(" + operation.left.visit(this) + " or " + operation.right.visit(this) + ")";
     }

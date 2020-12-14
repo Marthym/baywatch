@@ -27,6 +27,11 @@ public class JooqSearchVisitor implements Criteria.Visitor<Condition> {
     }
 
     @Override
+    public Condition visitNot(NotOperation operation) {
+        return DSL.not(operation.criteria.visit(this));
+    }
+
+    @Override
     public Condition visitOr(OrOperation operation) {
         Condition right = operation.right.visit(this);
         Condition left = operation.left.visit(this);
