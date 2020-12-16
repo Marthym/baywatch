@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.actions;
 
 import fr.ght1pc9kc.baywatch.api.NewsPersistencePort;
+import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.search.Criteria;
 import fr.ght1pc9kc.baywatch.api.scrapper.PreScrappingAction;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.Period;
 
-@Component
+//@Component
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class PurgeNewsAction implements PreScrappingAction {
 
@@ -25,7 +26,7 @@ public class PurgeNewsAction implements PreScrappingAction {
         Criteria criteria = Criteria.property("publication").lt(maxPublicationPasDate)
                 .and(Criteria.property("stared").eq(false));
         return newsPersistence.list(criteria)
-                .map(n -> n.id)
+                .map(News::getId)
                 .buffer(500)
                 .flatMap(newsPersistence::delete)
                 .then();

@@ -4,6 +4,7 @@ import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.scrapper.FeedParserPlugin;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -54,7 +55,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
             XMLEventReader reader = xmlInputFactory.createXMLEventReader(is, StandardCharsets.UTF_8.displayName());
             FeedParserPlugin plugin = plugins.get("*");
 
-            News.NewsBuilder bldr = null;
+            RawNews.RawNewsBuilder bldr = null;
             while (reader.hasNext()) {
                 final XMLEvent nextEvent = reader.nextEvent();
                 if (nextEvent.isStartElement()) {
@@ -111,8 +112,11 @@ public final class RssAtomParserImpl implements RssAtomParser {
                     final EndElement endElement = nextEvent.asEndElement();
                     String localPart = endElement.getName().getLocalPart();
                     if (ITEM.equals(localPart) || ENTRY.equals(localPart)) {
-                        bldr.feedId(feed.id);
-                        sink.next(plugin.handleEndEvent(bldr));
+                        News news = News.builder()
+                                .raw(plugin.handleEndEvent(bldr))
+                                .feedId(feed.id)
+                                .build();
+                        sink.next(news);
                     }
                 }
             }

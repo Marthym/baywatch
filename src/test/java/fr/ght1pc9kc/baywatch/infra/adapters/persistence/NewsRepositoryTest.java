@@ -1,7 +1,8 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.api.model.News;
-import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
+import fr.ght1pc9kc.baywatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.model.search.Criteria;
 import fr.ght1pc9kc.baywatch.infra.mappers.NewsFeedsToRecordConverter;
 import fr.ght1pc9kc.baywatch.infra.mappers.NewsToRecordConverter;
 import fr.ght1pc9kc.baywatch.infra.mappers.RecordToNewsConverter;
@@ -12,7 +13,6 @@ import fr.irun.testy.jooq.WithDatabaseLoaded;
 import fr.irun.testy.jooq.WithDslContext;
 import fr.irun.testy.jooq.WithInMemoryDatasource;
 import fr.irun.testy.jooq.WithSampleDataLoaded;
-import fr.irun.testy.jooq.model.RelationalDataSet;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ class NewsRepositoryTest {
     private static final WithDslContext wDslContext = WithDslContext.builder()
             .setDatasourceExtension(wDs).build();
     private static final WithSampleDataLoaded wSamples = WithSampleDataLoaded.builder(wDslContext)
-            .addDataset((RelationalDataSet<FeedsRecord>) () -> Collections.singletonList(FeedRecordSamples.JEDI))
+            .addDataset(FeedRecordSamples.SAMPLE)
             .addDataset(NewsRecordSamples.SAMPLE)
             .addDataset(NewsRecordSamples.NewsFeedsRecordSample.SAMPLE)
             .build();
@@ -75,12 +75,14 @@ class NewsRepositoryTest {
             assertThat(actual).isEqualTo(0);
         }
 
-        News news = News.builder()
-                .id(NEWS_ID)
-                .title("Obiwan Kenobi")
+        News news = News.builder().raw(
+                RawNews.builder()
+                        .id(NEWS_ID)
+                        .title("Obiwan Kenobi")
+                        .link(URI.create("http://obiwan.kenobi.jedi/"))
+                        .publication(Instant.now())
+                        .build())
                 .feedId(42)
-                .link(URI.create("http://obiwan.kenobi.jedi/"))
-                .publication(Instant.now())
                 .build();
 
         tested.persist(Collections.singleton(news)).block();
@@ -97,7 +99,20 @@ class NewsRepositoryTest {
 
     @Test
     void should_list_news() {
-        List<News> actuals = tested.list().collectList().block();
-        assertThat(actuals).isNotEmpty();
+        List<News> actual = tested.list().collectList().block();
+        assertThat(actual).hasSize(50);
+        assertThat(actual).extracting(News::getId).startsWith(
+                "24abc4ad15dc0ab7824f0192b78cc786a7e57f10c0a50fc0721ac1cc3cd162fc",
+                "60b59b7b9b35aa3805af8cf300fcb289055bbc78b012921f231aab5d5921a39c",
+                "9034ced51e05837fec112c380b9b9720c81ce79137a000db988ec625cf9e64b3",
+                "e35d5a3be1d1fbf1363fbeb1bca2ca248da0dcdfe41b88beb80e9548d9a10c8f",
+                "0479255273c08312a67145eec4852293345555eb1145ce0b4243c8314a85ba0c"
+        );
     }
+
+//    @Test
+//    void should_list_news_with_filters() {
+//        List<News> actual = tested.list(Criteria.property("stared").eq(true)).collectList().block();
+//        assertThat(actual).allMatch(News::isStared);
+//    }
 }

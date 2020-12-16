@@ -24,14 +24,12 @@ public class NewsToRecordConverter implements Converter<News, NewsRecord> {
 
     @Override
     public NewsRecord convert(News source) {
-        String newsId = (source.id == null) ? Hasher.sha3(source.link.toString()) : source.id;
-
+        String newsId = (source.getId() == null) ? Hasher.sha3(source.getLink().toString()) : source.getId();
         return NEWS.newRecord()
                 .setNewsId(newsId)
                 .setNewsDescription(source.getDescription())
                 .setNewsLink(source.getLink().toString())
                 .setNewsPublication(DateUtils.toLocalDateTime(source.getPublication()))
-                .setNewsTitle(StringUtils.abbreviate(source.getTitle(), 250))
-                .setNewsStared(source.isStared());
+                .setNewsTitle(StringUtils.abbreviate(source.getTitle(), 250));
     }
 }

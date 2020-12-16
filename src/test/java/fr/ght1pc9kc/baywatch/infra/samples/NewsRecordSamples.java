@@ -25,12 +25,14 @@ public class NewsRecordSamples implements RelationalDataSet<NewsRecord> {
                 .setNewsId(Hasher.sha3(String.format("https://blog.ght1pc9kc.fr/%03d", i)))
                 .setNewsTitle(String.format("ght1pc9kc.fr %03d", i))
                 .setNewsPublication(LocalDateTime.parse("2020-12-10T10:42:42").plus(Period.ofMonths(i)))
-                .setNewsStared(i % 2 == 0)
         ).collect(Collectors.toUnmodifiableList());
 
-        NEWS_FEEDS_RECORDS = IntStream.range(1, 51).mapToObj(i -> NewsFeeds.NEWS_FEEDS.newRecord()
-                .setNefeFeedId(FeedRecordSamples.JEDI.getFeedId())
-                .setNefeNewsId(Hasher.sha3(String.format("https://blog.ght1pc9kc.fr/%03d", i)))
+        NEWS_FEEDS_RECORDS = IntStream.range(1, 51).mapToObj(i -> {
+                    int feedIdx = i % FeedRecordSamples.SAMPLE.records().size();
+                    return NewsFeeds.NEWS_FEEDS.newRecord()
+                            .setNefeFeedId(FeedRecordSamples.SAMPLE.records().get(feedIdx).getFeedId())
+                            .setNefeNewsId(Hasher.sha3(String.format("https://blog.ght1pc9kc.fr/%03d", i)));
+                }
         ).collect(Collectors.toUnmodifiableList());
 
     }

@@ -12,9 +12,9 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 public class NewsFeedsToRecordConverter implements Converter<News, NewsFeedsRecord> {
     @Override
     public NewsFeedsRecord convert(News source) {
-        String newsId = (source.id == null) ? Hasher.sha3(source.link.toString()) : source.id;
+        String newsId = (source.getId() == null) ? Hasher.sha3(source.getLink().toString()) : source.getId();
         return NEWS_FEEDS.newRecord()
                 .setNefeNewsId(newsId)
-                .setNefeFeedId(source.feedId);
+                .setNefeFeedId(source.getFeedId());
     }
 }

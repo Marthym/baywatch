@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.plugins;
 
-import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.scrapper.FeedParserPlugin;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import org.springframework.stereotype.Component;
@@ -16,12 +16,12 @@ public final class DefaultParserPlugin implements FeedParserPlugin {
     }
 
     @Override
-    public News.NewsBuilder handleItemEvent() {
-        return News.builder();
+    public RawNews.RawNewsBuilder handleItemEvent() {
+        return RawNews.builder();
     }
 
     @Override
-    public News.NewsBuilder handleLinkEvent(@Nonnull News.NewsBuilder builder, URI link) {
+    public RawNews.RawNewsBuilder handleLinkEvent(@Nonnull RawNews.RawNewsBuilder builder, URI link) {
         return builder.id(Hasher.sha3(link.toString()))
                 .link(link);
     }

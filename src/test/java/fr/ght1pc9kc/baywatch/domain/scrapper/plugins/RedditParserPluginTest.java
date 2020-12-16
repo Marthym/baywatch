@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.plugins;
 
-import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -18,7 +18,7 @@ class RedditParserPluginTest {
                 + "            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/java/comments/k3xydl/the_rampup_using_java_openjdk_for_creating_a/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;\n"
                 + "        ";
 
-        News actual = tested.handleDescriptionEvent(News.builder().id("42"), content).build();
+        RawNews actual = tested.handleDescriptionEvent(RawNews.builder().id("42"), content).build();
 
         assertThat(actual.link).isEqualTo(URI.create(
                 "https://medium.com/geospatial-intelligence"
@@ -31,7 +31,7 @@ class RedditParserPluginTest {
                 + "<a href=\"http://peoplesfeelings.com/what-is-peoples-feelings/\">[link]</a></span> &#32; <span>"
                 + "<a href=\"https://www.reddit.com/r/programming/comments/k7q28d/brief_article_on_viewing_software_as_a_creative/\">[comments]</a></span>";
 
-        News actual = tested.handleDescriptionEvent(News.builder().id("42"), content).build();
+        RawNews actual = tested.handleDescriptionEvent(RawNews.builder().id("42"), content).build();
 
         assertThat(actual.link).isEqualTo(URI.create(
                 "http://peoplesfeelings.com/what-is-peoples-feelings/"));
@@ -42,11 +42,11 @@ class RedditParserPluginTest {
         final URI obiwanLink = URI.create("https://obiwan.kenobi.jedi");
         final URI lukeLink = URI.create("https://luke.skywalker.jedi");
         {
-            News actual = tested.handleLinkEvent(News.builder().id("42"), obiwanLink).build();
+            RawNews actual = tested.handleLinkEvent(RawNews.builder().id("42"), obiwanLink).build();
             assertThat(actual.link).isEqualTo(obiwanLink);
         }
         {
-            News actual = tested.handleLinkEvent(News.builder().id("42").link(lukeLink), obiwanLink).build();
+            RawNews actual = tested.handleLinkEvent(RawNews.builder().id("42").link(lukeLink), obiwanLink).build();
             assertThat(actual.link).isEqualTo(lukeLink);
         }
     }

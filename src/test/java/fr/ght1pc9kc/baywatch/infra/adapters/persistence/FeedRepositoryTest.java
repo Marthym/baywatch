@@ -28,7 +28,7 @@ class FeedRepositoryTest {
     private static final WithDslContext wDslContext = WithDslContext.builder()
             .setDatasourceExtension(wDs).build();
     private static final WithSampleDataLoaded wSamples = WithSampleDataLoaded.builder(wDslContext)
-            .addDataset(FeedRecordSamples.SAMPLES)
+            .addDataset(FeedRecordSamples.SAMPLE)
             .build();
 
     @RegisterExtension
@@ -57,6 +57,6 @@ class FeedRepositoryTest {
     @Test
     void should_manage_backpressure() {
         List<Feed> actuals = tested.list().limitRate(2).collectList().block();
-        assertThat(actuals).hasSize(FeedRecordSamples.SAMPLES.records().size());
+        assertThat(actuals).hasSize(FeedRecordSamples.SAMPLE.records().size());
     }
 }

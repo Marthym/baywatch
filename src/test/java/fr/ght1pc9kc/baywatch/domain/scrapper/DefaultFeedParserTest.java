@@ -36,10 +36,10 @@ class DefaultFeedParserTest {
 
             News actual = Objects.requireNonNull(actuals).get(0);
             assertThat(actual).isNotNull();
-            assertThat(actual.id).isNotEmpty().hasSize(64);
-            assertThat(actual.title).isNotEmpty();
-            assertThat(actual.description).isNotEmpty();
-            assertThat(actual.link).isNotNull();
+            assertThat(actual.getId()).isNotEmpty().hasSize(64);
+            assertThat(actual.getTitle()).isNotEmpty();
+            assertThat(actual.getDescription()).isNotEmpty();
+            assertThat(actual.getLink()).isNotNull();
         }
     }
 }

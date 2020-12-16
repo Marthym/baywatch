@@ -9,6 +9,7 @@ import fr.ght1pc9kc.baywatch.api.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -120,8 +121,10 @@ class FeedScrapperServiceTest {
                 // Must consume the inputstream
                 Exceptions.wrap().get(() -> IOUtils.toByteArray(is));
                 return Flux.just(News.builder()
-                        .id(UUID.randomUUID().toString())
-                        .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
+                        .raw(RawNews.builder()
+                                .id(UUID.randomUUID().toString())
+                                .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
+                                .build())
                         .build());
             }
         });

@@ -1,20 +1,30 @@
 package fr.ght1pc9kc.baywatch.api.model;
 
 import lombok.Builder;
+import lombok.Delegate;
 import lombok.NonNull;
 import lombok.Value;
+import org.intellij.lang.annotations.MagicConstant;
 
-import java.net.URI;
-import java.time.Instant;
-
+/**
+ * The News element customized with state and {@link Feed#id}
+ */
 @Value
 @Builder
 public class News {
-    public @NonNull String id;
-    public Integer feedId;
-    public String title;
-    public String description;
-    public Instant publication;
-    public @NonNull URI link;
-    public boolean stared;
+    @Delegate(types = RawNews.class)
+    @NonNull RawNews raw;
+
+    Integer feedId;
+
+    @MagicConstant(flagsFromClass = Flags.class)
+    int state;
+
+    public boolean isRead() {
+        return (state & Flags.READ) != 0;
+    }
+
+    public boolean isStared() {
+        return (state & Flags.STAR) != 0;
+    }
 }

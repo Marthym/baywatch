@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.plugins;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.scrapper.FeedParserPlugin;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import org.springframework.stereotype.Component;
@@ -26,7 +26,7 @@ public final class RedditParserPlugin implements FeedParserPlugin {
     }
 
     @Override
-    public News.NewsBuilder handleDescriptionEvent(@Nonnull News.NewsBuilder builder, String content) {
+    public RawNews.RawNewsBuilder handleDescriptionEvent(@Nonnull RawNews.RawNewsBuilder builder, String content) {
         String parsableContent = HtmlUtils.htmlUnescape(content);
         Matcher m = LINK_EXTRACT_PATTERN.matcher(parsableContent);
         if (m.find()) {
@@ -36,7 +36,7 @@ public final class RedditParserPlugin implements FeedParserPlugin {
     }
 
     @Override
-    public News.NewsBuilder handleLinkEvent(@Nonnull News.NewsBuilder builder, URI link) {
+    public RawNews.RawNewsBuilder handleLinkEvent(@Nonnull RawNews.RawNewsBuilder builder, URI link) {
         URI uri = Exceptions.silence().get(builder::build)
                 .flatMap(n -> Optional.ofNullable(n.link))
                 .orElse(link);

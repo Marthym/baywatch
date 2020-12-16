@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
+import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 
 @Slf4j
 @Component
@@ -74,9 +75,12 @@ public class NewsRepository implements NewsPersistencePort {
     public Flux<News> list(Criteria searchCriteria) {
         Condition conditions = searchCriteria.visit(new JooqSearchVisitor(NewsToRecordConverter.PROPERTIES_MAPPING::get));
         return Flux.create(sink -> {
-            Cursor<Record> cursor = dsl.select(NEWS.fields()).select(NEWS_FEEDS.NEFE_FEED_ID)
-                    .from(NEWS, NEWS_FEEDS)
-                    .where(NEWS.NEWS_ID.eq(NEWS_FEEDS.NEFE_NEWS_ID), conditions)
+            Cursor<Record> cursor = dsl
+                    .select(NEWS.fields()).select(NEWS_FEEDS.NEFE_FEED_ID).select(NEWS_USER_STATE.NURS_STATE)
+                    .from(NEWS)
+                    .leftJoin(NEWS_USER_STATE).on(NEWS.NEWS_ID.eq(NEWS_USER_STATE.NURS_NEWS_ID))
+                    .leftJoin(NEWS_FEEDS).on(NEWS.NEWS_ID.eq(NEWS_FEEDS.NEFE_NEWS_ID))
+                    .where(conditions)
                     .fetchLazy();
             sink.onRequest(n -> {
                 int count = Long.valueOf(n).intValue();

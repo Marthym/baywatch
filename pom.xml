@@ -24,6 +24,7 @@
 
         <noexception.version>1.6.2</noexception.version>
         <findbugs.version>3.0.2</findbugs.version>
+        <jetbrains.version>20.1.0</jetbrains.version>
         <wiremock.version>2.27.2</wiremock.version>
         <testy-box.version>1.3.1</testy-box.version>
     </properties>
@@ -72,6 +73,12 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>${jetbrains.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>

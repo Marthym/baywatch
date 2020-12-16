@@ -9,7 +9,7 @@ import java.util.List;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 
 public class FeedRecordSamples implements RelationalDataSet<FeedsRecord> {
-    public static final FeedRecordSamples SAMPLES = new FeedRecordSamples();
+    public static final FeedRecordSamples SAMPLE = new FeedRecordSamples();
 
     public static final FeedsRecord JEDI = FEEDS.newRecord()
             .setFeedId(42)
