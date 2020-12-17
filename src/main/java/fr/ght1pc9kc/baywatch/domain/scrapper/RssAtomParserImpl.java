@@ -5,6 +5,7 @@ import fr.ght1pc9kc.baywatch.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.api.scrapper.FeedParserPlugin;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -115,6 +116,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
                         News news = News.builder()
                                 .raw(plugin.handleEndEvent(bldr))
                                 .feedId(feed.id)
+                                .state(State.NONE)
                                 .build();
                         sink.next(news);
                     }

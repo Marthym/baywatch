@@ -2,12 +2,12 @@ package fr.ght1pc9kc.baywatch.infra.mappers;
 
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.model.State;
 import org.jooq.Record;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
-import java.util.Optional;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
@@ -23,9 +23,10 @@ public class RecordToNewsConverter implements Converter<Record, News> {
                 .link(URI.create(source.get(NEWS.NEWS_LINK)))
                 .publication(DateUtils.toInstant(source.get(NEWS.NEWS_PUBLICATION)))
                 .build();
+        State state = State.of(source.get(NEWS_USER_STATE.NURS_STATE));
         return News.builder()
                 .raw(raw)
-                .state(Optional.ofNullable(source.get(NEWS_USER_STATE.NURS_STATE)).orElse(0))
+                .state(state)
                 .feedId(source.get(NEWS_FEEDS.NEFE_FEED_ID))
                 .build();
     }

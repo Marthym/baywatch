@@ -43,7 +43,10 @@ class JooqSearchVisitorTest {
                         "select \"PUBLIC\".\"NEWS\".\"NEWS_ID\" "
                                 + "where (\"PUBLIC\".\"NEWS\".\"NEWS_PUBLICATION\" < timestamp '2020-12-11 10:20:42.0' "
                                 + "or (\"PUBLIC\".\"NEWS\".\"NEWS_PUBLICATION\" > timestamp '2020-12-11 10:20:42.0' "
-                                + "and \"PUBLIC\".\"NEWS\".\"NEWS_TITLE\" = 'Obiwan'))")
+                                + "and \"PUBLIC\".\"NEWS\".\"NEWS_TITLE\" = 'Obiwan'))"),
+                Arguments.of(Criteria.property("id").in("1", "2", "3", "4", "42"),
+                        "select \"PUBLIC\".\"NEWS\".\"NEWS_ID\" "
+                                + "where \"PUBLIC\".\"NEWS\".\"NEWS_ID\" in ('1', '2', '3', '4', '42')")
         );
     }
 }

@@ -4,6 +4,7 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class Flags {
+    public static final int NONE = 0;
     public static final int READ = 0x01;
     public static final int STAR = 0x02;
 

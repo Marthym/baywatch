@@ -47,6 +47,10 @@ public abstract class Criteria {
 
         <T> R visitLowerThan(LowerThanOperation<T> operation);
 
+        default <T> R visitIn(InOperation<T> operation) {
+            throw new IllegalStateException("IN operation not implemented in visitor");
+        }
+
         default <T> R visitValue(CriterionValue<T> value) {
             throw new IllegalStateException("Value not implemented in visitor");
         }

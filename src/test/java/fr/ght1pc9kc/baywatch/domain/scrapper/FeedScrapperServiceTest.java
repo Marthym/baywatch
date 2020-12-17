@@ -10,6 +10,8 @@ import fr.ght1pc9kc.baywatch.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.model.State;
+import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +35,7 @@ import static org.mockito.Mockito.*;
 
 class FeedScrapperServiceTest {
 
-    static WireMockServer mockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
+    static final WireMockServer mockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
 
     private FeedScrapperService tested;
 
@@ -56,23 +58,28 @@ class FeedScrapperServiceTest {
 
     @Test
     void should_fail_scrapper_without_fail_scrapping() {
+        URI darthVaderUri = URI.create("http://localhost:" + mockServer.port() + "/error/darth-vader.xml");
+        URI springUri = URI.create("http://localhost:" + mockServer.port() + "/feeds/spring-blog.xml");
+        String darthVaderSha3 = Hasher.sha3(darthVaderUri.toString());
+        String springSha3 = Hasher.sha3(springUri.toString());
+
         when(feedPersistenceMock.list()).thenReturn(Flux.just(
                 Feed.builder()
-                        .id(42)
+                        .id(darthVaderSha3)
                         .name("fail")
-                        .url(URI.create("http://localhost:" + mockServer.port() + "/error/dark-vader.xml"))
+                        .url(darthVaderUri)
                         .build(),
                 Feed.builder()
-                        .id(24)
+                        .id(springSha3)
                         .name("Spring")
-                        .url(URI.create("http://localhost:" + mockServer.port() + "/feeds/spring-blog.xml"))
+                        .url(springUri)
                         .build()
         ));
 
         tested.startScrapping();
         tested.shutdownScrapping();
 
-        mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/error/dark-vader.xml")));
+        mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/error/darth-vader.xml")));
         mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/feeds/spring-blog.xml")));
         verify(rssAtomParserMock, times(2)).parse(any(Feed.class), any());
         verify(newsPersistenceMock,
@@ -88,7 +95,7 @@ class FeedScrapperServiceTest {
         tested.startScrapping();
         tested.shutdownScrapping();
 
-        mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/error/dark-vader.xml")));
+        mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/error/darth-vader.xml")));
         mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/feeds/spring-blog.xml")));
         verify(rssAtomParserMock, times(2)).parse(any(Feed.class), any());
     }
@@ -103,7 +110,7 @@ class FeedScrapperServiceTest {
                                 .withBody("Obiwan Kenobi"))
         );
         mockServer.stubFor(
-                WireMock.get(WireMock.urlEqualTo("/error/dark-vader.xml"))
+                WireMock.get(WireMock.urlEqualTo("/error/darth-vader.xml"))
                         .willReturn(WireMock.aResponse()
                                 .withStatus(HttpStatus.NOT_FOUND.value())));
 
@@ -125,21 +132,27 @@ class FeedScrapperServiceTest {
                                 .id(UUID.randomUUID().toString())
                                 .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
                                 .build())
+                        .state(State.NONE)
                         .build());
             }
         });
 
+        URI springUri = URI.create("http://localhost:" + mockServer.port() + "/feeds/spring-blog.xml");
+        URI jdhUri = URI.create("http://localhost:" + mockServer.port() + "/feeds/journal_du_hacker.xml");
+        String springSha3 = Hasher.sha3(springUri.toString());
+        String jdhSha3 = Hasher.sha3(jdhUri.toString());
+
         feedPersistenceMock = mock(FeedPersistencePort.class);
         when(feedPersistenceMock.list()).thenReturn(Flux.just(
                 Feed.builder()
-                        .id(42)
+                        .id(jdhSha3)
                         .name("Reddit")
-                        .url(URI.create("http://localhost:" + mockServer.port() + "/feeds/journal_du_hacker.xml"))
+                        .url(jdhUri)
                         .build(),
                 Feed.builder()
-                        .id(24)
+                        .id(springSha3)
                         .name("Spring")
-                        .url(URI.create("http://localhost:" + mockServer.port() + "/feeds/spring-blog.xml"))
+                        .url(springUri)
                         .build()
         ));
 

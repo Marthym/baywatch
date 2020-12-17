@@ -23,11 +23,14 @@ class StringSearchVisitorTest {
         return Stream.of(
                 Arguments.of(Criteria.property("jedi").eq("Obiwan")
                                 .and(Criteria.property("age").gt(40).or(Criteria.property("age").lt(20))),
-                        "(jedi = \"Obiwan\" and (age > \"40\" or age < \"20\"))"),
+                        "(jedi = 'Obiwan' and (age > 40 or age < 20))"),
+                Arguments.of(Criteria.property("jedi").in("Obiwan", "Anakin", "Luke")
+                                .and(Criteria.property("age").gt(40).or(Criteria.property("age").lt(20))),
+                        "(jedi in [Obiwan, Anakin, Luke] and (age > 40 or age < 20))"),
                 Arguments.of(Criteria.property("jedi").eq("Obiwan")
                                 .and(Criteria.property("age").gt(40))
                                 .or(Criteria.property("age").lt(20)),
-                        "((jedi = \"Obiwan\" and age > \"40\") or age < \"20\")")
+                        "((jedi = 'Obiwan' and age > 40) or age < 20)")
         );
     }
 }

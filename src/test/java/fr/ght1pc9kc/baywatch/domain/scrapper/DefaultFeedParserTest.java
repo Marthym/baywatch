@@ -3,11 +3,13 @@ package fr.ght1pc9kc.baywatch.domain.scrapper;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.domain.scrapper.plugins.DefaultParserPlugin;
+import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,7 +31,7 @@ class DefaultFeedParserTest {
         try (InputStream is = DefaultFeedParserTest.class.getResourceAsStream(feedFile)) {
             assertThat(is).isNotNull();
 
-            Feed feed = Feed.builder().build();
+            Feed feed = Feed.builder().id(Hasher.sha3(feedFile)).url(URI.create(feedFile)).build();
             List<News> actuals = tested.parse(feed, is).collectList().block();
 
             assertThat(actuals).hasSize(expectedFeedCount);

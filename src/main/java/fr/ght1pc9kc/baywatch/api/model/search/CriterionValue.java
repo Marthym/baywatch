@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Value;
 
 @Value
-@Getter(AccessLevel.PACKAGE)
+@Getter(AccessLevel.NONE)
 @EqualsAndHashCode(callSuper = true)
 public class CriterionValue<T> extends Criteria {
     public T value;

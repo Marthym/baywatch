@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.api.model.search.Criteria;
 import fr.ght1pc9kc.baywatch.infra.mappers.NewsFeedsToRecordConverter;
 import fr.ght1pc9kc.baywatch.infra.mappers.NewsToRecordConverter;
@@ -71,7 +72,7 @@ class NewsRepositoryTest {
             int actual = dsl.fetchCount(NEWS, NEWS.NEWS_ID.eq(NEWS_ID));
             assertThat(actual).isEqualTo(0);
             actual = dsl.fetchCount(NEWS_FEEDS, NEWS_FEEDS.NEFE_NEWS_ID.eq(NEWS_ID)
-                    .and(NEWS_FEEDS.NEFE_FEED_ID.eq(42)));
+                    .and(NEWS_FEEDS.NEFE_FEED_ID.eq(FeedRecordSamples.JEDI.getFeedId())));
             assertThat(actual).isEqualTo(0);
         }
 
@@ -82,7 +83,8 @@ class NewsRepositoryTest {
                         .link(URI.create("http://obiwan.kenobi.jedi/"))
                         .publication(Instant.now())
                         .build())
-                .feedId(42)
+                .feedId(FeedRecordSamples.JEDI.getFeedId())
+                .state(State.NONE)
                 .build();
 
         tested.persist(Collections.singleton(news)).block();
@@ -92,14 +94,14 @@ class NewsRepositoryTest {
             int actual = dsl.fetchCount(NEWS, NEWS.NEWS_ID.eq(NEWS_ID));
             assertThat(actual).isEqualTo(1);
             actual = dsl.fetchCount(NEWS_FEEDS, NEWS_FEEDS.NEFE_NEWS_ID.eq(NEWS_ID)
-                    .and(NEWS_FEEDS.NEFE_FEED_ID.eq(42)));
+                    .and(NEWS_FEEDS.NEFE_FEED_ID.eq(FeedRecordSamples.JEDI.getFeedId())));
             assertThat(actual).isEqualTo(1);
         }
     }
 
     @Test
     void should_list_news() {
-        List<News> actual = tested.list().collectList().block();
+        List<News> actual = tested.userList().collectList().block();
         assertThat(actual).hasSize(50);
         assertThat(actual).extracting(News::getId).startsWith(
                 "24abc4ad15dc0ab7824f0192b78cc786a7e57f10c0a50fc0721ac1cc3cd162fc",
@@ -110,9 +112,9 @@ class NewsRepositoryTest {
         );
     }
 
-//    @Test
-//    void should_list_news_with_filters() {
-//        List<News> actual = tested.list(Criteria.property("stared").eq(true)).collectList().block();
-//        assertThat(actual).allMatch(News::isStared);
-//    }
+    @Test
+    void should_list_news_with_filters() {
+        List<News> actual = tested.userList(Criteria.property("stared").eq(true)).collectList().block();
+        assertThat(actual).allMatch(News::isStared);
+    }
 }

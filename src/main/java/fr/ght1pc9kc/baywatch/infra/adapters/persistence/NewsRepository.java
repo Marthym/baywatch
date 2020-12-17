@@ -3,16 +3,18 @@ package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.api.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.api.model.search.Criteria;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.infra.mappers.NewsToRecordConverter;
 import fr.ght1pc9kc.baywatch.infra.search.JooqSearchVisitor;
+import fr.ght1pc9kc.baywatch.infra.search.PredicateSearchVisitor;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.*;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -20,6 +22,7 @@ import reactor.core.scheduler.Scheduler;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
@@ -72,9 +75,11 @@ public class NewsRepository implements NewsPersistencePort {
     }
 
     @Override
-    public Flux<News> list(Criteria searchCriteria) {
+    @SuppressWarnings("ReactiveStreamsNullableInLambdaInTransform")
+    public Flux<News> userList(Criteria searchCriteria) {
         Condition conditions = searchCriteria.visit(new JooqSearchVisitor(NewsToRecordConverter.PROPERTIES_MAPPING::get));
-        return Flux.create(sink -> {
+        PredicateSearchVisitor predicateSearchVisitor = new PredicateSearchVisitor();
+        return Flux.<Record>create(sink -> {
             Cursor<Record> cursor = dsl
                     .select(NEWS.fields()).select(NEWS_FEEDS.NEFE_FEED_ID).select(NEWS_USER_STATE.NURS_STATE)
                     .from(NEWS)
@@ -91,7 +96,18 @@ public class NewsRepository implements NewsPersistencePort {
                 }
             });
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
-                .map(r -> (News) conversionService.convert(r, TypeDescriptor.valueOf(Record.class), TypeDescriptor.valueOf(News.class)));
+                .map(r -> conversionService.convert(r, News.class))
+                .filter(searchCriteria.visit(predicateSearchVisitor));
+    }
+
+    @Override
+    public Flux<RawNews> list(Criteria searchCriteria) {
+        return null;
+    }
+
+    @Override
+    public Flux<Entry<String, State>> listState(Criteria searchCriteria) {
+        return null;
     }
 
     @Override

@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.infra.mappers;
 
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ class NewsToRecordConverterTest {
                         .link(link)
                         .publication(PUBLICATION)
                         .build())
-                .state(0)
+                .state(State.NONE)
                 .build());
 
         assertThat(actual).isEqualTo(NEWS.newRecord()

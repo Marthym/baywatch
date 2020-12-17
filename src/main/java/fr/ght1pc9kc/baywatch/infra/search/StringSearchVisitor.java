@@ -25,7 +25,12 @@ public class StringSearchVisitor implements Criteria.Visitor<String> {
 
     @Override
     public <T> String visitEqual(EqualOperation<T> operation) {
-        return operation.field.property + " = " + operation.value.visit(this);
+        return operation.field.property + " = '" + operation.value.visit(this) + "'";
+    }
+
+    @Override
+    public <T> String visitIn(InOperation<T> operation) {
+        return operation.field.property + " in " + operation.value.visit(this);
     }
 
     @Override
@@ -40,6 +45,6 @@ public class StringSearchVisitor implements Criteria.Visitor<String> {
 
     @Override
     public <T> String visitValue(CriterionValue<T> value) {
-        return "\"" + value.value.toString() + "\"";
+        return value.value.toString();
     }
 }

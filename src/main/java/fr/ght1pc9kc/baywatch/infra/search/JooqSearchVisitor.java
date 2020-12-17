@@ -7,6 +7,7 @@ import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @AllArgsConstructor
@@ -39,24 +40,29 @@ public class JooqSearchVisitor implements Criteria.Visitor<Condition> {
     }
 
     @Override
+    public <T> Condition visitIn(InOperation<T> operation) {
+        return readFieldToCondition(operation, Field::in);
+    }
+
+    @Override
     public <T> Condition visitEqual(EqualOperation<T> operation) {
-        return readField(operation.field).eq(operation.value.value);
+        return readFieldToCondition(operation, Field::eq);
     }
 
     @Override
     public <T> Condition visitGreaterThan(GreaterThanOperation<T> operation) {
-        return readField(operation.field).gt(operation.value.value);
+        return readFieldToCondition(operation, Field::gt);
     }
 
     @Override
     public <T> Condition visitLowerThan(LowerThanOperation<T> operation) {
-        return readField(operation.field).lt(operation.value.value);
+        return readFieldToCondition(operation, Field::lt);
     }
 
     @SuppressWarnings("unchecked")
-    private <T> Field<T> readField(CriterionProperty field) {
-        return Optional.ofNullable(propertiesSupplier.apply(field.property))
-                .map(f -> (Field<T>) f)
-                .orElseGet(() -> (Field<T>) DSL.field(field.property));
+    private <T> Condition readFieldToCondition(BiOperand<T> operation, BiFunction<Field<T>, T, Condition> op) {
+        return Optional.ofNullable(propertiesSupplier.apply(operation.field.property))
+                .map(f -> op.apply((Field<T>) f, operation.value.value))
+                .orElse(DSL.noCondition());
     }
 }
