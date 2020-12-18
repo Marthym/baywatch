@@ -8,6 +8,7 @@ import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.api.model.search.Criteria;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
 import fr.ght1pc9kc.baywatch.infra.mappers.NewsToRecordConverter;
 import fr.ght1pc9kc.baywatch.infra.search.JooqSearchVisitor;
 import fr.ght1pc9kc.baywatch.infra.search.PredicateSearchVisitor;
@@ -22,6 +23,7 @@ import reactor.core.scheduler.Scheduler;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
@@ -78,7 +80,7 @@ public class NewsRepository implements NewsPersistencePort {
     @SuppressWarnings("ReactiveStreamsNullableInLambdaInTransform")
     public Flux<News> userList(Criteria searchCriteria) {
         Condition conditions = searchCriteria.visit(new JooqSearchVisitor(NewsToRecordConverter.PROPERTIES_MAPPING::get));
-        PredicateSearchVisitor predicateSearchVisitor = new PredicateSearchVisitor();
+        PredicateSearchVisitor<News> predicateSearchVisitor = new PredicateSearchVisitor<>();
         return Flux.<Record>create(sink -> {
             Cursor<Record> cursor = dsl
                     .select(NEWS.fields()).select(NEWS_FEEDS.NEFE_FEED_ID).select(NEWS_USER_STATE.NURS_STATE)
@@ -101,13 +103,42 @@ public class NewsRepository implements NewsPersistencePort {
     }
 
     @Override
+    @SuppressWarnings("ReactiveStreamsNullableInLambdaInTransform")
     public Flux<RawNews> list(Criteria searchCriteria) {
-        return null;
+        Condition conditions = searchCriteria.visit(new JooqSearchVisitor(NewsToRecordConverter.PROPERTIES_MAPPING::get));
+        PredicateSearchVisitor<RawNews> predicateSearchVisitor = new PredicateSearchVisitor<>();
+        return Flux.<NewsRecord>create(sink -> {
+            Cursor<NewsRecord> cursor = dsl.selectFrom(NEWS).where(conditions).fetchLazy();
+            sink.onRequest(n -> {
+                int count = Long.valueOf(n).intValue();
+                Result<NewsRecord> rs = cursor.fetchNext(count);
+                rs.forEach(sink::next);
+                if (rs.size() < count) {
+                    sink.complete();
+                }
+            });
+        }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
+                .map(r -> conversionService.convert(r, RawNews.class))
+                .filter(searchCriteria.visit(predicateSearchVisitor));
     }
 
     @Override
     public Flux<Entry<String, State>> listState(Criteria searchCriteria) {
-        return null;
+        Condition conditions = searchCriteria.visit(new JooqSearchVisitor(NewsToRecordConverter.PROPERTIES_MAPPING::get));
+        PredicateSearchVisitor<State> predicateSearchVisitor = new PredicateSearchVisitor<>();
+        return Flux.<NewsUserStateRecord>create(sink -> {
+            Cursor<NewsUserStateRecord> cursor = dsl.selectFrom(NEWS_USER_STATE).where(conditions).fetchLazy();
+            sink.onRequest(n -> {
+                int count = Long.valueOf(n).intValue();
+                Result<NewsUserStateRecord> rs = cursor.fetchNext(count);
+                rs.forEach(sink::next);
+                if (rs.size() < count) {
+                    sink.complete();
+                }
+            });
+        }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
+                .map(r -> Map.entry(r.getNursNewsId(), State.of(r.getNursState())))
+                .filter(s -> searchCriteria.visit(predicateSearchVisitor).test(s.getValue()));
     }
 
     @Override

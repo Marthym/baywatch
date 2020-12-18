@@ -2,39 +2,38 @@ package fr.ght1pc9kc.baywatch.infra.search;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.search.*;
 
 import java.util.Map;
 import java.util.function.Predicate;
 
-public class PredicateSearchVisitor implements Criteria.Visitor<Predicate<News>> {
+public class PredicateSearchVisitor<E> implements Criteria.Visitor<Predicate<E>> {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    public Predicate<News> visitNoCriteria(NoCriterion none) {
+    public Predicate<E> visitNoCriteria(NoCriterion none) {
         return n -> true;
     }
 
     @Override
-    public Predicate<News> visitAnd(AndOperation operation) {
+    public Predicate<E> visitAnd(AndOperation operation) {
         return n -> operation.right.visit(this).test(n)
                 && operation.left.visit(this).test(n);
     }
 
     @Override
-    public Predicate<News> visitNot(NotOperation operation) {
+    public Predicate<E> visitNot(NotOperation operation) {
         return n -> !operation.criteria.visit(this).test(n);
     }
 
     @Override
-    public Predicate<News> visitOr(OrOperation operation) {
+    public Predicate<E> visitOr(OrOperation operation) {
         return n -> operation.right.visit(this).test(n)
                 || operation.left.visit(this).test(n);
     }
 
     @Override
-    public <T> Predicate<News> visitIn(InOperation<T> operation) {
+    public <T> Predicate<E> visitIn(InOperation<T> operation) {
         return n -> {
             Map<String, Object> json = mapper.convertValue(n, new TypeReference<>() {
             });
@@ -45,7 +44,7 @@ public class PredicateSearchVisitor implements Criteria.Visitor<Predicate<News>>
     }
 
     @Override
-    public <T> Predicate<News> visitEqual(EqualOperation<T> operation) {
+    public <T> Predicate<E> visitEqual(EqualOperation<T> operation) {
         return n -> {
             Map<String, Object> json = mapper.convertValue(n, new TypeReference<>() {
             });
@@ -56,7 +55,7 @@ public class PredicateSearchVisitor implements Criteria.Visitor<Predicate<News>>
     }
 
     @Override
-    public <T> Predicate<News> visitGreaterThan(GreaterThanOperation<T> operation) {
+    public <T> Predicate<E> visitGreaterThan(GreaterThanOperation<T> operation) {
         return n -> {
             Map<String, Comparable<T>> json = mapper.convertValue(n, new TypeReference<>() {
             });
@@ -67,7 +66,7 @@ public class PredicateSearchVisitor implements Criteria.Visitor<Predicate<News>>
     }
 
     @Override
-    public <T> Predicate<News> visitLowerThan(LowerThanOperation<T> operation) {
+    public <T> Predicate<E> visitLowerThan(LowerThanOperation<T> operation) {
         return n -> {
             Map<String, Comparable<T>> json = mapper.convertValue(n, new TypeReference<>() {
             });
