@@ -11,6 +11,10 @@ import java.util.Collection;
 import java.util.Map.Entry;
 
 public interface NewsPersistencePort {
+    Mono<News> userGet(String id);
+
+    Mono<RawNews> get(String id);
+
     Mono<Void> persist(Collection<News> toCreate);
 
     Flux<News> userList(Criteria searchCriteria);

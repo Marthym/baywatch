@@ -1,14 +1,20 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
+import fr.ght1pc9kc.baywatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.api.model.search.Criteria;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
 import fr.ght1pc9kc.baywatch.infra.mappers.NewsFeedsToRecordConverter;
 import fr.ght1pc9kc.baywatch.infra.mappers.NewsToRecordConverter;
 import fr.ght1pc9kc.baywatch.infra.mappers.RecordToNewsConverter;
+import fr.ght1pc9kc.baywatch.infra.mappers.RecordToRawNewsConverter;
 import fr.ght1pc9kc.baywatch.infra.samples.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;
+import fr.ght1pc9kc.baywatch.infra.samples.UsersRecordSamples;
 import fr.irun.testy.core.extensions.ChainedExtension;
 import fr.irun.testy.jooq.WithDatabaseLoaded;
 import fr.irun.testy.jooq.WithDslContext;
@@ -40,9 +46,11 @@ class NewsRepositoryTest {
     private static final WithDslContext wDslContext = WithDslContext.builder()
             .setDatasourceExtension(wDs).build();
     private static final WithSampleDataLoaded wSamples = WithSampleDataLoaded.builder(wDslContext)
+            .addDataset(UsersRecordSamples.SAMPLE)
             .addDataset(FeedRecordSamples.SAMPLE)
             .addDataset(NewsRecordSamples.SAMPLE)
             .addDataset(NewsRecordSamples.NewsFeedsRecordSample.SAMPLE)
+            .addDataset(NewsRecordSamples.NewsUserStateSample.SAMPLE)
             .build();
 
     @RegisterExtension
@@ -59,11 +67,12 @@ class NewsRepositoryTest {
 
     @BeforeEach
     void setUp(DSLContext dslContext) {
-        DefaultConversionService defaultConversionService = new DefaultConversionService();
-        defaultConversionService.addConverter(new NewsToRecordConverter());
-        defaultConversionService.addConverter(new RecordToNewsConverter());
-        defaultConversionService.addConverter(new NewsFeedsToRecordConverter());
-        tested = new NewsRepository(Schedulers.immediate(), dslContext, defaultConversionService);
+        DefaultConversionService conversionService = new DefaultConversionService();
+        conversionService.addConverter(new NewsToRecordConverter());
+        conversionService.addConverter(new NewsFeedsToRecordConverter());
+        conversionService.addConverter(new RecordToRawNewsConverter());
+        conversionService.addConverter(new RecordToNewsConverter(conversionService));
+        tested = new NewsRepository(Schedulers.immediate(), dslContext, conversionService);
     }
 
     @Test
@@ -113,8 +122,29 @@ class NewsRepositoryTest {
     }
 
     @Test
-    void should_list_news_with_filters() {
+    void should_list_news_for_user_with_criteria() {
         List<News> actual = tested.userList(Criteria.property("stared").eq(true)).collectList().block();
         assertThat(actual).allMatch(News::isStared);
+    }
+
+    @Test
+    void should_get_news_for_user() {
+        NewsRecord expected = NewsRecordSamples.SAMPLE.records().get(5);
+        NewsFeedsRecord expectedNefe = NewsRecordSamples.NewsFeedsRecordSample.SAMPLE.records().stream()
+                .filter(nf -> nf.getNefeNewsId().equals(expected.getNewsId()))
+                .findAny()
+                .orElseThrow();
+        NewsUserStateRecord expectedState = NewsRecordSamples.NewsUserStateSample.SAMPLE.records().stream()
+                .filter(us -> us.getNursNewsId().equals(expected.getNewsId()))
+                .findAny().orElseThrow();
+        News actual = tested.userGet(expected.getNewsId()).block();
+
+        assertThat(actual).isNotNull();
+        assertThat(actual.getLink().toString()).isEqualTo(expected.getNewsLink());
+        assertThat(actual.getTitle()).isEqualTo(expected.getNewsTitle());
+        assertThat(actual.getId()).isEqualTo(expected.getNewsId());
+        assertThat(actual.getFeedId()).isEqualTo(expectedNefe.getNefeFeedId());
+        assertThat(actual.isRead()).isEqualTo((expectedState.getNursState() & Flags.READ) != 0);
+        assertThat(actual.isStared()).isEqualTo((expectedState.getNursState() & Flags.STAR) != 0);
     }
 }

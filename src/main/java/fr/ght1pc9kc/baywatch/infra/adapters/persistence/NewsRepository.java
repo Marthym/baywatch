@@ -40,6 +40,18 @@ public class NewsRepository implements NewsPersistencePort {
     private final ConversionService conversionService;
 
     @Override
+    public Mono<News> userGet(String id) {
+        return userList(Criteria.property("id").eq(id))
+                .next();
+    }
+
+    @Override
+    public Mono<RawNews> get(String id) {
+        return list(Criteria.property("id").eq(id))
+                .next();
+    }
+
+    @Override
     public Mono<Void> persist(Collection<News> toCreate) {
         List<NewsRecord> records = toCreate.stream()
                 .map(n -> conversionService.convert(n, NewsRecord.class))

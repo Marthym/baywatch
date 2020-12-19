@@ -8,7 +8,7 @@ import java.net.URI;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 
-public class RecordToRawNews implements Converter<Record, RawNews> {
+public class RecordToRawNewsConverter implements Converter<Record, RawNews> {
     @Override
     public RawNews convert(Record source) {
         return RawNews.builder()
