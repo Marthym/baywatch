@@ -5,7 +5,7 @@ import fr.ght1pc9kc.baywatch.api.model.search.Criteria;
 import fr.ght1pc9kc.baywatch.api.scrapper.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
 import fr.ght1pc9kc.baywatch.infra.mappers.UserToRecordConverter;
-import fr.ght1pc9kc.baywatch.infra.search.JooqSearchVisitor;
+import fr.ght1pc9kc.baywatch.infra.search.JooqConditionVisitor;
 import fr.ght1pc9kc.baywatch.infra.search.PredicateSearchVisitor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +32,8 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.Users.USERS;
 @Repository
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class UserRepository implements UserPersistencePort {
-    private static final JooqSearchVisitor JOOQ_CONDITION_VISITOR =
-            new JooqSearchVisitor(UserToRecordConverter.USER_PROPERTIES_MAPPING::get);
+    private static final JooqConditionVisitor JOOQ_CONDITION_VISITOR =
+            new JooqConditionVisitor(UserToRecordConverter.USER_PROPERTIES_MAPPING::get);
     private static final PredicateSearchVisitor<User> USER_PREDICATE_VISITOR = new PredicateSearchVisitor<>();
 
     private final Scheduler databaseScheduler;

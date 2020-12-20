@@ -10,7 +10,7 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
 import fr.ght1pc9kc.baywatch.infra.mappers.NewsToRecordConverter;
-import fr.ght1pc9kc.baywatch.infra.search.JooqSearchVisitor;
+import fr.ght1pc9kc.baywatch.infra.search.JooqConditionVisitor;
 import fr.ght1pc9kc.baywatch.infra.search.PredicateSearchVisitor;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +35,11 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 @Repository
 @AllArgsConstructor
 public class NewsRepository implements NewsPersistencePort {
+    public static final JooqConditionVisitor NEWS_CONDITION_VISITOR =
+            new JooqConditionVisitor(NewsToRecordConverter.NEWS_PROPERTIES_MAPPING::get);
+    public static final JooqConditionVisitor STATE_CONDITION_VISITOR =
+            new JooqConditionVisitor(NewsToRecordConverter.STATE_PROPERTIES_MAPPING::get);
+
     private final Scheduler databaseScheduler;
     private final DSLContext dsl;
     private final ConversionService conversionService;
@@ -91,7 +96,7 @@ public class NewsRepository implements NewsPersistencePort {
     @Override
     @SuppressWarnings("ReactiveStreamsNullableInLambdaInTransform")
     public Flux<News> userList(Criteria searchCriteria) {
-        Condition conditions = searchCriteria.visit(new JooqSearchVisitor(NewsToRecordConverter.NEWS_PROPERTIES_MAPPING::get));
+        Condition conditions = searchCriteria.visit(NEWS_CONDITION_VISITOR);
         PredicateSearchVisitor<News> predicateSearchVisitor = new PredicateSearchVisitor<>();
         return Flux.<Record>create(sink -> {
             Cursor<Record> cursor = dsl
@@ -117,7 +122,7 @@ public class NewsRepository implements NewsPersistencePort {
     @Override
     @SuppressWarnings("ReactiveStreamsNullableInLambdaInTransform")
     public Flux<RawNews> list(Criteria searchCriteria) {
-        Condition conditions = searchCriteria.visit(new JooqSearchVisitor(NewsToRecordConverter.NEWS_PROPERTIES_MAPPING::get));
+        Condition conditions = searchCriteria.visit(NEWS_CONDITION_VISITOR);
         PredicateSearchVisitor<RawNews> predicateSearchVisitor = new PredicateSearchVisitor<>();
         return Flux.<NewsRecord>create(sink -> {
             Cursor<NewsRecord> cursor = dsl.selectFrom(NEWS).where(conditions).fetchLazy();
@@ -136,7 +141,7 @@ public class NewsRepository implements NewsPersistencePort {
 
     @Override
     public Flux<Entry<String, State>> listState(Criteria searchCriteria) {
-        Condition conditions = searchCriteria.visit(new JooqSearchVisitor(NewsToRecordConverter.STATE_PROPERTIES_MAPPING::get));
+        Condition conditions = searchCriteria.visit(STATE_CONDITION_VISITOR);
         PredicateSearchVisitor<State> predicateSearchVisitor = new PredicateSearchVisitor<>();
         return Flux.<NewsUserStateRecord>create(sink -> {
             Cursor<NewsUserStateRecord> cursor = dsl.selectFrom(NEWS_USER_STATE).where(conditions).fetchLazy();

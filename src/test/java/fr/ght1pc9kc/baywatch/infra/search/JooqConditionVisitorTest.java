@@ -15,11 +15,11 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class JooqSearchVisitorTest {
+class JooqConditionVisitorTest {
 
     private static final LocalDateTime NOW = LocalDateTime.parse("2020-12-11T10:20:42");
 
-    private final JooqSearchVisitor tested = new JooqSearchVisitor(NewsToRecordConverter.NEWS_PROPERTIES_MAPPING::get);
+    private final JooqConditionVisitor tested = new JooqConditionVisitor(NewsToRecordConverter.NEWS_PROPERTIES_MAPPING::get);
 
     @ParameterizedTest
     @MethodSource("provideSCriteria")

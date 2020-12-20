@@ -11,7 +11,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @AllArgsConstructor
-public class JooqSearchVisitor implements Criteria.Visitor<Condition> {
+public class JooqConditionVisitor implements Criteria.Visitor<Condition> {
 
     private final Function<String, Field<?>> propertiesSupplier;
 
