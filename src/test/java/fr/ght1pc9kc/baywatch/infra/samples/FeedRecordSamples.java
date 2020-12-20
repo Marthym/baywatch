@@ -18,14 +18,16 @@ public class FeedRecordSamples implements RelationalDataSet<FeedsRecord> {
             .setFeedUrl("http://obiwan.kenobi.jedi/")
             .setFeedLastWatch(LocalDateTime.parse("2020-12-11T15:12:42"));
 
+    public static final List<FeedsRecord> FEEDS_RECORDS = List.of(
+            JEDI,
+            JEDI.copy().setFeedId(Hasher.sha3(JEDI.getFeedUrl() + "01")).setFeedUrl(JEDI.getFeedUrl() + "01"),
+            JEDI.copy().setFeedId(Hasher.sha3(JEDI.getFeedUrl() + "02")).setFeedUrl(JEDI.getFeedUrl() + "02"),
+            JEDI.copy().setFeedId(Hasher.sha3(JEDI.getFeedUrl() + "03")).setFeedUrl(JEDI.getFeedUrl() + "03"),
+            JEDI.copy().setFeedId(Hasher.sha3(JEDI.getFeedUrl() + "04")).setFeedUrl(JEDI.getFeedUrl() + "04")
+    );
+
     @Override
     public List<FeedsRecord> records() {
-        return List.of(
-                JEDI,
-                JEDI.copy().setFeedId(Hasher.sha3(JEDI.getFeedUrl() + "01")).setFeedUrl(JEDI.getFeedUrl() + "01"),
-                JEDI.copy().setFeedId(Hasher.sha3(JEDI.getFeedUrl() + "02")).setFeedUrl(JEDI.getFeedUrl() + "02"),
-                JEDI.copy().setFeedId(Hasher.sha3(JEDI.getFeedUrl() + "03")).setFeedUrl(JEDI.getFeedUrl() + "03"),
-                JEDI.copy().setFeedId(Hasher.sha3(JEDI.getFeedUrl() + "04")).setFeedUrl(JEDI.getFeedUrl() + "04")
-        );
+        return FEEDS_RECORDS;
     }
 }
