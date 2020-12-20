@@ -17,9 +17,13 @@ public interface NewsPersistencePort {
 
     Mono<Void> persist(Collection<News> toCreate);
 
-    Flux<News> userList(Criteria searchCriteria);
-
     Flux<RawNews> list(Criteria searchCriteria);
+
+    default Flux<RawNews> list() {
+        return list(Criteria.none());
+    }
+
+    Flux<News> userList(Criteria searchCriteria);
 
     default Flux<News> userList() {
         return userList(Criteria.none());

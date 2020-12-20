@@ -91,7 +91,7 @@ public class NewsRepository implements NewsPersistencePort {
     @Override
     @SuppressWarnings("ReactiveStreamsNullableInLambdaInTransform")
     public Flux<News> userList(Criteria searchCriteria) {
-        Condition conditions = searchCriteria.visit(new JooqSearchVisitor(NewsToRecordConverter.PROPERTIES_MAPPING::get));
+        Condition conditions = searchCriteria.visit(new JooqSearchVisitor(NewsToRecordConverter.NEWS_PROPERTIES_MAPPING::get));
         PredicateSearchVisitor<News> predicateSearchVisitor = new PredicateSearchVisitor<>();
         return Flux.<Record>create(sink -> {
             Cursor<Record> cursor = dsl
@@ -117,7 +117,7 @@ public class NewsRepository implements NewsPersistencePort {
     @Override
     @SuppressWarnings("ReactiveStreamsNullableInLambdaInTransform")
     public Flux<RawNews> list(Criteria searchCriteria) {
-        Condition conditions = searchCriteria.visit(new JooqSearchVisitor(NewsToRecordConverter.PROPERTIES_MAPPING::get));
+        Condition conditions = searchCriteria.visit(new JooqSearchVisitor(NewsToRecordConverter.NEWS_PROPERTIES_MAPPING::get));
         PredicateSearchVisitor<RawNews> predicateSearchVisitor = new PredicateSearchVisitor<>();
         return Flux.<NewsRecord>create(sink -> {
             Cursor<NewsRecord> cursor = dsl.selectFrom(NEWS).where(conditions).fetchLazy();
@@ -136,7 +136,7 @@ public class NewsRepository implements NewsPersistencePort {
 
     @Override
     public Flux<Entry<String, State>> listState(Criteria searchCriteria) {
-        Condition conditions = searchCriteria.visit(new JooqSearchVisitor(NewsToRecordConverter.PROPERTIES_MAPPING::get));
+        Condition conditions = searchCriteria.visit(new JooqSearchVisitor(NewsToRecordConverter.STATE_PROPERTIES_MAPPING::get));
         PredicateSearchVisitor<State> predicateSearchVisitor = new PredicateSearchVisitor<>();
         return Flux.<NewsUserStateRecord>create(sink -> {
             Cursor<NewsUserStateRecord> cursor = dsl.selectFrom(NEWS_USER_STATE).where(conditions).fetchLazy();
@@ -159,6 +159,7 @@ public class NewsRepository implements NewsPersistencePort {
                 dsl.transactionResult(tx -> {
                     DSLContext txDsl = tx.dsl();
                     txDsl.deleteFrom(NEWS_FEEDS).where(NEWS_FEEDS.NEFE_NEWS_ID.in(ids)).execute();
+                    txDsl.deleteFrom(NEWS_USER_STATE).where(NEWS_USER_STATE.NURS_NEWS_ID.in(ids)).execute();
                     return txDsl.deleteFrom(NEWS).where(NEWS.NEWS_ID.in(ids)).execute();
                 }));
     }

@@ -31,10 +31,12 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
+import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class NewsRepositoryTest {
@@ -109,7 +111,29 @@ class NewsRepositoryTest {
     }
 
     @Test
-    void should_list_news() {
+    void should_get_raw_news(WithSampleDataLoaded.Tracker tracker) {
+        tracker.skipNextSampleLoad();
+        RawNews actual = tested.get("0479255273c08312a67145eec4852293345555eb1145ce0b4243c8314a85ba0c").block();
+
+        assertThat(actual).isEqualTo(RawNews.builder()
+                .id("0479255273c08312a67145eec4852293345555eb1145ce0b4243c8314a85ba0c")
+                .title("ght1pc9kc.fr 005")
+                .link(URI.create("https://blog.ght1pc9kc.fr/005"))
+                .publication(Instant.parse("2021-05-10T10:42:42Z"))
+                .build());
+    }
+
+    @Test
+    void should_list_rawnews(WithSampleDataLoaded.Tracker tracker) {
+        tracker.skipNextSampleLoad();
+        List<RawNews> actuals = tested.list().collectList().block();
+
+        assertThat(actuals).hasSize(50);
+    }
+
+    @Test
+    void should_list_news(WithSampleDataLoaded.Tracker tracker) {
+        tracker.skipNextSampleLoad();
         List<News> actual = tested.userList().collectList().block();
         assertThat(actual).hasSize(50);
         assertThat(actual).extracting(News::getId).startsWith(
@@ -122,13 +146,15 @@ class NewsRepositoryTest {
     }
 
     @Test
-    void should_list_news_for_user_with_criteria() {
+    void should_list_news_for_user_with_criteria(WithSampleDataLoaded.Tracker tracker) {
+        tracker.skipNextSampleLoad();
         List<News> actual = tested.userList(Criteria.property("stared").eq(true)).collectList().block();
         assertThat(actual).allMatch(News::isStared);
     }
 
     @Test
-    void should_get_news_for_user() {
+    void should_get_news_for_user(WithSampleDataLoaded.Tracker tracker) {
+        tracker.skipNextSampleLoad();
         NewsRecord expected = NewsRecordSamples.SAMPLE.records().get(5);
         NewsFeedsRecord expectedNefe = NewsRecordSamples.NewsFeedsRecordSample.SAMPLE.records().stream()
                 .filter(nf -> nf.getNefeNewsId().equals(expected.getNewsId()))
@@ -146,5 +172,45 @@ class NewsRepositoryTest {
         assertThat(actual.getFeedId()).isEqualTo(expectedNefe.getNefeFeedId());
         assertThat(actual.isRead()).isEqualTo((expectedState.getNursState() & Flags.READ) != 0);
         assertThat(actual.isStared()).isEqualTo((expectedState.getNursState() & Flags.STAR) != 0);
+    }
+
+    @Test
+    void should_list_state(WithSampleDataLoaded.Tracker tracker) {
+        tracker.skipNextSampleLoad();
+        List<Map.Entry<String, State>> actuals = tested.listState(Criteria.property("newsId").in(
+                "9034ced51e05837fec112c380b9b9720c81ce79137a000db988ec625cf9e64b3",
+                "0479255273c08312a67145eec4852293345555eb1145ce0b4243c8314a85ba0c",
+                "24abc4ad15dc0ab7824f0192b78cc786a7e57f10c0a50fc0721ac1cc3cd162fc"
+        )).collectList().block();
+
+        assertThat(actuals).containsOnly(
+                Map.entry("9034ced51e05837fec112c380b9b9720c81ce79137a000db988ec625cf9e64b3", State.of(2)),
+                Map.entry("0479255273c08312a67145eec4852293345555eb1145ce0b4243c8314a85ba0c", State.of(0)),
+                Map.entry("24abc4ad15dc0ab7824f0192b78cc786a7e57f10c0a50fc0721ac1cc3cd162fc", State.of(2)));
+    }
+
+    @Test
+    void should_delete_news(DSLContext dsl) {
+        List<String> ids = List.of(
+                "24abc4ad15dc0ab7824f0192b78cc786a7e57f10c0a50fc0721ac1cc3cd162fc",
+                "e35d5a3be1d1fbf1363fbeb1bca2ca248da0dcdfe41b88beb80e9548d9a10c8f");
+        {
+            int countNews = dsl.fetchCount(NEWS, NEWS.NEWS_ID.in(ids));
+            assertThat(countNews).isEqualTo(ids.size());
+            int countFeed = dsl.fetchCount(NEWS_FEEDS, NEWS_FEEDS.NEFE_NEWS_ID.in(ids));
+            assertThat(countFeed).isEqualTo(ids.size());
+            int countState = dsl.fetchCount(NEWS_USER_STATE, NEWS_USER_STATE.NURS_NEWS_ID.in(ids));
+            assertThat(countState).isEqualTo(ids.size());
+        }
+        tested.delete(ids).block();
+
+        {
+            int countNews = dsl.fetchCount(NEWS, NEWS.NEWS_ID.in(ids));
+            assertThat(countNews).isZero();
+            int countFeed = dsl.fetchCount(NEWS_FEEDS, NEWS_FEEDS.NEFE_NEWS_ID.in(ids));
+            assertThat(countFeed).isZero();
+            int countState = dsl.fetchCount(NEWS_USER_STATE, NEWS_USER_STATE.NURS_NEWS_ID.in(ids));
+            assertThat(countState).isZero();
+        }
     }
 }

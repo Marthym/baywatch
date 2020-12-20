@@ -11,15 +11,22 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
+import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 
 @Component
 public class NewsToRecordConverter implements Converter<News, NewsRecord> {
-    public static final Map<String, Field<?>> PROPERTIES_MAPPING = Map.of(
+    public static final Map<String, Field<?>> NEWS_PROPERTIES_MAPPING = Map.of(
             "publication", NEWS.NEWS_PUBLICATION,
             "description", NEWS.NEWS_DESCRIPTION,
             "id", NEWS.NEWS_ID,
             "link", NEWS.NEWS_LINK,
             "title", NEWS.NEWS_TITLE
+    );
+
+    public static final Map<String, Field<?>> STATE_PROPERTIES_MAPPING = Map.of(
+            "newsId", NEWS_USER_STATE.NURS_NEWS_ID,
+            "useIdr", NEWS_USER_STATE.NURS_USER_ID,
+            "state", NEWS_USER_STATE.NURS_STATE
     );
 
     @Override
