@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
-import com.machinezoo.noexception.Exceptions;
+import fr.ght1pc9kc.baywatch.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.api.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.search.Criteria;
@@ -17,9 +17,11 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
+import reactor.util.function.Tuples;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
@@ -37,6 +39,7 @@ public class FeedRepository implements FeedPersistencePort {
     private final Scheduler databaseScheduler;
     private final DSLContext dsl;
     private final ConversionService conversionService;
+    private final AuthenticationFacade authFacade;
 
     @Override
     public Mono<Feed> get(String id) {
@@ -71,43 +74,49 @@ public class FeedRepository implements FeedPersistencePort {
 
     @Override
     public Mono<Void> persist(Collection<Feed> toPersist) {
-        List<FeedsRecord> records = toPersist.stream()
-                .map(n -> conversionService.convert(n, FeedsRecord.class))
-                .collect(Collectors.toList());
+        return authFacade.getConnectedUser().map(user -> {
+            List<FeedsRecord> records = toPersist.stream()
+                    .map(n -> conversionService.convert(n, FeedsRecord.class))
+                    .collect(Collectors.toList());
 
-        List<FeedsUsersRecord> feedsUsersRecords = toPersist.stream()
-                .map(n -> conversionService.convert(n, FeedsUsersRecord.class))
-                .collect(Collectors.toList());
+            List<FeedsUsersRecord> feedsUsersRecords = toPersist.stream()
+                    .map(n -> conversionService.convert(n, FeedsUsersRecord.class))
+                    .filter(Objects::nonNull)
+                    .map(r -> r.setFeusUserId(user.id))
+                    .collect(Collectors.toList());
 
-        return Mono.fromCallable(() ->
+            return Tuples.of(records, feedsUsersRecords);
+
+        }).flatMap(records -> Mono.fromCallable(() -> Tuples.of(
                 dsl.loadInto(FEEDS)
                         .batchAll()
                         .onDuplicateKeyIgnore()
                         .onErrorIgnore()
-                        .loadRecords(records)
+                        .loadRecords(records.getT1())
+                        .fieldsCorresponding()
+                        .execute(), records.getT2()))
+                .subscribeOn(databaseScheduler)
+
+        ).map(result -> {
+            Loader<FeedsRecord> loader = result.getT1();
+            log.debug("Load {} Feeds with {} error(s) and {} ignored",
+                    loader.processed(), loader.errors().size(), loader.ignored());
+            return result.getT2();
+
+        }).flatMap(feedsUsersRecords -> Mono.fromCallable(() ->
+                dsl.loadInto(FEEDS_USERS)
+                        .batchAll()
+                        .onDuplicateKeyIgnore()
+                        .onErrorIgnore()
+                        .loadRecords(feedsUsersRecords)
                         .fieldsCorresponding()
                         .execute())
                 .subscribeOn(databaseScheduler)
-
-                .map(loader -> {
-                    log.debug("Load {} Feeds with {} error(s) and {} ignored",
-                            loader.processed(), loader.errors().size(), loader.ignored());
-                    return loader;
-
-                }).map(Exceptions.wrap().function(x ->
-                        dsl.loadInto(FEEDS_USERS)
-                                .batchAll()
-                                .onDuplicateKeyIgnore()
-                                .onErrorIgnore()
-                                .loadRecords(feedsUsersRecords)
-                                .fieldsCorresponding()
-                                .execute()))
-                .subscribeOn(databaseScheduler)
-                .then();
+        ).then();
     }
 
     @Override
-    public Mono<Integer> delete(Collection<Feed> toDelete) {
+    public Mono<Integer> delete(Collection<String> toDelete) {
         return Mono.fromCallable(() ->
                 dsl.transactionResult(tx -> {
                     DSLContext txDsl = tx.dsl();

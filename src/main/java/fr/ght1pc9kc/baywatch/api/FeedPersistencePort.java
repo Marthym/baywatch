@@ -16,5 +16,5 @@ public interface FeedPersistencePort {
 
     Mono<Void> persist(Collection<Feed> toPersist);
 
-    Mono<Integer> delete(Collection<Feed> toDelete);
+    Mono<Integer> delete(Collection<String> toDelete);
 }

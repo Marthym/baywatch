@@ -17,13 +17,18 @@ public class FeedsUsersRecordSample implements RelationalDataSet<FeedsUsersRecor
     public static final List<FeedsUsersRecord> FEEDS_USERS_RECORDS;
 
     static {
+        String[] tags = new String[]{
+                "java,spring",
+                "cpp"
+        };
         FEEDS_USERS_RECORDS = IntStream.range(0, FeedRecordSamples.FEEDS_RECORDS.size())
                 .mapToObj(f -> {
                     FeedsRecord feed = FeedRecordSamples.FEEDS_RECORDS.get(f);
                     List<UsersRecord> users = UsersRecordSamples.SAMPLE.records();
                     return FEEDS_USERS.newRecord()
                             .setFeusFeedId(feed.getFeedId())
-                            .setFeusUserId(users.get(f % users.size()).getUserId());
+                            .setFeusUserId(users.get(f % users.size()).getUserId())
+                            .setFeusTags(tags[f % tags.length]);
                 }).collect(Collectors.toUnmodifiableList());
     }
 

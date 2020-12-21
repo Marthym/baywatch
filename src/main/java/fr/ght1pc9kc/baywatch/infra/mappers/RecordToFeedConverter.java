@@ -10,7 +10,6 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
@@ -26,9 +25,10 @@ public class RecordToFeedConverter implements Converter<Record, Feed> {
         RawFeed raw = conversionService.convert(record, RawFeed.class);
         Set<String> tags = Optional.ofNullable(record.get(FEEDS_USERS.FEUS_TAGS))
                 .map(t -> Set.of(t.split(",")))
-                .orElse(Collections.emptySet());
+                .orElse(Set.of());
         return Feed.builder()
-                .raw(raw).tags(tags)
+                .raw(raw)
+                .tags(tags)
                 .build();
     }
 }
