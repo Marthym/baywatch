@@ -11,6 +11,8 @@ import java.time.Clock;
 @SpringBootApplication
 public class BaywatchApplication {
 
+    public static final String APPLICATION_NAME = "Baywatch";
+
     public static void main(String[] args) {
         SpringApplication.run(BaywatchApplication.class, args);
     }
