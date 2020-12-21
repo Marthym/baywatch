@@ -7,10 +7,7 @@ import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.api.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.api.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.api.RssAtomParser;
-import fr.ght1pc9kc.baywatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.api.model.News;
-import fr.ght1pc9kc.baywatch.api.model.RawNews;
-import fr.ght1pc9kc.baywatch.api.model.State;
+import fr.ght1pc9kc.baywatch.api.model.*;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -64,16 +61,16 @@ class FeedScrapperServiceTest {
         String springSha3 = Hasher.sha3(springUri.toString());
 
         when(feedPersistenceMock.list()).thenReturn(Flux.just(
-                Feed.builder()
+                Feed.builder().raw(RawFeed.builder()
                         .id(darthVaderSha3)
                         .name("fail")
                         .url(darthVaderUri)
-                        .build(),
-                Feed.builder()
+                        .build()).build(),
+                Feed.builder().raw(RawFeed.builder()
                         .id(springSha3)
                         .name("Spring")
                         .url(springUri)
-                        .build()
+                        .build()).build()
         ));
 
         tested.startScrapping();
@@ -144,16 +141,16 @@ class FeedScrapperServiceTest {
 
         feedPersistenceMock = mock(FeedPersistencePort.class);
         when(feedPersistenceMock.list()).thenReturn(Flux.just(
-                Feed.builder()
+                Feed.builder().raw(RawFeed.builder()
                         .id(jdhSha3)
                         .name("Reddit")
                         .url(jdhUri)
-                        .build(),
-                Feed.builder()
+                        .build()).build(),
+                Feed.builder().raw(RawFeed.builder()
                         .id(springSha3)
                         .name("Spring")
                         .url(springUri)
-                        .build()
+                        .build()).build()
         ));
 
         tested = new FeedScrapperService(Clock.systemUTC(),

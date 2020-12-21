@@ -1,8 +1,11 @@
 package fr.ght1pc9kc.baywatch.infra.mappers;
 
 import fr.ght1pc9kc.baywatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.convert.support.DefaultConversionService;
 
 import java.net.URI;
 import java.time.Instant;
@@ -15,7 +18,14 @@ class RecordToFeedConverterTest {
     private static final URI TEST_URL = URI.create("https://blog.ght1pc9kc.fr/index.xml");
     private static final String TEST_SHA3 = Hasher.sha3(TEST_URL.toString());
 
-    RecordToFeedConverter tested = new RecordToFeedConverter();
+    RecordToFeedConverter tested;
+
+    @BeforeEach
+    void setUp() {
+        DefaultConversionService conversionService = new DefaultConversionService();
+        conversionService.addConverter(new RecordToRawFeedConverter());
+        tested = new RecordToFeedConverter(conversionService);
+    }
 
     @Test
     void should_convert_FeedRecord_to_Feed_pojo() {
@@ -26,11 +36,11 @@ class RecordToFeedConverterTest {
                 .setFeedLastWatch(DateUtils.toLocalDateTime(PUBLICATION))
         );
 
-        assertThat(actual).isEqualTo(Feed.builder()
+        assertThat(actual).isEqualTo(Feed.builder().raw(RawFeed.builder()
                 .id(TEST_SHA3)
                 .name("Blog ght1pc9kc")
                 .lastWatch(PUBLICATION)
                 .url(TEST_URL)
-                .build());
+                .build()).build());
     }
 }

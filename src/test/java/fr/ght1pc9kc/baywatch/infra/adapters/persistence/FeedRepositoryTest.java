@@ -1,7 +1,10 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.infra.mappers.FeedToRecordConverter;
+import fr.ght1pc9kc.baywatch.infra.mappers.NewsFeedsToRecordConverter;
 import fr.ght1pc9kc.baywatch.infra.mappers.RecordToFeedConverter;
+import fr.ght1pc9kc.baywatch.infra.mappers.RecordToRawFeedConverter;
 import fr.ght1pc9kc.baywatch.infra.samples.FeedRecordSamples;
 import fr.irun.testy.core.extensions.ChainedExtension;
 import fr.irun.testy.jooq.WithDatabaseLoaded;
@@ -44,7 +47,10 @@ class FeedRepositoryTest {
     @BeforeEach
     void setUp(DSLContext dslContext) {
         DefaultConversionService defaultConversionService = new DefaultConversionService();
-        defaultConversionService.addConverter(new RecordToFeedConverter());
+        defaultConversionService.addConverter(new RecordToFeedConverter(defaultConversionService));
+        defaultConversionService.addConverter(new RecordToRawFeedConverter());
+        defaultConversionService.addConverter(new NewsFeedsToRecordConverter());
+        defaultConversionService.addConverter(new FeedToRecordConverter());
         tested = new FeedRepository(Schedulers.immediate(), dslContext, defaultConversionService);
     }
 

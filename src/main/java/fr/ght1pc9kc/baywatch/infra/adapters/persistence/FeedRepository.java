@@ -53,7 +53,8 @@ public class FeedRepository implements FeedPersistencePort {
     public Flux<Feed> list(Criteria criteria) {
         Condition conditions = criteria.visit(JOOQ_CONDITION_VISITOR);
         return Flux.<Record>create(sink -> {
-            Cursor<Record> cursor = dsl.select(FEEDS.fields()).from(FEEDS)
+            Cursor<Record> cursor = dsl.select(FEEDS.fields()).select(FEEDS_USERS.FEUS_TAGS)
+                    .from(FEEDS)
                     .leftJoin(FEEDS_USERS).on(FEEDS_USERS.FEUS_FEED_ID.eq(FEEDS.FEED_ID))
                     .where(conditions).fetchLazy();
             sink.onRequest(n -> {
