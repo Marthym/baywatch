@@ -1,19 +1,16 @@
 package fr.ght1pc9kc.baywatch.api.model;
 
 import lombok.Builder;
+import lombok.Delegate;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.net.URI;
-import java.time.Instant;
-import java.util.Collection;
+import java.util.Set;
 
 @Value
 @Builder
 public class Feed {
-    public @NonNull String id;
-    public String name;
-    public @NonNull URI url;
-    public Instant lastWatch;
-    public Collection<Folder> folders;
+    @Delegate(types = RawFeed.class)
+    @NonNull RawFeed raw;
+    Set<String> tags;
 }

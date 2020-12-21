@@ -115,7 +115,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
                     if (ITEM.equals(localPart) || ENTRY.equals(localPart)) {
                         News news = News.builder()
                                 .raw(plugin.handleEndEvent(bldr))
-                                .feedId(feed.id)
+                                .feedId(feed.getId())
                                 .state(State.NONE)
                                 .build();
                         sink.next(news);

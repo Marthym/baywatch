@@ -116,7 +116,7 @@ public final class FeedScrapperService implements Runnable {
                     .acceptCharset(StandardCharsets.UTF_8)
                     .retrieve()
                     .bodyToFlux(DataBuffer.class)
-                    .doFirst(() -> log.trace("Receiving data from {}...", feed.url.getHost()))
+                    .doFirst(() -> log.trace("Receiving data from {}...", feed.getUrl().getHost()))
                     .onErrorResume(e -> {
                         log.error("{}", e.getLocalizedMessage());
                         log.debug("STACKTRACE", e);

@@ -12,12 +12,6 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.Users.USERS;
 
 @Component
 public class UserToRecordConverter implements Converter<User, UsersRecord> {
-    public static final Map<String, Field<?>> USER_PROPERTIES_MAPPING = Map.of(
-            "id", USERS.USER_ID,
-            "login", USERS.USER_LOGIN,
-            "name", USERS.USER_NAME,
-            "mail", USERS.USER_EMAIL
-    );
 
     @Override
     public UsersRecord convert(User source) {

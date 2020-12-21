@@ -9,7 +9,7 @@ import fr.ght1pc9kc.baywatch.api.model.search.Criteria;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
-import fr.ght1pc9kc.baywatch.infra.mappers.NewsToRecordConverter;
+import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.infra.search.JooqConditionVisitor;
 import fr.ght1pc9kc.baywatch.infra.search.PredicateSearchVisitor;
 import lombok.AllArgsConstructor;
@@ -36,9 +36,9 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 @AllArgsConstructor
 public class NewsRepository implements NewsPersistencePort {
     public static final JooqConditionVisitor NEWS_CONDITION_VISITOR =
-            new JooqConditionVisitor(NewsToRecordConverter.NEWS_PROPERTIES_MAPPING::get);
+            new JooqConditionVisitor(PropertiesMappers.NEWS_PROPERTIES_MAPPING::get);
     public static final JooqConditionVisitor STATE_CONDITION_VISITOR =
-            new JooqConditionVisitor(NewsToRecordConverter.STATE_PROPERTIES_MAPPING::get);
+            new JooqConditionVisitor(PropertiesMappers.STATE_PROPERTIES_MAPPING::get);
 
     private final Scheduler databaseScheduler;
     private final DSLContext dsl;

@@ -2,7 +2,7 @@ package fr.ght1pc9kc.baywatch.infra.search;
 
 import fr.ght1pc9kc.baywatch.api.model.search.Criteria;
 import fr.ght1pc9kc.baywatch.dsl.tables.News;
-import fr.ght1pc9kc.baywatch.infra.mappers.NewsToRecordConverter;
+import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
 import org.jooq.Condition;
 import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
@@ -19,7 +19,7 @@ class JooqConditionVisitorTest {
 
     private static final LocalDateTime NOW = LocalDateTime.parse("2020-12-11T10:20:42");
 
-    private final JooqConditionVisitor tested = new JooqConditionVisitor(NewsToRecordConverter.NEWS_PROPERTIES_MAPPING::get);
+    private final JooqConditionVisitor tested = new JooqConditionVisitor(PropertiesMappers.NEWS_PROPERTIES_MAPPING::get);
 
     @ParameterizedTest
     @MethodSource("provideSCriteria")

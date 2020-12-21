@@ -1,11 +1,10 @@
 package fr.ght1pc9kc.baywatch.api.model;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import lombok.*;
 
 @Value
 @Builder
+@Getter(AccessLevel.NONE)
 public class User {
     public @NonNull String id;
     public @NonNull String login;
