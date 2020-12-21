@@ -21,5 +21,3 @@ target/
 ### VS Code ###
 .vscode/
 
-### Frontend ###
-node_modules
