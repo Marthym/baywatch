@@ -9,12 +9,15 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
-    "tailwindcss": "^2.0.2",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",
     "vue-property-decorator": "^8.4.2"
   },
   "devDependencies": {
+    "autoprefixer": "^9",
+    "@tailwindcss/postcss7-compat": "^2.0.2",
+    "postcss": "^7",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat",
     "@typescript-eslint/eslint-plugin": "^2.33.0",
     "@typescript-eslint/parser": "^2.33.0",
     "@vue/cli-plugin-babel": "~4.5.0",

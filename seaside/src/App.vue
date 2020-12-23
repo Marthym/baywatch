@@ -1,21 +1,23 @@
 <template>
-
-  <div id="app">
-    <img alt="Vue logo" src="./assets/rescue-buoy.svg">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+  <div class="h-screen w-full flex overflow-hidden">
+    <SideNav/>
+    <MainContent/>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import HelloWorld from './components/HelloWorld.vue';
+import {Component, Vue} from 'vue-property-decorator';
+import SideNav from "./components/sidenav/SideNav.vue";
+import MainContent from "./components/content/MainContent.vue";
 
 @Component({
   components: {
-    HelloWorld,
+    SideNav,
+    MainContent,
   },
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+}
 </script>
 
 <style>
