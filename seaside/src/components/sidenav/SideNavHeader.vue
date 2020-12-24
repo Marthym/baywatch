@@ -16,7 +16,7 @@
 				Baywatch
     </span>
 
-    <span class="relative ">
+    <div class="relative ">
 				<a class="hover:text-green-500 dark-hover:text-green-300 text-gray-600 dark:text-gray-300"
            href="inbox/">
 					<svg
@@ -33,7 +33,7 @@
 					</svg>
 				</a>
 				<div class="absolute w-2 h-2 rounded-full bg-green-500 dark-hover:bg-green-300 right-0 mb-5 bottom-0"></div>
-			</span>
+			</div>
 
   </div>
 </template>
