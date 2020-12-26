@@ -6,6 +6,9 @@ spring:
     username: baywatch
     password: hasselhoff
 
+server:
+  port: 8081
+  
 # Avoid infinite stacktrace due to reactor
 logging:
   exception-conversion-word: "%wEx{full, reactor.core.publisher}"

@@ -3,16 +3,17 @@ package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 import fr.ght1pc9kc.baywatch.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.api.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.api.model.search.Criteria;
+import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
-import fr.ght1pc9kc.baywatch.infra.search.JooqConditionVisitor;
-import fr.ght1pc9kc.baywatch.infra.search.PredicateSearchVisitor;
+import fr.ght1pc9kc.baywatch.infra.request.filter.JooqConditionVisitor;
+import fr.ght1pc9kc.baywatch.infra.request.filter.PredicateSearchVisitor;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.*;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -68,7 +69,7 @@ public class FeedRepository implements FeedPersistencePort {
                 }
             });
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
-                .map(fr -> conversionService.convert(fr, Feed.class))
+                .map(fr -> (Feed)conversionService.convert(fr, TypeDescriptor.valueOf(Record.class), TypeDescriptor.valueOf(Feed.class)))
                 .filter(criteria.visit(FEEDS_PREDICATE_VISITOR));
     }
 

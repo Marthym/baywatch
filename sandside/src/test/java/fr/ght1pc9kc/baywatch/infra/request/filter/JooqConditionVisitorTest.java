@@ -1,6 +1,6 @@
-package fr.ght1pc9kc.baywatch.infra.search;
+package fr.ght1pc9kc.baywatch.infra.request.filter;
 
-import fr.ght1pc9kc.baywatch.api.model.search.Criteria;
+import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.dsl.tables.News;
 import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
 import org.jooq.Condition;

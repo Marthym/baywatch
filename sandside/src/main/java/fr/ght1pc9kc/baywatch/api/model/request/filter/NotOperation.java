@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.api.model.search;
+package fr.ght1pc9kc.baywatch.api.model.request.filter;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;

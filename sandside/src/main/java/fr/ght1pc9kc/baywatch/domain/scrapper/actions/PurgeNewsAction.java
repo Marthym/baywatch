@@ -2,7 +2,7 @@ package fr.ght1pc9kc.baywatch.domain.scrapper.actions;
 
 import fr.ght1pc9kc.baywatch.api.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
-import fr.ght1pc9kc.baywatch.api.model.search.Criteria;
+import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.api.scrapper.PreScrappingAction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

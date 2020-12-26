@@ -1,6 +1,6 @@
-package fr.ght1pc9kc.baywatch.infra.search;
+package fr.ght1pc9kc.baywatch.infra.request.filter;
 
-import fr.ght1pc9kc.baywatch.api.model.search.*;
+import fr.ght1pc9kc.baywatch.api.model.request.filter.*;
 
 public class StringSearchVisitor implements Criteria.Visitor<String> {
     @Override

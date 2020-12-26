@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.api;
 
 import fr.ght1pc9kc.baywatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.api.model.search.Criteria;
+import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

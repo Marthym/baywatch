@@ -1,9 +1,9 @@
 package fr.ght1pc9kc.baywatch.api.model;
 
 import lombok.Builder;
-import lombok.Delegate;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.Delegate;
 
 import java.util.Set;
 

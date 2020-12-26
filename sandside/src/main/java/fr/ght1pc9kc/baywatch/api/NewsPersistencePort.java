@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.api;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.State;
-import fr.ght1pc9kc.baywatch.api.model.search.Criteria;
+import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

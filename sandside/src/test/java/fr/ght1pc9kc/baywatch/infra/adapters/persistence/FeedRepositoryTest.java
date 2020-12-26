@@ -67,7 +67,7 @@ class FeedRepositoryTest {
     @BeforeEach
     void setUp(DSLContext dslContext) {
         DefaultConversionService defaultConversionService = new DefaultConversionService();
-        defaultConversionService.addConverter(new RecordToFeedConverter(defaultConversionService));
+        defaultConversionService.addConverter(new RecordToFeedConverter());
         defaultConversionService.addConverter(new RecordToRawFeedConverter());
         defaultConversionService.addConverter(new FeedsUsersToRecordConverter());
         defaultConversionService.addConverter(new FeedToRecordConverter());

@@ -1,8 +1,8 @@
-package fr.ght1pc9kc.baywatch.infra.search;
+package fr.ght1pc9kc.baywatch.infra.request.filter;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.ght1pc9kc.baywatch.api.model.search.*;
+import fr.ght1pc9kc.baywatch.api.model.request.filter.*;
 
 import java.util.Map;
 import java.util.function.Predicate;

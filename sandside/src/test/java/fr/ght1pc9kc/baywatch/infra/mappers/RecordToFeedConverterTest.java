@@ -33,7 +33,7 @@ class RecordToFeedConverterTest {
     void setUp() {
         DefaultConversionService conversionService = new DefaultConversionService();
         conversionService.addConverter(new RecordToRawFeedConverter());
-        tested = new RecordToFeedConverter(conversionService);
+        tested = new RecordToFeedConverter();
     }
 
     @Test

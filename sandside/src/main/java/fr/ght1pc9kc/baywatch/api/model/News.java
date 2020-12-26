@@ -1,12 +1,12 @@
 package fr.ght1pc9kc.baywatch.api.model;
 
 import lombok.Builder;
-import lombok.Delegate;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.Delegate;
 
 /**
- * The News element customized with state and {@link Feed#id}
+ * The News element customized with state and {@link RawFeed#id}
  */
 @Value
 @Builder
