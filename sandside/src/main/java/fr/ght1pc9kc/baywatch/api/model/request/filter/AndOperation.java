@@ -10,6 +10,11 @@ public class AndOperation extends Criteria {
     public Criteria right;
 
     @Override
+    public boolean isEmpty() {
+        return false;
+    }
+
+    @Override
     public <R> R visit(Visitor<R> visitor) {
         return visitor.visitAnd(this);
     }

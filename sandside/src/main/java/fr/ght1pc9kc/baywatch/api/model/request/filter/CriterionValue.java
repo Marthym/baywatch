@@ -12,6 +12,11 @@ public class CriterionValue<T> extends Criteria {
     public T value;
 
     @Override
+    public boolean isEmpty() {
+        return false;
+    }
+
+    @Override
     public <R> R visit(Visitor<R> visitor) {
         return visitor.visitValue(this);
     }

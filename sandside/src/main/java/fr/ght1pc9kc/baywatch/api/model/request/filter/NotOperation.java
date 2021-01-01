@@ -9,6 +9,11 @@ public class NotOperation extends Criteria {
     public Criteria criteria;
 
     @Override
+    public boolean isEmpty() {
+        return false;
+    }
+
+    @Override
     public <R> R visit(Visitor<R> visitor) {
         return visitor.visitNot(this);
     }

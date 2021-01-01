@@ -10,6 +10,11 @@ public class OrOperation extends Criteria {
     public Criteria right;
 
     @Override
+    public boolean isEmpty() {
+        return false;
+    }
+
+    @Override
     public <R> R visit(Visitor<R> visitor) {
         return visitor.visitOr(this);
     }

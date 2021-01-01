@@ -6,4 +6,9 @@ import lombok.AllArgsConstructor;
 public abstract class BiOperand<T> extends Criteria {
     public CriterionProperty field;
     public CriterionValue<T> value;
+
+    @Override
+    public boolean isEmpty() {
+        return false;
+    }
 }
