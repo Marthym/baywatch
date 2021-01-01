@@ -1,8 +1,9 @@
-package fr.ght1pc9kc.baywatch.api;
+package fr.ght1pc9kc.baywatch.domain.ports;
 
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.State;
+import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -17,16 +18,16 @@ public interface NewsPersistencePort {
 
     Mono<Void> persist(Collection<News> toCreate);
 
-    Flux<RawNews> list(Criteria searchCriteria);
+    Flux<RawNews> list(PageRequest pageRequest);
 
     default Flux<RawNews> list() {
-        return list(Criteria.none());
+        return list(PageRequest.all());
     }
 
-    Flux<News> userList(Criteria searchCriteria);
+    Flux<News> userList(PageRequest pageRequest);
 
     default Flux<News> userList() {
-        return userList(Criteria.none());
+        return userList(PageRequest.all());
     }
 
     Flux<Entry<String, State>> listState(Criteria searchCriteria);

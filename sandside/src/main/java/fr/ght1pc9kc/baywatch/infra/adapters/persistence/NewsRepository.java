@@ -1,11 +1,12 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.api.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.State;
+import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
+import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
+import static fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers.ID;
 
 @Slf4j
 @Repository
@@ -46,14 +48,12 @@ public class NewsRepository implements NewsPersistencePort {
 
     @Override
     public Mono<News> userGet(String id) {
-        return userList(Criteria.property("id").eq(id))
-                .next();
+        return userList(PageRequest.one(Criteria.property(ID).eq(id))).next();
     }
 
     @Override
     public Mono<RawNews> get(String id) {
-        return list(Criteria.property("id").eq(id))
-                .next();
+        return list(PageRequest.one(Criteria.property(ID).eq(id))).next();
     }
 
     @Override
@@ -95,8 +95,8 @@ public class NewsRepository implements NewsPersistencePort {
 
     @Override
     @SuppressWarnings("ReactiveStreamsNullableInLambdaInTransform")
-    public Flux<News> userList(Criteria searchCriteria) {
-        Condition conditions = searchCriteria.visit(NEWS_CONDITION_VISITOR);
+    public Flux<News> userList(PageRequest pageRequest) {
+        Condition conditions = pageRequest.filter.visit(NEWS_CONDITION_VISITOR);
         PredicateSearchVisitor<News> predicateSearchVisitor = new PredicateSearchVisitor<>();
         return Flux.<Record>create(sink -> {
             Cursor<Record> cursor = dsl
@@ -116,13 +116,13 @@ public class NewsRepository implements NewsPersistencePort {
             });
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(r -> conversionService.convert(r, News.class))
-                .filter(searchCriteria.visit(predicateSearchVisitor));
+                .filter(pageRequest.filter.visit(predicateSearchVisitor));
     }
 
     @Override
     @SuppressWarnings("ReactiveStreamsNullableInLambdaInTransform")
-    public Flux<RawNews> list(Criteria searchCriteria) {
-        Condition conditions = searchCriteria.visit(NEWS_CONDITION_VISITOR);
+    public Flux<RawNews> list(PageRequest pageRequest) {
+        Condition conditions = pageRequest.filter.visit(NEWS_CONDITION_VISITOR);
         PredicateSearchVisitor<RawNews> predicateSearchVisitor = new PredicateSearchVisitor<>();
         return Flux.<NewsRecord>create(sink -> {
             Cursor<NewsRecord> cursor = dsl.selectFrom(NEWS).where(conditions).fetchLazy();
@@ -136,7 +136,7 @@ public class NewsRepository implements NewsPersistencePort {
             });
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(r -> conversionService.convert(r, RawNews.class))
-                .filter(searchCriteria.visit(predicateSearchVisitor));
+                .filter(pageRequest.filter.visit(predicateSearchVisitor));
     }
 
     @Override

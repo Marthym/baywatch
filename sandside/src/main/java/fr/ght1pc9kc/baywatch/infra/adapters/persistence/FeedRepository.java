@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
-import fr.ght1pc9kc.baywatch.api.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.api.FeedPersistencePort;
+import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;

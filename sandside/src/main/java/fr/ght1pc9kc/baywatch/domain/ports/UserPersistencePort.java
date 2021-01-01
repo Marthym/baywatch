@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.api;
+package fr.ght1pc9kc.baywatch.domain.ports;
 
 import fr.ght1pc9kc.baywatch.api.model.User;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;

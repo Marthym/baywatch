@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
-import fr.ght1pc9kc.baywatch.api.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.api.model.User;

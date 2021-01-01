@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.actions;
 
-import fr.ght1pc9kc.baywatch.api.NewsPersistencePort;
+import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.State;

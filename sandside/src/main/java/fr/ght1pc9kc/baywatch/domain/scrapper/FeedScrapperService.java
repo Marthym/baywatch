@@ -1,8 +1,8 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.api.FeedPersistencePort;
-import fr.ght1pc9kc.baywatch.api.NewsPersistencePort;
+import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
+import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;

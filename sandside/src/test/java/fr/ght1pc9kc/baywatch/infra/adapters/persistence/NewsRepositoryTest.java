@@ -4,7 +4,9 @@ import fr.ght1pc9kc.baywatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.State;
+import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
+import fr.ght1pc9kc.baywatch.api.model.request.pagination.Sort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
@@ -148,7 +150,12 @@ class NewsRepositoryTest {
     @Test
     void should_list_news_for_user_with_criteria(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
-        List<News> actual = tested.userList(Criteria.property("stared").eq(true)).collectList().block();
+        PageRequest pageRequest = PageRequest.builder()
+                .page(-1).size(-1)
+                .sort(Sort.of())
+                .filter(Criteria.property("stared").eq(true))
+                .build();
+        List<News> actual = tested.userList(pageRequest).collectList().block();
         assertThat(actual).allMatch(News::isStared);
     }
 

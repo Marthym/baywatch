@@ -1,9 +1,10 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.actions;
 
-import fr.ght1pc9kc.baywatch.api.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.api.scrapper.PreScrappingAction;
+import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ public class PurgeNewsAction implements PreScrappingAction {
     public Mono<Void> call() {
         LocalDateTime maxPublicationPasDate = LocalDateTime.now(clock).minus(Period.ofMonths(3));
         Criteria criteria = Criteria.property("publication").lt(maxPublicationPasDate);
-        return newsPersistence.list(criteria)
+        return newsPersistence.list(PageRequest.all(criteria))
                 .map(RawNews::getId)
                 .collectList()
                 .flatMapMany(this::keepStaredNewsIds)
