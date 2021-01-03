@@ -1,44 +1,62 @@
 package fr.ght1pc9kc.baywatch.api.model.request.filter;
 
-import java.util.Arrays;
+import lombok.EqualsAndHashCode;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@EqualsAndHashCode
 public abstract class Criteria {
 
     public static NoCriterion none() {
         return NoCriterion.NONE;
     }
 
-    public static Criteria and(Criteria left, Criteria right) {
-        if (left.isEmpty()) {
-            return right;
-        } else if (right.isEmpty()) {
-            return left;
+    public static Criteria and(Criteria... andCriteria) {
+        Set<Criteria> filtered = Arrays.stream(andCriteria)
+                .filter(Predicate.not(Criteria::isEmpty))
+                .flatMap(a -> {
+                    if (a instanceof AndOperation) {
+                        return ((AndOperation) a).andCriteria.stream();
+                    } else {
+                        return Stream.of(a);
+                    }
+                })
+                .collect(Collectors.toUnmodifiableSet());
+        if (filtered.isEmpty()) {
+            return Criteria.none();
+        } else if (filtered.size() == 1) {
+            return filtered.iterator().next();
         }
-        return new AndOperation(left, right);
+        return new AndOperation(filtered);
     }
 
-    public static Criteria and(Criteria... left) {
-        if (left.length == 0) {
-            return none();
+    public static Criteria or(Criteria... orCriteria) {
+        Set<Criteria> filtered = Arrays.stream(orCriteria)
+                .filter(Predicate.not(Criteria::isEmpty))
+                .flatMap(a -> {
+                    if (a instanceof OrOperation) {
+                        return ((OrOperation) a).orCriteria.stream();
+                    } else {
+                        return Stream.of(a);
+                    }
+                })
+                .collect(Collectors.toUnmodifiableSet());
+        if (filtered.isEmpty()) {
+            return Criteria.none();
         }
-        if (left.length == 1) {
-            return left[0];
-        }
-        return and(left[0], and(Arrays.copyOfRange(left, 1, left.length)));
-    }
-
-    public static Criteria or(Criteria left, Criteria right) {
-        if (left.isEmpty()) {
-            return left;
-        } else if (right.isEmpty()) {
-            return right;
-        }
-        return new OrOperation(left, right);
+        return new OrOperation(filtered);
     }
 
     public static Criteria not(Criteria criteria) {
         if (criteria.isEmpty()) {
             return criteria;
+        }
+        if (criteria instanceof NotOperation) {
+            return ((NotOperation) criteria).negative;
         }
         return new NotOperation(criteria);
     }

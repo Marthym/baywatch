@@ -17,19 +17,21 @@ public class PredicateSearchVisitor<E> implements Criteria.Visitor<Predicate<E>>
 
     @Override
     public Predicate<E> visitAnd(AndOperation operation) {
-        return n -> operation.right.visit(this).test(n)
-                && operation.left.visit(this).test(n);
+        return n -> operation.andCriteria.stream()
+                .map(a -> a.visit(this))
+                .allMatch(a -> a.test(n));
     }
 
     @Override
     public Predicate<E> visitNot(NotOperation operation) {
-        return n -> !operation.criteria.visit(this).test(n);
+        return n -> !operation.negative.visit(this).test(n);
     }
 
     @Override
     public Predicate<E> visitOr(OrOperation operation) {
-        return n -> operation.right.visit(this).test(n)
-                || operation.left.visit(this).test(n);
+        return n -> operation.orCriteria.stream()
+                .map(a -> a.visit(this))
+                .anyMatch(a -> a.test(n));
     }
 
     @Override

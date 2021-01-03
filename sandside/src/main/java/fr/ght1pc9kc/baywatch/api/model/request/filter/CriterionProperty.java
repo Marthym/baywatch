@@ -1,18 +1,25 @@
 package fr.ght1pc9kc.baywatch.api.model.request.filter;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Value;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 @Value
 @Getter(AccessLevel.PACKAGE)
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class CriterionProperty {
     public String property;
 
     public <T> Criteria eq(T value) {
+        if (value == null || value.toString().isBlank()) {
+            throw new IllegalArgumentException("Value can not be null or empty !");
+        }
         return new EqualOperation<>(this, new CriterionValue<>(value));
     }
 
@@ -21,8 +28,9 @@ public class CriterionProperty {
     }
 
     @SafeVarargs
-    public final <T> Criteria in(T... values) {
-        return new InOperation<>(this, new CriterionValue<>(Arrays.asList(values)));
+    public final <T> Criteria in(@NotNull T... values) {
+        Objects.requireNonNull(values, "Values can not be null !");
+        return new InOperation<>(this, new CriterionValue<>(List.of(values)));
     }
 
     public <T> Criteria gt(T value) {

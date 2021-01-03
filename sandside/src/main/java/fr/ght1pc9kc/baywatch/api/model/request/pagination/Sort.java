@@ -21,4 +21,8 @@ public class Sort {
                 .map(p -> new Order(direction, p))
                 .collect(Collectors.toUnmodifiableList()));
     }
+
+    public static Sort of(Order... orders) {
+        return new Sort(List.of(orders));
+    }
 }

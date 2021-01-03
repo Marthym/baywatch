@@ -6,7 +6,7 @@ import lombok.Value;
 @Value
 @EqualsAndHashCode(callSuper = true)
 public class NotOperation extends Criteria {
-    public Criteria criteria;
+    public Criteria negative;
 
     @Override
     public boolean isEmpty() {

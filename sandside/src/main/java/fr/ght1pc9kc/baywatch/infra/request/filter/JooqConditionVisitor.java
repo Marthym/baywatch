@@ -22,21 +22,23 @@ public class JooqConditionVisitor implements Criteria.Visitor<Condition> {
 
     @Override
     public Condition visitAnd(AndOperation operation) {
-        Condition right = operation.right.visit(this);
-        Condition left = operation.left.visit(this);
-        return DSL.and(right, left);
+        Condition[] conditions = operation.andCriteria.stream()
+                .map(a -> a.visit(this))
+                .toArray(Condition[]::new);
+        return DSL.and(conditions);
     }
 
     @Override
     public Condition visitNot(NotOperation operation) {
-        return DSL.not(operation.criteria.visit(this));
+        return DSL.not(operation.negative.visit(this));
     }
 
     @Override
     public Condition visitOr(OrOperation operation) {
-        Condition right = operation.right.visit(this);
-        Condition left = operation.left.visit(this);
-        return DSL.or(right, left);
+        Condition[] conditions = operation.orCriteria.stream()
+                .map(o -> o.visit(this))
+                .toArray(Condition[]::new);
+        return DSL.or(conditions);
     }
 
     @Override

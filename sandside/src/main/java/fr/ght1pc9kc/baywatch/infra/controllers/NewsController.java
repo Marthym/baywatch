@@ -19,6 +19,6 @@ public class NewsController {
 
     @GetMapping
     public Flux<News> listNews(@RequestParam Map<String, String> queryStringParams) {
-        return newsService.list(PageRequestFormatter.fromQueryString(queryStringParams));
+        return newsService.list(PageRequestFormatter.parse(queryStringParams));
     }
 }
