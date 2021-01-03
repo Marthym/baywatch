@@ -140,7 +140,7 @@ public class PageRequestFormatter {
         final int idx = it.indexOf('=');
         boolean hasEqualSymbol = idx > 0;
         final String key = hasEqualSymbol ? it.substring(0, idx) : it;
-        final String value = hasEqualSymbol && it.length() > idx + 1 ? it.substring(idx + 1) : "true";
+        final String value = hasEqualSymbol && it.length() > idx + 1 ? it.substring(idx + 1) : "";
         return Map.entry(
                 URLDecoder.decode(key, StandardCharsets.UTF_8),
                 URLDecoder.decode(value, StandardCharsets.UTF_8)
