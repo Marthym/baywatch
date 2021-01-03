@@ -49,6 +49,8 @@ public abstract class Criteria {
                 .collect(Collectors.toUnmodifiableList());
         if (filtered.isEmpty()) {
             return Criteria.none();
+        } else if (filtered.size() == 1) {
+            return filtered.iterator().next();
         }
         return new OrOperation(filtered);
     }
