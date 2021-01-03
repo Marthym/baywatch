@@ -1,14 +1,14 @@
-
+---
 spring:
   datasource:
-    url: jdbc:h2:file:./target/baywatch
+    url: jdbc:h2:file:${HOME:~}/.baywatch/baywatch
     driver-class-name: org.h2.Driver
     username: baywatch
     password: hasselhoff
 
 server:
   port: 8081
-  
+
 # Avoid infinite stacktrace due to reactor
 logging:
   exception-conversion-word: "%wEx{full, reactor.core.publisher}"

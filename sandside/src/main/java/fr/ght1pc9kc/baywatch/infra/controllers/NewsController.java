@@ -11,13 +11,13 @@ import reactor.core.publisher.Flux;
 
 import java.util.Map;
 
-@RestController("/news")
+@RestController("/api")
 @AllArgsConstructor
 public class NewsController {
 
     private final NewsService newsService;
 
-    @GetMapping
+    @GetMapping("/news")
     public Flux<News> listNews(@RequestParam Map<String, String> queryStringParams) {
         return newsService.list(PageRequestFormatter.parse(queryStringParams));
     }
