@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.api.model.request.filter;
 import lombok.EqualsAndHashCode;
 
 import java.util.Arrays;
-import java.util.Set;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -16,7 +16,7 @@ public abstract class Criteria {
     }
 
     public static Criteria and(Criteria... andCriteria) {
-        Set<Criteria> filtered = Arrays.stream(andCriteria)
+        List<Criteria> filtered = Arrays.stream(andCriteria)
                 .filter(Predicate.not(Criteria::isEmpty))
                 .flatMap(a -> {
                     if (a instanceof AndOperation) {
@@ -25,7 +25,8 @@ public abstract class Criteria {
                         return Stream.of(a);
                     }
                 })
-                .collect(Collectors.toUnmodifiableSet());
+                .distinct()
+                .collect(Collectors.toUnmodifiableList());
         if (filtered.isEmpty()) {
             return Criteria.none();
         } else if (filtered.size() == 1) {
@@ -35,7 +36,7 @@ public abstract class Criteria {
     }
 
     public static Criteria or(Criteria... orCriteria) {
-        Set<Criteria> filtered = Arrays.stream(orCriteria)
+        List<Criteria> filtered = Arrays.stream(orCriteria)
                 .filter(Predicate.not(Criteria::isEmpty))
                 .flatMap(a -> {
                     if (a instanceof OrOperation) {
@@ -44,7 +45,8 @@ public abstract class Criteria {
                         return Stream.of(a);
                     }
                 })
-                .collect(Collectors.toUnmodifiableSet());
+                .distinct()
+                .collect(Collectors.toUnmodifiableList());
         if (filtered.isEmpty()) {
             return Criteria.none();
         }

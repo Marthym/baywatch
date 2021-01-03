@@ -1,11 +1,8 @@
 package fr.ght1pc9kc.baywatch.infra.request.filter;
 
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
-import fr.ght1pc9kc.baywatch.dsl.tables.News;
 import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
 import org.jooq.Condition;
-import org.jooq.conf.ParamType;
-import org.jooq.impl.DSL;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -13,6 +10,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
+import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class JooqConditionVisitorTest {
@@ -23,9 +21,9 @@ class JooqConditionVisitorTest {
 
     @ParameterizedTest
     @MethodSource("provideSCriteria")
-    void should_create_condition_from_criteria(Criteria criteria, String expected) {
+    void should_create_condition_from_criteria(Criteria criteria, Condition expected) {
         Condition actual = criteria.visit(tested);
-        assertThat(DSL.select(News.NEWS.NEWS_ID).where(actual).getSQL(ParamType.INLINED)).isEqualTo(expected);
+        assertThat(actual).isEqualTo(expected);
     }
 
     private static Stream<Arguments> provideSCriteria() {
@@ -33,20 +31,19 @@ class JooqConditionVisitorTest {
                 Arguments.of(Criteria.property("title").eq("Obiwan")
                                 .and(Criteria.property("publication").gt(NOW)
                                         .or(Criteria.property("publication").lt(NOW))),
-                        "select \"PUBLIC\".\"NEWS\".\"NEWS_ID\" "
-                                + "where ((\"PUBLIC\".\"NEWS\".\"NEWS_PUBLICATION\" < timestamp '2020-12-11 10:20:42.0' "
-                                + "or \"PUBLIC\".\"NEWS\".\"NEWS_PUBLICATION\" > timestamp '2020-12-11 10:20:42.0') "
-                                + "and \"PUBLIC\".\"NEWS\".\"NEWS_TITLE\" = 'Obiwan')"),
-                Arguments.of(Criteria.property("title").eq("Obiwan")
-                                .and(Criteria.property("publication").gt(NOW))
-                                .or(Criteria.property("publication").lt(NOW)),
-                        "select \"PUBLIC\".\"NEWS\".\"NEWS_ID\" "
-                                + "where (\"PUBLIC\".\"NEWS\".\"NEWS_PUBLICATION\" < timestamp '2020-12-11 10:20:42.0' "
-                                + "or (\"PUBLIC\".\"NEWS\".\"NEWS_PUBLICATION\" > timestamp '2020-12-11 10:20:42.0' "
-                                + "and \"PUBLIC\".\"NEWS\".\"NEWS_TITLE\" = 'Obiwan'))"),
-                Arguments.of(Criteria.property("id").in("1", "2", "3", "4", "42"),
-                        "select \"PUBLIC\".\"NEWS\".\"NEWS_ID\" "
-                                + "where \"PUBLIC\".\"NEWS\".\"NEWS_ID\" in ('1', '2', '3', '4', '42')")
+                        NEWS.NEWS_TITLE.eq("Obiwan").and(
+                                NEWS.NEWS_PUBLICATION.gt(LocalDateTime.parse("2020-12-11T10:20:42"))
+                                        .or(NEWS.NEWS_PUBLICATION.lt(LocalDateTime.parse("2020-12-11T10:20:42")))))
+//                Arguments.of(Criteria.property("title").eq("Obiwan")
+//                                .and(Criteria.property("publication").gt(NOW))
+//                                .or(Criteria.property("publication").lt(NOW)),
+//                        "select \"PUBLIC\".\"NEWS\".\"NEWS_ID\" "
+//                                + "where (\"PUBLIC\".\"NEWS\".\"NEWS_PUBLICATION\" < timestamp '2020-12-11 10:20:42.0' "
+//                                + "or (\"PUBLIC\".\"NEWS\".\"NEWS_PUBLICATION\" > timestamp '2020-12-11 10:20:42.0' "
+//                                + "and \"PUBLIC\".\"NEWS\".\"NEWS_TITLE\" = 'Obiwan'))"),
+//                Arguments.of(Criteria.property("id").in("1", "2", "3", "4", "42"),
+//                        "select \"PUBLIC\".\"NEWS\".\"NEWS_ID\" "
+//                                + "where \"PUBLIC\".\"NEWS\".\"NEWS_ID\" in ('1', '2', '3', '4', '42')")
         );
     }
 }

@@ -34,7 +34,7 @@ class PageRequestFormatterTest {
                                 "job", "master"),
                         PageRequest.builder()
                                 .page(2).size(100)
-                                .filter(Criteria.property("profile").eq("jedi").and(Criteria.property("job").eq("master")))
+                                .filter(Criteria.property("job").eq("master").and(Criteria.property("profile").eq("jedi")))
                                 .sort(Sort.of(new Order(Direction.ASC, "name"), new Order(Direction.DESC, "email")))
                                 .build()),
                 Arguments.of(
@@ -94,7 +94,7 @@ class PageRequestFormatterTest {
                         "_p=2&_s=name,-email&profile=jedi&job=master",
                         PageRequest.builder()
                                 .page(2).size(100)
-                                .filter(Criteria.property("profile").eq("jedi").and(Criteria.property("job").eq("master")))
+                                .filter(Criteria.property("job").eq("master").and(Criteria.property("profile").eq("jedi")))
                                 .sort(Sort.of(new Order(Direction.ASC, "name"), new Order(Direction.DESC, "email")))
                                 .build()),
                 Arguments.of(

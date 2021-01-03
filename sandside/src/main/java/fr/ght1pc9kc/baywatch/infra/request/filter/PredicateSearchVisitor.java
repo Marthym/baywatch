@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.*;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Predicate;
 

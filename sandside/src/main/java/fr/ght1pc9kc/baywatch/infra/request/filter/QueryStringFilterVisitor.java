@@ -4,6 +4,7 @@ import fr.ght1pc9kc.baywatch.api.model.request.filter.*;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class QueryStringFilterVisitor implements Criteria.Visitor<String> {

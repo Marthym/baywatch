@@ -11,11 +11,8 @@ import lombok.experimental.UtilityClass;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.function.Predicate.not;
@@ -85,6 +82,7 @@ public class PageRequestFormatter {
 
         Criteria[] filters = queryString.entrySet().stream()
                 .filter(e -> !EXCLUDE_FILTER_PARAMETERS.contains(e.getKey()))
+                .sorted(Entry.comparingByKey())
                 .map(e -> {
                     Object value = (e.getValue() != null && !e.getValue().isBlank())
                             ? e.getValue() : true;
