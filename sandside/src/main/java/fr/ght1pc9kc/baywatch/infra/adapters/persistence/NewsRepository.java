@@ -13,6 +13,7 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
 import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.infra.request.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.baywatch.infra.request.filter.PredicateSearchVisitor;
+import fr.ght1pc9kc.baywatch.infra.request.pagination.JooqPagination;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.*;
@@ -98,14 +99,17 @@ public class NewsRepository implements NewsPersistencePort {
     public Flux<News> userList(PageRequest pageRequest) {
         Condition conditions = pageRequest.filter.visit(NEWS_CONDITION_VISITOR);
         PredicateSearchVisitor<News> predicateSearchVisitor = new PredicateSearchVisitor<>();
+
+        final Select<Record> query = JooqPagination.apply(pageRequest, dsl
+                .select(NEWS.fields()).select(NEWS_FEEDS.NEFE_FEED_ID).select(NEWS_USER_STATE.NURS_STATE)
+                .from(NEWS)
+                .leftJoin(NEWS_USER_STATE).on(NEWS.NEWS_ID.eq(NEWS_USER_STATE.NURS_NEWS_ID))
+                .leftJoin(NEWS_FEEDS).on(NEWS.NEWS_ID.eq(NEWS_FEEDS.NEFE_NEWS_ID))
+                .where(conditions)
+        );
+
         return Flux.<Record>create(sink -> {
-            Cursor<Record> cursor = dsl
-                    .select(NEWS.fields()).select(NEWS_FEEDS.NEFE_FEED_ID).select(NEWS_USER_STATE.NURS_STATE)
-                    .from(NEWS)
-                    .leftJoin(NEWS_USER_STATE).on(NEWS.NEWS_ID.eq(NEWS_USER_STATE.NURS_NEWS_ID))
-                    .leftJoin(NEWS_FEEDS).on(NEWS.NEWS_ID.eq(NEWS_FEEDS.NEFE_NEWS_ID))
-                    .where(conditions)
-                    .fetchLazy();
+            Cursor<Record> cursor = query.fetchLazy();
             sink.onRequest(n -> {
                 int count = Long.valueOf(n).intValue();
                 Result<Record> rs = cursor.fetchNext(count);
@@ -124,8 +128,13 @@ public class NewsRepository implements NewsPersistencePort {
     public Flux<RawNews> list(PageRequest pageRequest) {
         Condition conditions = pageRequest.filter.visit(NEWS_CONDITION_VISITOR);
         PredicateSearchVisitor<RawNews> predicateSearchVisitor = new PredicateSearchVisitor<>();
+
+        final Select<NewsRecord> query = JooqPagination.apply(pageRequest, dsl
+                .selectFrom(NEWS).where(conditions)
+        );
+
         return Flux.<NewsRecord>create(sink -> {
-            Cursor<NewsRecord> cursor = dsl.selectFrom(NEWS).where(conditions).fetchLazy();
+            Cursor<NewsRecord> cursor = query.fetchLazy();
             sink.onRequest(n -> {
                 int count = Long.valueOf(n).intValue();
                 Result<NewsRecord> rs = cursor.fetchNext(count);
