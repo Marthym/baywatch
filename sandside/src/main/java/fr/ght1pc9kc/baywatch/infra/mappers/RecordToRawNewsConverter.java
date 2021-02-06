@@ -16,6 +16,7 @@ public class RecordToRawNewsConverter implements Converter<Record, RawNews> {
         return RawNews.builder()
                 .id(source.get(NEWS.NEWS_ID))
                 .title(source.get(NEWS.NEWS_TITLE))
+                .description(source.get(NEWS.NEWS_DESCRIPTION))
                 .link(URI.create(source.get(NEWS.NEWS_LINK)))
                 .publication(DateUtils.toInstant(source.get(NEWS.NEWS_PUBLICATION)))
                 .build();
