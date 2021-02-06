@@ -5,11 +5,13 @@
       <ContentHeader/>
       <NewsListHeader/>
 
-      <NewsCard/>
-      <NewsCard/>
-      <NewsCard/>
-      <NewsCard/>
-      <NewsCard/>
+      <template v-for="card in news">
+        <NewsCard :card="card" v-bind:key="card.id"/>
+      </template>
+      <!--      <NewsCard/>-->
+      <!--      <NewsCard/>-->
+      <!--      <NewsCard/>-->
+      <!--      <NewsCard/>-->
 
     </div>
 
@@ -22,6 +24,8 @@ import ContentTopNav from "./ContentTopNav.vue";
 import ContentHeader from "./ContentHeader.vue";
 import NewsListHeader from "@/components/content/NewsListHeader.vue";
 import NewsCard from "@/components/content/NewsCard.vue";
+import NewsService from "@/services/NewsService";
+import {Subscription} from "rxjs";
 
 @Component({
   components: {
@@ -32,5 +36,22 @@ import NewsCard from "@/components/content/NewsCard.vue";
   }
 })
 export default class MainContent extends Vue {
+  private newsService: NewsService = new NewsService(process.env.VUE_APP_API_BASE_URL);
+  private news: Array<News> = [];
+
+  private subscriptions?: Subscription;
+
+  mounted(): void {
+    console.log("mounted: ", process.env.VUE_APP_API_BASE_URL);
+    this.subscriptions = this.newsService.getNews()
+        .subscribe(
+            ns => this.news = ns,
+            () => console.log("complete")
+        );
+  }
+
+  beforeDestroy(): void {
+    this.subscriptions?.unsubscribe();
+  }
 }
 </script>

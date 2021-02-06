@@ -16,7 +16,7 @@
 						dark:text-gray-400">
         <span>name</span>
         <span class="mt-2 text-black dark:text-gray-200">
-							carmen beltran
+							{{ card.title }}
 						</span>
       </div>
 
@@ -90,9 +90,14 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
+import {Component, Prop, Vue} from 'vue-property-decorator';
 
 @Component
 export default class NewsCard extends Vue {
+  @Prop() card?: News;
+
+  created(): void {
+    console.log(this.card);
+  }
 }
 </script>
