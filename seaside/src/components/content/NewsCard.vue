@@ -1,43 +1,22 @@
 <template>
-  <div class="mt-2 flex px-4 py-4 justify-between bg-white
-				dark:bg-gray-600 shadow-xl rounded-lg cursor-pointer ">
+  <div class="flex flex-row mt-4 justify-between bg-white dark:bg-gray-600 shadow-xl rounded-lg">
     <!-- Card -->
-
-    <div class="flex justify-between">
-      <!-- Left side -->
-
-      <img
-          class="h-12 w-12 rounded-full object-cover"
-          src="https://inews.gtimg.com/newsapp_match/0/8693739867/0"
-          alt=""/>
-
-      <div
-          class="ml-4 flex flex-col capitalize text-gray-600
-						dark:text-gray-400">
-        <span>name</span>
-        <span class="mt-2 text-black dark:text-gray-200">
-							{{ card.title }}
-						</span>
-      </div>
-
-      <div
-          class="ml-12 flex flex-col capitalize text-gray-600
-						dark:text-gray-400">
-        <span>login</span>
-        <span class="mt-2 text-black dark:text-gray-200">
-							carmen.bel
-						</span>
-
-      </div>
-
+    <div class="flex-none"><!-- Left side -->
+      <img class="w-60 object-cover rounded-l-lg"
+           src="https://inews.gtimg.com/newsapp_match/0/8693739867/0"
+           alt=""/>
     </div>
 
-    <div class="flex">
-      <!-- Rigt side -->
+    <div class="flex-grow m-2"><!-- Middle -->
+      <div class="flex flex-col text-black dark:text-gray-400">
+        <span class="font-semibold text-xl">{{ card.title }}</span>
+        <span class="mt-2 text-sm text-gray-600">{{ card.description }}</span>
+        <div class="mt-2 w-full text-right"><a class="text-sm text-blue-600 underline" :href="card.link">ouvrir</a></div>
+      </div>
+    </div>
 
-      <div
-          class="mr-16 flex flex-col capitalize text-gray-600
-						dark:text-gray-400">
+    <div class="flex"><!-- Rigth side -->
+      <div class="mr-16 flex flex-col capitalize text-gray-600 dark:text-gray-400">
         <span>project</span>
         <span class="mt-2 text-black dark:text-gray-200">
 							Aero treck
