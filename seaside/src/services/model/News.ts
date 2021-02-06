@@ -1,12 +1,12 @@
 class News {
-    id: String;
-    public title: String;
-    public description: String;
+    public id: string;
+    public title: string;
+    public description: string;
     public publication: Date;
-    public link: String;
+    public link: string;
 
 
-    constructor(id: String, title: String, description: String, publication: Date, link: String) {
+    constructor(id: string, title: string, description: string, publication: Date, link: string) {
         this.id = id;
         this.title = title;
         this.description = description;

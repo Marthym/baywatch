@@ -1,6 +1,7 @@
-import {Observable, of} from 'rxjs';
+import {Observable} from 'rxjs';
 import {fromFetch} from "rxjs/fetch";
-import {catchError, switchMap} from "rxjs/operators";
+import {switchMap} from "rxjs/operators";
+import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 
 export default class NewsService {
     serviceBaseUrl: string;
@@ -9,19 +10,14 @@ export default class NewsService {
         this.serviceBaseUrl = baseURL;
     }
 
-    getNews(): Observable<Array<News> | any> {
+    getNews(): Observable<Array<News>> {
         return fromFetch(`${this.serviceBaseUrl}/news`).pipe(
             switchMap(response => {
                 if (response.ok) {
                     return response.json();
                 } else {
-                    return of({error: true, message: `Error ${response.status}`});
+                    throw new HttpStatusError(response.status, `Error while getting news.`);
                 }
-            }),
-            catchError(err => {
-                // Network or other error, handle appropriately
-                console.error(err);
-                return of({error: true, message: err.message})
             })
         );
     }
