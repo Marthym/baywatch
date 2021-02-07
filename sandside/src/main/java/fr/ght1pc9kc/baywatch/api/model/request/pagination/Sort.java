@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 @Value
 public class Sort {
-    private static final Sort UNSORTED = new Sort(List.of());
+    public static final Sort UNSORTED = new Sort(List.of());
 
     List<Order> orders;
 

@@ -33,13 +33,14 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 import static fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers.ID;
+import static fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers.NEWS_PROPERTIES_MAPPING;
 
 @Slf4j
 @Repository
 @AllArgsConstructor
 public class NewsRepository implements NewsPersistencePort {
     public static final JooqConditionVisitor NEWS_CONDITION_VISITOR =
-            new JooqConditionVisitor(PropertiesMappers.NEWS_PROPERTIES_MAPPING::get);
+            new JooqConditionVisitor(NEWS_PROPERTIES_MAPPING::get);
     public static final JooqConditionVisitor STATE_CONDITION_VISITOR =
             new JooqConditionVisitor(PropertiesMappers.STATE_PROPERTIES_MAPPING::get);
 
@@ -129,7 +130,7 @@ public class NewsRepository implements NewsPersistencePort {
         Condition conditions = pageRequest.filter.visit(NEWS_CONDITION_VISITOR);
         PredicateSearchVisitor<RawNews> predicateSearchVisitor = new PredicateSearchVisitor<>();
 
-        final Select<NewsRecord> query = JooqPagination.apply(pageRequest, dsl
+        final Select<NewsRecord> query = JooqPagination.apply(pageRequest, NEWS_PROPERTIES_MAPPING, dsl
                 .selectFrom(NEWS).where(conditions)
         );
 
