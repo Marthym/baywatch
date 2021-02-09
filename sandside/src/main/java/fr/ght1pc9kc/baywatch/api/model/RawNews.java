@@ -15,6 +15,7 @@ import java.time.Instant;
 public class RawNews {
     public @NonNull String id;
     public String title;
+    public URI image;
     public String description;
     public Instant publication;
     public @NonNull URI link;

@@ -13,8 +13,4 @@ server:
 logging:
   exception-conversion-word: "%wEx{full, reactor.core.publisher}"
   level:
-    org.jooq.Constants: WARN
-    fr.ght1pc9kc: DEBUG
-    reactor.netty.http.server.AccessLog: INFO
-#    org.springframework.boot.autoconfigure: DEBUG
-#    org.jooq: DEBUG
+    root: WARN

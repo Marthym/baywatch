@@ -1,0 +1,17 @@
+---
+spring:
+  datasource:
+    url: jdbc:h2:file:./target/baywatch
+  main:
+    banner-mode: off
+
+server:
+  port: 0
+
+logging:
+  level:
+    root: OFF
+#    fr.ght1pc9kc: DEBUG
+#    reactor.netty.http.server.AccessLog: INFO
+#    org.springframework.boot.autoconfigure: DEBUG
+#    org.jooq: DEBUG
