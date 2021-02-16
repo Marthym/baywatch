@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.api.model;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 
 import java.net.URI;
 import java.time.Instant;
@@ -10,6 +11,7 @@ import java.time.Instant;
 /**
  * The News element out of the BDD. Not customized for the user
  */
+@With
 @Value
 @Builder
 public class RawNews {

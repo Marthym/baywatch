@@ -13,4 +13,5 @@ server:
 logging:
   exception-conversion-word: "%wEx{full, reactor.core.publisher}"
   level:
-    root: WARN
+    root: INFO
+    org.jooq: WARN
