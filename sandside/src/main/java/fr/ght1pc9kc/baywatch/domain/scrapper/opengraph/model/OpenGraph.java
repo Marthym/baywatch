@@ -1,10 +1,10 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model;
 
+import com.machinezoo.noexception.Exceptions;
 import lombok.Builder;
 import lombok.Value;
 import lombok.With;
 
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
@@ -25,27 +25,27 @@ public class OpenGraph {
         OpenGraphBuilder builder = OpenGraph.builder();
         for (Meta m : metas) {
             switch (m.property) {
-                case "og:title":
+                case Tags.OG_TITLE:
                     builder.title(m.content);
                     break;
-                case "og:type":
+                case Tags.OG_TYPE:
                     builder.type(OGType.valueOf(m.content.toUpperCase()));
                     break;
-                case "og:url":
-                    try {
-                        builder.url(new URL(m.content));
-                    } catch (MalformedURLException e) {
-                        throw new OpenGraphException(e);
-                    }
+                case Tags.OG_URL:
+                    Exceptions.silence()
+                            .get(Exceptions.sneak().supplier(() -> new URL(m.content)))
+                            .ifPresent(builder::url);
                     break;
-                case "og:image":
+                case Tags.OG_IMAGE:
                     builder.image(URI.create(m.content));
                     break;
-                case "og:description":
+                case Tags.OG_DESCRIPTION:
                     builder.description(m.content);
                     break;
-                case "og:locale":
-                    builder.locale(Locale.forLanguageTag(m.content));
+                case Tags.OG_LOCALE:
+                    if (m.content != null) {
+                        builder.locale(Locale.forLanguageTag(m.content));
+                    }
                     break;
                 default:
             }
