@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model;
 
 import com.machinezoo.noexception.Exceptions;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.Value;
 import lombok.With;
 

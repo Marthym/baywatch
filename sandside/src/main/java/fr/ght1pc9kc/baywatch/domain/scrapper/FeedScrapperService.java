@@ -1,12 +1,14 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
-import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.scrapper.PreScrappingAction;
+import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
+import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
+import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,7 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
@@ -32,6 +35,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -47,11 +51,12 @@ public final class FeedScrapperService implements Runnable {
     private final ScheduledExecutorService scheduleExecutor = Executors.newSingleThreadScheduledExecutor(
             new CustomizableThreadFactory("scrapSched-"));
     private final Scheduler scrapperScheduler =
-            Schedulers.newBoundedElastic(4, Integer.MAX_VALUE, "scrapper");
+            Schedulers.newBoundedElastic(5, Integer.MAX_VALUE, "scrapper");
     private final WebClient http = WebClient.create();
     private final CountDownLatch lock = new CountDownLatch(1);
 
     private final Clock clock;
+    private final OpenGraphScrapper ogScrapper;
     private final FeedPersistencePort feedRepository;
     private final NewsPersistencePort newsRepository;
     private final RssAtomParser feedParser;
@@ -92,6 +97,7 @@ public final class FeedScrapperService implements Runnable {
                 .thenMany(feedRepository.list())
                 .parallel(4).runOn(scrapperScheduler)
                 .flatMap(this::wgetFeedNews)
+                .flatMap(this::completeWithOpenGraph)
                 .sequential()
                 .buffer(100)
                 .flatMap(newsRepository::persist)
@@ -140,5 +146,18 @@ public final class FeedScrapperService implements Runnable {
             log.debug("STACKTRACE", e);
         }
         return Flux.empty();
+    }
+
+    private Mono<News> completeWithOpenGraph(News news) {
+        log.debug("Scrap OG for '{}'", news.getId());
+        return ogScrapper.scrap(news.getLink())
+                .map(og -> {
+                    log.debug("OG image: {}", og.image);
+                    RawNews raw = news.getRaw();
+                    raw = Optional.ofNullable(og.title).map(raw::withTitle).orElse(raw);
+                    raw = Optional.ofNullable(og.description).map(raw::withDescription).orElse(raw);
+                    raw = Optional.ofNullable(og.image).map(raw::withImage).orElse(raw);
+                    return news.withRaw(raw);
+                });
     }
 }

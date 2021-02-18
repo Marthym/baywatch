@@ -1,9 +1,7 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.opengraph;
 
-import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.Meta;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OpenGraph;
-import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OpenGraphException;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.Tags;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +13,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
-import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
@@ -29,25 +26,6 @@ public final class OpenGraphScrapper {
     private static final String HEAD_END_TAG = "</head>";
 
     private final WebClient http = WebClient.create();
-
-    private static String consumePayload(InputStream newsPayload) {
-        try (BufferedReader dis = new BufferedReader(new InputStreamReader(newsPayload))) {
-            String line;
-            StringBuilder headBldr = new StringBuilder();
-            while ((line = dis.readLine()) != null) {
-                headBldr.append(line);
-                if (line.contains(HEAD_END_TAG)) {
-                    break;
-                }
-            }
-            dis.close();
-            newsPayload.close();
-
-            return headBldr.toString();
-        } catch (IOException e) {
-            throw new OpenGraphException(e);
-        }
-    }
 
     private static Flux<Meta> extractMetaFromHead(String head) {
         Matcher m = META_PATTERN.matcher(head);
@@ -81,41 +59,31 @@ public final class OpenGraphScrapper {
     }
 
     public Mono<OpenGraph> scrap(URI location) {
-        try {
-            PipedOutputStream osPipe = new PipedOutputStream();
-            PipedInputStream newsPayload = new PipedInputStream(osPipe);
+        return http.get().uri(location)
+                .acceptCharset(StandardCharsets.UTF_8)
+                .retrieve()
+                .bodyToFlux(DataBuffer.class)
 
-            Flux<DataBuffer> buffers = http.get().uri(location)
-                    .acceptCharset(StandardCharsets.UTF_8)
-                    .retrieve()
-                    .bodyToFlux(DataBuffer.class)
-                    .doFirst(() -> log.trace("Receiving data from {}...", location.getHost()))
-                    .onErrorResume(e -> {
-                        log.error("{}", e.getLocalizedMessage());
-                        log.debug("STACKTRACE", e);
-                        return Flux.empty();
-                    });
+                .scan(new StringBuilder(), (sb, buff) -> {
+                    StringBuilder bldr = sb.append(buff.toString(StandardCharsets.UTF_8));
+                    DataBufferUtils.release(buff);
+                    return bldr;
+                })
+                .takeUntil(sb -> sb.indexOf(HEAD_END_TAG) >= 0)
+                .last()
+                .map(StringBuilder::toString)
 
-            DataBufferUtils.write(buffers, osPipe)
-                    .doFinally(Exceptions.wrap().consumer(signal -> {
-                        osPipe.flush();
-                        osPipe.close();
-                        log.debug("Finish Scrapping header {}.", location.getHost());
-                    })).subscribe(DataBufferUtils.releaseConsumer());
-
-            return readOpenGraphHeader(newsPayload);
-
-        } catch (IOException e) {
-            log.error("{}: {}", e.getClass(), e.getLocalizedMessage());
-            log.debug("STACKTRACE", e);
-            return Mono.empty();
-        }
-    }
-
-    private Mono<OpenGraph> readOpenGraphHeader(InputStream newsPayload) {
-        return Mono.fromCallable(() -> consumePayload(newsPayload))
                 .flatMapMany(OpenGraphScrapper::extractMetaFromHead)
                 .collectList()
-                .map(OpenGraph::fromMetas);
+                .map(OpenGraph::fromMetas)
+
+                .doFirst(() -> log.trace("Receiving data from {}...", location.getHost()))
+                .onErrorResume(e -> {
+                    log.error("{}", e.getLocalizedMessage());
+                    log.debug("STACKTRACE", e);
+                    return Mono.empty();
+                }).doOnTerminate(() -> log.debug("terminate"));
+
     }
+
 }

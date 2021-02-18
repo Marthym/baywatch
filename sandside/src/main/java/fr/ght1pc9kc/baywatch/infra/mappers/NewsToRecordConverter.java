@@ -22,6 +22,7 @@ public class NewsToRecordConverter implements Converter<News, NewsRecord> {
                 .setNewsId(newsId)
                 .setNewsTitle(Optional.ofNullable(source.getImage()).map(URI::toString).orElse(null))
                 .setNewsDescription(source.getDescription())
+                .setNewsImgLink(Optional.ofNullable(source.getImage()).map(URI::toString).orElse(null))
                 .setNewsLink(source.getLink().toString())
                 .setNewsPublication(DateUtils.toLocalDateTime(source.getPublication()))
                 .setNewsTitle(StringUtils.abbreviate(source.getTitle(), 250));

@@ -8,6 +8,7 @@ import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.model.*;
+import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,6 +37,7 @@ class FeedScrapperServiceTest {
 
     private FeedScrapperService tested;
 
+    private OpenGraphScrapper openGraphScrapper;
     private NewsPersistencePort newsPersistenceMock;
     private RssAtomParser rssAtomParserMock;
     private FeedPersistencePort feedPersistenceMock;
@@ -139,6 +141,7 @@ class FeedScrapperServiceTest {
         String springSha3 = Hasher.sha3(springUri.toString());
         String jdhSha3 = Hasher.sha3(jdhUri.toString());
 
+        openGraphScrapper = mock(OpenGraphScrapper.class);
         feedPersistenceMock = mock(FeedPersistencePort.class);
         when(feedPersistenceMock.list()).thenReturn(Flux.just(
                 Feed.builder().raw(RawFeed.builder()
@@ -154,7 +157,7 @@ class FeedScrapperServiceTest {
         ));
 
         tested = new FeedScrapperService(Clock.systemUTC(),
-                feedPersistenceMock, newsPersistenceMock, rssAtomParserMock, Collections.emptyList());
+                openGraphScrapper, feedPersistenceMock, newsPersistenceMock, rssAtomParserMock, Collections.emptyList());
     }
 
     @AfterAll
