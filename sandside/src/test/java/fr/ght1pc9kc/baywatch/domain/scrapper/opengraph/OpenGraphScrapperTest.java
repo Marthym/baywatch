@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.domain.scrapper.opengraph;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OGType;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OpenGraph;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
@@ -14,7 +15,9 @@ import org.springframework.http.MediaType;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 
 class OpenGraphScrapperTest {
     static final WireMockServer mockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
@@ -43,10 +46,18 @@ class OpenGraphScrapperTest {
     }
 
     @Test
-    void should_parse_opengraph() {
+    void should_parse_opengraph() throws MalformedURLException {
         URI page = URI.create(mockServer.baseUrl() + "/article.html");
         OpenGraph actual = tested.scrap(page).block();
 
-        Assertions.assertThat(actual).isEqualTo(OpenGraph.builder().build());
+        Assertions.assertThat(actual).isEqualTo(OpenGraph.builder()
+                .title("De Paris à Toulouse")
+                .description("Déplacement des serveurs de l’infrastructure i-Run depuis Paris jusqu’à Toulouse chez " +
+                        "notre hébergeur FullSave. Nouvelles machines, nouvelle infra pour plus de résilience et une " +
+                        "meilleure tenue de la charge sur les sites publics comme sur le backoffice.")
+                .type(OGType.ARTICLE)
+                .url(new URL("https://blog.i-run.si/posts/silife/infra-de-paris-a-toulouse/"))
+                .image(URI.create("https://blog.i-run.si/posts/silife/infra-de-paris-a-toulouse/featured.jpg"))
+                .build());
     }
 }

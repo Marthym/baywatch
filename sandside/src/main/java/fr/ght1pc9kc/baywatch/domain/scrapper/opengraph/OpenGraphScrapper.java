@@ -4,6 +4,7 @@ import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.Meta;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OpenGraph;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OpenGraphException;
+import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.Tags;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -25,7 +26,6 @@ import java.util.regex.Pattern;
 @AllArgsConstructor
 public final class OpenGraphScrapper {
     private static final Pattern META_PATTERN = Pattern.compile("<meta ([^>]*)/>", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
-    private static final String OG_NAMESPACE = "og:";
     private static final String HEAD_END_TAG = "</head>";
 
     private final WebClient http = WebClient.create();
@@ -65,18 +65,18 @@ public final class OpenGraphScrapper {
                     if (propIdx < 0) {
                         return Tuples.of("", "");
                     }
-                    int beginIndex = s.indexOf('"', propIdx+1);
-                    String property = s.substring(beginIndex+1, s.indexOf('"', beginIndex+1));
+                    int beginIndex = s.indexOf('"', propIdx + 1);
+                    String property = s.substring(beginIndex + 1, s.indexOf('"', beginIndex + 1));
                     int contentIdx = s.indexOf("content");
                     if (contentIdx < 0) {
                         return Tuples.of(property, "");
                     }
-                    beginIndex = s.indexOf('"', contentIdx+1);
-                    String content = s.substring(beginIndex+1, s.indexOf('"', beginIndex+1));
+                    beginIndex = s.indexOf('"', contentIdx + 1);
+                    String content = s.substring(beginIndex + 1, s.indexOf('"', beginIndex + 1));
 
                     return Tuples.of(property, content);
                 })
-                .filter(t -> t.getT1().startsWith(OG_NAMESPACE))
+                .filter(t -> t.getT1().startsWith(Tags.OG_NAMESPACE))
                 .map(t -> new Meta(t.getT1(), t.getT2()));
     }
 
