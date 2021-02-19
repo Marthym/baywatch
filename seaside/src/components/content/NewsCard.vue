@@ -7,7 +7,7 @@
            alt="og:image"/>
       <img v-else class="w-60 object-cover rounded-l-lg opacity-30"
            src="/placeholder.png"
-           alt="no-og-image" />
+           alt="no-og-image"/>
     </div>
 
     <div class="m-2"><!-- Middle -->
@@ -21,6 +21,7 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
+import {News} from "@/services/model/News";
 
 @Component
 export default class NewsCard extends Vue {

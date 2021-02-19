@@ -2,6 +2,7 @@ import {Observable} from 'rxjs';
 import {fromFetch} from "rxjs/fetch";
 import {switchMap} from "rxjs/operators";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
+import {News} from "@/services/model/News";
 
 export default class NewsService {
     /**
@@ -21,7 +22,7 @@ export default class NewsService {
      *
      * @param query
      */
-    getNews(query: URLSearchParams = NewsService.DEFAULT_QUERY): Observable<Array<News>> {
+    getNews(query: URLSearchParams = NewsService.DEFAULT_QUERY): Observable<News[]> {
         return fromFetch(`${this.serviceBaseUrl}/news?${query.toString()}`).pipe(
             switchMap(response => {
                 if (response.ok) {
