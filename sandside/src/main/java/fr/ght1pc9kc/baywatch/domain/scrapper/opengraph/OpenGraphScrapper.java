@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 @Component
 @AllArgsConstructor
 public final class OpenGraphScrapper {
-    private static final Pattern META_PATTERN = Pattern.compile("<meta ([^>]*)/>", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+    private static final Pattern META_PATTERN = Pattern.compile("<meta ([^>]*)/?>", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
     private static final String HEAD_END_TAG = "</head>";
     private static final String META_PROPERTY = "property";
     private static final String META_NAME = "name";

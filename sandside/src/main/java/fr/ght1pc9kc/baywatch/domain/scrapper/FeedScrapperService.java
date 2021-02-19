@@ -97,6 +97,7 @@ public final class FeedScrapperService implements Runnable {
                 .map(RawNews::getId)
                 .collect(Collectors.toUnmodifiableSet())
                 .cache();
+
         Flux.concat(preScrappingActions.stream().map(PreScrappingAction::call).collect(Collectors.toList()))
                 .thenMany(feedRepository.list())
                 .parallel(4).runOn(scrapperScheduler)

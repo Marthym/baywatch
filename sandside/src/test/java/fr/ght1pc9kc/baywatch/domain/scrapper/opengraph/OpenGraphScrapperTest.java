@@ -36,11 +36,11 @@ class OpenGraphScrapperTest {
                                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE)
                                     .withStatus(HttpStatus.OK.value())
                                     .withBody(htmlBody.readAllBytes())));
-
-            mockServer.stubFor(WireMock.get(WireMock.urlMatching(".*/not-found\\.html"))
-                    .willReturn(WireMock.notFound()));
-            mockServer.start();
         }
+
+        mockServer.stubFor(WireMock.get(WireMock.urlMatching(".*/not-found\\.html"))
+                .willReturn(WireMock.notFound()));
+        mockServer.start();
     }
 
     @AfterAll
