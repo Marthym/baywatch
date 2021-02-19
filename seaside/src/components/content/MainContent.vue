@@ -3,16 +3,9 @@
     <div class="mx-10 my-2">
       <ContentTopNav/>
       <ContentHeader/>
-<!--      <NewsListHeader/>-->
-
       <template v-for="card in news">
         <NewsCard :card="card" v-bind:key="card.id"/>
       </template>
-      <!--      <NewsCard/>-->
-      <!--      <NewsCard/>-->
-      <!--      <NewsCard/>-->
-      <!--      <NewsCard/>-->
-
     </div>
 
   </main>

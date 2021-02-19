@@ -8,7 +8,7 @@ export default class NewsService {
      * By default query the 10 latest published news
      * @private
      */
-    private static readonly DEFAULT_QUERY: URLSearchParams = new URLSearchParams("?_pp=10&_s=publication");
+    private static readonly DEFAULT_QUERY: URLSearchParams = new URLSearchParams("?_pp=10&_s=-publication");
 
     serviceBaseUrl: string;
 
