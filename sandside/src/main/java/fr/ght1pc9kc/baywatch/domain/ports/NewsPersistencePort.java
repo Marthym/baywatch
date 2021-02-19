@@ -33,4 +33,6 @@ public interface NewsPersistencePort {
     Flux<Entry<String, State>> listState(Criteria searchCriteria);
 
     Mono<Integer> delete(Collection<String> ids);
+
+    Mono<Integer> count();
 }
