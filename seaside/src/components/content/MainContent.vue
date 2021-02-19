@@ -1,7 +1,7 @@
 <template>
-  <main class="flex-1 flex flex-col bg-gray-100 dark:bg-gray-700 transition duration-500 ease-in-out overflow-y-auto">
-    <div class="mx-10 my-2">
-      <ContentTopNav/>
+  <main class="flex-1 flex flex-col bg-gray-100 dark:bg-gray-700 transition duration-500 ease-in-out overflow-y-auto px-10 py-2">
+    <ContentTopNav/>
+    <div class="xl:w-2/3">
       <ContentHeader/>
       <template v-for="card in news">
         <NewsCard :card="card" v-bind:key="card.id"/>

@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen w-full flex overflow-hidden">
+  <div class="h-screen flex overflow-hidden">
     <SideNav/>
     <MainContent/>
   </div>
