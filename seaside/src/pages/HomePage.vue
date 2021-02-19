@@ -1,6 +1,6 @@
 <template>
   <div class="h-screen flex overflow-hidden">
-    <SideNav/>
+    <SideNav :statistics="baywatchStats"/>
     <MainContent :statistics="baywatchStats"/>
   </div>
 </template>

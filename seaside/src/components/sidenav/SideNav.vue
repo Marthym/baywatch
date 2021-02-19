@@ -1,7 +1,7 @@
 <template>
   <nav class="flex flex-col bg-gray-200 dark:bg-gray-900 w-64 px-12 pt-4 pb-6">
 
-    <SideNavHeader/>
+    <SideNavHeader :unread="statistics.unread"/>
 
     <SideNavUserInfo/>
 
@@ -40,5 +40,6 @@ import {Statistics} from "@/services/model/Statistics";
 })
 export default class SideNav extends Vue {
   @Prop() statistics?: Statistics;
+
 }
 </script>
