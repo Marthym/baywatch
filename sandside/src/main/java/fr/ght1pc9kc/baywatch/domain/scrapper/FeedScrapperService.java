@@ -36,6 +36,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -92,11 +93,17 @@ public final class FeedScrapperService implements Runnable {
     @Override
     public void run() {
         log.info("Start scrapping ...");
-
+        Mono<Set<String>> alreadyHave = newsRepository.list()
+                .map(RawNews::getId)
+                .collect(Collectors.toUnmodifiableSet())
+                .cache();
         Flux.concat(preScrappingActions.stream().map(PreScrappingAction::call).collect(Collectors.toList()))
                 .thenMany(feedRepository.list())
                 .parallel(4).runOn(scrapperScheduler)
                 .flatMap(this::wgetFeedNews)
+                .sequential()
+                .filterWhen(n -> alreadyHave.map(l -> !l.contains(n.getId())))
+                .parallel(4).runOn(scrapperScheduler)
                 .flatMap(this::completeWithOpenGraph)
                 .sequential()
                 .buffer(100)
