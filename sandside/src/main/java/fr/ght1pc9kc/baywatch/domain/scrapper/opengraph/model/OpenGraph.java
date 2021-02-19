@@ -1,10 +1,10 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model;
 
-import com.machinezoo.noexception.Exceptions;
+import com.machinezoo.noexception.throwing.ThrowingRunnable;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.Value;
 import lombok.With;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 import java.net.URL;
@@ -13,6 +13,7 @@ import java.util.Locale;
 
 @With
 @Value
+@Slf4j
 @Builder
 public class OpenGraph {
     public String title;
@@ -30,12 +31,12 @@ public class OpenGraph {
                     builder.title(m.content);
                     break;
                 case Tags.OG_TYPE:
-                    builder.type(OGType.valueOf(m.content.toUpperCase()));
+                    logException(() ->
+                            builder.type(OGType.valueOf(m.content.toUpperCase())));
                     break;
                 case Tags.OG_URL:
-                    Exceptions.silence()
-                            .get(Exceptions.sneak().supplier(() -> new URL(m.content)))
-                            .ifPresent(builder::url);
+                    logException(() ->
+                            builder.url(new URL(m.content)));
                     break;
                 case Tags.OG_IMAGE:
                     builder.image(URI.create(m.content));
@@ -52,5 +53,13 @@ public class OpenGraph {
             }
         }
         return builder.build();
+    }
+
+    private static void logException(ThrowingRunnable throwable) {
+        try {
+            throwable.run();
+        } catch (Throwable e) {
+            log.warn("{}: {}", e.getClass(), e.getLocalizedMessage());
+        }
     }
 }

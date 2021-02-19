@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +37,8 @@ class OpenGraphScrapperTest {
                                     .withStatus(HttpStatus.OK.value())
                                     .withBody(htmlBody.readAllBytes())));
 
+            mockServer.stubFor(WireMock.get(WireMock.urlMatching(".*/not-found\\.html"))
+                    .willReturn(WireMock.notFound()));
             mockServer.start();
         }
     }
@@ -59,5 +62,12 @@ class OpenGraphScrapperTest {
                 .url(new URL("https://blog.i-run.si/posts/silife/infra-de-paris-a-toulouse/"))
                 .image(URI.create("https://blog.i-run.si/posts/silife/infra-de-paris-a-toulouse/featured.jpg"))
                 .build());
+    }
+
+    @Test
+    void should_scrap_not_found() {
+        URI page = URI.create(mockServer.baseUrl() + "/not-found.html");
+        OpenGraph actual = tested.scrap(page).block();
+        Assertions.assertThat(actual).isEqualTo(Mono.empty().block());
     }
 }

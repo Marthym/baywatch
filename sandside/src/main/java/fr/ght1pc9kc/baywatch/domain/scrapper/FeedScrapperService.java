@@ -149,15 +149,13 @@ public final class FeedScrapperService implements Runnable {
     }
 
     private Mono<News> completeWithOpenGraph(News news) {
-        log.debug("Scrap OG for '{}'", news.getId());
         return ogScrapper.scrap(news.getLink())
                 .map(og -> {
-                    log.debug("OG image: {}", og.image);
                     RawNews raw = news.getRaw();
                     raw = Optional.ofNullable(og.title).map(raw::withTitle).orElse(raw);
                     raw = Optional.ofNullable(og.description).map(raw::withDescription).orElse(raw);
                     raw = Optional.ofNullable(og.image).map(raw::withImage).orElse(raw);
                     return news.withRaw(raw);
-                });
+                }).switchIfEmpty(Mono.just(news));
     }
 }
