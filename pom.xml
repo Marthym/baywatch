@@ -30,7 +30,7 @@
         <db.password>security</db.password>
 
         <noexception.version>1.6.2</noexception.version>
-        <jjwt.version>0.11.2</jjwt.version>
+        <mapstruct.version>1.4.2.Final</mapstruct.version>
         <findbugs.version>3.0.2</findbugs.version>
         <jetbrains.version>20.1.0</jetbrains.version>
         <wiremock.version>2.27.2</wiremock.version>

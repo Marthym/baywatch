@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.api.scrapper;
 
-import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 
 import javax.annotation.Nonnull;

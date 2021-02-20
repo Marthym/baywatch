@@ -1,19 +1,18 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
-import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
+import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
+import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.infra.request.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.baywatch.infra.request.filter.PredicateSearchVisitor;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.*;
-import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -39,7 +38,7 @@ public class FeedRepository implements FeedPersistencePort {
 
     private final Scheduler databaseScheduler;
     private final DSLContext dsl;
-    private final ConversionService conversionService;
+    private final BaywatchMapper baywatchMapper;
     private final AuthenticationFacade authFacade;
 
     @Override
@@ -53,7 +52,6 @@ public class FeedRepository implements FeedPersistencePort {
     }
 
     @Override
-    @SuppressWarnings("ReactiveStreamsNullableInLambdaInTransform")
     public Flux<Feed> list(Criteria criteria) {
         Condition conditions = criteria.visit(JOOQ_CONDITION_VISITOR);
         return Flux.<Record>create(sink -> {
@@ -69,7 +67,7 @@ public class FeedRepository implements FeedPersistencePort {
                 }
             });
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
-                .map(fr -> (Feed)conversionService.convert(fr, TypeDescriptor.valueOf(Record.class), TypeDescriptor.valueOf(Feed.class)))
+                .map(baywatchMapper::recordToFeed)
                 .filter(criteria.visit(FEEDS_PREDICATE_VISITOR));
     }
 
@@ -77,11 +75,11 @@ public class FeedRepository implements FeedPersistencePort {
     public Mono<Void> persist(Collection<Feed> toPersist) {
         return authFacade.getConnectedUser().map(user -> {
             List<FeedsRecord> records = toPersist.stream()
-                    .map(n -> conversionService.convert(n, FeedsRecord.class))
+                    .map(baywatchMapper::feedToFeedsRecord)
                     .collect(Collectors.toList());
 
             List<FeedsUsersRecord> feedsUsersRecords = toPersist.stream()
-                    .map(n -> conversionService.convert(n, FeedsUsersRecord.class))
+                    .map(baywatchMapper::feedToFeedsUsersRecord)
                     .filter(Objects::nonNull)
                     .map(r -> r.setFeusUserId(user.id))
                     .collect(Collectors.toList());

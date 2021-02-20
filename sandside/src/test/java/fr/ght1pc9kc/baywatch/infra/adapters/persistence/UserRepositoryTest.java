@@ -4,8 +4,7 @@ import fr.ght1pc9kc.baywatch.api.model.User;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.Users;
-import fr.ght1pc9kc.baywatch.infra.mappers.RecordToUserConverter;
-import fr.ght1pc9kc.baywatch.infra.mappers.UserToRecordConverter;
+import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.samples.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.FeedsUsersRecordSample;
 import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;
@@ -20,7 +19,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.springframework.core.convert.support.DefaultConversionService;
+import org.mapstruct.factory.Mappers;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
@@ -58,10 +57,8 @@ class UserRepositoryTest {
 
     @BeforeEach
     void setUp(DSLContext dslContext) {
-        DefaultConversionService conversionService = new DefaultConversionService();
-        conversionService.addConverter(new UserToRecordConverter());
-        conversionService.addConverter(new RecordToUserConverter());
-        tested = new UserRepository(Schedulers.immediate(), dslContext, conversionService);
+        BaywatchMapper baywatchMapper = Mappers.getMapper(BaywatchMapper.class);
+        tested = new UserRepository(Schedulers.immediate(), dslContext, baywatchMapper);
     }
 
     @Test

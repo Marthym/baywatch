@@ -1,13 +1,14 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
-import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.api.model.User;
+import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
-import fr.ght1pc9kc.baywatch.infra.mappers.*;
+import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
+import fr.ght1pc9kc.baywatch.infra.mappers.DateUtils;
 import fr.ght1pc9kc.baywatch.infra.samples.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.FeedsUsersRecordSample;
 import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;
@@ -21,7 +22,7 @@ import org.jooq.DSLContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.springframework.core.convert.support.DefaultConversionService;
+import org.mapstruct.factory.Mappers;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -66,11 +67,7 @@ class FeedRepositoryTest {
 
     @BeforeEach
     void setUp(DSLContext dslContext) {
-        DefaultConversionService defaultConversionService = new DefaultConversionService();
-        defaultConversionService.addConverter(new RecordToFeedConverter());
-        defaultConversionService.addConverter(new RecordToRawFeedConverter());
-        defaultConversionService.addConverter(new FeedsUsersToRecordConverter());
-        defaultConversionService.addConverter(new FeedToRecordConverter());
+        BaywatchMapper baywatchMapper = Mappers.getMapper(BaywatchMapper.class);
         AuthenticationFacade authFacade = mock(AuthenticationFacade.class);
         when(authFacade.getConnectedUser()).thenReturn(Mono.just(
                 User.builder()
@@ -79,7 +76,7 @@ class FeedRepositoryTest {
                         .name(OKENOBI.getUserName())
                         .mail(OKENOBI.getUserEmail())
                         .build()));
-        tested = new FeedRepository(Schedulers.immediate(), dslContext, defaultConversionService, authFacade);
+        tested = new FeedRepository(Schedulers.immediate(), dslContext, baywatchMapper, authFacade);
     }
 
     @Test
