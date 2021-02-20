@@ -7,10 +7,10 @@ import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
-import fr.ght1pc9kc.baywatch.dsl.tables.Feeds;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
+import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.infra.request.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.baywatch.infra.request.filter.PredicateSearchVisitor;
@@ -18,7 +18,6 @@ import fr.ght1pc9kc.baywatch.infra.request.pagination.JooqPagination;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.*;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -30,7 +29,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
@@ -48,7 +46,7 @@ public class NewsRepository implements NewsPersistencePort {
 
     private final Scheduler databaseScheduler;
     private final DSLContext dsl;
-    private final ConversionService conversionService;
+    private final BaywatchMapper baywatchMapper;
 
     @Override
     public Mono<News> userGet(String id) {
@@ -63,11 +61,11 @@ public class NewsRepository implements NewsPersistencePort {
     @Override
     public Mono<Void> persist(Collection<News> toCreate) {
         List<NewsRecord> records = toCreate.stream()
-                .map(n -> conversionService.convert(n, NewsRecord.class))
+                .map(baywatchMapper::newsToNewsRecord)
                 .collect(Collectors.toList());
 
         List<NewsFeedsRecord> newsFeedsRecords = toCreate.stream()
-                .map(n -> conversionService.convert(n, NewsFeedsRecord.class))
+                .map(baywatchMapper::newsToNewsFeedsRecord)
                 .collect(Collectors.toList());
 
         return Mono.fromCallable(() ->
@@ -98,7 +96,6 @@ public class NewsRepository implements NewsPersistencePort {
     }
 
     @Override
-    @SuppressWarnings("ReactiveStreamsNullableInLambdaInTransform")
     public Flux<News> userList(PageRequest pageRequest) {
         Condition conditions = pageRequest.filter.visit(NEWS_CONDITION_VISITOR);
         PredicateSearchVisitor<News> predicateSearchVisitor = new PredicateSearchVisitor<>();
@@ -122,12 +119,11 @@ public class NewsRepository implements NewsPersistencePort {
                 }
             });
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
-                .map(r -> conversionService.convert(r, News.class))
+                .map(baywatchMapper::recordToNews)
                 .filter(pageRequest.filter.visit(predicateSearchVisitor));
     }
 
     @Override
-    @SuppressWarnings("ReactiveStreamsNullableInLambdaInTransform")
     public Flux<RawNews> list(PageRequest pageRequest) {
         Condition conditions = pageRequest.filter.visit(NEWS_CONDITION_VISITOR);
         PredicateSearchVisitor<RawNews> predicateSearchVisitor = new PredicateSearchVisitor<>();
@@ -147,7 +143,7 @@ public class NewsRepository implements NewsPersistencePort {
                 }
             });
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
-                .map(r -> conversionService.convert(r, RawNews.class))
+                .map(baywatchMapper::recordToRawNews)
                 .filter(pageRequest.filter.visit(predicateSearchVisitor));
     }
 

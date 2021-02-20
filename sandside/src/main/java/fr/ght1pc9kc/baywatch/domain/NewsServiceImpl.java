@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.domain.news;
+package fr.ght1pc9kc.baywatch.domain;
 
 import fr.ght1pc9kc.baywatch.api.NewsService;
 import fr.ght1pc9kc.baywatch.api.model.News;

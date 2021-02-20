@@ -10,10 +10,7 @@ import fr.ght1pc9kc.baywatch.api.model.request.pagination.Sort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
-import fr.ght1pc9kc.baywatch.infra.mappers.NewsFeedsToRecordConverter;
-import fr.ght1pc9kc.baywatch.infra.mappers.NewsToRecordConverter;
-import fr.ght1pc9kc.baywatch.infra.mappers.RecordToNewsConverter;
-import fr.ght1pc9kc.baywatch.infra.mappers.RecordToRawNewsConverter;
+import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.samples.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.UsersRecordSamples;
@@ -26,7 +23,7 @@ import org.jooq.DSLContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.springframework.core.convert.support.DefaultConversionService;
+import org.mapstruct.factory.Mappers;
 import reactor.core.scheduler.Schedulers;
 
 import java.net.URI;
@@ -56,7 +53,7 @@ class NewsRepositoryTest {
             .addDataset(NewsRecordSamples.NewsFeedsRecordSample.SAMPLE)
             .addDataset(NewsRecordSamples.NewsUserStateSample.SAMPLE)
             .build();
-
+    private static final String NEWS_ID = UUID.randomUUID().toString();
     @RegisterExtension
     @SuppressWarnings("unused")
     static ChainedExtension chain = ChainedExtension.outer(wDs)
@@ -64,19 +61,12 @@ class NewsRepositoryTest {
             .append(wDslContext)
             .append(wSamples)
             .register();
-
-    private static final String NEWS_ID = UUID.randomUUID().toString();
-
     private NewsRepository tested;
 
     @BeforeEach
     void setUp(DSLContext dslContext) {
-        DefaultConversionService conversionService = new DefaultConversionService();
-        conversionService.addConverter(new NewsToRecordConverter());
-        conversionService.addConverter(new NewsFeedsToRecordConverter());
-        conversionService.addConverter(new RecordToRawNewsConverter());
-        conversionService.addConverter(new RecordToNewsConverter(conversionService));
-        tested = new NewsRepository(Schedulers.immediate(), dslContext, conversionService);
+        BaywatchMapper baywatchMapper = Mappers.getMapper(BaywatchMapper.class);
+        tested = new NewsRepository(Schedulers.immediate(), dslContext, baywatchMapper);
     }
 
     @Test

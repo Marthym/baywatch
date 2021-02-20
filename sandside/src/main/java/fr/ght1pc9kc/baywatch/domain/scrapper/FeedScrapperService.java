@@ -1,11 +1,11 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.scrapper.PreScrappingAction;
+import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
 import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor()
 @DependsOn({"flyway", "flywayInitializer"}) // Wait after Flyway migrations
 public final class FeedScrapperService implements Runnable {
 
@@ -55,8 +55,8 @@ public final class FeedScrapperService implements Runnable {
             Schedulers.newBoundedElastic(5, Integer.MAX_VALUE, "scrapper");
     private final WebClient http = WebClient.create();
     private final CountDownLatch lock = new CountDownLatch(1);
+    private final Clock clock = Clock.systemUTC();
 
-    private final Clock clock;
     private final OpenGraphScrapper ogScrapper;
     private final FeedPersistencePort feedRepository;
     private final NewsPersistencePort newsRepository;

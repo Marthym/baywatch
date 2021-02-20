@@ -4,6 +4,7 @@ import fr.ght1pc9kc.baywatch.api.model.User;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
+import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.infra.request.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.baywatch.infra.request.filter.PredicateSearchVisitor;
@@ -13,8 +14,6 @@ import org.jooq.Condition;
 import org.jooq.Cursor;
 import org.jooq.DSLContext;
 import org.jooq.Result;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -30,7 +29,7 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.Users.USERS;
 
 @Slf4j
 @Repository
-@RequiredArgsConstructor(onConstructor = @__({@Autowired}))
+@RequiredArgsConstructor
 public class UserRepository implements UserPersistencePort {
     private static final JooqConditionVisitor JOOQ_CONDITION_VISITOR =
             new JooqConditionVisitor(PropertiesMappers.USER_PROPERTIES_MAPPING::get);
@@ -38,7 +37,7 @@ public class UserRepository implements UserPersistencePort {
 
     private final Scheduler databaseScheduler;
     private final DSLContext dsl;
-    private final ConversionService conversionService;
+    private final BaywatchMapper baywatchConverter;
 
     @Override
     public Mono<User> get(String id) {
@@ -59,7 +58,7 @@ public class UserRepository implements UserPersistencePort {
                 }
             });
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
-                .map(r -> conversionService.convert(r, User.class))
+                .map(baywatchConverter::recordToUser)
                 .filter(criteria.visit(USER_PREDICATE_VISITOR));
     }
 
@@ -71,7 +70,7 @@ public class UserRepository implements UserPersistencePort {
     @Override
     public Flux<User> persist(Collection<User> toPersist) {
         List<UsersRecord> records = toPersist.stream()
-                .map(n -> conversionService.convert(n, UsersRecord.class))
+                .map(baywatchConverter::userToRecord)
                 .collect(Collectors.toList());
 
         return Mono.fromCallable(() ->

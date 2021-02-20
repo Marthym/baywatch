@@ -9,7 +9,7 @@ import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.core.convert.support.DefaultConversionService;
+import org.mapstruct.factory.Mappers;
 
 import java.net.URI;
 import java.time.Instant;
@@ -27,13 +27,11 @@ class RecordToFeedConverterTest {
     private static final URI TEST_URL = URI.create("https://blog.ght1pc9kc.fr/index.xml");
     private static final String TEST_SHA3 = Hasher.sha3(TEST_URL.toString());
 
-    RecordToFeedConverter tested;
+    BaywatchMapper tested;
 
     @BeforeEach
     void setUp() {
-        DefaultConversionService conversionService = new DefaultConversionService();
-        conversionService.addConverter(new RecordToRawFeedConverter());
-        tested = new RecordToFeedConverter();
+        tested = Mappers.getMapper(BaywatchMapper.class);
     }
 
     @Test
@@ -48,7 +46,7 @@ class RecordToFeedConverterTest {
         record.set(FEEDS.FEED_LAST_WATCH, DateUtils.toLocalDateTime(PUBLICATION));
         record.set(FEEDS_USERS.FEUS_TAGS, "jedi,light");
 
-        Feed actual = tested.convert(record);
+        Feed actual = tested.recordToFeed(record);
 
         assertThat(actual).isEqualTo(Feed.builder().raw(RawFeed.builder()
                 .id(TEST_SHA3)

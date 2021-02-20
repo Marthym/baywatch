@@ -4,10 +4,10 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.machinezoo.noexception.Exceptions;
+import fr.ght1pc9kc.baywatch.api.model.*;
+import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
 import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
-import fr.ght1pc9kc.baywatch.api.RssAtomParser;
-import fr.ght1pc9kc.baywatch.api.model.*;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import org.junit.jupiter.api.AfterAll;
@@ -23,7 +23,6 @@ import wiremock.org.apache.commons.io.IOUtils;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.time.Clock;
 import java.util.Collections;
 import java.util.UUID;
 
@@ -41,6 +40,28 @@ class FeedScrapperServiceTest {
     private NewsPersistencePort newsPersistenceMock;
     private RssAtomParser rssAtomParserMock;
     private FeedPersistencePort feedPersistenceMock;
+
+    @BeforeAll
+    static void stubAllMockServerRoute() {
+        mockServer.stubFor(
+                WireMock.get(WireMock.urlMatching("/feeds/.*\\.xml"))
+                        .willReturn(WireMock.aResponse()
+                                .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_ATOM_XML_VALUE)
+                                .withStatus(HttpStatus.OK.value())
+                                .withBody("Obiwan Kenobi"))
+        );
+        mockServer.stubFor(
+                WireMock.get(WireMock.urlEqualTo("/error/darth-vader.xml"))
+                        .willReturn(WireMock.aResponse()
+                                .withStatus(HttpStatus.NOT_FOUND.value())));
+
+        mockServer.start();
+    }
+
+    @AfterAll
+    static void afterAll() {
+        mockServer.stop();
+    }
 
     @Test
     void should_start_multi_scrapper() {
@@ -90,6 +111,7 @@ class FeedScrapperServiceTest {
     void should_fail_on_persistence() {
         reset(newsPersistenceMock);
         when(newsPersistenceMock.persist(anyCollection())).thenReturn(Mono.error(new RuntimeException()).then());
+        when(newsPersistenceMock.list()).thenReturn(Flux.empty());
 
         tested.startScrapping();
         tested.shutdownScrapping();
@@ -99,27 +121,11 @@ class FeedScrapperServiceTest {
         verify(rssAtomParserMock, times(2)).parse(any(Feed.class), any());
     }
 
-    @BeforeAll
-    static void stubAllMockServerRoute() {
-        mockServer.stubFor(
-                WireMock.get(WireMock.urlMatching("/feeds/.*\\.xml"))
-                        .willReturn(WireMock.aResponse()
-                                .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_ATOM_XML_VALUE)
-                                .withStatus(HttpStatus.OK.value())
-                                .withBody("Obiwan Kenobi"))
-        );
-        mockServer.stubFor(
-                WireMock.get(WireMock.urlEqualTo("/error/darth-vader.xml"))
-                        .willReturn(WireMock.aResponse()
-                                .withStatus(HttpStatus.NOT_FOUND.value())));
-
-        mockServer.start();
-    }
-
     @BeforeEach
     void setUp() {
         newsPersistenceMock = mock(NewsPersistencePort.class);
         when(newsPersistenceMock.persist(anyCollection())).thenReturn(Mono.just("").then());
+        when(newsPersistenceMock.list()).thenReturn(Flux.empty());
 
         rssAtomParserMock = spy(new RssAtomParser() {
             @Override
@@ -142,6 +148,8 @@ class FeedScrapperServiceTest {
         String jdhSha3 = Hasher.sha3(jdhUri.toString());
 
         openGraphScrapper = mock(OpenGraphScrapper.class);
+        when(openGraphScrapper.scrap(any(URI.class))).thenReturn(Mono.empty());
+
         feedPersistenceMock = mock(FeedPersistencePort.class);
         when(feedPersistenceMock.list()).thenReturn(Flux.just(
                 Feed.builder().raw(RawFeed.builder()
@@ -156,12 +164,7 @@ class FeedScrapperServiceTest {
                         .build()).build()
         ));
 
-        tested = new FeedScrapperService(Clock.systemUTC(),
+        tested = new FeedScrapperService(
                 openGraphScrapper, feedPersistenceMock, newsPersistenceMock, rssAtomParserMock, Collections.emptyList());
-    }
-
-    @AfterAll
-    static void afterAll() {
-        mockServer.stop();
     }
 }

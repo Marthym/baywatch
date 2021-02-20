@@ -6,8 +6,10 @@ import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.api.scrapper.PreScrappingAction;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.With;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -21,12 +23,14 @@ import java.util.Map;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor(onConstructor = @__({@Autowired}))
+@RequiredArgsConstructor
 public class PurgeNewsAction implements PreScrappingAction {
     private static final int DELETE_BUFFER_SIZE = 500;
-
     private final NewsPersistencePort newsPersistence;
-    private final Clock clock;
+
+    @Setter
+    @Accessors(fluent = true)
+    private Clock clock = Clock.systemUTC();
 
     @Override
     public Mono<Void> call() {
@@ -56,4 +60,5 @@ public class PurgeNewsAction implements PreScrappingAction {
                     return Flux.fromIterable(toBeDeleted);
                 });
     }
+
 }

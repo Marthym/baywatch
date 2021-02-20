@@ -1,9 +1,9 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.actions;
 
-import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.State;
+import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,9 +31,8 @@ class PurgeNewsActionTest {
     @BeforeEach
     void setUp() {
         newsPersistenceMock = mock(NewsPersistencePort.class);
-        tested = new PurgeNewsAction(
-                newsPersistenceMock,
-                Clock.fixed(Instant.parse("2020-12-18T22:42:42Z"), ZoneOffset.UTC));
+        tested = new PurgeNewsAction(newsPersistenceMock)
+                .clock(Clock.fixed(Instant.parse("2020-12-18T22:42:42Z"), ZoneOffset.UTC));
 
         when(newsPersistenceMock.list(any())).thenReturn(testDataForPersistenceList());
         when(newsPersistenceMock.listState(any())).thenReturn(testDataForPersistenceListState());
