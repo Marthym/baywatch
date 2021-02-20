@@ -1,8 +1,9 @@
-package fr.ght1pc9kc.baywatch.domain.news;
+package fr.ght1pc9kc.baywatch.domain;
 
 import fr.ght1pc9kc.baywatch.api.NewsService;
 import fr.ght1pc9kc.baywatch.api.model.*;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
+import fr.ght1pc9kc.baywatch.domain.NewsServiceImpl;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import org.assertj.core.api.Assertions;

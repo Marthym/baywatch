@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.api.RssAtomParser;
+import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;

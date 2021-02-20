@@ -6,7 +6,7 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
-import fr.ght1pc9kc.baywatch.api.RssAtomParser;
+import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.model.*;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
