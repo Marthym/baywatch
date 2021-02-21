@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.api.model.User;
+import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
@@ -41,12 +42,13 @@ public class UserRepository implements UserPersistencePort {
 
     @Override
     public Mono<User> get(String id) {
-        return list(Criteria.property("id").eq(id)).next();
+        return list(PageRequest.one(Criteria.property("id").eq(id))).next();
     }
 
     @Override
-    public Flux<User> list(Criteria criteria) {
-        Condition conditions = criteria.visit(JOOQ_CONDITION_VISITOR);
+    public Flux<User> list(PageRequest pageRequest) {
+        Condition conditions = pageRequest.filter.visit(JOOQ_CONDITION_VISITOR);
+
         return Flux.<UsersRecord>create(sink -> {
             Cursor<UsersRecord> cursor = dsl.selectFrom(USERS).where(conditions).fetchLazy();
             sink.onRequest(n -> {
@@ -59,12 +61,12 @@ public class UserRepository implements UserPersistencePort {
             });
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(baywatchConverter::recordToUser)
-                .filter(criteria.visit(USER_PREDICATE_VISITOR));
+                .filter(pageRequest.filter.visit(USER_PREDICATE_VISITOR));
     }
 
     @Override
     public Flux<User> list() {
-        return list(Criteria.none());
+        return list(PageRequest.all());
     }
 
     @Override

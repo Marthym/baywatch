@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.api.model.User;
+import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.Users;
@@ -86,7 +87,7 @@ class UserRepositoryTest {
     @Test
     void should_list_user_with_criteria(WithSampleDataLoaded.Tracker dbTracker) {
         dbTracker.skipNextSampleLoad();
-        List<User> actuals = tested.list(Criteria.property("name").eq("Obiwan Kenobi")).collectList().block();
+        List<User> actuals = tested.list(PageRequest.all(Criteria.property("name").eq("Obiwan Kenobi"))).collectList().block();
 
         assertThat(actuals).isNotNull();
         assertThat(actuals).hasSize(1);
