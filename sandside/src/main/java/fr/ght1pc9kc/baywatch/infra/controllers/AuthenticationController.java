@@ -1,15 +1,17 @@
 package fr.ght1pc9kc.baywatch.infra.controllers;
 
-import fr.ght1pc9kc.baywatch.api.model.User;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
+import fr.ght1pc9kc.baywatch.infra.controllers.exceptions.BadCredentialException;
 import fr.ght1pc9kc.baywatch.infra.model.AuthenticationRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,7 +36,7 @@ public class AuthenticationController {
                 .map(auth -> {
                     User user = (User) auth.getPrincipal();
                     Set<String> authorities = AuthorityUtils.authorityListToSet(auth.getAuthorities());
-                    String token = tokenProvider.createToken(user.id, authorities);
+                    String token = tokenProvider.createToken(user.getUsername(), authorities);
                     return Tuples.of(token, user);
                 })
         ).map(jwt -> {
@@ -42,6 +44,6 @@ public class AuthenticationController {
                     httpHeaders.add(HttpHeaders.AUTHORIZATION, "Bearer " + jwt.getT1());
                     return new ResponseEntity<>(jwt.getT2(), httpHeaders, HttpStatus.OK);
                 }
-        );
+        ).onErrorMap(BadCredentialsException.class, BadCredentialException::new);
     }
 }

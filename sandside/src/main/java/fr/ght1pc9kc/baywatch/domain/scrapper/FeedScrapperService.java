@@ -18,6 +18,7 @@ import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -92,6 +93,8 @@ public final class FeedScrapperService implements Runnable {
 
     @Override
     public void run() {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         log.info("Start scrapping ...");
         Mono<Set<String>> alreadyHave = newsRepository.list()
                 .map(RawNews::getId)
@@ -113,7 +116,11 @@ public final class FeedScrapperService implements Runnable {
                     log.error("{}: {}", e.getClass(), e.getLocalizedMessage());
                     log.debug("STACKTRACE", e);
                 })
-                .doFinally(signal -> lock.countDown())
+                .doFinally(signal -> {
+                    lock.countDown();
+                    stopWatch.stop();
+                    log.info("Scrapping finished with {} in {}", signal, Duration.ofMillis(stopWatch.getTotalTimeMillis()));
+                })
                 .subscribe();
     }
 

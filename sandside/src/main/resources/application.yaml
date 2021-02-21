@@ -15,7 +15,7 @@ logging:
   level:
     root: INFO
     org.jooq: WARN
-#    fr.ght1pc9kc.baywatch: TRACE
+    fr.ght1pc9kc.baywatch: DEBUG
 
 jwt:
   validity: 1h

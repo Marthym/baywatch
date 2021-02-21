@@ -9,6 +9,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class BaywatchUserDetailsService implements ReactiveUserDetailsService {
@@ -18,6 +20,9 @@ public class BaywatchUserDetailsService implements ReactiveUserDetailsService {
     public Mono<UserDetails> findByUsername(String username) {
         return userRepository.list(Criteria.property("login").eq(username))
                 .next()
-                .map(user -> User.withUsername(user.login).build());
+                .map(user -> User.withUsername(user.login)
+                        .password(user.password)
+                        .authorities(List.of())
+                        .build());
     }
 }

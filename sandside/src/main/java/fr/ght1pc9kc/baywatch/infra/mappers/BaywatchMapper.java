@@ -30,6 +30,7 @@ public interface BaywatchMapper {
     @Mapping(source = "login", target = "userLogin")
     @Mapping(source = "name", target = "userName")
     @Mapping(source = "mail", target = "userEmail")
+    @Mapping(source = "password", target = "userPassword")
     UsersRecord userToRecord(User user);
 
     @InheritInverseConfiguration

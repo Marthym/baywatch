@@ -18,10 +18,11 @@ CREATE TABLE NEWS
 
 CREATE TABLE USERS
 (
-    USER_ID    VARCHAR(64) NOT NULL PRIMARY KEY,
-    USER_LOGIN VARCHAR(50) NOT NULL,
-    USER_EMAIL VARCHAR(250),
-    USER_NAME  VARCHAR(250)
+    USER_ID       VARCHAR(64) NOT NULL PRIMARY KEY,
+    USER_LOGIN    VARCHAR(50) NOT NULL UNIQUE,
+    USER_EMAIL    VARCHAR(250),
+    USER_NAME     VARCHAR(250),
+    USER_Password VARCHAR(72) NOT NULL
 );
 
 CREATE TABLE NEWS_FEEDS
@@ -61,3 +62,7 @@ VALUES ('076b66c63e571578374ffa8e3197554cd185c6911658747e52373358e938b5cf', 'Tes
         'https://www.clubic.com/feed/news.rss', null),
        ('4ebc63c73907d3c10b7e672b0b6857f8c53ebc3b6a5eda8104dff5af1cbebf41', 'Reddit',
         'https://www.reddit.com/r/programming/top/.rss', null);
+
+INSERT INTO USERS
+VALUES ('fcombes', 'fcombes', 'marthym@gmail.com', 'Fred',
+        '$2a$10$uuFG89ZGXcFMKkj3naDhK.e/rjE1SQhh6GvOoimTlyrRfnT5lHlEO');
