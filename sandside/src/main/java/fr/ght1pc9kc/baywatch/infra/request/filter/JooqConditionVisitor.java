@@ -6,7 +6,6 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;

@@ -2,7 +2,6 @@ package fr.ght1pc9kc.baywatch.infra.request.filter;
 
 import fr.ght1pc9kc.baywatch.api.model.request.filter.*;
 
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class StringSearchVisitor implements Criteria.Visitor<String> {

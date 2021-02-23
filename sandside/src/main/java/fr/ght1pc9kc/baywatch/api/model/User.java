@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.api.model;
 
 import lombok.*;
 
+@With
 @Value
 @Builder
 @Getter(AccessLevel.NONE)
