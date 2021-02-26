@@ -5,15 +5,13 @@ import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.domain.UserServiceImpl;
 import fr.ght1pc9kc.baywatch.domain.ports.UserPersistencePort;
+import fr.ght1pc9kc.baywatch.infra.model.BaywatchUserDetails;
 import lombok.experimental.Delegate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @Service
 public class UserServiceAdapter implements UserService, ReactiveUserDetailsService {
@@ -29,9 +27,6 @@ public class UserServiceAdapter implements UserService, ReactiveUserDetailsServi
     public Mono<UserDetails> findByUsername(String username) {
         return delegate.list(PageRequest.one(Criteria.property("login").eq(username)))
                 .next()
-                .map(user -> User.withUsername(user.login)
-                        .password(user.password)
-                        .authorities(List.of())
-                        .build());
+                .map(BaywatchUserDetails::new);
     }
 }

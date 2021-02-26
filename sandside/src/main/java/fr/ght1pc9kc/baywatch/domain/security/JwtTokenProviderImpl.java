@@ -22,6 +22,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.util.function.Predicate.not;
+
 @Slf4j
 public class JwtTokenProviderImpl implements JwtTokenProvider {
     private static final String AUTHORITIES_KEY = "roles";
@@ -40,7 +42,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     }
 
     @Override
-    public String createToken(String userId, Collection<String> authorities) {
+    public String createToken(User user, Collection<String> authorities) {
         String auths = String.join(",", authorities);
 
         try {
@@ -48,18 +50,21 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
 
             Instant now = clock.instant();
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                    .subject(userId)
+                    .subject(user.id)
                     .issuer("baywatch/sandside")
                     .issueTime(Date.from(now))
                     .expirationTime(Date.from(now.plus(validity)))
                     .claim(AUTHORITIES_KEY, auths)
+                    .claim("login", user.login)
+                    .claim("name", user.name)
+                    .claim("mail", user.mail)
                     .build();
             SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
             signedJWT.sign(signer);
             return signedJWT.serialize();
 
         } catch (JOSEException e) {
-            log.debug("Username: {}, validity: {}, authorities: {}", userId, validity, auths);
+            log.debug("Username: {}, validity: {}, authorities: {}", user, validity, auths);
             throw new SecurityException("Unable to create token !", e);
         }
     }
@@ -72,11 +77,15 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
             signedJWT.verify(verifier);
             JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
             User user = User.builder()
-                    .login(claims.getSubject())
+                    .id(claims.getSubject())
+                    .login(claims.getStringClaim("login"))
+                    .name(claims.getStringClaim("name"))
+                    .mail(claims.getStringClaim("mail"))
                     .build();
 
             List<String> authorities = Arrays.stream(claims.getStringClaim(AUTHORITIES_KEY).split(","))
                     .map(String::trim)
+                    .filter(not(String::isBlank))
                     .collect(Collectors.toUnmodifiableList());
 
             return new BaywatchAuthentication(user, token, authorities);
