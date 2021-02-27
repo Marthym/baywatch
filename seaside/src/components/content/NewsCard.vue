@@ -26,9 +26,6 @@ import {News} from "@/services/model/News";
 @Component
 export default class NewsCard extends Vue {
   @Prop() card?: News;
-
-  created(): void {
-    console.log(this.card);
-  }
+  
 }
 </script>

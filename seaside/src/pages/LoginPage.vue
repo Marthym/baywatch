@@ -8,27 +8,31 @@
         <p class="text-xl text-gray-600 text-center">Welcome back!</p>
         <div class="mt-4">
           <label class="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
-          <input
-              class="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none"
-              type="email">
+          <input v-model="username"
+                 class="bg-gray-200 text-gray-700
+                      focus:outline-none focus:shadow-outline
+                      border border-gray-300 rounded py-2 px-4 block w-full appearance-none"
+                 type="email">
         </div>
         <div class="mt-4">
           <div class="flex justify-between">
             <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
             <a href="#" class="text-xs text-gray-500">Forget Password?</a>
           </div>
-          <input
-              class="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none"
-              type="password">
+          <input v-model="password"
+                 class="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none"
+                 type="password">
         </div>
         <div class="mt-8">
-          <button v-on:click="onLogin" class="bg-gray-700 text-white font-bold py-2 px-4 w-full rounded hover:bg-gray-600">Login</button>
+          <button v-on:click="onLogin"
+                  class="bg-gray-700 text-white font-bold py-2 px-4 w-full rounded hover:bg-gray-600">Login
+          </button>
         </div>
-<!--        <div class="mt-4 flex items-center justify-between">-->
-<!--          <span class="border-b w-1/5 md:w-1/4"></span>-->
-<!--          <a href="#" class="text-xs text-gray-500 uppercase">or sign up</a>-->
-<!--          <span class="border-b w-1/5 md:w-1/4"></span>-->
-<!--        </div>-->
+        <!--        <div class="mt-4 flex items-center justify-between">-->
+        <!--          <span class="border-b w-1/5 md:w-1/4"></span>-->
+        <!--          <a href="#" class="text-xs text-gray-500 uppercase">or sign up</a>-->
+        <!--          <span class="border-b w-1/5 md:w-1/4"></span>-->
+        <!--        </div>-->
       </div>
     </div>
   </div>
@@ -36,12 +40,19 @@
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
+import UserService from "@/services/UserService";
 
 @Component
 export default class LoginWindow extends Vue {
-    onLogin (event: Event): void {
-      console.log("login");
-      this.$router.push('/');
-    }
+  private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
+
+  public username = '';
+  public password = '';
+
+  onLogin(): void {
+    this.userService.login(this.username, this.password)
+        .subscribe(() => this.$router.push("/"));
+  }
+
 }
 </script>

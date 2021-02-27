@@ -1,7 +1,7 @@
 <template>
   <div class="mt-auto flex items-center text-red-700 dark:text-red-400">
     <!-- important action -->
-    <a href="#home" class="flex items-center">
+    <a href="#home" class="flex items-center" v-if="isLoggedIn">
       <svg class="fill-current h-5 w-5" viewBox="0 0 24 24">
         <path
             d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 012
@@ -11,13 +11,29 @@
       <span class="ml-2 capitalize font-medium">log out</span>
     </a>
 
+    <router-link to="/login" class="flex items-center" v-else>
+      <svg class="fill-current h-5 w-5" viewBox="0 0 24 24">
+        <path
+            d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 012
+						2v2h-2V4H5v16h9v-2h2v2a2 2 0 01-2 2H5a2 2 0 01-2-2V4a2 2
+						0 012-2h9z"></path>
+      </svg>
+      <span class="ml-2 capitalize font-medium">log in</span>
+    </router-link>
+
   </div>
 </template>
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
+import UserService from "@/services/UserService";
 
 @Component
 export default class SideNavImportantActions extends Vue {
+  private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
+
+  get isLoggedIn(): boolean {
+    return this.userService.get() !== undefined;
+  }
 }
 </script>

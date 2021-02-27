@@ -1,25 +1,40 @@
 <template>
-  <div class="mt-8">
+  <div class="mt-8" v-if="user">
     <!-- User info -->
     <img class="h-12 w-12 rounded-full object-cover"
-         src="https://appzzang.me/data/editor/1608/f9c387cb6bd7a0b004f975cd92cbe2d9_1471626325_6802.png"
+         :src="avatar"
          alt="enoshima profile"/>
+    <!--         src="https://appzzang.me/data/editor/1608/f9c387cb6bd7a0b004f975cd92cbe2d9_1471626325_6802.png"-->
     <h2 class="mt-4 text-xl dark:text-gray-300 font-extrabold capitalize">
-      Hello Enoshima
+      {{ user.name }}
     </h2>
     <span class="text-sm dark:text-gray-300">
 				<span class="font-semibold text-green-600 dark:text-green-300">Admin</span>
-      id789038
+      {{ user.id }}
     </span>
   </div>
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
+import {Component, Vue} from 'vue-property-decorator';
+import UserService from "@/services/UserService";
 import {User} from "@/services/model/User";
+import md5 from "js-md5";
 
 @Component
 export default class SideNavUserInfo extends Vue {
-  @Prop user?: User;
+  private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
+
+  get user(): User | undefined {
+    return this.userService.get();
+  }
+
+  get avatar(): string {
+    let hash = "0";
+    if (this.user?.mail !== undefined) {
+      hash = md5(this.user.mail);
+    }
+    return `https://www.gravatar.com/avatar/${hash}?s=48`;
+  }
 }
 </script>
