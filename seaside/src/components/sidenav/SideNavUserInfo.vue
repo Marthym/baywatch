@@ -4,7 +4,6 @@
     <img class="h-12 w-12 rounded-full object-cover"
          :src="avatar"
          alt="enoshima profile"/>
-    <!--         src="https://appzzang.me/data/editor/1608/f9c387cb6bd7a0b004f975cd92cbe2d9_1471626325_6802.png"-->
     <h2 class="mt-4 text-xl dark:text-gray-300 font-extrabold capitalize">
       {{ user.name }}
     </h2>
