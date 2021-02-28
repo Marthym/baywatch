@@ -12,12 +12,10 @@ import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
-import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -25,8 +23,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -34,7 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
@@ -45,9 +41,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Service
-@RequiredArgsConstructor()
-@DependsOn({"flyway", "flywayInitializer"}) // Wait after Flyway migrations
+@RequiredArgsConstructor
 public final class FeedScrapperService implements Runnable {
 
     private final ScheduledExecutorService scheduleExecutor = Executors.newSingleThreadScheduledExecutor(
@@ -58,31 +52,26 @@ public final class FeedScrapperService implements Runnable {
     private final CountDownLatch lock = new CountDownLatch(1);
     private final Clock clock = Clock.systemUTC();
 
+    private final Duration scrapFrequency;
     private final OpenGraphScrapper ogScrapper;
     private final FeedPersistencePort feedRepository;
     private final NewsPersistencePort newsRepository;
     private final RssAtomParser feedParser;
     private final Collection<PreScrappingAction> preScrappingActions;
 
-    @PostConstruct
-    void startScrapping() {
+    public void startScrapping() {
         Instant now = clock.instant();
-        Duration scrappingFrequency = Duration.ofDays(1);
-        Instant nextScrapping = now.plus(scrappingFrequency)
-                .truncatedTo(ChronoUnit.DAYS)
-                .plus(Duration.ofHours(7));
+        Instant nextScrapping = now.plus(scrapFrequency);
         Duration toNextScrapping = Duration.between(now, nextScrapping);
 
         scheduleExecutor.scheduleAtFixedRate(this,
-                toNextScrapping.getSeconds(), scrappingFrequency.getSeconds(), TimeUnit.DAYS);
-        log.info("Next scrapping in {}h {}m {}s",
-                toNextScrapping.toHoursPart(), toNextScrapping.toMinutesPart(), toNextScrapping.toSecondsPart());
+                toNextScrapping.getSeconds(), scrapFrequency.getSeconds(), TimeUnit.SECONDS);
+        log.debug("Next scrapping at {}", LocalDateTime.now().plus(toNextScrapping));
         Schedulers.single().schedule(this);
     }
 
-    @PreDestroy
     @SneakyThrows
-    void shutdownScrapping() {
+    public void shutdownScrapping() {
         scheduleExecutor.shutdown();
         if (!lock.await(60, TimeUnit.SECONDS)) {
             log.warn("Unable to stop threads gracefully ! Threads was killed !");

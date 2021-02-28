@@ -14,7 +14,7 @@ public class JwtTokenProviderAdapter implements JwtTokenProvider {
     @Delegate
     private final JwtTokenProvider tokenProvider;
 
-    public JwtTokenProviderAdapter(@Value("${jwt.validity}") Duration tokenValidity) {
+    public JwtTokenProviderAdapter(@Value("${baywatch.security.jwt.validity}") Duration tokenValidity) {
         this.tokenProvider = new JwtTokenProviderImpl(tokenValidity);
     }
 }

@@ -21,8 +21,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import wiremock.org.apache.commons.io.IOUtils;
 
-import java.io.InputStream;
 import java.net.URI;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.UUID;
 
@@ -127,19 +127,16 @@ class FeedScrapperServiceTest {
         when(newsPersistenceMock.persist(anyCollection())).thenReturn(Mono.just("").then());
         when(newsPersistenceMock.list()).thenReturn(Flux.empty());
 
-        rssAtomParserMock = spy(new RssAtomParser() {
-            @Override
-            public Flux<News> parse(Feed feed, InputStream is) {
-                // Must consume the inputstream
-                Exceptions.wrap().get(() -> IOUtils.toByteArray(is));
-                return Flux.just(News.builder()
-                        .raw(RawNews.builder()
-                                .id(UUID.randomUUID().toString())
-                                .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
-                                .build())
-                        .state(State.NONE)
-                        .build());
-            }
+        rssAtomParserMock = spy((feed, is) -> {
+            // Must consume the inputstream
+            Exceptions.wrap().get(() -> IOUtils.toByteArray(is));
+            return Flux.just(News.builder()
+                    .raw(RawNews.builder()
+                            .id(UUID.randomUUID().toString())
+                            .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
+                            .build())
+                    .state(State.NONE)
+                    .build());
         });
 
         URI springUri = URI.create("http://localhost:" + mockServer.port() + "/feeds/spring-blog.xml");
@@ -164,7 +161,7 @@ class FeedScrapperServiceTest {
                         .build()).build()
         ));
 
-        tested = new FeedScrapperService(
+        tested = new FeedScrapperService(Duration.ofDays(1),
                 openGraphScrapper, feedPersistenceMock, newsPersistenceMock, rssAtomParserMock, Collections.emptyList());
     }
 }

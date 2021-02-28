@@ -32,14 +32,15 @@ public class OpenGraph {
                     break;
                 case Tags.OG_TYPE:
                     logException(() ->
-                            builder.type(OGType.valueOf(m.content.toUpperCase())));
+                            builder.type(OGType.from(m.content)));
                     break;
                 case Tags.OG_URL:
                     logException(() ->
                             builder.url(new URL(m.content)));
                     break;
                 case Tags.OG_IMAGE:
-                    builder.image(URI.create(m.content));
+                    logException(() ->
+                            builder.image(URI.create(m.content)));
                     break;
                 case Tags.OG_DESCRIPTION:
                     builder.description(m.content);

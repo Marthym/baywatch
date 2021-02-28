@@ -17,5 +17,9 @@ logging:
     org.jooq: WARN
     fr.ght1pc9kc.baywatch: DEBUG
 
-jwt:
-  validity: 1h
+baywatch:
+  security:
+    jwt:
+      validity: 1h
+  scrapper:
+    frequency: 1h
