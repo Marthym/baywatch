@@ -5,4 +5,6 @@ export type News = {
     publication: Date;
     image: string;
     link: string;
+    read: boolean;
+    stared: boolean;
 }

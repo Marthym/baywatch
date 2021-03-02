@@ -5,7 +5,7 @@
     <div class="xl:w-2/3">
       <ContentHeader :users="statistics.users" :feeds="statistics.feeds" :news="statistics.news"/>
       <template v-for="(card, idx) in news">
-        <NewsCard :ref="card.data.id" :card="card" v-bind:key="card.data.id" @activate="activateNewsCard(idx)"/>
+        <NewsCard :ref="card.data.id" :card="card" v-bind:key="card.data" @activate="activateNewsCard(idx)"/>
       </template>
     </div>
 
@@ -44,7 +44,7 @@ export default class MainContent extends Vue {
 
   created(): void {
     this.subscriptions = this.newsService.getNews().pipe(
-        map(ns => ns.map(n => ({data: n, isActive: false, isRead: false}) as NewsView))
+        map(ns => ns.map(n => ({data: n, isActive: false}) as NewsView))
     ).subscribe(
         ns => this.news = ns,
         e => console.log(e)
@@ -74,7 +74,18 @@ export default class MainContent extends Vue {
   }
 
   toggleRead(idx: number) {
-    this.news[idx].isRead = !this.news[idx].isRead;
+    const current = this.news[idx];
+    if (!current.data.read) {
+      this.newsService.mark(current.data.id, 'read')
+          .subscribe(news => {
+            this.news[idx].data = news;
+          });
+    } else {
+      this.newsService.unmark(current.data.id, 'read')
+          .subscribe(news => {
+            this.news[idx].data = news;
+          });
+    }
   }
 
   activateNewsCard(_idx: number) {
@@ -82,7 +93,7 @@ export default class MainContent extends Vue {
     if (this.activeNews >= 0 && this.activeNews < this.news.length) {
       // Manage previous news
       this.news[this.activeNews].isActive = false;
-      this.news[this.activeNews].isRead = true;
+      this.news[this.activeNews].data.read = true;
     }
     this.activeNews = idx;
     if (idx >= this.news.length || idx < 0) {

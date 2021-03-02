@@ -35,4 +35,32 @@ export default class NewsService {
                 take(1)
             );
     }
+
+    mark(id: string, mark: string): Observable<News> {
+        return fromFetch(`${this.serviceBaseUrl}/news/${id}/mark/${mark}`, {method: 'PUT'})
+            .pipe(
+                switchMap(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new HttpStatusError(response.status, `Error while mark news ${id} as ${mark}.`);
+                    }
+                }),
+                take(1)
+            );
+    }
+
+    unmark(id: string, mark: string): Observable<News> {
+        return fromFetch(`${this.serviceBaseUrl}/news/${id}/unmark/${mark}`, {method: 'PUT'})
+            .pipe(
+                switchMap(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new HttpStatusError(response.status, `Error while unmark news ${id} as ${mark}.`);
+                    }
+                }),
+                take(1)
+            );
+    }
 }
