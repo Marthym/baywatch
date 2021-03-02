@@ -4,8 +4,8 @@
     <ContentTopNav/>
     <div class="xl:w-2/3">
       <ContentHeader :users="statistics.users" :feeds="statistics.feeds" :news="statistics.news"/>
-      <template v-for="card in news">
-        <NewsCard :ref="card.data.id" :card="card" v-bind:key="card.data.id"/>
+      <template v-for="(card, idx) in news">
+        <NewsCard :ref="card.data.id" :card="card" v-bind:key="card.data.id" @activate="activateNewsCard(idx)"/>
       </template>
     </div>
 
@@ -56,29 +56,55 @@ export default class MainContent extends Vue {
       if (event.altKey) {
         return;
       }
-      if (event.key === "n" && !event.altKey) {
-        event.preventDefault();
-        this.nextNews();
+      if (!event.altKey) {
+        if (event.key === "n") {
+          event.preventDefault();
+          this.activateNewsCard(this.activeNews + 1);
+          this.scrollToActivateNews();
+        } else if (event.key === "k") {
+          event.preventDefault();
+          this.activateNewsCard(this.activeNews - 1);
+          this.scrollToActivateNews();
+        } else if (event.key === "m") {
+          event.preventDefault();
+          this.toggleRead(this.activeNews);
+        }
       }
     })
   }
 
-  nextNews(): void {
-    if (this.activeNews >= 0) {
+  toggleRead(idx: number) {
+    this.news[idx].isRead = !this.news[idx].isRead;
+  }
+
+  activateNewsCard(_idx: number) {
+    const idx = Math.max(-1, Math.min(_idx, this.news.length));
+    if (this.activeNews >= 0 && this.activeNews < this.news.length) {
       // Manage previous news
       this.news[this.activeNews].isActive = false;
       this.news[this.activeNews].isRead = true;
     }
-    if (this.activeNews >= this.news.length - 1) {
+    this.activeNews = idx;
+    if (idx >= this.news.length || idx < 0) {
       // Stop if last news
       return;
     }
 
-    this.activeNews += 1;
+    this.news[this.activeNews].isActive = true;
+  }
+
+  scrollToActivateNews() {
+    if (this.activeNews >= this.news.length - 1 || this.activeNews < 0) {
+      // Stop if last news
+      return;
+    }
     const current = this.news[this.activeNews];
-    current.isActive = true;
     this.$nextTick(() => {
-      (this.$refs[current.data.id] as Vue[])[0].$el.scrollIntoView(
+      const ref: Vue[] | undefined = this.$refs[current.data.id] as Vue[] | undefined;
+      if (ref === undefined) {
+        return;
+      }
+      (ref as Vue[])[0].$el.scrollIntoView(
           {block: 'center', scrollBehavior: 'smooth'} as ScrollIntoViewOptions);
     });
   }
