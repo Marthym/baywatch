@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
 import com.machinezoo.noexception.Exceptions;
+import fr.ght1pc9kc.baywatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.State;
@@ -164,6 +165,30 @@ public class NewsRepository implements NewsPersistencePort {
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(r -> Map.entry(r.getNursNewsId(), State.of(r.getNursState())))
                 .filter(s -> searchCriteria.visit(predicateSearchVisitor).test(s.getValue()));
+    }
+
+    @Override
+    public Mono<Integer> addStateFlag(String newsId, String userId, int flag) {
+        return Mono.fromCallable(() -> dsl.insertInto(NEWS_USER_STATE)
+                .columns(NEWS_USER_STATE.NURS_NEWS_ID, NEWS_USER_STATE.NURS_USER_ID, NEWS_USER_STATE.NURS_STATE)
+                .values(newsId, userId, Flags.NONE | flag)
+                .onDuplicateKeyUpdate()
+                .set(NEWS_USER_STATE.NURS_STATE, NEWS_USER_STATE.NURS_STATE.bitOr(flag))
+                .returning()
+                .execute())
+                .subscribeOn(databaseScheduler);
+    }
+
+    @Override
+    public Mono<Integer> removeStateFlag(String newsId, String userId, int flag) {
+        return Mono.fromCallable(() -> dsl.insertInto(NEWS_USER_STATE)
+                .columns(NEWS_USER_STATE.NURS_NEWS_ID, NEWS_USER_STATE.NURS_USER_ID, NEWS_USER_STATE.NURS_STATE)
+                .values(newsId, userId, Flags.NONE)
+                .onDuplicateKeyUpdate()
+                .set(NEWS_USER_STATE.NURS_STATE, NEWS_USER_STATE.NURS_STATE.bitNand(flag))
+                .returning()
+                .execute())
+                .subscribeOn(databaseScheduler);
     }
 
     @Override

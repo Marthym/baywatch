@@ -50,6 +50,7 @@ public class AuthenticationController {
                             .httpOnly(true)
                             .secure("https".equals(exchange.getRequest().getURI().getScheme()))
                             .sameSite("Strict")
+                            .path("/api")
                             .build());
 //                    session.getAttributes().putIfAbsent("token", token);
                     return user;
