@@ -73,6 +73,7 @@ class UserRepositoryTest {
                 .name("Obiwan Kenobi")
                 .login("okenobi")
                 .mail("obiwan.kenobi@jedi.fr")
+                .password(UsersRecordSamples.OKENOBI.getUserPassword())
                 .build());
     }
 
@@ -102,8 +103,10 @@ class UserRepositoryTest {
         }
 
         tested.persist(List.of(
-                User.builder().id(Hasher.sha3("dvader")).login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").build(),
-                User.builder().id(Hasher.sha3("dsidious")).login("dsidious").name("Darth Sidious").mail("darth.sidious@sith.fr").build()
+                User.builder().id(Hasher.sha3("dvader")).login("dvader").name("Darth Vader").mail("darth.vader@sith.fr")
+                        .password("obscur").build(),
+                User.builder().id(Hasher.sha3("dsidious")).login("dsidious").name("Darth Sidious").mail("darth.sidious@sith.fr")
+                        .password("obscur").build()
         )).collectList().block();
 
         {
