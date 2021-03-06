@@ -5,7 +5,7 @@
     <div class="xl:w-2/3">
       <ContentHeader :users="statistics.users" :feeds="statistics.feeds" :news="statistics.news"/>
       <template v-for="(card, idx) in news">
-        <NewsCard :ref="card.data.id" :card="card" v-bind:key="card.data" @activate="activateNewsCard(idx)"/>
+        <NewsCard :ref="card.data.id" :card="card" v-bind:key="card.data.id" @activate="activateNewsCard(idx)"/>
       </template>
     </div>
 
@@ -78,12 +78,12 @@ export default class MainContent extends Vue {
     if (!current.data.read) {
       this.newsService.mark(current.data.id, 'read')
           .subscribe(news => {
-            this.news[idx].data = news;
+            this.$set(this.news, idx, {...current, data: news});
           });
     } else {
       this.newsService.unmark(current.data.id, 'read')
           .subscribe(news => {
-            this.news[idx].data = news;
+            this.$set(this.news, idx, {...current, data: news});
           });
     }
   }
