@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
@@ -22,6 +23,7 @@ import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 
 @Slf4j
@@ -34,8 +36,8 @@ public class SecurityConfiguration {
         return http
                 .csrf().disable()
                 .httpBasic().disable()
-
                 .formLogin().disable()
+
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange()
                 .pathMatchers("/**").permitAll()
@@ -47,12 +49,12 @@ public class SecurityConfiguration {
 //                .anyExchange().hasAuthority(TokenAuthority.ROLE_ACCESS.toString())
 //
 //                .and()
-//                .addFilterAt(apiAuthenticationWebFilter(), SecurityWebFiltersOrder.AUTHORIZATION)
-//                .exceptionHandling()
-//                .authenticationEntryPoint((webFilterExchange, e) -> statusEntryPointHandler())
-
                 .and()
+
                 .addFilterAt(new JwtTokenAuthenticationFilter(jwtTokenProvider), SecurityWebFiltersOrder.HTTP_BASIC)
+                .exceptionHandling().authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED))
+                .and()
+
                 .build();
     }
 
