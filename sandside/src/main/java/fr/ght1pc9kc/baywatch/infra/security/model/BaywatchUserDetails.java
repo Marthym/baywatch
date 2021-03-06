@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.infra.model;
+package fr.ght1pc9kc.baywatch.infra.security.model;
 
 import fr.ght1pc9kc.baywatch.api.model.User;
 import lombok.Value;

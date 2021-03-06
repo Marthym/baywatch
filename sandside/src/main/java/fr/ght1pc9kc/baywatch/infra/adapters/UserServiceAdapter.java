@@ -5,15 +5,17 @@ import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.domain.UserServiceImpl;
 import fr.ght1pc9kc.baywatch.domain.ports.UserPersistencePort;
-import fr.ght1pc9kc.baywatch.infra.model.BaywatchUserDetails;
+import fr.ght1pc9kc.baywatch.infra.security.model.BaywatchUserDetails;
 import lombok.experimental.Delegate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
+@Qualifier("Baywatch")
 public class UserServiceAdapter implements UserService, ReactiveUserDetailsService {
     @Delegate
     private final UserService delegate;

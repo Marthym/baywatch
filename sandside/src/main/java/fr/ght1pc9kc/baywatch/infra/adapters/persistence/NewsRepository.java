@@ -101,7 +101,7 @@ public class NewsRepository implements NewsPersistencePort {
         Condition conditions = pageRequest.filter.visit(NEWS_CONDITION_VISITOR);
         PredicateSearchVisitor<News> predicateSearchVisitor = new PredicateSearchVisitor<>();
 
-        final Select<Record> query = JooqPagination.apply(pageRequest, dsl
+        final Select<Record> query = JooqPagination.apply(pageRequest, NEWS_PROPERTIES_MAPPING, dsl
                 .select(NEWS.fields()).select(NEWS_FEEDS.NEFE_FEED_ID).select(NEWS_USER_STATE.NURS_STATE)
                 .from(NEWS)
                 .leftJoin(NEWS_USER_STATE).on(NEWS.NEWS_ID.eq(NEWS_USER_STATE.NURS_NEWS_ID))

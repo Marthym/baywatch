@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.infra.security;
+package fr.ght1pc9kc.baywatch.infra.security.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -7,8 +7,12 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
 import fr.ght1pc9kc.baywatch.infra.config.jackson.NewsMixin;
+import fr.ght1pc9kc.baywatch.infra.security.JwtTokenAuthenticationFilter;
+import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -30,9 +34,11 @@ import org.springframework.security.web.server.context.NoOpServerSecurityContext
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
+@EnableConfigurationProperties(SecurityParams.class)
 public class SecurityConfiguration {
     @Bean
-    SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http, JwtTokenProvider jwtTokenProvider) {
+    SecurityWebFilterChain springSecurityFilterChain(
+            ServerHttpSecurity http, JwtTokenProvider jwtTokenProvider, SecurityParams securityParams) {
         return http
                 .csrf().disable()
                 .httpBasic().disable()
@@ -51,7 +57,7 @@ public class SecurityConfiguration {
 //                .and()
                 .and()
 
-                .addFilterAt(new JwtTokenAuthenticationFilter(jwtTokenProvider), SecurityWebFiltersOrder.HTTP_BASIC)
+                .addFilterAt(new JwtTokenAuthenticationFilter(jwtTokenProvider, securityParams.cookie.name), SecurityWebFiltersOrder.HTTP_BASIC)
                 .exceptionHandling().authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED))
                 .and()
 
@@ -78,7 +84,7 @@ public class SecurityConfiguration {
 
     @Bean
     public ReactiveAuthenticationManager reactiveAuthenticationManager(
-            ReactiveUserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+            @Qualifier("Baywatch") ReactiveUserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
         UserDetailsRepositoryReactiveAuthenticationManager authenticationManager =
                 new UserDetailsRepositoryReactiveAuthenticationManager(userDetailsService);
         authenticationManager.setPasswordEncoder(passwordEncoder);

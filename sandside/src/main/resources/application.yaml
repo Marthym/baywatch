@@ -19,7 +19,7 @@ logging:
 
 baywatch:
   security:
-    jwt:
-      validity: 1h
+    cookie.name: X-TOKEN
+    jwt.validity: 1h
   scrapper:
     frequency: 1h

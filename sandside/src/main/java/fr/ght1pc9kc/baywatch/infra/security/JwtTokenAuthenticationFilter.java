@@ -23,6 +23,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class JwtTokenAuthenticationFilter implements WebFilter {
     private final JwtTokenProvider tokenProvider;
+    private final String cookieName;
 
     @Override
     public @NotNull Mono<Void> filter(ServerWebExchange exchange, @NotNull WebFilterChain chain) {
@@ -42,7 +43,7 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
-        return Optional.ofNullable(request.getCookies().getFirst("token"))
+        return Optional.ofNullable(request.getCookies().getFirst(cookieName))
                 .map(HttpCookie::getValue)
                 .filter(StringUtils::hasText)
                 .orElse("");

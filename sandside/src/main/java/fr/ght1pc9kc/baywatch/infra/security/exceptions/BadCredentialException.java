@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.infra.controllers.exceptions;
+package fr.ght1pc9kc.baywatch.infra.security.exceptions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
