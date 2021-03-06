@@ -44,7 +44,7 @@ export default class MainContent extends Vue {
 
   created(): void {
     this.subscriptions = this.newsService.getNews().pipe(
-        map(ns => ns.map(n => ({data: n, isActive: false}) as NewsView))
+        map(ns => ns.map(n => ({data: n, isActive: false, keepMark: false}) as NewsView))
     ).subscribe(
         ns => this.news = ns,
         e => console.log(e)
@@ -52,49 +52,41 @@ export default class MainContent extends Vue {
   }
 
   mounted(): void {
-    window.addEventListener('keydown', event => {
-      if (event.altKey) {
-        return;
-      }
-      if (!event.altKey) {
-        if (event.key === "n") {
-          event.preventDefault();
-          this.activateNewsCard(this.activeNews + 1);
-          this.scrollToActivateNews();
-        } else if (event.key === "k") {
-          event.preventDefault();
-          this.activateNewsCard(this.activeNews - 1);
-          this.scrollToActivateNews();
-        } else if (event.key === "m") {
-          event.preventDefault();
-          this.toggleRead(this.activeNews);
-        }
-      }
-    })
+    window.addEventListener('keydown', this.onKeyDownListener, false);
   }
 
-  toggleRead(idx: number) {
-    const current = this.news[idx];
-    if (!current.data.read) {
-      this.newsService.mark(current.data.id, 'read')
-          .subscribe(news => {
-            this.$set(this.news, idx, {...current, data: news});
-          });
-    } else {
-      this.newsService.unmark(current.data.id, 'read')
-          .subscribe(news => {
-            this.$set(this.news, idx, {...current, data: news});
-          });
+  onKeyDownListener(event: KeyboardEvent): void {
+    if (event.altKey) {
+      return;
+    }
+    if (!event.altKey) {
+      if (event.key === "n") {
+        event.preventDefault();
+        this.activateNewsCard(this.activeNews + 1);
+        this.scrollToActivateNews();
+
+      } else if (event.key === "k") {
+        event.preventDefault();
+        this.activateNewsCard(this.activeNews - 1);
+        this.scrollToActivateNews();
+
+      } else if (event.key === "m") {
+        event.preventDefault();
+        this.toggleRead(this.activeNews);
+      }
     }
   }
 
   activateNewsCard(_idx: number) {
-    const idx = Math.max(-1, Math.min(_idx, this.news.length));
     if (this.activeNews >= 0 && this.activeNews < this.news.length) {
       // Manage previous news
       this.news[this.activeNews].isActive = false;
-      this.news[this.activeNews].data.read = true;
+      if (!this.news[this.activeNews].keepMark) {
+        this.markNewsRead(this.activeNews, true);
+      }
     }
+
+    const idx = Math.max(-1, Math.min(_idx, this.news.length));
     this.activeNews = idx;
     if (idx >= this.news.length || idx < 0) {
       // Stop if last news
@@ -104,7 +96,28 @@ export default class MainContent extends Vue {
     this.news[this.activeNews].isActive = true;
   }
 
-  scrollToActivateNews() {
+  toggleRead(idx: number) {
+    this.markNewsRead(idx, !this.news[idx].data.read);
+    this.news[idx].keepMark = true;
+  }
+
+
+  private markNewsRead(idx: number, mark: boolean) {
+    const target = this.news[idx];
+    if (target.data.read === mark) {
+      return;
+    }
+
+    const markObs = (mark)
+        ? this.newsService.mark(target.data.id, 'read')
+        : this.newsService.unmark(target.data.id, 'read');
+
+    markObs.subscribe(news => {
+      this.$set(this.news, idx, {...target, data: news});
+    });
+  }
+
+  private scrollToActivateNews() {
     if (this.activeNews >= this.news.length - 1 || this.activeNews < 0) {
       // Stop if last news
       return;
@@ -121,6 +134,7 @@ export default class MainContent extends Vue {
   }
 
   beforeDestroy(): void {
+    window.removeEventListener('keydown', this.onKeyDownListener, false)
     this.subscriptions?.unsubscribe();
   }
 }

@@ -32,6 +32,19 @@ export default class UserService {
         );
     }
 
+    logout(): Observable<void> {
+        return fromFetch(`${this.serviceBaseUrl}/auth/logout`).pipe(
+            map(response => {
+                if (!response.ok) {
+                    throw new HttpStatusError(response.status, `Error while getting news.`);
+                }
+                return null;
+            }),
+            map(_null => localStorage.removeItem('user')),
+            take(1)
+        );
+    }
+
     save(user: User): User {
         const parsed = JSON.stringify(user);
         localStorage.setItem('user', parsed);
