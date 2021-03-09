@@ -4,6 +4,7 @@
     <ContentTopNav/>
     <div class="xl:w-2/3">
       <ContentHeader :users="statistics.users" :feeds="statistics.feeds" :news="statistics.news"/>
+
       <template v-for="(card, idx) in news">
         <NewsCard :ref="card.data.id" :card="card" v-bind:key="card.data.id" @activate="activateNewsCard(idx)"/>
       </template>
@@ -23,36 +24,59 @@ import {Subscription} from "rxjs";
 import {Statistics} from "@/services/model/Statistics";
 import {map} from "rxjs/operators";
 import {NewsView} from "@/components/content/model/NewsView";
+import UserService from "@/services/UserService";
 
 @Component({
   components: {
     NewsCard,
     NewsListHeader,
     ContentHeader,
-    ContentTopNav
+    ContentTopNav,
   }
 })
 export default class MainContent extends Vue {
   @Prop() statistics?: Statistics;
 
   private newsService: NewsService = new NewsService(process.env.VUE_APP_API_BASE_URL);
-  private news: Array<NewsView> = [];
-  private activeNews = -1;
+  private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
+  private news: NewsView[] = new Array(0);
 
+  private activeNews = -1;
+  private page = 0;
+
+  private observer = new IntersectionObserver((entries) => {
+    if (!entries[0].isIntersecting) {
+      console.log("test");
+      this.activateNewsCard(++this.activeNews)
+    }
+  }, {threshold: [1], rootMargin: "-50px 0px 0px 0px"});
 
   private subscriptions?: Subscription;
 
+  getId(n: NewsView) {
+    return n.data.id;
+  }
+
   created(): void {
-    this.subscriptions = this.newsService.getNews().pipe(
-        map(ns => ns.map(n => ({data: n, isActive: false, keepMark: false}) as NewsView))
-    ).subscribe(
-        ns => this.news = ns,
-        e => console.log(e)
-    );
+    this.loadNextNewsPage();
   }
 
   mounted(): void {
     window.addEventListener('keydown', this.onKeyDownListener, false);
+  }
+
+  loadNextNewsPage(): void {
+    this.subscriptions = this.newsService.getNews(++this.page).pipe(
+        map(ns => ns.map(n => ({data: n, isActive: false, keepMark: false}) as NewsView))
+    ).subscribe(
+        ns => {
+          this.news.push(...ns);
+          if (this.activeNews < 0) {
+            this.$nextTick(() => this.observer.observe(this.$refs[this.news[0].data.id][0].$el));
+          }
+        },
+        e => console.log(e)
+    );
   }
 
   onKeyDownListener(event: KeyboardEvent): void {
@@ -77,7 +101,8 @@ export default class MainContent extends Vue {
     }
   }
 
-  activateNewsCard(_idx: number) {
+  activateNewsCard(_idx: number): void {
+    this.observer.disconnect();
     if (this.activeNews >= 0 && this.activeNews < this.news.length) {
       // Manage previous news
       this.news[this.activeNews].isActive = false;
@@ -94,6 +119,7 @@ export default class MainContent extends Vue {
     }
 
     this.news[this.activeNews].isActive = true;
+    this.observer.observe(this.$refs[this.news[this.activeNews].data.id][0].$el)
   }
 
   toggleRead(idx: number) {
@@ -101,8 +127,10 @@ export default class MainContent extends Vue {
     this.news[idx].keepMark = true;
   }
 
-
   private markNewsRead(idx: number, mark: boolean) {
+    if (!this.userService.get()) {
+      return;
+    }
     const target = this.news[idx];
     if (target.data.read === mark) {
       return;
@@ -133,8 +161,14 @@ export default class MainContent extends Vue {
     });
   }
 
+  handleScroll(): void {
+    if (this.activeNews < 0) {
+      this.activateNewsCard(0);
+    }
+  }
+
   beforeDestroy(): void {
-    window.removeEventListener('keydown', this.onKeyDownListener, false)
+    window.removeEventListener('keydown', this.onKeyDownListener, false);
     this.subscriptions?.unsubscribe();
   }
 }

@@ -10,10 +10,12 @@
   },
   "dependencies": {
     "@types/js-md5": "^0.4.2",
+    "@types/throttle-debounce": "^2.1.0",
     "core-js": "^3.6.5",
     "js-md5": "^0.7.3",
     "rxjs": "^6.6.3",
     "rxjs-compat": "^6.6.3",
+    "throttle-debounce": "^3.0.1",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",
     "vue-property-decorator": "^8.4.2",

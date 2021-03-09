@@ -40,7 +40,7 @@ export default class UserService {
                 }
                 return null;
             }),
-            map(_null => localStorage.removeItem('user')),
+            map(() => localStorage.removeItem('user')),
             take(1)
         );
     }

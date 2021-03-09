@@ -9,7 +9,7 @@ export default class NewsService {
      * By default query the 10 latest published news
      * @private
      */
-    private static readonly DEFAULT_QUERY: URLSearchParams = new URLSearchParams("?_pp=10&_s=-publication");
+    private static readonly DEFAULT_QUERY: URLSearchParams = new URLSearchParams("?_pp=50&_s=-publication");
 
     serviceBaseUrl: string;
 
@@ -20,9 +20,13 @@ export default class NewsService {
     /**
      * Get the {@link News} from backend
      *
+     * @param page
      * @param query
      */
-    getNews(query: URLSearchParams = NewsService.DEFAULT_QUERY): Observable<News[]> {
+    getNews(page = 1, query: URLSearchParams = NewsService.DEFAULT_QUERY): Observable<News[]> {
+        if (page > 1) {
+            query.append('-p', String(page));
+        }
         return fromFetch(`${this.serviceBaseUrl}/news?${query.toString()}`)
             .pipe(
                 switchMap(response => {

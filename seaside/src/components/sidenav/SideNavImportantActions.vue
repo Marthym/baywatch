@@ -33,7 +33,6 @@ export default class SideNavImportantActions extends Vue {
   private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
 
   get isLoggedIn(): boolean {
-    console.log("isLoggedIn", this.userService.get());
     return this.userService.get() !== undefined;
   }
 

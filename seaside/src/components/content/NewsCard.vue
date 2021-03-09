@@ -19,7 +19,7 @@
            v-bind:class="{ 'text-black': !card.data.read, 'text-gray-400': card.data.read}">
         <a class="font-semibold text-xl" :href="card.data.link" v-html="card.data.title"></a>
         <span v-bind:class="{ 'text-gray-600': !card.data.read, 'text-gray-300': card.data.read}"
-              v-html="card.data.description" class="mt-2 text-base flex-shrink overflow-hidden overflow-ellipsis"></span>
+              v-html="card.data.description" class="mt-2 text-base flex-shrink overflow-hidden"></span>
       </div>
     </div>
   </div>
