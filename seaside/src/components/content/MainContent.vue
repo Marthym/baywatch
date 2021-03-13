@@ -25,6 +25,8 @@ import {Statistics} from "@/services/model/Statistics";
 import {map} from "rxjs/operators";
 import {NewsView} from "@/components/content/model/NewsView";
 import UserService from "@/services/UserService";
+import ScrollingActivationBehaviour from "@/services/ScrollingActivationBehaviour";
+import ScrollingActivation from "@/services/model/ScrollingActivation";
 
 @Component({
   components: {
@@ -34,9 +36,10 @@ import UserService from "@/services/UserService";
     ContentTopNav,
   }
 })
-export default class MainContent extends Vue {
+export default class MainContent extends Vue implements ScrollingActivation {
   @Prop() statistics?: Statistics;
 
+  private readonly activateOnScroll = ScrollingActivationBehaviour.apply(this);
   private newsService: NewsService = new NewsService(process.env.VUE_APP_API_BASE_URL);
   private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
   private news: NewsView[] = new Array(0);
@@ -44,24 +47,10 @@ export default class MainContent extends Vue {
   private activeNews = -1;
   private page = 0;
 
-  private observer = new IntersectionObserver((entries) => {
-    if (!entries[0].isIntersecting) {
-      console.log("test");
-      this.activateNewsCard(++this.activeNews)
-    }
-  }, {threshold: [1], rootMargin: "-50px 0px 0px 0px"});
-
   private subscriptions?: Subscription;
 
-  getId(n: NewsView) {
-    return n.data.id;
-  }
-
-  created(): void {
-    this.loadNextNewsPage();
-  }
-
   mounted(): void {
+    this.loadNextNewsPage();
     window.addEventListener('keydown', this.onKeyDownListener, false);
   }
 
@@ -72,7 +61,7 @@ export default class MainContent extends Vue {
         ns => {
           this.news.push(...ns);
           if (this.activeNews < 0) {
-            this.$nextTick(() => this.observer.observe(this.$refs[this.news[0].data.id][0].$el));
+            this.$nextTick(() => this.activateOnScroll.observe(this.getRefElement(this.news[0].data.id)));
           }
         },
         e => console.log(e)
@@ -101,8 +90,12 @@ export default class MainContent extends Vue {
     }
   }
 
+  activateElement(incr: number): Element {
+    this.activateNewsCard(this.activeNews + incr)
+    return this.getRefElement(this.news[this.activeNews].data.id);
+  }
+
   activateNewsCard(_idx: number): void {
-    this.observer.disconnect();
     if (this.activeNews >= 0 && this.activeNews < this.news.length) {
       // Manage previous news
       this.news[this.activeNews].isActive = false;
@@ -119,7 +112,7 @@ export default class MainContent extends Vue {
     }
 
     this.news[this.activeNews].isActive = true;
-    this.observer.observe(this.$refs[this.news[this.activeNews].data.id][0].$el)
+    this.activateOnScroll.observe(this.getRefElement(this.news[this.activeNews].data.id))
   }
 
   toggleRead(idx: number) {
@@ -152,22 +145,21 @@ export default class MainContent extends Vue {
     }
     const current = this.news[this.activeNews];
     this.$nextTick(() => {
-      const ref: Vue[] | undefined = this.$refs[current.data.id] as Vue[] | undefined;
-      if (ref === undefined) {
-        return;
-      }
-      (ref as Vue[])[0].$el.scrollIntoView(
+      this.getRefElement(current.data.id).scrollIntoView(
           {block: 'center', scrollBehavior: 'smooth'} as ScrollIntoViewOptions);
     });
   }
 
-  handleScroll(): void {
-    if (this.activeNews < 0) {
-      this.activateNewsCard(0);
+  getRefElement(ref: string): Element {
+    const vueRef: Vue[] | undefined = this.$refs[ref] as Vue[] | undefined;
+    if (vueRef === undefined) {
+      throw new Error(`Element with ref ${ref} not found !`);
     }
+    return (vueRef as Vue[])[0].$el
   }
 
   beforeDestroy(): void {
+    console.log("beforeDestroy MainContent");
     window.removeEventListener('keydown', this.onKeyDownListener, false);
     this.subscriptions?.unsubscribe();
   }
