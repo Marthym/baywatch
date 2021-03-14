@@ -4,8 +4,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
-public class BadCredentialException extends RuntimeException {
-    public BadCredentialException(Throwable cause) {
+public class BaywatchCredentialsException extends RuntimeException {
+    public BaywatchCredentialsException(Throwable cause) {
         super(cause);
+    }
+
+    public BaywatchCredentialsException(String message) {
+        super(message);
     }
 }

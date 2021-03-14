@@ -1,12 +1,10 @@
 package fr.ght1pc9kc.baywatch.infra.security;
 
-import fr.ght1pc9kc.baywatch.api.UserService;
 import fr.ght1pc9kc.baywatch.api.model.User;
-import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
-import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
-import fr.ght1pc9kc.baywatch.infra.security.exceptions.BadCredentialException;
+import fr.ght1pc9kc.baywatch.infra.security.adapters.AuthenticationManagerAdapter;
+import fr.ght1pc9kc.baywatch.infra.security.exceptions.BaywatchCredentialsException;
 import fr.ght1pc9kc.baywatch.infra.security.model.AuthenticationRequest;
 import fr.ght1pc9kc.baywatch.infra.security.model.BaywatchUserDetails;
 import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams;
@@ -16,7 +14,6 @@ import org.springframework.http.HttpCookie;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,8 +34,7 @@ import java.util.Set;
 public class AuthenticationController {
 
     private final JwtTokenProvider tokenProvider;
-    private final ReactiveAuthenticationManager authenticationManager;
-    private final UserService userService;
+    private final AuthenticationManagerAdapter authenticationManager;
     private final AuthenticationFacade authFacade;
     private final SecurityParams securityParams;
 
@@ -60,12 +56,10 @@ public class AuthenticationController {
                             .path("/api")
                             .build());
                     log.debug("Login to {}.", user.getUsername());
-                    return user;
+                    return user.getEntity().withPassword(null);
                 })
 
-                .flatMap(user -> userService.list(PageRequest.one(Criteria.property("login").eq(user.getUsername()))).next())
-                .map(user -> user.withPassword(null))
-                .onErrorMap(BadCredentialsException.class, BadCredentialException::new);
+                .onErrorMap(BadCredentialsException.class, BaywatchCredentialsException::new);
     }
 
     @GetMapping("/logout")
@@ -86,6 +80,24 @@ public class AuthenticationController {
                         .path("/api")
                         .maxAge(0)
                         .build()));
+    }
+
+    @GetMapping("/refresh")
+    public Mono<User> refresh(ServerWebExchange exchange) {
+        String token = Optional.ofNullable(exchange.getRequest().getCookies().getFirst(securityParams.cookie.name))
+                .map(HttpCookie::getValue)
+                .orElseThrow(() -> new BaywatchCredentialsException("User not login on !"));
+
+        return authenticationManager.refresh(token).map(auth -> {
+            exchange.getResponse().addCookie(ResponseCookie.from(securityParams.cookie.name, token)
+                    .httpOnly(true)
+                    .secure("https".equals(exchange.getRequest().getURI().getScheme()))
+                    .sameSite("Strict")
+                    .maxAge(securityParams.jwt.validity)
+                    .path("/api")
+                    .build());
+            return auth.user.withPassword(null);
+        });
     }
 
     @GetMapping("/current")

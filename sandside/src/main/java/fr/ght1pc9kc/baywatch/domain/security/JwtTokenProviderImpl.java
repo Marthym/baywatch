@@ -95,7 +95,8 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
         }
     }
 
-    public boolean validateToken(String token) {
+    @Override
+    public boolean validateToken(String token, boolean checkExpiration) {
         try {
             SignedJWT signedJWT = SignedJWT.parse(token);
             JWSVerifier verifier = new MACVerifier(secretKey);
@@ -103,7 +104,9 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
                 return false;
             }
             JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
-            return !claims.getExpirationTime().toInstant().isBefore(clock.instant());
+            return !checkExpiration
+                    || !claims.getExpirationTime().toInstant().isBefore(clock.instant());
+
         } catch (IllegalStateException | ParseException | JOSEException e) {
             log.info("Invalid JWT token.");
             log.trace("Invalid JWT token trace.", e);

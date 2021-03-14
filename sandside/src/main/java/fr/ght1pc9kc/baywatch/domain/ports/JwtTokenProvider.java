@@ -11,5 +11,9 @@ public interface JwtTokenProvider {
 
     BaywatchAuthentication getAuthentication(String token);
 
-    boolean validateToken(String token);
+    boolean validateToken(String token, boolean checkExpiration);
+
+    default boolean validateToken(String token) {
+        return validateToken(token, true);
+    }
 }
