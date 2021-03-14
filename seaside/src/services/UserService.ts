@@ -1,8 +1,8 @@
-import {Observable} from "rxjs";
+import {Observable, throwError} from "rxjs";
 import {fromFetch} from "rxjs/fetch";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 import {User} from "@/services/model/User";
-import {map, switchMap, take} from "rxjs/operators";
+import {catchError, map, switchMap, take} from "rxjs/operators";
 
 export default class UserService {
 
@@ -36,11 +36,29 @@ export default class UserService {
         return fromFetch(`${this.serviceBaseUrl}/auth/logout`).pipe(
             map(response => {
                 if (!response.ok) {
-                    throw new HttpStatusError(response.status, `Error while getting news.`);
+                    throw new HttpStatusError(response.status, `Error while login out user !`);
                 }
                 return null;
             }),
             map(() => localStorage.removeItem('user')),
+            take(1)
+        );
+    }
+
+    refresh(): Observable<User> {
+        return fromFetch(`${this.serviceBaseUrl}/auth/refresh`).pipe(
+            switchMap(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new HttpStatusError(response.status, `Error while refreshing token.`);
+                }
+            }),
+            map(user => this.save(user)),
+            catchError(err => {
+                localStorage.removeItem('user');
+                return throwError(err);
+            }),
             take(1)
         );
     }

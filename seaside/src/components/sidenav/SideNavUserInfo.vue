@@ -17,15 +17,17 @@
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
 import UserService from "@/services/UserService";
-import {User} from "@/services/model/User";
 import md5 from "js-md5";
 
 @Component
 export default class SideNavUserInfo extends Vue {
   private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
 
-  get user(): User | undefined {
-    return this.userService.get();
+  private user = this.userService.get();
+
+  mounted(): void {
+    this.userService.refresh()
+        .subscribe(user => this.user = user);
   }
 
   get avatar(): string {
