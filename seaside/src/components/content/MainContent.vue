@@ -20,13 +20,15 @@ import ContentHeader from "./ContentHeader.vue";
 import NewsListHeader from "@/components/content/NewsListHeader.vue";
 import NewsCard from "@/components/content/NewsCard.vue";
 import NewsService from "@/services/NewsService";
-import {Subscription} from "rxjs";
+import {Observable, Subject, Subscription} from "rxjs";
 import {Statistics} from "@/services/model/Statistics";
-import {map} from "rxjs/operators";
+import {map, take, tap} from "rxjs/operators";
 import {NewsView} from "@/components/content/model/NewsView";
 import UserService from "@/services/UserService";
 import ScrollingActivationBehaviour from "@/services/ScrollingActivationBehaviour";
-import ScrollingActivation from "@/services/model/ScrollingActivation";
+import ScrollActivable from "@/services/model/ScrollActivable";
+import InfiniteScrollBehaviour from "@/services/InfiniteScrollBehaviour";
+import InfiniteScrollable from "@/services/model/InfiniteScrollable";
 
 @Component({
   components: {
@@ -36,10 +38,11 @@ import ScrollingActivation from "@/services/model/ScrollingActivation";
     ContentTopNav,
   }
 })
-export default class MainContent extends Vue implements ScrollingActivation {
+export default class MainContent extends Vue implements ScrollActivable, InfiniteScrollable {
   @Prop() statistics?: Statistics;
 
   private readonly activateOnScroll = ScrollingActivationBehaviour.apply(this);
+  private readonly infiniteScroll = InfiniteScrollBehaviour.apply(this);
   private newsService: NewsService = new NewsService(process.env.VUE_APP_API_BASE_URL);
   private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
   private news: NewsView[] = new Array(0);
@@ -50,22 +53,29 @@ export default class MainContent extends Vue implements ScrollingActivation {
   private subscriptions?: Subscription;
 
   mounted(): void {
-    this.loadNextNewsPage();
+    this.loadNextPage().pipe(take(1))
+        .subscribe(el => {
+          this.activateOnScroll.observe(el);
+          this.infiniteScroll.observe(this.getRefElement(this.news[this.news.length - 3].data.id));
+        });
+
     window.addEventListener('keydown', this.onKeyDownListener, false);
   }
 
-  loadNextNewsPage(): void {
+  loadNextPage(): Observable<Element> {
+    const elements = new Subject<Element>();
     this.subscriptions = this.newsService.getNews(++this.page).pipe(
-        map(ns => ns.map(n => ({data: n, isActive: false, keepMark: false}) as NewsView))
-    ).subscribe(
-        ns => {
-          this.news.push(...ns);
-          if (this.activeNews < 0) {
-            this.$nextTick(() => this.activateOnScroll.observe(this.getRefElement(this.news[0].data.id)));
-          }
+        map(ns => ns.map(n => ({data: n, isActive: false, keepMark: false}) as NewsView)),
+        tap(ns => this.news.push(...ns))
+    ).subscribe(ns => {
+          this.$nextTick(() => {
+            ns.forEach(n => elements.next(this.getRefElement(n.data.id)));
+            elements.complete();
+          })
         },
-        e => console.log(e)
+        e => elements.next(e)
     );
+    return elements.asObservable();
   }
 
   onKeyDownListener(event: KeyboardEvent): void {
@@ -161,7 +171,6 @@ export default class MainContent extends Vue implements ScrollingActivation {
   beforeDestroy(): void {
     console.log("beforeDestroy MainContent");
     window.removeEventListener('keydown', this.onKeyDownListener, false);
-    this.subscriptions?.unsubscribe();
   }
 }
 </script>

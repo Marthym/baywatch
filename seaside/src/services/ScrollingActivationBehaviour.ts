@@ -1,4 +1,4 @@
-import ScrollingActivation from "@/services/model/ScrollingActivation";
+import ScrollActivable from "@/services/model/ScrollActivable";
 import Vue from "vue";
 
 /**
@@ -11,7 +11,7 @@ import Vue from "vue";
 export default class ScrollingActivationBehaviour {
     private readonly observer: IntersectionObserver;
 
-    constructor(component: ScrollingActivation & Vue) {
+    constructor(component: ScrollActivable & Vue) {
         this.observer = new IntersectionObserver((entries) => {
             const entry = entries[0];
             if (!entry.isIntersecting && entry.rootBounds !== null) {
@@ -22,7 +22,7 @@ export default class ScrollingActivationBehaviour {
         }, {threshold: [1], rootMargin: "-50px 0px 0px 0px"});
     }
 
-    public static apply(component: ScrollingActivation & Vue): ScrollingActivationBehaviour {
+    public static apply(component: ScrollActivable & Vue): ScrollingActivationBehaviour {
         const decorator = new ScrollingActivationBehaviour(component);
         component.$once('hook:beforeDestroy', () => {
             decorator.observer.disconnect();
