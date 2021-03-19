@@ -22,4 +22,5 @@ baywatch:
     cookie.name: X-TOKEN
     jwt.validity: 1h
   scrapper:
+    start: true
     frequency: 1h

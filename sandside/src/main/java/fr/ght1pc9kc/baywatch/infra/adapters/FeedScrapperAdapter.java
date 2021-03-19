@@ -20,18 +20,23 @@ import java.util.Collection;
 @DependsOn({"flyway", "flywayInitializer"}) // Wait after Flyway migrations
 public class FeedScrapperAdapter {
     private final FeedScrapperService scrapper;
+    private final boolean startScrapper;
 
     public FeedScrapperAdapter(FeedPersistencePort feedPersistence, NewsPersistencePort newsPersistence,
                                OpenGraphScrapper ogScrapper, RssAtomParser rssAtomParser,
                                Collection<PreScrappingAction> preScrappingActions,
+                               @Value("${baywatch.scrapper.start}") boolean startScrapper,
                                @Value("${baywatch.scrapper.frequency}") Duration scrapFrequency) {
+        this.startScrapper = startScrapper;
         this.scrapper = new FeedScrapperService(scrapFrequency,
                 ogScrapper, feedPersistence, newsPersistence, rssAtomParser, preScrappingActions);
     }
 
     @PostConstruct
     void startScrapping() {
-        scrapper.startScrapping();
+        if (startScrapper) {
+            scrapper.startScrapping();
+        }
     }
 
     @PreDestroy

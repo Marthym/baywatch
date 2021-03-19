@@ -12,6 +12,7 @@ import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.MediaType;
@@ -34,9 +35,9 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -49,8 +50,8 @@ public final class FeedScrapperService implements Runnable {
     private final Scheduler scrapperScheduler =
             Schedulers.newBoundedElastic(5, Integer.MAX_VALUE, "scrapper");
     private final WebClient http = WebClient.create();
-    private final CountDownLatch lock = new CountDownLatch(1);
     private final Clock clock = Clock.systemUTC();
+    private final Semaphore lock = new Semaphore(1);
 
     private final Duration scrapFrequency;
     private final OpenGraphScrapper ogScrapper;
@@ -67,21 +68,26 @@ public final class FeedScrapperService implements Runnable {
         scheduleExecutor.scheduleAtFixedRate(this,
                 toNextScrapping.getSeconds(), scrapFrequency.getSeconds(), TimeUnit.SECONDS);
         log.debug("Next scrapping at {}", LocalDateTime.now().plus(toNextScrapping));
-        Schedulers.single().schedule(this);
+        scheduleExecutor.schedule(this, 0, TimeUnit.MILLISECONDS);
     }
 
     @SneakyThrows
     public void shutdownScrapping() {
-        scheduleExecutor.shutdown();
-        if (!lock.await(60, TimeUnit.SECONDS)) {
+        if (!lock.tryAcquire(60, TimeUnit.SECONDS)) {
             log.warn("Unable to stop threads gracefully ! Threads was killed !");
         }
         scrapperScheduler.dispose();
+        scheduleExecutor.shutdownNow();
+        lock.release();
         log.info("All scrapper tasks finished and stopped !");
     }
 
     @Override
+    @SneakyThrows
     public void run() {
+        if (!lock.tryAcquire()) {
+            log.warn("Scrapping in progress !");
+        }
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         log.info("Start scrapping ...");
@@ -106,7 +112,7 @@ public final class FeedScrapperService implements Runnable {
                     log.debug("STACKTRACE", e);
                 })
                 .doFinally(signal -> {
-                    lock.countDown();
+                    lock.release();
                     stopWatch.stop();
                     log.info("Scrapping finished with {} in {}", signal, Duration.ofMillis(stopWatch.getTotalTimeMillis()));
                 })
@@ -161,5 +167,10 @@ public final class FeedScrapperService implements Runnable {
                     raw = Optional.ofNullable(og.image).map(raw::withImage).orElse(raw);
                     return news.withRaw(raw);
                 }).switchIfEmpty(Mono.just(news));
+    }
+
+    @VisibleForTesting
+    public boolean isScrapping() {
+        return lock.availablePermits() == 0;
     }
 }

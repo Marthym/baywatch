@@ -10,10 +10,12 @@ import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.stubbing.Answer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,6 +23,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import wiremock.org.apache.commons.io.IOUtils;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Collections;
@@ -66,11 +69,13 @@ class FeedScrapperServiceTest {
     @Test
     void should_start_multi_scrapper() {
         tested.startScrapping();
+        Awaitility.await("for scrapping begin").timeout(Duration.ofSeconds(5)).until(() -> tested.isScrapping());
         tested.shutdownScrapping();
 
         mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/feeds/journal_du_hacker.xml")));
         mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/feeds/spring-blog.xml")));
-        verify(rssAtomParserMock, times(2)).parse(any(Feed.class), any());
+
+        verify(rssAtomParserMock, timeout(Duration.ofSeconds(5).toMillis()).times(2)).parse(any(Feed.class), any());
         verify(newsPersistenceMock,
                 times(1).description("Expect only one call because of the buffer to 100")
         ).persist(anyCollection());
@@ -97,6 +102,9 @@ class FeedScrapperServiceTest {
         ));
 
         tested.startScrapping();
+        Awaitility.await("for scrapping begin").timeout(Duration.ofSeconds(5))
+                .pollDelay(Duration.ZERO)
+                .until(() -> tested.isScrapping());
         tested.shutdownScrapping();
 
         mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/error/darth-vader.xml")));
@@ -114,6 +122,9 @@ class FeedScrapperServiceTest {
         when(newsPersistenceMock.list()).thenReturn(Flux.empty());
 
         tested.startScrapping();
+        Awaitility.await("for scrapping begin").timeout(Duration.ofSeconds(5))
+                .pollDelay(Duration.ZERO)
+                .until(() -> tested.isScrapping());
         tested.shutdownScrapping();
 
         mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/error/darth-vader.xml")));
@@ -127,16 +138,21 @@ class FeedScrapperServiceTest {
         when(newsPersistenceMock.persist(anyCollection())).thenReturn(Mono.just("").then());
         when(newsPersistenceMock.list()).thenReturn(Flux.empty());
 
-        rssAtomParserMock = spy((feed, is) -> {
-            // Must consume the inputstream
-            Exceptions.wrap().get(() -> IOUtils.toByteArray(is));
-            return Flux.just(News.builder()
-                    .raw(RawNews.builder()
-                            .id(UUID.randomUUID().toString())
-                            .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
-                            .build())
-                    .state(State.NONE)
-                    .build());
+        //Mockito does not support Lambda
+        //noinspection Convert2Lambda
+        rssAtomParserMock = spy(new RssAtomParser() {
+            @Override
+            public Flux<News> parse(Feed feed, InputStream is) {
+                // Must consume the inputstream
+                Exceptions.wrap().get(() -> IOUtils.toByteArray(is));
+                return Flux.just(News.builder()
+                        .raw(RawNews.builder()
+                                .id(UUID.randomUUID().toString())
+                                .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
+                                .build())
+                        .state(State.NONE)
+                        .build());
+            }
         });
 
         URI springUri = URI.create("http://localhost:" + mockServer.port() + "/feeds/spring-blog.xml");
@@ -148,7 +164,7 @@ class FeedScrapperServiceTest {
         when(openGraphScrapper.scrap(any(URI.class))).thenReturn(Mono.empty());
 
         feedPersistenceMock = mock(FeedPersistencePort.class);
-        when(feedPersistenceMock.list()).thenReturn(Flux.just(
+        when(feedPersistenceMock.list()).thenAnswer((Answer<Flux<Feed>>) invocationOnMock -> Flux.just(
                 Feed.builder().raw(RawFeed.builder()
                         .id(jdhSha3)
                         .name("Reddit")
@@ -159,7 +175,18 @@ class FeedScrapperServiceTest {
                         .name("Spring")
                         .url(springUri)
                         .build()).build()
-        ));
+        ));//thenReturn(Flux.just(
+//                Feed.builder().raw(RawFeed.builder()
+//                        .id(jdhSha3)
+//                        .name("Reddit")
+//                        .url(jdhUri)
+//                        .build()).build(),
+//                Feed.builder().raw(RawFeed.builder()
+//                        .id(springSha3)
+//                        .name("Spring")
+//                        .url(springUri)
+//                        .build()).build()
+//        ));
 
         tested = new FeedScrapperService(Duration.ofDays(1),
                 openGraphScrapper, feedPersistenceMock, newsPersistenceMock, rssAtomParserMock, Collections.emptyList());
