@@ -9,12 +9,12 @@ import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
 import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
+import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OpenGraph;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
+import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -27,7 +27,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.UUID;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -69,13 +69,15 @@ class FeedScrapperServiceTest {
     @Test
     void should_start_multi_scrapper() {
         tested.startScrapping();
-        Awaitility.await("for scrapping begin").timeout(Duration.ofSeconds(5)).until(() -> tested.isScrapping());
+        Awaitility.await("for scrapping begin").timeout(Duration.ofSeconds(5))
+                .pollDelay(Duration.ZERO)
+                .until(() -> tested.isScrapping());
         tested.shutdownScrapping();
 
         mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/feeds/journal_du_hacker.xml")));
         mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/feeds/spring-blog.xml")));
 
-        verify(rssAtomParserMock, timeout(Duration.ofSeconds(5).toMillis()).times(2)).parse(any(Feed.class), any());
+        verify(rssAtomParserMock, times(2)).parse(any(Feed.class), any());
         verify(newsPersistenceMock,
                 times(1).description("Expect only one call because of the buffer to 100")
         ).persist(anyCollection());
@@ -132,6 +134,34 @@ class FeedScrapperServiceTest {
         verify(rssAtomParserMock, times(2)).parse(any(Feed.class), any());
     }
 
+    @Test
+    void should_scrap_with_opengraph() {
+        when(openGraphScrapper.scrap(any(URI.class))).thenReturn(Mono.just(
+                OpenGraph.builder()
+                        .image(URI.create("http://www.ght1pc9kc.fr/featured.jpg"))
+                        .title("OpenGraphe Title")
+                        .build()
+        ));
+        ArgumentCaptor<List<News>> captor = ArgumentCaptor.forClass(List.class);
+        when(newsPersistenceMock.persist(captor.capture())).thenReturn(Mono.just("").then());
+
+        tested.startScrapping();
+        Awaitility.await("for scrapping begin").timeout(Duration.ofSeconds(5))
+                .pollDelay(Duration.ZERO)
+                .until(() -> tested.isScrapping());
+        tested.shutdownScrapping();
+
+        Assertions.assertThat(captor.getValue().get(0)).isEqualTo(News.builder()
+                .raw(RawNews.builder()
+                        .id("f6ef0975e204db82108e53bd6b5e06363fa1cf3c14afcab4b6c3eb779446e2c6")
+                        .title("OpenGraphe Title")
+                        .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
+                        .image(URI.create("http://www.ght1pc9kc.fr/featured.jpg"))
+                        .build())
+                .state(State.NONE)
+                .build());
+    }
+
     @BeforeEach
     void setUp() {
         newsPersistenceMock = mock(NewsPersistencePort.class);
@@ -147,8 +177,9 @@ class FeedScrapperServiceTest {
                 Exceptions.wrap().get(() -> IOUtils.toByteArray(is));
                 return Flux.just(News.builder()
                         .raw(RawNews.builder()
-                                .id(UUID.randomUUID().toString())
+                                .id(Hasher.sha3("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
                                 .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
+                                .title("Dummy Title")
                                 .build())
                         .state(State.NONE)
                         .build());
@@ -175,18 +206,7 @@ class FeedScrapperServiceTest {
                         .name("Spring")
                         .url(springUri)
                         .build()).build()
-        ));//thenReturn(Flux.just(
-//                Feed.builder().raw(RawFeed.builder()
-//                        .id(jdhSha3)
-//                        .name("Reddit")
-//                        .url(jdhUri)
-//                        .build()).build(),
-//                Feed.builder().raw(RawFeed.builder()
-//                        .id(springSha3)
-//                        .name("Spring")
-//                        .url(springUri)
-//                        .build()).build()
-//        ));
+        ));
 
         tested = new FeedScrapperService(Duration.ofDays(1),
                 openGraphScrapper, feedPersistenceMock, newsPersistenceMock, rssAtomParserMock, Collections.emptyList());
