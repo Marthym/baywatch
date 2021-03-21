@@ -3,11 +3,10 @@ package fr.ght1pc9kc.baywatch.domain.scrapper.opengraph;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.Meta;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OpenGraph;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.Tags;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -20,8 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Slf4j
-@Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public final class OpenGraphScrapper {
     private static final Pattern META_PATTERN = Pattern.compile("<meta ([^>]*)/?>", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
     private static final String HEAD_END_TAG = "</head>";
@@ -30,6 +28,7 @@ public final class OpenGraphScrapper {
     private static final String META_CONTENT = "content";
 
     private final WebClient http = WebClient.create();
+    private final OpenGraphMetaReader ogReader;
 
     private static Flux<Meta> extractMetaFromHead(String head) {
         Matcher m = META_PATTERN.matcher(head);
@@ -83,7 +82,7 @@ public final class OpenGraphScrapper {
 
                 .flatMapMany(OpenGraphScrapper::extractMetaFromHead)
                 .collectList()
-                .map(OpenGraph::fromMetas)
+                .map(metas -> ogReader.read(metas, location))
 
                 .doFirst(() -> log.trace("Receiving data from {}...", location))
                 .onErrorResume(e -> {

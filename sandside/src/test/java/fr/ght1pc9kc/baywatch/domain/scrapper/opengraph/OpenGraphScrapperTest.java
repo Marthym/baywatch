@@ -23,7 +23,7 @@ import java.net.URL;
 class OpenGraphScrapperTest {
     static final WireMockServer mockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
 
-    private final OpenGraphScrapper tested = new OpenGraphScrapper();
+    private final OpenGraphScrapper tested = new OpenGraphScrapper(new OpenGraphMetaReader());
 
     @BeforeAll
     static void stubAllMockServerRoute() throws IOException {
