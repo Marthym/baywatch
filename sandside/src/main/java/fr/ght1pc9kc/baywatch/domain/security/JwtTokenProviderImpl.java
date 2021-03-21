@@ -11,7 +11,6 @@ import fr.ght1pc9kc.baywatch.domain.exceptions.SecurityException;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 
-import java.security.SecureRandom;
 import java.text.ParseException;
 import java.time.Clock;
 import java.time.Duration;
@@ -32,12 +31,9 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
 
     private final Clock clock;
 
-    public JwtTokenProviderImpl(Duration validity) {
-        SecureRandom random = new SecureRandom();
-        byte[] sharedSecret = new byte[32];
-        random.nextBytes(sharedSecret);
-        this.secretKey = sharedSecret;
-        this.clock = Clock.systemUTC();
+    public JwtTokenProviderImpl(byte[] secretKey, Duration validity, Clock clock) {
+        this.secretKey = secretKey;
+        this.clock = clock;
         this.validity = validity;
     }
 
@@ -74,7 +70,9 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
         try {
             SignedJWT signedJWT = SignedJWT.parse(token);
             JWSVerifier verifier = new MACVerifier(secretKey);
-            signedJWT.verify(verifier);
+            if (!signedJWT.verify(verifier)) {
+                throw new SecurityException("Invalid Token signature !");
+            }
             JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
             User user = User.builder()
                     .id(claims.getSubject())
