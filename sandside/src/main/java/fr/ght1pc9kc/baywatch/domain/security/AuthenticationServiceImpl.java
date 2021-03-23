@@ -16,16 +16,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public Mono<BaywatchAuthentication> refresh(String token) {
-        BaywatchAuthentication authentication = tokenProvider.getAuthentication(token);
-
-        if (tokenProvider.validateToken(token)) {
-            return Mono.just(authentication);
-        }
-
-        return userService.get(authentication.user.id)
-                .map(user -> {
-                    String refreshedToken = tokenProvider.createToken(user, Collections.emptyList());
-                    return new BaywatchAuthentication(user, refreshedToken, Collections.emptyList());
+        return Mono.fromCallable(() -> tokenProvider.getAuthentication(token))
+                .flatMap(auth -> {
+                    if (tokenProvider.validateToken(token)) {
+                        return Mono.just(auth);
+                    } else {
+                        return userService.get(auth.user.id)
+                                .map(user -> {
+                                    String refreshedToken = tokenProvider.createToken(user, Collections.emptyList());
+                                    return new BaywatchAuthentication(user, refreshedToken, Collections.emptyList());
+                                });
+                    }
                 });
     }
 }

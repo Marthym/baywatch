@@ -24,13 +24,14 @@ public class NewsServiceImpl implements NewsService {
     @Override
     public Flux<News> list(PageRequest pageRequest) {
         return authFacade.getConnectedUser()
+                .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
                 .flatMapMany(u -> newsRepository.userList(pageRequest))
-                .switchIfEmpty(Flux.defer(() ->
+                .onErrorResume(UnauthenticatedUser.class, (e) ->
                         newsRepository.list(pageRequest).map(rn -> News.builder()
                                 .raw(rn)
                                 .state(State.NONE)
                                 .build())
-                ));
+                );
     }
 
     @Override

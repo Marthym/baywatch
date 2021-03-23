@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.NoSuchElementException;
 
 public enum OGType {
-    ARTICLE, BOOK, PROFILE, WEBSITE, VIDEO, VIDEO_OTHER, MUSIC, OBJECT;
+    ARTICLE, BLOG, BOOK, PROFILE, WEBSITE, VIDEO, VIDEO_OTHER, MUSIC, OBJECT;
 
     private static final OGType[] ALL = values();
 

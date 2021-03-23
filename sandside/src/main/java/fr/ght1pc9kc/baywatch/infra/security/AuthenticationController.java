@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.security;
 
 import fr.ght1pc9kc.baywatch.api.model.User;
+import fr.ght1pc9kc.baywatch.domain.exceptions.SecurityException;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
 import fr.ght1pc9kc.baywatch.infra.security.adapters.AuthenticationManagerAdapter;
@@ -88,16 +89,18 @@ public class AuthenticationController {
                 .map(HttpCookie::getValue)
                 .orElseThrow(() -> new BaywatchCredentialsException("User not login on !"));
 
-        return authenticationManager.refresh(token).map(auth -> {
-            exchange.getResponse().addCookie(ResponseCookie.from(securityParams.cookie.name, token)
-                    .httpOnly(true)
-                    .secure("https".equals(exchange.getRequest().getURI().getScheme()))
-                    .sameSite("Strict")
-                    .maxAge(securityParams.jwt.validity)
-                    .path("/api")
-                    .build());
-            return auth.user.withPassword(null);
-        });
+        return authenticationManager.refresh(token)
+                .map(auth -> {
+                    exchange.getResponse().addCookie(ResponseCookie.from(securityParams.cookie.name, token)
+                            .httpOnly(true)
+                            .secure("https".equals(exchange.getRequest().getURI().getScheme()))
+                            .sameSite("Strict")
+                            .maxAge(securityParams.jwt.validity)
+                            .path("/api")
+                            .build());
+                    return auth.user.withPassword(null);
+                })
+                .onErrorMap(SecurityException.class, BaywatchCredentialsException::new);
     }
 
     @GetMapping("/current")

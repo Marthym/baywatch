@@ -7,6 +7,8 @@ import fr.ght1pc9kc.baywatch.api.model.request.pagination.Order;
 import fr.ght1pc9kc.baywatch.api.model.request.pagination.Sort;
 import fr.ght1pc9kc.baywatch.infra.request.filter.QueryStringFilterVisitor;
 import lombok.experimental.UtilityClass;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -87,8 +89,16 @@ public class PageRequestFormatter {
                 .filter(e -> !EXCLUDE_FILTER_PARAMETERS.contains(e.getKey()))
                 .sorted(Entry.comparingByKey())
                 .map(e -> {
-                    Object value = (e.getValue() != null && !e.getValue().isBlank())
-                            ? e.getValue() : true;
+                    Object value;
+                    Boolean bValue = BooleanUtils.toBooleanObject(e.getValue());
+                    if (bValue != null) {
+                        value = bValue;
+                    } else if (NumberUtils.isCreatable(e.getValue())) {
+                        value = NumberUtils.createNumber(e.getValue());
+                    } else {
+                        value = (e.getValue() != null && !e.getValue().isBlank())
+                                ? e.getValue() : true;
+                    }
                     return Criteria.property(e.getKey()).eq(value);
                 }).toArray(Criteria[]::new);
 
