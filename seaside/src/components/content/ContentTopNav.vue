@@ -10,7 +10,7 @@
 						dark:text-green-200 dark:border-green-200
 						focus:outline-none border-b-2 font-medium capitalize
 						transition duration-500 ease-in-out">
-        users
+        news
       </a>
       <button
           class="ml-6 py-2 block border-b-2 border-transparent
@@ -18,7 +18,7 @@
 						focus:text-green-500 focus:border-green-500
 						dark-focus:text-green-200 dark-focus:border-green-200
 						transition duration-500 ease-in-out">
-        role
+        feeds
       </button>
       <button
           class="ml-6 py-2 block border-b-2 border-transparent
@@ -26,7 +26,7 @@
 						focus:text-green-500 focus:border-green-500
 						dark-focus:text-green-200 dark-focus:border-green-200
 						transition duration-500 ease-in-out">
-        access rights
+        categories
       </button>
     </div>
 
@@ -48,9 +48,11 @@
 						</svg>
 					</span>
 
-      <input
-          class="w-12 bg-transparent focus:outline-none"
-          placeholder="Search"/>
+      <label>
+        <input
+            class="w-12 bg-transparent focus:outline-none"
+            placeholder="Search"/>
+      </label>
 
     </div>
 

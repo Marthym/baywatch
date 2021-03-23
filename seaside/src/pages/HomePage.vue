@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen flex overflow-hidden">
+  <div class="md:h-screen flex md:flex-row flex-col overflow-hidden">
     <SideNav :statistics="baywatchStats"/>
     <MainContent :statistics="baywatchStats"/>
   </div>

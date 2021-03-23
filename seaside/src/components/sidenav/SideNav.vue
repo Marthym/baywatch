@@ -1,9 +1,9 @@
 <template>
-  <nav class="flex flex-col bg-gray-200 dark:bg-gray-900 w-64 px-12 pt-4 pb-6">
+  <nav class="flex flex-col bg-gray-200 dark:bg-gray-900 md:w-64 px-12 pt-4 pb-6">
 
     <SideNavHeader :unread="statistics.unread"/>
 
-    <SideNavUserInfo/>
+    <SideNavUserInfo :user="user"/>
 
     <button class="mt-8 flex items-center justify-between py-3 px-2 text-white
 			dark:text-gray-200 bg-green-400 dark:bg-green-500 rounded-lg shadow">
@@ -29,6 +29,7 @@ import SideNavUserInfo from "./SideNavUserInfo.vue";
 import SideNavImportantActions from "./SideNavImportantActions.vue";
 import SideNavFeeds from "./SideNavFeeds.vue";
 import {Statistics} from "@/services/model/Statistics";
+import UserService from "@/services/UserService";
 
 @Component({
   components: {
@@ -41,5 +42,13 @@ import {Statistics} from "@/services/model/Statistics";
 export default class SideNav extends Vue {
   @Prop() statistics?: Statistics;
 
+  private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
+
+  private user = this.userService.get();
+
+  mounted(): void {
+    this.userService.refresh()
+        .subscribe(user => this.user = user);
+  }
 }
 </script>

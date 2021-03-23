@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-row bg-white dark:bg-gray-600 shadow rounded-lg"
-       v-bind:class="{ 'shadow-lg h-52 my-8 border border-gray-400': card.isActive, 'h-44 m-5': !card.isActive}"
+       v-bind:class="{ 'shadow-lg h-56 my-8 border border-gray-400': card.isActive, 'h-48 m-5': !card.isActive}"
        @click="$emit('activate')">
     <!-- Card -->
     <div class="flex-none"><!-- Left side -->
@@ -14,12 +14,23 @@
            alt="no-og-image"/>
     </div>
 
-    <div v-bind:class="{ 'm-6': card.isActive, 'm-4': !card.isActive}"><!-- Middle -->
-      <div class="flex flex-col dark:text-gray-400 h-full"
-           v-bind:class="{ 'text-black': !card.data.read, 'text-gray-400': card.data.read}">
+    <div v-bind:class="{ 'm-6': card.isActive, 'm-4': !card.isActive}" class="flex-grow"><!-- Middle -->
+      <div class="flex flex-col h-full"
+           v-bind:class="{
+              'text-black': !card.data.read,
+              'text-gray-400': card.data.read,
+              'dark:text-gray-200': !card.data.read,
+              'dark:text-gray-500': card.data.read
+            }">
         <a class="font-semibold text-xl" :href="card.data.link" v-html="card.data.title"></a>
-        <span v-bind:class="{ 'text-gray-600': !card.data.read, 'text-gray-300': card.data.read}"
-              v-html="card.data.description" class="mt-2 text-base flex-shrink overflow-hidden"></span>
+        <span v-bind:class="{
+                'text-gray-600': !card.data.read,
+                'text-gray-300': card.data.read,
+                'dark:text-gray-300': !card.data.read,
+                'dark:text-gray-500': card.data.read,
+              }"
+              v-html="card.data.description" class="mt-2 text-base flex-grow overflow-hidden"></span>
+        <div class="flex flex-row-reverse text-sm italic"><span>{{ card.data.publication }}</span></div>
       </div>
     </div>
   </div>
