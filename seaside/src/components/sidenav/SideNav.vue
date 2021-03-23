@@ -48,7 +48,7 @@ export default class SideNav extends Vue {
 
   mounted(): void {
     this.userService.refresh()
-        .subscribe(user => this.user = user);
+        .subscribe(user => this.user = user, () => delete this.user);
   }
 }
 </script>

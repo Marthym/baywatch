@@ -9,7 +9,7 @@ export default class NewsService {
      * By default query the 10 latest published news
      * @private
      */
-    private static readonly DEFAULT_QUERY: string = '?_pp=20&_s=-publication';
+    private static readonly DEFAULT_QUERY: string = '?_pp=20&_s=-publication&read=false';
 
     serviceBaseUrl: string;
 
