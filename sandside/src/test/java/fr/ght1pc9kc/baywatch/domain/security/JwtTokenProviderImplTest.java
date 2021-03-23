@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.ght1pc9kc.baywatch.api.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.api.model.User;
 import fr.ght1pc9kc.baywatch.domain.exceptions.SecurityException;
+import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -58,5 +59,19 @@ class JwtTokenProviderImplTest {
     void should_fail_on_bad_token() {
         Assertions.assertThatThrownBy(() -> tested.getAuthentication(BAD_TOKEN))
                 .isInstanceOf(SecurityException.class);
+    }
+
+    @Test
+    void should_validate_token() {
+        Assertions.assertThat(tested.validateToken(GOOD_TOKEN)).isEqualTo(true);
+        Assertions.assertThat(tested.validateToken(BAD_TOKEN)).isEqualTo(false);
+        Assertions.assertThat(tested.validateToken(BAD_TOKEN)).isEqualTo(false);
+
+        JwtTokenProvider testedFuture = new JwtTokenProviderImpl(
+                new byte[32],
+                Duration.ofSeconds(10), Clock.fixed(Instant.parse("2021-03-21T19:29:42Z"), ZoneOffset.UTC));
+
+        Assertions.assertThat(testedFuture.validateToken(GOOD_TOKEN)).isEqualTo(false);
+        Assertions.assertThat(testedFuture.validateToken(GOOD_TOKEN, false)).isEqualTo(true);
     }
 }
