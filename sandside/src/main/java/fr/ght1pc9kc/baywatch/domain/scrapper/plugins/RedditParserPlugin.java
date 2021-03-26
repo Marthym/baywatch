@@ -9,7 +9,6 @@ import org.springframework.web.util.HtmlUtils;
 
 import javax.annotation.Nonnull;
 import java.net.URI;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,7 +37,7 @@ public final class RedditParserPlugin implements FeedParserPlugin {
     @Override
     public RawNews.RawNewsBuilder handleLinkEvent(@Nonnull RawNews.RawNewsBuilder builder, URI link) {
         URI uri = Exceptions.silence().get(builder::build)
-                .flatMap(n -> Optional.ofNullable(n.link))
+                .map(n -> n.link)
                 .orElse(link);
 
         return builder.id(Hasher.sha3(uri.toString())).link(uri);

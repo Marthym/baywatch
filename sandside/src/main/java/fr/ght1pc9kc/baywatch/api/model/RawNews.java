@@ -13,7 +13,7 @@ import java.time.Instant;
  */
 @With
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class RawNews {
     public @NonNull String id;
     public String title;

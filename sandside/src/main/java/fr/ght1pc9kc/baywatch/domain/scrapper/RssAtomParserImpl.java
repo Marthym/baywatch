@@ -1,13 +1,15 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.api.scrapper.FeedParserPlugin;
+import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
 import lombok.extern.slf4j.Slf4j;
+import org.owasp.html.PolicyFactory;
+import org.owasp.html.Sanitizers;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -42,6 +44,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
     private static final String PUB_DATE = "pubDate";
     private static final String UPDATED = "updated";
     private static final QName HREF = new QName("href");
+    private static final PolicyFactory HTML_POLICY = Sanitizers.FORMATTING;
 
     private final Map<String, FeedParserPlugin> plugins;
 
@@ -113,8 +116,13 @@ public final class RssAtomParserImpl implements RssAtomParser {
                     final EndElement endElement = nextEvent.asEndElement();
                     String localPart = endElement.getName().getLocalPart();
                     if (ITEM.equals(localPart) || ENTRY.equals(localPart)) {
+                        RawNews rawNews = plugin.handleEndEvent(bldr);
+                        RawNews raw = rawNews
+                                .withTitle(HTML_POLICY.sanitize(rawNews.title))
+                                .withDescription(HTML_POLICY.sanitize(rawNews.description));
+
                         News news = News.builder()
-                                .raw(plugin.handleEndEvent(bldr))
+                                .raw(raw)
                                 .feedId(feed.getId())
                                 .state(State.NONE)
                                 .build();
