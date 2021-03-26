@@ -30,7 +30,13 @@
                 'dark:text-gray-500': card.data.read,
               }"
               v-html="card.data.description" class="mt-2 text-base flex-grow overflow-hidden"></span>
-        <div class="flex flex-row-reverse text-sm italic"><span>{{ card.data.publication }}</span></div>
+
+        <div class="flex flex-row-reverse text-sm italic mt-1" v-bind:class="{'-mb-2': card.isActive}">
+          <span>{{ card.data.publication }}</span>
+          <span class="flex-grow"></span>
+          <slot name="actions"></slot>
+        </div>
+
       </div>
     </div>
   </div>

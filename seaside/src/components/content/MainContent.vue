@@ -6,13 +6,37 @@
       <ContentHeader :users="statistics.users" :feeds="statistics.feeds" :news="statistics.news"/>
 
       <template v-for="(card, idx) in news">
-        <NewsCard :ref="card.data.id" :card="card" v-bind:key="card.data.id" @activate="activateNewsCard(idx)"/>
+        <NewsCard :ref="card.data.id" :card="card" v-bind:key="card.data.id" @activate="activateNewsCard(idx)">
+          <template #actions v-if="isAuthenticated">
+            <svg class="action-icon" v-if="!card.data.read" @click="markNewsRead(idx, true)"
+                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76"/>
+            </svg>
+            <svg class="action-icon" v-else  @click="markNewsRead(idx, false)"
+                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            <svg class="action-icon"
+                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+            </svg>
+          </template>
+        </NewsCard>
       </template>
     </div>
 
   </main>
 </template>
-
+<style>
+@layer components {
+  .action-icon {
+    @apply h-5 w-5 cursor-pointer hover:text-green-500 dark:hover:text-green-200;
+  }
+}
+</style>
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import ContentTopNav from "./ContentTopNav.vue";
@@ -51,6 +75,10 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
   private page = 0;
 
   private subscriptions?: Subscription;
+
+  get isAuthenticated(): boolean {
+    return this.userService.get() !== undefined;
+  }
 
   mounted(): void {
     this.loadNextPage().pipe(take(1))
@@ -131,7 +159,7 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
   }
 
   private markNewsRead(idx: number, mark: boolean) {
-    if (!this.userService.get()) {
+    if (!this.isAuthenticated) {
       return;
     }
     const target = this.news[idx];
