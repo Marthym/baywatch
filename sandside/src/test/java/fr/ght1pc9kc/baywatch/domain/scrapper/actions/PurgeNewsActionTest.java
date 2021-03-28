@@ -59,6 +59,6 @@ class PurgeNewsActionTest {
 
     private Flux<Entry<String, State>> testDataForPersistenceListState() {
         NewsRecord staredRecord = NewsRecordSamples.SAMPLE.records().get(2);
-        return Flux.just(Map.entry(staredRecord.getNewsId(), State.of(Flags.STAR)));
+        return Flux.just(Map.entry(staredRecord.getNewsId(), State.of(Flags.SHARED)));
     }
 }

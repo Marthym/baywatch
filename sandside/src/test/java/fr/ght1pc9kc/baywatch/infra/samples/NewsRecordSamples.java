@@ -40,7 +40,7 @@ public class NewsRecordSamples implements RelationalDataSet<NewsRecord> {
         ).collect(Collectors.toUnmodifiableList());
 
         Integer[] FLAGS = new Integer[]{
-                Flags.NONE, Flags.READ, Flags.STAR, Flags.ALL};
+                Flags.NONE, Flags.READ, Flags.SHARED, Flags.ALL};
         String[] USERS = new String[]{
                 UsersRecordSamples.OKENOBI.getUserId(),
                 UsersRecordSamples.LSKYWALKER.getUserId()};

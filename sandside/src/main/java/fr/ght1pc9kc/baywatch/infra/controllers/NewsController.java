@@ -27,9 +27,8 @@ public class NewsController {
         switch (flag.toUpperCase()) {
             case "READ":
                 return Flags.READ;
-            case "STAR":
-            case "STARED":
-                return Flags.STAR;
+            case "SHARED":
+                return Flags.SHARED;
             default:
                 return Flags.NONE;
         }

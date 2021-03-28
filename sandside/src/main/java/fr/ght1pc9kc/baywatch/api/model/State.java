@@ -13,15 +13,15 @@ public class State {
     @MagicConstant(flagsFromClass = Flags.class)
     public int flags;
 
+    public static State of(Integer flags) {
+        return (flags != null) ? new State(flags) : NONE;
+    }
+
     public boolean isRead() {
         return (flags & Flags.READ) != 0;
     }
 
-    public boolean isStared() {
-        return (flags & Flags.STAR) != 0;
-    }
-
-    public static State of(Integer flags) {
-        return (flags != null) ? new State(flags) : NONE;
+    public boolean isShared() {
+        return (flags & Flags.SHARED) != 0;
     }
 }

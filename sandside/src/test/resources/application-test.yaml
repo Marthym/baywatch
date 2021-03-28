@@ -8,9 +8,9 @@ spring:
 server:
   port: 0
 
-#baywatch:
-#  scrapper:
-#    start: false
+baywatch:
+  scrapper:
+    start: false
 
 logging:
   level:

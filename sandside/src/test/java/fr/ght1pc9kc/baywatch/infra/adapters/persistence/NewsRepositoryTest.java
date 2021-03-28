@@ -23,6 +23,8 @@ import org.jooq.DSLContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mapstruct.factory.Mappers;
 import reactor.core.scheduler.Schedulers;
 
@@ -143,10 +145,10 @@ class NewsRepositoryTest {
         PageRequest pageRequest = PageRequest.builder()
                 .page(-1).size(-1)
                 .sort(Sort.of())
-                .filter(Criteria.property("stared").eq(true))
+                .filter(Criteria.property("shared").eq(true))
                 .build();
         List<News> actual = tested.userList(pageRequest).collectList().block();
-        assertThat(actual).allMatch(News::isStared);
+        assertThat(actual).allMatch(News::isShared);
     }
 
     @Test
@@ -168,7 +170,7 @@ class NewsRepositoryTest {
         assertThat(actual.getId()).isEqualTo(expected.getNewsId());
         assertThat(actual.getFeedId()).isEqualTo(expectedNefe.getNefeFeedId());
         assertThat(actual.isRead()).isEqualTo((expectedState.getNursState() & Flags.READ) != 0);
-        assertThat(actual.isStared()).isEqualTo((expectedState.getNursState() & Flags.STAR) != 0);
+        assertThat(actual.isShared()).isEqualTo((expectedState.getNursState() & Flags.SHARED) != 0);
     }
 
     @Test
@@ -209,5 +211,65 @@ class NewsRepositoryTest {
             int countState = dsl.fetchCount(NEWS_USER_STATE, NEWS_USER_STATE.NURS_NEWS_ID.in(ids));
             assertThat(countState).isZero();
         }
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            Flags.NONE + ", " + Flags.SHARED + ", false, true",
+            Flags.ALL + ", " + Flags.SHARED + ", true, true",
+            Flags.SHARED + ", " + Flags.SHARED + ", false, true",
+            Flags.READ + ", " + Flags.SHARED + ", true, true",
+            Flags.NONE + ", " + Flags.READ + ", true, false",
+            Flags.ALL + ", " + Flags.READ + ", true, true",
+            Flags.SHARED + ", " + Flags.READ + ", true, true",
+            Flags.READ + ", " + Flags.READ + ", true, false",
+    })
+    void should_add_state_flag(int startState, int removeFlag, boolean expectedRead, boolean expectedShared, DSLContext dsl) {
+        final String newsId = "9034ced51e05837fec112c380b9b9720c81ce79137a000db988ec625cf9e64b3";
+        dsl.update(NEWS_USER_STATE)
+                .set(NEWS_USER_STATE.NURS_STATE, startState)
+                .where(NEWS_USER_STATE.NURS_NEWS_ID.eq(newsId))
+                .execute();
+
+        tested.addStateFlag(newsId,
+                UsersRecordSamples.OKENOBI.getUserId(), removeFlag).block();
+
+        Integer actual = dsl.select(NEWS_USER_STATE.NURS_STATE)
+                .from(NEWS_USER_STATE)
+                .where(NEWS_USER_STATE.NURS_NEWS_ID.eq(newsId))
+                .fetchOne(NEWS_USER_STATE.NURS_STATE);
+
+        assertThat(State.of(actual).isRead()).isEqualTo(expectedRead);
+        assertThat(State.of(actual).isShared()).isEqualTo(expectedShared);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            Flags.NONE + ", " + Flags.SHARED + ", false, false",
+            Flags.ALL + ", " + Flags.SHARED + ", true, false",
+            Flags.SHARED + ", " + Flags.SHARED + ", false, false",
+            Flags.READ + ", " + Flags.SHARED + ", true, false",
+            Flags.NONE + ", " + Flags.READ + ", false, false",
+            Flags.ALL + ", " + Flags.READ + ", false, true",
+            Flags.SHARED + ", " + Flags.READ + ", false, true",
+            Flags.READ + ", " + Flags.READ + ", false, false",
+    })
+    void should_remove_state_flag(int startState, int removeFlag, boolean expectedRead, boolean expectedShared, DSLContext dsl) {
+        final String newsId = "9034ced51e05837fec112c380b9b9720c81ce79137a000db988ec625cf9e64b3";
+        dsl.update(NEWS_USER_STATE)
+                .set(NEWS_USER_STATE.NURS_STATE, startState)
+                .where(NEWS_USER_STATE.NURS_NEWS_ID.eq(newsId))
+                .execute();
+
+        tested.removeStateFlag(newsId,
+                UsersRecordSamples.OKENOBI.getUserId(), removeFlag).block();
+
+        Integer actual = dsl.select(NEWS_USER_STATE.NURS_STATE)
+                .from(NEWS_USER_STATE)
+                .where(NEWS_USER_STATE.NURS_NEWS_ID.eq(newsId))
+                .fetchOne(NEWS_USER_STATE.NURS_STATE);
+
+        assertThat(State.of(actual).isRead()).isEqualTo(expectedRead);
+        assertThat(State.of(actual).isShared()).isEqualTo(expectedShared);
     }
 }

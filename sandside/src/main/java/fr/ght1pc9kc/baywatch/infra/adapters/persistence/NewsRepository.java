@@ -181,11 +181,12 @@ public class NewsRepository implements NewsPersistencePort {
 
     @Override
     public Mono<Integer> removeStateFlag(String newsId, String userId, int flag) {
+        final int mask = ~(1 << (flag - 1));
         return Mono.fromCallable(() -> dsl.insertInto(NEWS_USER_STATE)
                 .columns(NEWS_USER_STATE.NURS_NEWS_ID, NEWS_USER_STATE.NURS_USER_ID, NEWS_USER_STATE.NURS_STATE)
                 .values(newsId, userId, Flags.NONE)
                 .onDuplicateKeyUpdate()
-                .set(NEWS_USER_STATE.NURS_STATE, NEWS_USER_STATE.NURS_STATE.bitNand(flag))
+                .set(NEWS_USER_STATE.NURS_STATE, NEWS_USER_STATE.NURS_STATE.bitAnd(mask))
                 .returning()
                 .execute())
                 .subscribeOn(databaseScheduler);

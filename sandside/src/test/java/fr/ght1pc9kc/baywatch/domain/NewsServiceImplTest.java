@@ -3,7 +3,6 @@ package fr.ght1pc9kc.baywatch.domain;
 import fr.ght1pc9kc.baywatch.api.NewsService;
 import fr.ght1pc9kc.baywatch.api.model.*;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
-import fr.ght1pc9kc.baywatch.domain.NewsServiceImpl;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import org.assertj.core.api.Assertions;
@@ -39,7 +38,7 @@ class NewsServiceImplTest {
                     .link(URI.create("http://blog.ght1pc9kc.fr/news/02"))
                     .publication(Instant.parse("2020-12-30T10:10:01Z"))
                     .build())
-            .state(State.of(Flags.STAR | Flags.READ))
+            .state(State.of(Flags.SHARED | Flags.READ))
             .feedId("1000000000000000000000000000000000000000000000000000000000000000")
             .build();
     private static final User SAMPLE_USER_01 = User.builder()
