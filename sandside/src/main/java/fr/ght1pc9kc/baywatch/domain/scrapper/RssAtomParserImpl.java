@@ -107,7 +107,8 @@ public final class RssAtomParserImpl implements RssAtomParser {
                                 break;
                             }
                             String pubDate = reader.getElementText();
-                            Instant datetime = DateTimeFormatter.RFC_1123_DATE_TIME.parse(pubDate, Instant::from);
+                            Instant datetime = Exceptions.silence().get(() -> DateTimeFormatter.RFC_1123_DATE_TIME.parse(pubDate, Instant::from))
+                                    .orElseGet(() -> DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(pubDate, Instant::from));
                             bldr = plugin.handlePublicationEvent(bldr, datetime);
                             break;
                     }

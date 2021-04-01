@@ -373,17 +373,17 @@
     </entry>
     <entry>
         <author>
-            <name>/u/ustropo</name>
-            <uri>https://www.reddit.com/user/ustropo</uri>
+            <name>/u/8105</name>
+            <uri>https://www.reddit.com/user/8105</uri>
         </author>
         <category term="programming" label="r/programming"/>
-        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/ustropo&quot;&gt;
-            /u/ustropo &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://medium.com/vacatronics/webassembly-in-go-vs-javascript-a-benchmark-6deb28f24e9d?source=friends_link&amp;amp;sk=6a12153dcc84f42459e288135aea4afa&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
-            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/k4x7cm/webassembly_in_go_vs_javascript_a_benchmark/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
+        <content type="html">&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/8105&quot;&gt;
+            /u/8105 &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;https://www.nytimes.com/2021/03/31/technology/turing-award-aho-ullman.html&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt;
+            &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/programming/comments/mh5kak/turing_award_to_aho_and_ullman_for_work_on/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
         </content>
-        <id>t3_k4x7cm</id>
-        <link href="https://www.reddit.com/r/programming/comments/k4x7cm/webassembly_in_go_vs_javascript_a_benchmark/"/>
-        <updated>2020-12-01T23:43:05+00:00</updated>
-        <title>WebAssembly in Go vs JavaScript: A Benchmark</title>
+        <id>t3_mh5kak</id>
+        <link href="https://www.reddit.com/r/programming/comments/mh5kak/turing_award_to_aho_and_ullman_for_work_on/"/>
+        <pubDate>2021-03-31T12:59:23+00:00</pubDate>
+        <title>Turing Award to Aho and Ullman for work on compilers</title>
     </entry>
 </feed>
