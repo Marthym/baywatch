@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en" class=" no-js">
+
+<head>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-KF7SB9C');</script>
+    <!-- End Google Tag Manager -->
+
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+
+    <link rel="stylesheet" href="/css/acm.css" type="text/css"/>
+    <link rel="stylesheet" href="/css/print.css" type="text/css" media="print"/>
+    <link rel="stylesheet" href="/css/cookieconsent.css" type="text/css"/>
+
+    <script type="text/javascript" src="/js/classList.js"></script>
+    <script type="text/javascript" src="/js/webfontloader.js"></script>
+    <script type="text/javascript" src="/js/analytics.js"></script>
+    <script type="text/javascript" src="/js/modernizr.js"></script>
+
+    <link rel="shortcut icon" href="/catalog/favicon.ico">
+
+    <meta class="foundation-data-attribute-namespace">
+    <meta class="foundation-mq-xxlarge">
+    <meta class="foundation-mq-xlarge-only">
+    <meta class="foundation-mq-xlarge">
+    <meta class="foundation-mq-large-only">
+    <meta class="foundation-mq-large">
+    <meta class="foundation-mq-medium-only">
+    <meta class="foundation-mq-medium">
+    <meta class="foundation-mq-small-only">
+    <meta class="foundation-mq-small">
+    <meta class="foundation-mq-topbar">
+
+    <title>Reproducing 150 Research Papers and Testing Them in the Real World: Challenges and Solutions</title>
+    <meta property="og:title" content="Reproducing 150 Research Papers and Testing Them in the Real World: Challenges and Solutions with Grigori Fursin"/>
+    <meta property="og:description" content="In this talk, Fursin will present numerous challenges he faced during artifact evaluation and possible solutions, and describe the Collective Knowledge framework (CK) developed to automate this tedious process and bring DevOps and FAIR principles to research."/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:url" content="https://learning.acm.org/pagenotfound"/>
+    <meta property="og:image" content="https://learning.acm.org/binaries/content/gallery/acm/ctas/people/grigori-fursin-techtalk.jpg"/>
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:site" content="@theofficialacm"/>
+    <meta name="twitter:title" content="Reproducing 150 Research Papers and Testing Them in the Real World: Challenges and Solutions with Grigori Fursin"/>
+    <meta name="twitter:description" content="In this talk, Grigori Fursin presents numerous challenges faced during artifact evaluation and possible solutions."/>
+    <meta name="twitter:image" content="https://learning.acm.org/binaries/content/gallery/acm/ctas/people/grigori-fursin-techtalk.jpg"/>
+    <!-- Global site tag (gtag.js) - Google Ads: 968097012 --> <script async src="https://www.googletagmanager.com/gtag/js?id=AW-968097012"></script> <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'AW-968097012'); </script> <!-- Global site tag (gtag.js) - Google Ads: 968097012 --> <script async src="https://www.googletagmanager.com/gtag/js?id=AW-968097012"></script> <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('set', 'linker', { 'domains': ['acm.org/','cvent.com/'], 'accept_incoming': true }); gtag('js', new Date()); gtag('config', 'AW-968097012'); </script></head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KF7SB9C"
+                  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<!-- place holder --><div id="header" class="row">
+    <nav class="top-bar eyebrow show-for-medium-up" data-topbar data-options="is_hover: false">
+        <section class="top-bar-section">
+            <div id="skiptocontent"><a href="#SkipTarget">skip to main content</a></div>
+
+            <ul class="right">
+                <li><a href="//dl.acm.org/" title="Digital Library">Digital Library</a></li>
+                <li><a href="//cacm.acm.org/" title="CACM">CACM</a></li>
+                <li><a href="https://jobs.acm.org/" title="Career Center">Career Center</a></li>
+                <li><a href="//queue.acm.org/" title="Queue">Queue</a></li>
+                <li><a href="//xrds.acm.org/" title="XRDS">XRDS</a></li>
+                <li><a href="//www.acm.org/membership/join" title="Join ACM">Join ACM</a></li>
+            </ul>
+        </section>
+    </nav>
+
+    <div class="clearfix utilities-area">
+        <div class="logo-section">
+            <div class="navbar-header show-for-large-up">
+                <a class="navbar-brand" href="https://www.acm.org"> <img alt="ACM Logo"
+                                                                         class="img-responsive" title="Home" src="/binaries/content/gallery/global/top-menu/acm_logo_tablet.svg">
+                </a>
+            </div>
+            <div class="navbar-header hide-for-large-up">
+                <a href="/"> <img alt="ACM Logo"
+                                  class="img-responsive hide-for-large-up" title="Home"
+                                  src="/binaries/content/gallery/global/top-menu/acm_logo_mobile.svg">
+                </a>
+            </div>
+        </div>
+
+        <div id="acm-description" class="column large-5 show-for-large-up">
+            <div>
+                ACM Learning Center Site<!-- We're an international society of educators, scientists, technologists and engineers dedicated to the advancement of computer science. We offer a world-class <a href="#">Digital Library</a>, <a href="#">publications</a>, <a href="#">conferences</a>,
+          and more. -->
+            </div>
+        </div>
+
+        <div id="ctas-and-search"
+             class="column large-5 medium-6 no-pad-left ctas-and-search">
+            <ul class="block-grid right">
+
+                <li><a href="https://go.oreilly.com/acm">O'Reilly</a></li>
+                <li><a href="https://acm.skillport.com/skillportfe/custom/login/saml/login.action">Skillsoft</a></li>
+                <li><a href="https://auth.elsevier.com/ShibAuth/institutionLogin?entityID=https%3A%2F%2Fidp.acm.org%2Fidp%2Fshibboleth&appReturnURL=https%3A%2F%2Fwww.sciencedirect.com">ScienceDirect</a></li>
+                <li class="hide-for-small">
+                    <form class="acm-search-form" id="form_1">
+                        <label for="input_1">
+                            <span class="visually-hidden">Search Input</span>
+                        </label>
+                        <input type="text" name="q" id="input_1" class="acm-searchbox-input st-default-search-input"/>
+                        <label for="search-site_1" class="toggle">
+                            <span class="visually-hidden">Search Submit</span>
+                            <i class="fa fa-search left"></i>
+                            <input type="button"
+                                   class="acm-searchbox-submit left" value="Search" name="search-site_1"
+                                   id="search-site_1" />
+                        </label>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+            (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+            e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+        })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+        _st('install','PRgSA2MDbRdrDjimXsj9','2.0.0');
+    </script>
+    <nav class="top-bar main-nav" data-topbar data-options="is_hover: false">
+
+        <ul class="title-area">
+            <li class="toggle-topbar menu-icon"><a
+                    href="/#"><span></span> </a></li>
+        </ul>
+
+        <section id="mobile-nav-topbar" class="top-bar-section">
+            <div class="mobile-links">
+                <div class="btn-group">
+                    <a class="btn btn-primary" role="button" href="https://go.oreilly.com/acm">O'Reilly</a>
+                    <a class="btn btn-primary" role="button" href="https://acm.skillport.com/skillportfe/custom/login/saml/login.action">Skillsoft</a>
+                    <a class="btn btn-primary" role="button" href="https://auth.elsevier.com/ShibAuth/institutionLogin?entityID=https%3A%2F%2Fidp.acm.org%2Fidp%2Fshibboleth&appReturnURL=https%3A%2F%2Fwww.sciencedirect.com">ScienceDirect</a>
+                </div>
+                <div class="mobile-search">
+                    <form class="acm-search-form" id="mobile_form_1">
+                        <i class="fa fa-search left"></i>
+                        <label class="" for="search_mobile_1">Search</label>
+                        <input type="text" id="search_mobile_1" class="acm-searchbox-input st-default-search-input" name="q"/>
+                    </form>
+                </div>
+            </div>
+            <ul>
+                <li class="has-dropdown not-click"><a href="#">Home</a>
+                    <div class="dropdown  clearfix">
+                        <ul class="infonav clearfix">
+                            <li class="infonav__linkList clearfix">
+                                <a href="/" class="first">Learning Center Home</a>
+                                <ul class="infonav__linkList-list clearfix">
+                                    <li><a href="/about" title="About the Learning Center"
+                                    >About the Learning Center</a></li>
+                                </ul>
+                            </li>
+
+                            <li class="infonav__landingPage">
+                                <div>
+                                    <p class="first">About ACM Learning Center</p>
+                                    <p>The ACM Learning Center offers ACM members access to lifelong learning tools and resources. Our E-Learning collections offer complimentary access to more than 55,000 online books and videos from top content publishers. The ACM TechTalk series brings leading computing luminaries and visionaries to your screen. Members enjoy exclusive offers and discounts on IT industry certifications and vendor-specific training.</p></div>
+                            </li>
+
+                            <li class="infonav__ctaList">
+                                <div class="infonav__ctaList-cta">
+                                    <div class="cta-text">
+                                        <a href='https://www.acm.org/membership/membership-options' target='_blank'>Membership Options and Rates</a></div>
+                                </div>
+                                <div class="infonav__ctaList-cta">
+                                    <div class="cta-text">
+                                        <a href='http://services.acm.org/public/brochures/sb_control.cfm?refpg=s' target='_blank'>Request ACM Membership Information</a></div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="has-dropdown not-click"><a href="#">E-Learning</a>
+                    <div class="dropdown  clearfix">
+                        <ul class="infonav clearfix">
+                            <li class="infonav__linkList clearfix">
+                                <a href="/e-learning" class="first">E-Learning Home</a>
+                                <ul class="infonav__linkList-list clearfix">
+                                    <li><a href="/e-learning/oreilly" title="O'Reilly"
+                                    >O'Reilly</a></li>
+                                    <li><a href="/e-learning/science-direct" title="ScienceDirect"
+                                    >ScienceDirect</a></li>
+                                    <li><a href="/e-learning/skillsoft" title="Skillsoft"
+                                    >Skillsoft</a></li>
+                                </ul>
+                            </li>
+
+                            <li class="infonav__landingPage">
+                                <div>
+                                    <p class="first">About E-Learning</p>
+                                    <p>The ACM Learning Center E-Learning library includes more than 55,000 books, courses, conference videos, learning paths, tutorials, and more. This includes nearly 50,000 O'Reilly&nbsp;titles; 1,800 Skillsoft courses and 4,800+ Books24x7<sup>®</sup>titles (in addition to thousands of short IT/desktop videos); and more than 1,200 titles in ScienceDirect Morgan Kaufmann and Syngress books.</p></div>
+                            </li>
+
+                            <li class="infonav__ctaList">
+                                <div class="infonav__ctaList-cta">
+                                    <div class="cta-text">
+                                        <a href='https://www.acm.org/membership/membership-options' target='_blank'>Membership Options and Rates</a></div>
+                                </div>
+                                <div class="infonav__ctaList-cta">
+                                    <div class="cta-text">
+                                        <a href='http://services.acm.org/public/brochures/sb_control.cfm?refpg=s' target='_blank'>Request ACM Membership Information</a></div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="has-dropdown not-click"><a href="#">Member Offers</a>
+                    <div class="dropdown  clearfix">
+                        <ul class="infonav clearfix">
+                            <li class="infonav__linkList clearfix">
+                                <a href="/member-offers" class="first">Member Offers Home</a>
+                                <ul class="infonav__linkList-list clearfix">
+                                    <li><a href="/member-offers/teradata" title="Teradata"
+                                    >Teradata</a></li>
+                                    <li><a href="/member-offers/itpro-upgrade" title="ITPro Books24x7 Upgrade"
+                                    >ITPro Books24x7 Upgrade</a></li>
+                                    <li><a href="/member-offers/comptia" title="CompTia"
+                                    >CompTia</a></li>
+                                    <li><a href="/member-offers/stevens-institute" title="Stevens Institute"
+                                    >Stevens Institute</a></li>
+                                    <li><a href="/member-offers/dell-emc" title="Dell EMC"
+                                    >Dell EMC</a></li>
+                                    <li><a href="/member-offers/nyu-tandon" title="NYU Tandon"
+                                    >NYU Tandon</a></li>
+                                </ul>
+                            </li>
+
+                            <li class="infonav__landingPage">
+                                <div>
+                                    <p class="first">About Member Offers</p>
+                                    <p>As an ACM member, you are eligible for tuition scholarships at online universities for continued learning and discounts on training toward popular industry certifications. Student members have special access to free learning resources.</p></div>
+                            </li>
+
+                            <li class="infonav__ctaList">
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="has-dropdown not-click active"><a href="#">TechTalks</a>
+                    <div class="dropdown  clearfix">
+                        <ul class="infonav clearfix">
+                            <li class="infonav__linkList clearfix">
+                                <a href="/techtalks" class="first">TechTalks Home</a>
+                                <ul class="infonav__linkList-list clearfix">
+                                    <li><a href="/techtalks-archive" title="TechTalks Archive"
+                                    >TechTalks Archive</a></li>
+                                </ul>
+                            </li>
+
+                            <li class="infonav__landingPage">
+                                <div>
+                                    <p class="first">About TechTalks</p>
+                                    <p>ACM members are always the first to learn about our popular series of free TechTalks, keeping you at the cutting edge of the latest technical and technological developments. Targeting computing practitioners but also suitable for students and educators, our TechTalks feature ACM A.M. Turing Award winners, ACM Fellows, respected researchers, and expert industry professionals.</p></div>
+                            </li>
+
+                            <li class="infonav__ctaList">
+                                <div class="infonav__ctaList-cta">
+                                    <a href='https://webinars.on24.com/acm/zhou?partnerref=cta' target='_blank'><img src="/binaries/content/gallery/acm/ctas/people/michelle-zhou-techtalk.jpg/michelle-zhou-techtalk.jpg/acm%3Adesktopcta" alt="Image of Michelle Zhou"></a><div class="cta-text">
+                                    <a href='https://webinars.on24.com/acm/zhou?partnerref=cta' target='_blank'>Democratizing AI: Creating Cognitive AI Assistants with No Coding</a></div>
+                                </div>
+                                <div class="infonav__ctaList-cta">
+                                    <a href='https://webinars.on24.com/acm/mcmahon?partnerref=cta' target='_blank'><img src="/binaries/content/gallery/acm/ctas/people/paul-mcmahon-techtalk.jpg/paul-mcmahon-techtalk.jpg/acm%3Adesktopcta" alt="Image of Paul E. McMahon"></a><div class="cta-text">
+                                    <a href='https://webinars.on24.com/acm/mcmahon?partnerref=cta' target='_blank'>An Industry Perspective on What We Should Be Teaching Our Next Generation of Software Practitioners in the Universities</a></div>
+                                </div>
+                                <div class="infonav__ctaList-cta">
+                                    <a href='https://webinars.on24.com/acm/meyer?partnerref=cta' target='_blank'><img src="/binaries/content/gallery/acm/ctas/people/bertrand-meyer-techtalk.jpg/bertrand-meyer-techtalk.jpg/acm%3Adesktopcta" alt="Image of Bertrand Meyer"></a><div class="cta-text">
+                                    <a href='https://webinars.on24.com/acm/meyer?partnerref=cta' target='_blank'>The Four PEGS of Requirements Engineering</a></div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="has-dropdown not-click"><a href="#">ByteCast</a>
+                    <div class="dropdown  clearfix">
+                        <ul class="infonav clearfix">
+                            <li class="infonav__linkList clearfix">
+                                <a href="/bytecast" class="first">ByteCast Home</a>
+                                <ul class="infonav__linkList-list clearfix">
+                                    <li><a href="/bytecast/bytecast-archive" title="ByteCast Archive"
+                                    >ByteCast Archive</a></li>
+                                </ul>
+                            </li>
+
+                            <li class="infonav__landingPage">
+                                <div>
+                                    <p class="first">ACM ByteCast</p>
+                                    <p>ACM ByteCast is a podcast series from ACM’s Practitioner&nbsp;Board in which hosts Rashmi Mohan, Jessica Bell, and Scott Hanselman interview researchers, practitioners, and innovators who are at the intersection of computing research and practice. In each monthly episode, guests will share their experiences, the lessons they’ve learned, and their own visions for the future of computing.</p>
+
+                                    <p>Listen to the latest episode below, or wherever you get your podcasts.</p></div>
+                            </li>
+
+                            <li class="infonav__ctaList">
+                                <div class="infonav__ctaList-cta">
+                                    <a href='https://learning.acm.org/bytecast' ><img src="/binaries/content/gallery/acm/ctas/learning-center/bytecast/bytecast-ep11-heer.jpg/bytecast-ep11-heer.jpg/acm%3Adesktopcta" alt="Image of Jeffrey Heer"></a><div class="cta-text">
+                                    <a href='https://learning.acm.org/bytecast' >ByteCast Ep11: Jeffrey Heer</a></div>
+                                </div>
+                                <div class="infonav__ctaList-cta">
+                                    <a href='https://learning.acm.org/bytecast' ><img src="/binaries/content/gallery/acm/ctas/learning-center/bytecast/bytecast-ep12-ford.jpg/bytecast-ep12-ford.jpg/acm%3Adesktopcta" alt="Image of Denae Ford"></a><div class="cta-text">
+                                    <a href='https://learning.acm.org/bytecast' >ByteCast Ep12: Denae Ford</a></div>
+                                </div>
+                                <div class="infonav__ctaList-cta">
+                                    <a href='https://learning.acm.org/bytecast' ><img src="/binaries/content/gallery/acm/ctas/learning-center/bytecast/bytecast-ep13-raskar.jpg/bytecast-ep13-raskar.jpg/acm%3Adesktopcta" alt="Image of Ramesh Raskar"></a><div class="cta-text">
+                                    <a href='https://learning.acm.org/bytecast' >ByteCast Ep13: Ramesh Raskar</a></div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="has-dropdown not-click"><a href="#">Resources</a>
+                    <div class="dropdown  clearfix">
+                        <ul class="infonav clearfix">
+                            <li class="infonav__linkList clearfix">
+                                <a href="/resources" class="first">Resources Home</a>
+                                <ul class="infonav__linkList-list clearfix">
+                                    <li><a href="https://selects.acm.org/" title="ACM Selects"
+                                    >ACM Selects</a></li>
+                                </ul>
+                            </li>
+
+                            <li class="infonav__landingPage">
+                                <div>
+                                    <p class="first">About Resources</p>
+                                    <p>Tune in to podcast interviews with global leaders in computing and IT, learn more about relevant ACM publications, conferences, job and career resources, networking opportunities, and other ways to get the most out of your ACM membership.</p></div>
+                            </li>
+
+                            <li class="infonav__ctaList">
+                                <div class="infonav__ctaList-cta">
+                                    <div class="cta-text">
+                                        <a href='https://www.acm.org/membership/membership-options' target='_blank'>Membership Options and Rates</a></div>
+                                </div>
+                                <div class="infonav__ctaList-cta">
+                                    <div class="cta-text">
+                                        <a href='http://services.acm.org/public/brochures/sb_control.cfm?refpg=s' target='_blank'>Request ACM Membership Information</a></div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="has-dropdown not-click"><a href="#">FAQs</a>
+                    <div class="dropdown  clearfix">
+                        <ul class="infonav clearfix">
+                            <li class="infonav__linkList clearfix">
+                                <a href="/faq" class="first">FAQs Home</a>
+                                <ul class="infonav__linkList-list clearfix">
+                                    <li><a href="/faq/oreilly-faqs" title="O'Reilly FAQs"
+                                    >O'Reilly FAQs</a></li>
+                                    <li><a href="/faq/sciencedirect-faqs" title="ScienceDirect FAQs"
+                                    >ScienceDirect FAQs</a></li>
+                                    <li><a href="/faq/skillsoft-faqs" title="Skillsoft FAQs"
+                                    >Skillsoft FAQs</a></li>
+                                    <li><a href="/faq/books24x7-faqs" title="Books 24x7 FAQs"
+                                    >Books 24x7 FAQs</a></li>
+                                </ul>
+                            </li>
+
+                            <li class="infonav__landingPage">
+                                <div>
+                                    <p class="first">About FAQs</p>
+                                    <p>Find answers to the most common questions regarding our O'Reilly, Skillsoft, and ScienceDirect online learning platforms.</p></div>
+                            </li>
+
+                            <li class="infonav__ctaList">
+                                <div class="infonav__ctaList-cta">
+                                    <a href='https://www.acm.org/membership/csfaq' target='_blank'><img src="/binaries/content/gallery/acm/ctas/membership-faq.jpg/membership-faq.jpg/acm%3Adesktopcta" alt="ACM membership FAQ"></a><div class="cta-text">
+                                    <a href='https://www.acm.org/membership/csfaq' target='_blank'>Customer Service FAQs</a></div>
+                                </div>
+                                <div class="infonav__ctaList-cta">
+                                    <div class="cta-text">
+                                        ACM Staff Directory</div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="has-dropdown not-click"><a href="#">Practitioner Board</a>
+                    <div class="dropdown  clearfix">
+                        <ul class="infonav clearfix">
+                            <li class="infonav__linkList clearfix">
+                                <a href="/practitioner-board" class="first">Practitioner Board</a>
+                                <ul class="infonav__linkList-list clearfix">
+                                    <li><a href="/professional-development-committee" title="Professional Development Committee"
+                                    >Professional Development Committee</a></li>
+                                </ul>
+                            </li>
+
+                            <li class="infonav__landingPage">
+                                <div>
+                                    <p class="first">Practitioner Board</p>
+                                    <p>The Practitioner&nbsp;Board is responsible for developing programs that support the professional needs of ACM members as well as promoting computing as a profession. The Practitioner&nbsp;Board and Professional Development Committee focus on products and services that support and enhance the professional and technical development of practicing computing professionals, including engineers, architects, IT specialists and managers.</p></div>
+                            </li>
+
+                            <li class="infonav__ctaList">
+                                <div class="infonav__ctaList-cta">
+                                    <a href='https://learning.acm.org/bytecast' ><img src="/binaries/content/gallery/acm/ctas/learning-center/bytecast/bytecast-ep11-heer.jpg/bytecast-ep11-heer.jpg/acm%3Adesktopcta" alt="Image of Jeffrey Heer"></a><div class="cta-text">
+                                    <a href='https://learning.acm.org/bytecast' >ByteCast Ep11: Jeffrey Heer</a></div>
+                                </div>
+                                <div class="infonav__ctaList-cta">
+                                    <a href='https://learning.acm.org/bytecast' ><img src="/binaries/content/gallery/acm/ctas/learning-center/bytecast/bytecast-ep12-ford.jpg/bytecast-ep12-ford.jpg/acm%3Adesktopcta" alt="Image of Denae Ford"></a><div class="cta-text">
+                                    <a href='https://learning.acm.org/bytecast' >ByteCast Ep12: Denae Ford</a></div>
+                                </div>
+                                <div class="infonav__ctaList-cta">
+                                    <a href='https://learning.acm.org/bytecast' ><img src="/binaries/content/gallery/acm/ctas/learning-center/bytecast/bytecast-ep13-raskar.jpg/bytecast-ep13-raskar.jpg/acm%3Adesktopcta" alt="Image of Ramesh Raskar"></a><div class="cta-text">
+                                    <a href='https://learning.acm.org/bytecast' >ByteCast Ep13: Ramesh Raskar</a></div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </section>
+    </nav>
+
+    <nav class="section-nav">
+        <div class="section-nav-wrapper">
+            <ul>
+                <li><a href="/techtalks" title="TechTalks Home">TechTalks Home</a></li>
+                <span></span>
+                <li><a href="/techtalks-archive" title="TechTalks Archive">TechTalks Archive</a></li>
+            </ul>
+        </div>
+
+    </nav>
+</div>
+<div id="main" class="has-section-nav">
+    <div class="article" id="maincontent" tabindex="-1">
+
+        <div class="row">
+            <div class="columns small-12">
+                <ul class="breadcrumbs">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/techtalks">techtalks</a></li>
+                    <li class="current">ml reproducibility</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="video-page">
+            <div class="row">
+
+                <div class="large-12 medium-12 small-12 columns">
+                    <h1>Reproducing 150 Research Papers and Testing Them in the Real World: Challenges and Solutions</h1>
+                </div>
+
+                <div class="columns large-8 medium-8 small-12">
+						<span>
+							<time>February 11, 2021</time>
+						</span>
+
+                    <div class="video-wrapper">
+                        <iframe src="https://videoken.com/embed/?videoID=7zpeIVwICa4" frameborder="0" allowfullscreen></iframe>
+                    </div>
+
+                    <p>After completing the MILEPOST project in 2009, I opened the cTuning.org portal and released into the public domain all my research code, data sets, experimental results, and Machine Learning models (ML) for our self-optimizing compiler. My goal was to continue this research and developments as a community effort while crowdsourcing ML training across diverse programs, data sets, compilers, and platforms provided by volunteers. Unfortunately, this project quickly stalled after we struggled to run experiments and reproduce results across rapidly evolving systems in the real world.</p>
+
+                    <p>This experience motivated me to introduce artifact evaluation at several ACM conferences including CGO, PPoPP, and ASPLOS and learn how to reproduce 150+ research papers. In this talk, I will present numerous challenges we faced during artifact evaluation and possible solutions. I will also describe the Collective Knowledge framework (CK) developed to automate this tedious process and bring DevOps and FAIR principles to research.</p>
+
+                    <p>The CK concept is to decompose research projects into reusable micro-services that expose characteristics, optimizations, and SW/HW dependencies of all sub-components in a unified way via a common API and extensible meta descriptions. Portable workflows assembled from such plug &amp; play components allow researchers and practitioners to automatically build, test, benchmark, optimize, and co-design novel algorithms across continuously changing software and hardware. Furthermore, the best results can be continuously collected in public or private repositories together with negative results, unexpected behavior, and mispredictions for collaborative analysis and improvement.</p>
+
+                    <p>I will also present the cKnowledge.io platform to share portable, customizable, and reusable CK workflows from reproduced papers that can be quickly validated by the community and deployed in production. I will conclude with several practical use-cases of the CK technology to improve reproducibility in ML and Systems research and accelerate real-world deployment of efficient deep learning systems from the cloud to the edge in collaboration with General Motors, Arm, IBM, Intel, Amazon, TomTom, the Raspberry Pi foundation, ACM, MLCommons, and MLPerf.&nbsp;</p><div class="asset-link"><a href="/binaries/content/assets/leaning-center/webinar-slides/2021/grigorifursin_techtalk_slides.pdf" target="_blank">View slides</a></div>
+                </div>
+
+                <div class="columns large-4 medium-4 small-12">
+                    <!--  simple content -->
+                    <h3 id="h-GrigoriFursin">
+                        Grigori Fursin</h3>
+                    <p>Grigori Fursin is a computer scientist with more than 20 years of experience pioneering novel autotuning, machine learning and knowledge sharing techniques to modernize the development of efficient software and hardware. After completing a PhD in Computer Science from the University of Edinburgh, Grigori was a tech lead in the EU MILEPOST project with IBM developing the world’s first ML-based compiler, a Senior Research Scientist at INRIA, and a Co-Director of the Intel Exascale Lab. He is a recipient of the ACM CGO'17 Test of Time award, INRIA award of scientific excellence, EU HiPEAC technology transfer award, and several best paper awards.</p>
+
+                    <p>Grigori is the President of the cTuning foundation and the founder of the cKnowledge.io platform. He is an active open-source contributor, educator, and reproducibility champion, notably through his involvement in the ACM Taskforce on Reproducibility, MLCommons and artifact evaluation. He is the author of the Collective Knowledge framework to bring DevOps and FAIR principles to research with the help of portable, customizable, and reusable workflow templates, reproducible experiments, and auto-generated “live” papers. Grigori's mission is to bridge the growing gap between academic research and industry by helping researchers share their novel techniques as production-ready workflows that can be quickly validated in the real world and adopted by industry.</p><!--  CTAs -->
+                </div>
+
+            </div><!--  end row -->
+        </div><!--  end video-page -->
+
+    </div>
+
+</div>
+
+<div class="row">
+    <footer>
+        <nav>
+            <div class="footer-nav">
+                <ul class="footer-nav-lists">
+                    <li> About ACM</li>
+                    <li><a href="https://www.acm.org/about-acm" title="About ACM">About ACM</a></li>
+                    <li><a href="https://www.acm.org/about-acm/get-involved" title="About ACM">Volunteer</a></li>
+                </ul>
+                <ul class="footer-nav-lists">
+                    <li> Membership</li>
+                    <li><a href="https://www.acm.org/membership/join-acm" title="Membership">Join ACM</a></li>
+                    <li><a href="https://www.acm.org/membership/acm-membership-renewal" title="Membership">Renew My Membership</a></li>
+                    <li><a href="https://www.acm.org/membership/membership-options" title="Membership">Membership Options</a></li>
+                    <li><a href="https://www.acm.org/membership/membership-benefits" title="Membership">Membership Benefits</a></li>
+                    <li><a href="https://www.acm.org/membership/myacm-at-a-glance" title="Membership">myACM Sign-In</a></li>
+                </ul>
+                <ul class="footer-nav-lists">
+                    <li> Publications</li>
+                    <li><a href="https://www.acm.org/publications" title="Publications">About Publications</a></li>
+                    <li><a href="https://www.acm.org/publications/digital-library" title="Publications">Digital Library</a></li>
+                    <li><a href="https://authors.acm.org/" title="Publications">Submit A Paper</a></li>
+                </ul>
+                <ul class="footer-nav-lists">
+                    <li> Chapters</li>
+                    <li><a href="https://www.acm.org/chapters/chapter-administrative-interface" title="Chapters">Chapter Administrative Interface</a></li>
+                    <li><a href="https://www.acm.org/chapters/local-activities" title="Chapters">Chapter Activities Calendar</a></li>
+                    <li><a href="https://www.acm.org/chapters/start-chapter" title="Chapters">Start A Chapter</a></li>
+                </ul>
+                <ul class="footer-nav-lists">
+                    <li> Awards</li>
+                    <li><a href="https://awards.acm.org" title="Awards">About ACM's Awards</a></li>
+                </ul>
+                <ul class="footer-nav-lists">
+                    <li> Conferences</li>
+                    <li><a href="https://www.acm.org/conferences" title="Conferences">ACM's Conferences</a></li>
+                </ul>
+                <ul class="footer-nav-lists">
+                    <li> Code of Ethics</li>
+                    <li><a href="https://www.acm.org/code-of-ethics" title="Code of Ethics">ACM's Code of Ethics</a></li>
+                    <li><a href="https://www.acm.org/code-of-ethics/enforcement-procedures" title="Code of Ethics">Enforcement Procedures</a></li>
+                </ul>
+                <ul class="footer-nav-lists">
+                    <li> Media Center</li>
+                    <li><a href="https://www.acm.org/media-center" title="Media Center">ACM Media Center</a></li>
+                </ul>
+            </div>
+        </nav>
+
+
+        <div>
+            <div>
+                <div class="logo_social_group">
+                    <hr />
+                    <img src='/binaries/content/gallery/acm/logos/logo_footer_acm.png' alt='ACM Logo' />
+                    <ul class="footer__social">
+                        <li><a href="https://www.facebook.com/AssociationForComputingMachinery/" target="_blank"><img src="/binaries/content/gallery/acm/social-media/icon_facebook.png"
+                                                                                                                      alt="Facebook logo"></a></li>
+                        <li><a href="https://twitter.com/theofficialacm" target="_blank"><img src="/binaries/content/gallery/acm/social-media/icon_twitter.png"
+                                                                                              alt="Twitter logo"></a></li>
+                        <li><a href="https://www.linkedin.com/company/association-for-computing-machinery" target="_blank"><img src="/binaries/content/gallery/acm/social-media/icon_linkedin.png"
+                                                                                                                                alt="LinkedIn logo"></a></li>
+                        <li><a href="https://www.youtube.com/user/TheOfficialACM" target="_blank"><img src="/binaries/content/gallery/acm/social-media/icon_youtube.png"
+                                                                                                       alt="YouTube logo"></a></li>
+                        <li><a href="https://www.instagram.com/theofficialacm/" target="_blank"><img src="/binaries/content/gallery/acm/social-media/icon_instagram.png"
+                                                                                                     alt="Instagram"></a></li>
+                        <li><a href="https://www.flickr.com/photos/theofficialacm" target="_blank"><img src="/binaries/content/gallery/acm/social-media/icon_flickr.png"
+                                                                                                        alt="Flickr"></a></li>
+                        <li><a href="mailto:acmhelp@acm.org" target="_blank"><img src="/binaries/content/gallery/acm/social-media/icon_mail.png"
+                                                                                  alt="email"></a></li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </footer>
+</div>
+</body>
+</html>
