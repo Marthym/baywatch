@@ -7,9 +7,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
@@ -31,10 +34,15 @@ public final class OpenGraphScrapper {
             "|[^>]" + META_CONTENT + "\\W*=\\W*(?<" + META_CONTENT + ">[^>\"']*)[^>]*" +
             "){2}/?>", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
-    private final WebClient http = WebClient.create();
+    private final WebClient http = WebClient.builder()
+            .clientConnector(new ReactorClientHttpConnector(
+                    HttpClient.create().followRedirect(true)
+            )).build();
     private final OpenGraphMetaReader ogReader;
 
-    private static Flux<Meta> extractMetaFromHead(String head) {
+    private static Flux<Meta> extractMetaFromHead(String html) {
+        int headStopIdx = html.indexOf("</head>");
+        String head = (headStopIdx > 0) ? html.substring(0, headStopIdx) : html;
         Matcher m = META_PATTERN.matcher(head);
         return Flux.<Tuple2<String, String>>create(sink -> {
             while (m.find()) {
@@ -44,17 +52,18 @@ public final class OpenGraphScrapper {
             }
             sink.complete();
         }).filter(t -> t.getT1().startsWith(Tags.OG_NAMESPACE)
-        ).map(t -> new Meta(t.getT1(), t.getT2()))
-                .doOnError(e -> {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Error while parsing head:\n{}", head);
-                    }
-                });
+        ).map(t -> new Meta(t.getT1(), t.getT2())
+        ).doOnError(e -> {
+            if (log.isDebugEnabled()) {
+                log.debug("Error while parsing head:\n{}", head);
+            }
+        });
     }
 
     public Mono<OpenGraph> scrap(URI location) {
         return http.get().uri(location)
                 .acceptCharset(StandardCharsets.UTF_8)
+                .header(HttpHeaders.ACCEPT_ENCODING, "identity")
                 .retrieve()
                 .bodyToFlux(DataBuffer.class)
                 .scan(new StringBuilder(), (sb, buff) -> {

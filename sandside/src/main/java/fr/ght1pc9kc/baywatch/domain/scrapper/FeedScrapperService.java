@@ -162,6 +162,9 @@ public final class FeedScrapperService implements Runnable {
     private Mono<News> completeWithOpenGraph(News news) {
         return ogScrapper.scrap(news.getLink())
                 .map(og -> {
+                    if (og.image == null) {
+                        log.debug("no image for {}", news.getLink());
+                    }
                     RawNews raw = news.getRaw();
                     raw = Optional.ofNullable(og.title).map(raw::withTitle).orElse(raw);
                     raw = Optional.ofNullable(og.description).map(raw::withDescription).orElse(raw);
