@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public final class FeedScrapperService implements Runnable {
 
+    private static final Set<String> SUPPORTED_SCHEMES = Set.of("http", "https");
     private final ScheduledExecutorService scheduleExecutor = Executors.newSingleThreadScheduledExecutor(
             new CustomizableThreadFactory("scrapSched-"));
     private final Scheduler scrapperScheduler =
@@ -164,7 +165,9 @@ public final class FeedScrapperService implements Runnable {
                     RawNews raw = news.getRaw();
                     raw = Optional.ofNullable(og.title).map(raw::withTitle).orElse(raw);
                     raw = Optional.ofNullable(og.description).map(raw::withDescription).orElse(raw);
-                    raw = Optional.ofNullable(og.image).map(raw::withImage).orElse(raw);
+                    raw = Optional.ofNullable(og.image)
+                            .filter(i -> SUPPORTED_SCHEMES.contains(i.getScheme()))
+                            .map(raw::withImage).orElse(raw);
                     return news.withRaw(raw);
                 }).switchIfEmpty(Mono.just(news));
     }

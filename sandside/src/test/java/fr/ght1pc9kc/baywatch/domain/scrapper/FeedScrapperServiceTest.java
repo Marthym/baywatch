@@ -13,7 +13,10 @@ import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OpenGraph;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
 import org.springframework.http.HttpHeaders;
@@ -139,9 +142,10 @@ class FeedScrapperServiceTest {
         when(openGraphScrapper.scrap(any(URI.class))).thenReturn(Mono.just(
                 OpenGraph.builder()
                         .image(URI.create("http://www.ght1pc9kc.fr/featured.jpg"))
-                        .title("OpenGraphe Title")
+                        .title("OpenGraph Title")
                         .build()
         ));
+        //noinspection unchecked
         ArgumentCaptor<List<News>> captor = ArgumentCaptor.forClass(List.class);
         when(newsPersistenceMock.persist(captor.capture())).thenReturn(Mono.just("").then());
 
@@ -151,12 +155,46 @@ class FeedScrapperServiceTest {
                 .until(() -> tested.isScrapping());
         tested.shutdownScrapping();
 
-        Assertions.assertThat(captor.getValue().get(0)).isEqualTo(News.builder()
+        News actual = captor.getValue().stream()
+                .filter(n -> "5c0a1b1971fb82cf9b6049430f19e6956d1bfe98c3ede589a3656091d5414b63".equals(n.getId()))
+                .findAny().orElseThrow();
+        Assertions.assertThat(actual).isEqualTo(News.builder()
                 .raw(RawNews.builder()
-                        .id("f6ef0975e204db82108e53bd6b5e06363fa1cf3c14afcab4b6c3eb779446e2c6")
-                        .title("OpenGraphe Title")
+                        .id("5c0a1b1971fb82cf9b6049430f19e6956d1bfe98c3ede589a3656091d5414b63")
+                        .title("OpenGraph Title")
                         .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
                         .image(URI.create("http://www.ght1pc9kc.fr/featured.jpg"))
+                        .build())
+                .state(State.NONE)
+                .build());
+    }
+
+    @Test
+    void should_ignore_opengraph_image_as_data() {
+        when(openGraphScrapper.scrap(any(URI.class))).thenReturn(Mono.just(
+                OpenGraph.builder()
+                        .image(URI.create("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABeAAAAQ4CA"))
+                        .build()
+        ));
+        //noinspection unchecked
+        ArgumentCaptor<List<News>> captor = ArgumentCaptor.forClass(List.class);
+        when(newsPersistenceMock.persist(captor.capture())).thenReturn(Mono.just("").then());
+
+        tested.startScrapping();
+        Awaitility.await("for scrapping begin").timeout(Duration.ofSeconds(5))
+                .pollDelay(Duration.ZERO)
+                .until(() -> tested.isScrapping());
+        tested.shutdownScrapping();
+
+        News actual = captor.getValue().stream()
+                .filter(n -> "1d665bbff973032c28c72064f2073a85f8777b6ca3c3e0f9b9c2385cd2b206c0".equals(n.getId()))
+                .findAny().orElseThrow();
+        Assertions.assertThat(actual).isEqualTo(News.builder()
+                .raw(RawNews.builder()
+                        .id("1d665bbff973032c28c72064f2073a85f8777b6ca3c3e0f9b9c2385cd2b206c0")
+                        .title("Dummy Title 2")
+                        .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
+                        .image(URI.create("https://practicalprogramming.fr/image.jpg"))
                         .build())
                 .state(State.NONE)
                 .build());
@@ -165,8 +203,8 @@ class FeedScrapperServiceTest {
     @BeforeEach
     void setUp() {
         newsPersistenceMock = mock(NewsPersistencePort.class);
-        when(newsPersistenceMock.persist(anyCollection())).thenReturn(Mono.just("").then());
         when(newsPersistenceMock.list()).thenReturn(Flux.empty());
+        when(newsPersistenceMock.persist(anyCollection())).thenReturn(Mono.just("").then());
 
         //Mockito does not support Lambda
         //noinspection Convert2Lambda
@@ -175,14 +213,25 @@ class FeedScrapperServiceTest {
             public Flux<News> parse(Feed feed, InputStream is) {
                 // Must consume the inputstream
                 Exceptions.wrap().get(() -> IOUtils.toByteArray(is));
-                return Flux.just(News.builder()
-                        .raw(RawNews.builder()
-                                .id(Hasher.sha3("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
-                                .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
-                                .title("Dummy Title")
-                                .build())
-                        .state(State.NONE)
-                        .build());
+                return Flux.just(
+                        News.builder()
+                                .raw(RawNews.builder()
+                                        .id(Hasher.sha3(feed.getName() + "01"))
+                                        .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
+                                        .title("Dummy Title")
+                                        .build())
+                                .state(State.NONE)
+                                .build(),
+                        News.builder()
+                                .raw(RawNews.builder()
+                                        .id(Hasher.sha3(feed.getName() + "02"))
+                                        .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
+                                        .image(URI.create("https://practicalprogramming.fr/image.jpg"))
+                                        .title("Dummy Title 2")
+                                        .build())
+                                .state(State.NONE)
+                                .build()
+                );
             }
         });
 
