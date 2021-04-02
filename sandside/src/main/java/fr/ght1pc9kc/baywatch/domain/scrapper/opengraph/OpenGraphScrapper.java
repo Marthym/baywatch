@@ -44,7 +44,7 @@ public final class OpenGraphScrapper {
     private final OpenGraphMetaReader ogReader;
 
     private static Flux<Meta> extractMetaFromHead(String html) {
-        int headStopIdx = html.indexOf("</head>");
+        int headStopIdx = html.indexOf(HEAD_END_TAG);
         String head = (headStopIdx > 0) ? html.substring(0, headStopIdx) : html;
         Matcher m = META_PATTERN.matcher(head);
         return Flux.<Tuple2<String, String>>create(sink -> {
