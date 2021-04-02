@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.util.MimeType;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -38,7 +37,9 @@ public final class OpenGraphScrapper {
 
     private final WebClient http = WebClient.builder()
             .clientConnector(new ReactorClientHttpConnector(
-                    HttpClient.create().followRedirect(true)
+                    HttpClient.create()
+                            .followRedirect(true)
+                            .compress(true)
             )).build();
     private final OpenGraphMetaReader ogReader;
 
@@ -65,7 +66,6 @@ public final class OpenGraphScrapper {
     public Mono<OpenGraph> scrap(URI location) {
         return http.get().uri(location)
                 .acceptCharset(StandardCharsets.UTF_8)
-                .header(HttpHeaders.ACCEPT_ENCODING, "identity")
                 .exchangeToMono(response -> {
                     Charset responseCharset = response.headers().contentType()
                             .map(MimeType::getCharset)

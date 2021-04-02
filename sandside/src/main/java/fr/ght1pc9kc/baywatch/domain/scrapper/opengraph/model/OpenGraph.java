@@ -18,4 +18,12 @@ public class OpenGraph {
     public URI image;
     public String description;
     public Locale locale;
+
+    public boolean isEmpty() {
+        return title == null
+                && url == null
+                && image == null
+                && description == null
+                && locale == null;
+    }
 }
