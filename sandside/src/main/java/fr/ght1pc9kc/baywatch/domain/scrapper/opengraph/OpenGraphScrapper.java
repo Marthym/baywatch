@@ -9,6 +9,7 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.util.MimeType;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -17,6 +18,7 @@ import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -64,15 +66,19 @@ public final class OpenGraphScrapper {
         return http.get().uri(location)
                 .acceptCharset(StandardCharsets.UTF_8)
                 .header(HttpHeaders.ACCEPT_ENCODING, "identity")
-                .retrieve()
-                .bodyToFlux(DataBuffer.class)
-                .scan(new StringBuilder(), (sb, buff) -> {
-                    StringBuilder bldr = sb.append(buff.toString(StandardCharsets.UTF_8));
-                    DataBufferUtils.release(buff);
-                    return bldr;
+                .exchangeToMono(response -> {
+                    Charset responseCharset = response.headers().contentType()
+                            .map(MimeType::getCharset)
+                            .orElse(StandardCharsets.UTF_8);
+                    return response.bodyToFlux(DataBuffer.class)
+                            .scan(new StringBuilder(), (sb, buff) -> {
+                                StringBuilder bldr = sb.append(buff.toString(responseCharset));
+                                DataBufferUtils.release(buff);
+                                return bldr;
+                            })
+                            .takeUntil(sb -> sb.indexOf(HEAD_END_TAG) >= 0)
+                            .last();
                 })
-                .takeUntil(sb -> sb.indexOf(HEAD_END_TAG) >= 0)
-                .last()
                 .map(StringBuilder::toString)
 
                 .flatMapMany(OpenGraphScrapper::extractMetaFromHead)
