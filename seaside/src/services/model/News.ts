@@ -6,5 +6,5 @@ export type News = {
     image: string;
     link: string;
     read: boolean;
-    stared: boolean;
+    shared: boolean;
 }

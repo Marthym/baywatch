@@ -1,7 +1,7 @@
 <template>
   <div class="mt-auto flex items-center text-red-700 dark:text-red-400">
     <!-- important action -->
-    <a class="flex items-center cursor-pointer" v-if="isLoggedIn" @click="logout()">
+    <a class="flex items-center cursor-pointer" v-if="isLoggedIn" @click.stop="$emit('logout')">
       <svg class="fill-current h-5 w-5" viewBox="0 0 24 24">
         <path
             d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 012
@@ -25,20 +25,10 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
-import UserService from "@/services/UserService";
+import {Component, Prop, Vue} from 'vue-property-decorator';
 
 @Component
 export default class SideNavImportantActions extends Vue {
-  private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
-
-  get isLoggedIn(): boolean {
-    return this.userService.get() !== undefined;
-  }
-
-  logout(): void {
-    this.userService.logout()
-        .subscribe(() => this.$router.go(0));
-  }
+  @Prop({default: false}) private isLoggedIn?: boolean;
 }
 </script>

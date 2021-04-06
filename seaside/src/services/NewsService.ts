@@ -3,6 +3,7 @@ import {fromFetch} from "rxjs/fetch";
 import {switchMap, take} from "rxjs/operators";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 import {News} from "@/services/model/News";
+import {Mark} from "@/services/model/Mark.enum";
 
 export default class NewsService {
     /**
@@ -40,7 +41,7 @@ export default class NewsService {
             );
     }
 
-    mark(id: string, mark: string): Observable<News> {
+    mark(id: string, mark: Mark): Observable<News> {
         return fromFetch(`${this.serviceBaseUrl}/news/${id}/mark/${mark}`, {method: 'PUT'})
             .pipe(
                 switchMap(response => {
@@ -54,7 +55,7 @@ export default class NewsService {
             );
     }
 
-    unmark(id: string, mark: string): Observable<News> {
+    unmark(id: string, mark: Mark): Observable<News> {
         return fromFetch(`${this.serviceBaseUrl}/news/${id}/unmark/${mark}`, {method: 'PUT'})
             .pipe(
                 switchMap(response => {

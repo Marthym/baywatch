@@ -7,11 +7,12 @@
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
-import SideNav from "../components/sidenav/SideNav.vue";
-import MainContent from "../components/content/MainContent.vue";
 import {Subscription} from "rxjs";
 import StatsService from "@/services/StatsService";
 import {Statistics} from "@/services/model/Statistics";
+
+const SideNav = () => import('../components/sidenav/SideNav.vue');
+const MainContent = () => import('../components/content/MainContent.vue');
 
 @Component({
   components: {

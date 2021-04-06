@@ -1,7 +1,8 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import HomePage from './pages/HomePage.vue';
-import LoginPage from './pages/LoginPage.vue';
+
+const HomePage = () => import('./pages/HomePage.vue');
+const LoginPage = () => import('./pages/LoginPage.vue');
 
 Vue.use(VueRouter)
 

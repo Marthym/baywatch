@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-8" v-if="user">
+  <div class="mt-8" v-if="user.id">
     <!-- User info -->
     <img class="h-12 w-12 rounded-full object-cover"
          :src="avatar"

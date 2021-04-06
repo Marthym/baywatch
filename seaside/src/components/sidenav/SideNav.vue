@@ -18,7 +18,8 @@
 
     <SideNavFeeds/>
 
-    <SideNavImportantActions/>
+    <SideNavImportantActions
+        :isLoggedIn="isLoggedIn" @logout="logoutUser()"/>
   </nav>
 </template>
 
@@ -44,11 +45,24 @@ export default class SideNav extends Vue {
 
   private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
 
-  private user = this.userService.get();
+  private user = this.userService.get() || {};
+
+  get isLoggedIn(): boolean {
+    return 'id' in this.user;
+  }
 
   mounted(): void {
-    this.userService.refresh()
-        .subscribe(user => this.user = user, () => delete this.user);
+    if ('id' in this.user) {
+      this.userService.refresh()
+          .subscribe(
+              user => this.$nextTick(() => this.user = user),
+              () => this.$nextTick(() => delete this.user));
+    }
+  }
+
+  logoutUser(): void {
+    this.userService.logout()
+        .subscribe(() => this.$router.go(0));
   }
 }
 </script>
