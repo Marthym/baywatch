@@ -86,7 +86,9 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
     this.loadNextPage().pipe(take(1))
         .subscribe(el => {
           this.activateOnScroll.observe(el);
-          this.infiniteScroll.observe(this.getRefElement(this.news[this.news.length - 3].data.id));
+          if (this.news.length > 3) {
+            this.infiniteScroll.observe(this.getRefElement(this.news[this.news.length - 3].data.id));
+          }
         });
 
     window.addEventListener('keydown', this.onKeyDownListener, false);
@@ -178,7 +180,7 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
     });
   }
 
-  private toggleNewsShared(idx: number, event: Event) {
+  private toggleNewsShared(idx: number) {
     if (!this.isAuthenticated) {
       return;
     }
