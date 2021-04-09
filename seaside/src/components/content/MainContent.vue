@@ -95,8 +95,12 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
   }
 
   loadNextPage(): Observable<Element> {
+    const query = new URLSearchParams(NewsService.DEFAULT_QUERY);
+    if (this.isAuthenticated) {
+      query.append('read', 'false');
+    }
     const elements = new Subject<Element>();
-    this.subscriptions = this.newsService.getNews(++this.page).pipe(
+    this.subscriptions = this.newsService.getNews(++this.page, query).pipe(
         map(ns => ns.map(n => ({data: n, isActive: false, keepMark: false}) as NewsView)),
         tap(ns => this.news.push(...ns))
     ).subscribe(ns => {
