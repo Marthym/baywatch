@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,6 +67,6 @@ class OpenGraphScrapperTest {
     void should_scrap_not_found() {
         URI page = URI.create(mockServer.baseUrl() + "/not-found.html");
         OpenGraph actual = tested.scrap(page).block();
-        Assertions.assertThat(actual).isEqualTo(Mono.empty().block());
+        Assertions.assertThat(actual).isEqualTo(OpenGraph.builder().build());
     }
 }

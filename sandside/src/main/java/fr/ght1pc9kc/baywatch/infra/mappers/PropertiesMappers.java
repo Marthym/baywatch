@@ -1,7 +1,9 @@
 package fr.ght1pc9kc.baywatch.infra.mappers;
 
+import fr.ght1pc9kc.baywatch.api.model.Flags;
 import lombok.experimental.UtilityClass;
 import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 import java.util.Map;
 
@@ -21,6 +23,8 @@ public final class PropertiesMappers {
     public static final String NAME = "name";
     public static final String NEWS_ID = "newsId";
     public static final String PUBLICATION = "publication";
+    public static final String READ = "read";
+    public static final String SHARED = "shared";
     public static final String STATE = "state";
     public static final String TITLE = "title";
     public static final String URL = "url";
@@ -37,6 +41,8 @@ public final class PropertiesMappers {
             DESCRIPTION, NEWS.NEWS_DESCRIPTION,
             LINK, NEWS.NEWS_LINK,
             PUBLICATION, NEWS.NEWS_PUBLICATION,
+            READ, DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.READ),
+            SHARED, DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.SHARED),
             TITLE, NEWS.NEWS_TITLE
     );
     public static final Map<String, Field<?>> STATE_PROPERTIES_MAPPING = Map.of(

@@ -3,8 +3,11 @@ package fr.ght1pc9kc.baywatch.domain;
 import fr.ght1pc9kc.baywatch.api.NewsService;
 import fr.ght1pc9kc.baywatch.api.model.*;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
+import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
+import fr.ght1pc9kc.baywatch.domain.exceptions.BadCriteriaFilter;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
+import fr.ght1pc9kc.baywatch.infra.request.filter.ListPropertiesCriteriaVisitor;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,7 +64,7 @@ class NewsServiceImplTest {
                 SAMPLE_NEWS_01, SAMPLE_NEWS_02));
         mockAuthFacade = mock(AuthenticationFacade.class);
 
-        tested = new NewsServiceImpl(mockNewsPersistence, mockAuthFacade);
+        tested = new NewsServiceImpl(new ListPropertiesCriteriaVisitor(), mockNewsPersistence, mockAuthFacade);
     }
 
     @Test
@@ -72,6 +75,32 @@ class NewsServiceImplTest {
         Assertions.assertThat(actual).isNotNull();
         Assertions.assertThat(actual.getRaw()).isEqualTo(SAMPLE_NEWS_01.getRaw());
         Assertions.assertThat(actual.getState()).isEqualTo(State.NONE);
+    }
+
+    @Test
+    void should_list_with_illegal_filters_for_anonymous() {
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.empty());
+
+        Assertions.assertThatThrownBy(() -> tested.list(PageRequest.all(
+                Criteria.property("title").eq("May the Force")
+                        .and(Criteria.property("read").eq(true))
+        )).next().block())
+                .isInstanceOf(BadCriteriaFilter.class)
+                .hasMessageNotContaining("title")
+                .hasMessageContaining("read");
+    }
+
+    @Test
+    void should_list_with_illegal_filters_for_user() {
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(SAMPLE_USER_01));
+
+        Assertions.assertThatThrownBy(() -> tested.list(PageRequest.all(
+                Criteria.property("illegal").eq("May the Force")
+                        .and(Criteria.property("read").eq(true))
+        )).next().block())
+                .isInstanceOf(BadCriteriaFilter.class)
+                .hasMessageNotContaining("read")
+                .hasMessageContaining("illegal");
     }
 
     @Test
