@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.domain.ports;
 
 import fr.ght1pc9kc.baywatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -12,7 +13,7 @@ public interface FeedPersistencePort {
 
     Flux<Feed> list();
 
-    Flux<Feed> list(Criteria criteria);
+    Flux<Feed> list(PageRequest pageRequest);
 
     Mono<Void> persist(Collection<Feed> toPersist);
 

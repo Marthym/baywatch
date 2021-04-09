@@ -92,7 +92,9 @@ public interface BaywatchMapper {
 
     default Feed recordToFeed(Record record) {
         RawFeed raw = recordToRawFeed(record);
-        Set<String> tags = Optional.ofNullable(record.get(FEEDS_USERS.FEUS_TAGS))
+        Set<String> tags = (record.indexOf(FEEDS_USERS.FEUS_TAGS) < 0)
+                ? Set.of()
+                : Optional.ofNullable(record.get(FEEDS_USERS.FEUS_TAGS))
                 .map(t -> Set.of(t.split(",")))
                 .orElse(Set.of());
         return Feed.builder()

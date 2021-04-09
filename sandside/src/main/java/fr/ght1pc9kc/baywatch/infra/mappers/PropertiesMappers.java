@@ -8,6 +8,7 @@ import org.jooq.impl.DSL;
 import java.util.Map;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
+import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Users.USERS;
@@ -34,7 +35,8 @@ public final class PropertiesMappers {
             ID, FEEDS.FEED_ID,
             NAME, FEEDS.FEED_NAME,
             URL, FEEDS.FEED_URL,
-            LAST_WATCH, FEEDS.FEED_LAST_WATCH
+            LAST_WATCH, FEEDS.FEED_LAST_WATCH,
+            USER_ID, FEEDS_USERS.FEUS_USER_ID
     );
     public static final Map<String, Field<?>> NEWS_PROPERTIES_MAPPING = Map.of(
             ID, NEWS.NEWS_ID,

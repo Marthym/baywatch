@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
@@ -43,17 +44,17 @@ public class FeedRepository implements FeedPersistencePort {
 
     @Override
     public Mono<Feed> get(String id) {
-        return list(Criteria.property(PropertiesMappers.ID).eq(id)).next();
+        return list(PageRequest.one(Criteria.property(PropertiesMappers.ID).eq(id))).next();
     }
 
     @Override
     public Flux<Feed> list() {
-        return list(Criteria.none());
+        return list(PageRequest.all());
     }
 
     @Override
-    public Flux<Feed> list(Criteria criteria) {
-        Condition conditions = criteria.visit(JOOQ_CONDITION_VISITOR);
+    public Flux<Feed> list(PageRequest pageRequest) {
+        Condition conditions = pageRequest.filter.visit(JOOQ_CONDITION_VISITOR);
         return Flux.<Record>create(sink -> {
             Cursor<Record> cursor = dsl.select(FEEDS.fields()).select(FEEDS_USERS.FEUS_TAGS)
                     .from(FEEDS)
@@ -68,7 +69,7 @@ public class FeedRepository implements FeedPersistencePort {
             });
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(baywatchMapper::recordToFeed)
-                .filter(criteria.visit(FEEDS_PREDICATE_VISITOR));
+                .filter(pageRequest.filter.visit(FEEDS_PREDICATE_VISITOR));
     }
 
     @Override

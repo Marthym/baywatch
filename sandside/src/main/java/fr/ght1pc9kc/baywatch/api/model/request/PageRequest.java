@@ -40,4 +40,8 @@ public class PageRequest {
     public static PageRequest one(Criteria criteria) {
         return new PageRequest(0, 1, Sort.of(), criteria);
     }
+
+    public PageRequest and(Criteria criteria) {
+        return new PageRequest(page, size, sort, filter.and(criteria));
+    }
 }
