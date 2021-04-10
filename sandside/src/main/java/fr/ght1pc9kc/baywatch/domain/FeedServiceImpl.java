@@ -40,11 +40,15 @@ public class FeedServiceImpl implements FeedService {
 
     @Override
     public Mono<Void> persist(Collection<Feed> toPersist) {
-        return null;
+        return authFacade.getConnectedUser()
+                .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
+                .flatMap(u -> feedRepository.persist(toPersist, u.id));
     }
 
     @Override
     public Mono<Integer> delete(Collection<String> toDelete) {
-        return null;
+        return authFacade.getConnectedUser()
+                .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
+                .flatMap(u -> feedRepository.delete(toDelete, u.id));
     }
 }

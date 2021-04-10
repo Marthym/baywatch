@@ -31,8 +31,15 @@ public class FeedServiceImplTest {
     @BeforeEach
     void setUp() {
         Feed jediFeed = BAYWATCH_MAPPER.recordToFeed(FeedRecordSamples.JEDI);
+        when(mockFeedRepository.get(any())).thenReturn(Mono.just(jediFeed));
         when(mockFeedRepository.list(any())).thenReturn(Flux.just(jediFeed));
         tested = new FeedServiceImpl(mockFeedRepository, mockAuthFacade);
+    }
+
+    @Test
+    void should_get_feed() {
+        tested.get("42").block();
+        verify(mockFeedRepository, times(1)).get(anyString());
     }
 
     @Test
@@ -68,5 +75,10 @@ public class FeedServiceImplTest {
             assertThat(captor.getValue()).isEqualTo(PageRequest.one(
                     Criteria.property("name").eq("jedi").and(Criteria.property("userId").eq(okenobi.id))));
         }
+    }
+
+    @Test
+    void should_persist_feeds() {
+
     }
 }

@@ -2,8 +2,6 @@ package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.RawFeed;
-import fr.ght1pc9kc.baywatch.api.model.User;
-import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
@@ -23,7 +21,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mapstruct.factory.Mappers;
-import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.net.URI;
@@ -33,11 +30,8 @@ import java.util.Set;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
-import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.infra.samples.UsersRecordSamples.OKENOBI;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class FeedRepositoryTest {
     private static final WithInMemoryDatasource wDs = WithInMemoryDatasource.builder().build();
@@ -68,15 +62,7 @@ class FeedRepositoryTest {
     @BeforeEach
     void setUp(DSLContext dslContext) {
         BaywatchMapper baywatchMapper = Mappers.getMapper(BaywatchMapper.class);
-        AuthenticationFacade authFacade = mock(AuthenticationFacade.class);
-        when(authFacade.getConnectedUser()).thenReturn(Mono.just(
-                User.builder()
-                        .id(OKENOBI.getUserId())
-                        .login(OKENOBI.getUserLogin())
-                        .name(OKENOBI.getUserName())
-                        .mail(OKENOBI.getUserEmail())
-                        .build()));
-        tested = new FeedRepository(Schedulers.immediate(), dslContext, baywatchMapper, authFacade);
+        tested = new FeedRepository(Schedulers.immediate(), dslContext, baywatchMapper);
     }
 
     @Test
@@ -122,6 +108,24 @@ class FeedRepositoryTest {
 
         tested.persist(Collections.singleton(expected)).block();
 
+        FeedsRecord actual = dsl.selectFrom(FEEDS).where(FEEDS.FEED_ID.eq(expected.getId())).fetchOne();
+        assertThat(actual).isNotNull();
+        assertThat(actual.getFeedName()).isEqualTo(expected.getName());
+    }
+
+    @Test
+    void should_persist_feeds_to_user(DSLContext dsl) {
+        Feed expected = Feed.builder()
+                .raw(RawFeed.builder()
+                        .id(Hasher.sha3("https://obiwan.kenobi.jedi/.rss"))
+                        .url(URI.create("https://obiwan.kenobi.jedi/.rss"))
+                        .name("Obiwan Kenobi")
+                        .build())
+                .tags(Set.of("jedi", "light"))
+                .build();
+
+        tested.persist(Collections.singleton(expected), OKENOBI.getUserId()).block();
+
         {
             FeedsRecord actual = dsl.selectFrom(FEEDS).where(FEEDS.FEED_ID.eq(expected.getId())).fetchOne();
             assertThat(actual).isNotNull();
@@ -142,10 +146,6 @@ class FeedRepositoryTest {
                 "530a28c0c7a93eb97c46114bdd6b276b665b3f3100548e1a849ece1955e45b57",
                 "75ac07c9803c0dffe3d1769a3ec0037068bc040cff01032721dbb1d79f68e95a");
         {
-            int countNews = dsl.fetchCount(FEEDS, FEEDS.FEED_ID.in(ids));
-            assertThat(countNews).isEqualTo(ids.size());
-            int countFeed = dsl.fetchCount(NEWS_FEEDS, NEWS_FEEDS.NEFE_FEED_ID.in(ids));
-            assertThat(countFeed).isEqualTo(20);
             int countUser = dsl.fetchCount(FEEDS_USERS, FEEDS_USERS.FEUS_FEED_ID.in(ids));
             assertThat(countUser).isEqualTo(ids.size());
         }
@@ -153,12 +153,28 @@ class FeedRepositoryTest {
         tested.delete(ids).block();
 
         {
-            int countNews = dsl.fetchCount(FEEDS, FEEDS.FEED_ID.in(ids));
-            assertThat(countNews).isEqualTo(0);
-            int countFeed = dsl.fetchCount(NEWS_FEEDS, NEWS_FEEDS.NEFE_FEED_ID.in(ids));
-            assertThat(countFeed).isEqualTo(0);
-            int countState = dsl.fetchCount(FEEDS_USERS, FEEDS_USERS.FEUS_FEED_ID.in(ids));
-            assertThat(countState).isEqualTo(0);
+            int countUser = dsl.fetchCount(FEEDS_USERS, FEEDS_USERS.FEUS_FEED_ID.in(ids));
+            assertThat(countUser).isEqualTo(0);
         }
     }
+
+    @Test
+    void should_delete_feeds_for_user(DSLContext dsl) {
+        List<String> ids = List.of(
+                "530a28c0c7a93eb97c46114bdd6b276b665b3f3100548e1a849ece1955e45b57",
+                "75ac07c9803c0dffe3d1769a3ec0037068bc040cff01032721dbb1d79f68e95a");
+        {
+            int countUser = dsl.fetchCount(FEEDS_USERS, FEEDS_USERS.FEUS_FEED_ID.in(ids)
+                    .and(FEEDS_USERS.FEUS_USER_ID.eq(OKENOBI.getUserId())));
+            assertThat(countUser).isEqualTo(ids.size());
+        }
+
+        tested.delete(ids, OKENOBI.getUserId()).block();
+
+        {
+            int countUser = dsl.fetchCount(FEEDS_USERS, FEEDS_USERS.FEUS_FEED_ID.in(ids));
+            assertThat(countUser).isEqualTo(0);
+        }
+    }
+
 }
