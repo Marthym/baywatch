@@ -85,4 +85,20 @@ class CriteriaTest {
             );
         }
     }
+
+    @Test
+    void should_reverse_equal_and() {
+        Criteria left = Criteria.property("name").eq("obiwan");
+        Criteria right = Criteria.property("force").eq("light");
+
+        Assertions.assertThat(left.and(right)).isEqualTo(right.and(left));
+    }
+
+    @Test
+    void should_reverse_equal_or() {
+        Criteria left = Criteria.property("name").eq("obiwan");
+        Criteria right = Criteria.property("force").eq("light");
+
+        Assertions.assertThat(left.or(right)).isEqualTo(right.or(left));
+    }
 }

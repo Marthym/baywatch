@@ -3,12 +3,12 @@ package fr.ght1pc9kc.baywatch.api.model.request.filter;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
-import java.util.List;
+import java.util.Set;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
 public class AndOperation extends Criteria {
-    public List<Criteria> andCriteria;
+    public Set<Criteria> andCriteria;
 
     @Override
     public boolean isEmpty() {
