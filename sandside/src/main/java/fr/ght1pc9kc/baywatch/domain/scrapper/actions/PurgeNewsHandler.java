@@ -3,14 +3,12 @@ package fr.ght1pc9kc.baywatch.domain.scrapper.actions;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
-import fr.ght1pc9kc.baywatch.api.scrapper.PreScrappingAction;
+import fr.ght1pc9kc.baywatch.api.scrapper.ScrappingHandler;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.With;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -21,10 +19,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
+import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.*;
+
 @Slf4j
-@Component
 @RequiredArgsConstructor
-public class PurgeNewsAction implements PreScrappingAction {
+public class PurgeNewsHandler implements ScrappingHandler {
     private static final int DELETE_BUFFER_SIZE = 500;
     private final NewsPersistencePort newsPersistence;
 
@@ -33,9 +32,9 @@ public class PurgeNewsAction implements PreScrappingAction {
     private Clock clock = Clock.systemUTC();
 
     @Override
-    public Mono<Void> call() {
+    public Mono<Void> before() {
         LocalDateTime maxPublicationPasDate = LocalDateTime.now(clock).minus(Period.ofMonths(3));
-        Criteria criteria = Criteria.property("publication").lt(maxPublicationPasDate);
+        Criteria criteria = Criteria.property(PUBLICATION).lt(maxPublicationPasDate);
         return newsPersistence.list(PageRequest.all(criteria))
                 .map(RawNews::getId)
                 .collectList()
@@ -49,8 +48,8 @@ public class PurgeNewsAction implements PreScrappingAction {
     }
 
     private Flux<String> keepStaredNewsIds(Collection<String> newsIds) {
-        Criteria isStaredCriteria = Criteria.property("newsId").in(newsIds)
-                .and(Criteria.property("stared").eq(true));
+        Criteria isStaredCriteria = Criteria.property(NEWS_ID).in(newsIds)
+                .and(Criteria.property(SHARED).eq(true));
         return newsPersistence.listState(isStaredCriteria)
                 .map(Map.Entry::getKey)
                 .collectList()

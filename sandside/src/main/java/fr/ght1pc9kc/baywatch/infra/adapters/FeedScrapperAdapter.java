@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.api.scrapper.PreScrappingAction;
+import fr.ght1pc9kc.baywatch.api.scrapper.ScrappingHandler;
 import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
 import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
@@ -24,12 +24,12 @@ public class FeedScrapperAdapter {
 
     public FeedScrapperAdapter(FeedPersistencePort feedPersistence, NewsPersistencePort newsPersistence,
                                OpenGraphScrapper ogScrapper, RssAtomParser rssAtomParser,
-                               Collection<PreScrappingAction> preScrappingActions,
+                               Collection<ScrappingHandler> scrappingHandlers,
                                @Value("${baywatch.scrapper.start}") boolean startScrapper,
                                @Value("${baywatch.scrapper.frequency}") Duration scrapFrequency) {
         this.startScrapper = startScrapper;
         this.scrapper = new FeedScrapperService(scrapFrequency,
-                ogScrapper, feedPersistence, newsPersistence, rssAtomParser, preScrappingActions);
+                ogScrapper, feedPersistence, newsPersistence, rssAtomParser, scrappingHandlers);
     }
 
     @PostConstruct

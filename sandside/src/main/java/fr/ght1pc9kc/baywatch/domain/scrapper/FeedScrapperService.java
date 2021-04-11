@@ -4,7 +4,7 @@ import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
-import fr.ght1pc9kc.baywatch.api.scrapper.PreScrappingAction;
+import fr.ght1pc9kc.baywatch.api.scrapper.ScrappingHandler;
 import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
 import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
@@ -59,7 +59,7 @@ public final class FeedScrapperService implements Runnable {
     private final FeedPersistencePort feedRepository;
     private final NewsPersistencePort newsRepository;
     private final RssAtomParser feedParser;
-    private final Collection<PreScrappingAction> preScrappingActions;
+    private final Collection<ScrappingHandler> scrappingHandlers;
 
     public void startScrapping() {
         Instant now = clock.instant();
@@ -97,7 +97,7 @@ public final class FeedScrapperService implements Runnable {
                 .collect(Collectors.toUnmodifiableSet())
                 .cache();
 
-        Flux.concat(preScrappingActions.stream().map(PreScrappingAction::call).collect(Collectors.toList()))
+        Flux.concat(scrappingHandlers.stream().map(ScrappingHandler::before).collect(Collectors.toList()))
                 .thenMany(feedRepository.list())
                 .parallel(4).runOn(scrapperScheduler)
                 .flatMap(this::wgetFeedNews)

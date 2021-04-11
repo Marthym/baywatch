@@ -24,14 +24,14 @@ import static org.mockito.Mockito.*;
 
 class PurgeNewsActionTest {
 
-    private PurgeNewsAction tested;
+    private PurgeNewsHandler tested;
 
     private NewsPersistencePort newsPersistenceMock;
 
     @BeforeEach
     void setUp() {
         newsPersistenceMock = mock(NewsPersistencePort.class);
-        tested = new PurgeNewsAction(newsPersistenceMock)
+        tested = new PurgeNewsHandler(newsPersistenceMock)
                 .clock(Clock.fixed(Instant.parse("2020-12-18T22:42:42Z"), ZoneOffset.UTC));
 
         when(newsPersistenceMock.list(any())).thenReturn(testDataForPersistenceList());
@@ -41,7 +41,7 @@ class PurgeNewsActionTest {
 
     @Test
     void should_purge_news() {
-        tested.call().block();
+        tested.before().block();
         verify(newsPersistenceMock).delete(eq(List.of(
                 "24abc4ad15dc0ab7824f0192b78cc786a7e57f10c0a50fc0721ac1cc3cd162fc",
                 "60b59b7b9b35aa3805af8cf300fcb289055bbc78b012921f231aab5d5921a39c",
