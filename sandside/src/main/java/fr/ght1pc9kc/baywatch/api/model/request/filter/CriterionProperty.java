@@ -17,8 +17,8 @@ public class CriterionProperty {
     public String property;
 
     public <T> Criteria eq(T value) {
-        if (value == null || value.toString().isBlank()) {
-            throw new IllegalArgumentException("Value can not be null or empty !");
+        if (value == null) {
+            return isNull();
         }
         return new EqualOperation<>(this, new CriterionValue<>(value));
     }
@@ -31,6 +31,10 @@ public class CriterionProperty {
     public final <T> Criteria in(@NotNull T... values) {
         Objects.requireNonNull(values, "Values can not be null !");
         return new InOperation<>(this, new CriterionValue<>(List.of(values)));
+    }
+
+    public Criteria isNull() {
+        return new EqualOperation<>(this, CriterionValue.NULL);
     }
 
     public <T> Criteria gt(T value) {

@@ -2,11 +2,13 @@ package fr.ght1pc9kc.baywatch.domain;
 
 import fr.ght1pc9kc.baywatch.api.NewsService;
 import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.api.model.Role;
 import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.domain.exceptions.BadCriteriaFilter;
 import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthenticatedUser;
+import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthorizedOperation;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import lombok.AllArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -83,4 +86,20 @@ public class NewsServiceImpl implements NewsService {
                 .flatMap(state -> get(id));
     }
 
+    @Override
+    public Mono<Void> orphanize(Collection<String> toOrphanize) {
+        return authFacade.getConnectedUser()
+                .filter(user -> Role.SYSTEM == user.role)
+                .switchIfEmpty(Mono.error(new UnauthorizedOperation("Orphanize news not permitted for user !")))
+                .flatMap(user -> newsRepository.deleteFeedLink(toOrphanize))
+                .then();
+    }
+
+    @Override
+    public Mono<Integer> delete(Collection<String> toDelete) {
+        return authFacade.getConnectedUser()
+                .filter(user -> Role.SYSTEM == user.role)
+                .switchIfEmpty(Mono.error(new UnauthorizedOperation("Deleting news not permitted for user !")))
+                .flatMap(user -> newsRepository.delete(toDelete));
+    }
 }

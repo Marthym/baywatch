@@ -30,10 +30,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
-import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers.NEWS_PROPERTIES_MAPPING;
 
 @Slf4j
@@ -193,14 +193,22 @@ public class NewsRepository implements NewsPersistencePort {
     }
 
     @Override
-    public Mono<Integer> delete(Collection<String> ids) {
+    public Mono<Integer> deleteFeedLink(Collection<String> ids) {
         return Mono.fromCallable(() ->
-                dsl.transactionResult(tx -> {
-                    DSLContext txDsl = tx.dsl();
-                    txDsl.deleteFrom(NEWS_FEEDS).where(NEWS_FEEDS.NEFE_NEWS_ID.in(ids)).execute();
-                    txDsl.deleteFrom(NEWS_USER_STATE).where(NEWS_USER_STATE.NURS_NEWS_ID.in(ids)).execute();
-                    return txDsl.deleteFrom(NEWS).where(NEWS.NEWS_ID.in(ids)).execute();
-                })).subscribeOn(databaseScheduler);
+                dsl.deleteFrom(NEWS_FEEDS).where(NEWS_FEEDS.NEFE_NEWS_ID.in(ids)).execute())
+                .subscribeOn(databaseScheduler);
+    }
+
+    @Override
+    public Mono<Integer> delete(Collection<String> ids) {
+        return deleteFeedLink(ids)
+                .then(Mono.fromCallable(() ->
+                        dsl.transactionResult(tx -> {
+                            DSLContext txDsl = tx.dsl();
+                            txDsl.deleteFrom(NEWS_USER_STATE).where(NEWS_USER_STATE.NURS_NEWS_ID.in(ids)).execute();
+                            return txDsl.deleteFrom(NEWS).where(NEWS.NEWS_ID.in(ids)).execute();
+                        })).subscribeOn(databaseScheduler)
+                );
     }
 
     @Override

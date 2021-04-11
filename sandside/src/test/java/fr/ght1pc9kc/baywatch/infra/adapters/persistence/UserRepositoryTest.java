@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
+import fr.ght1pc9kc.baywatch.api.model.Role;
 import fr.ght1pc9kc.baywatch.api.model.User;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
@@ -74,6 +75,7 @@ class UserRepositoryTest {
                 .login("okenobi")
                 .mail("obiwan.kenobi@jedi.fr")
                 .password(UsersRecordSamples.OKENOBI.getUserPassword())
+                .role(Role.MANAGER)
                 .build());
     }
 
@@ -104,9 +106,9 @@ class UserRepositoryTest {
 
         tested.persist(List.of(
                 User.builder().id(Hasher.sha3("dvader")).login("dvader").name("Darth Vader").mail("darth.vader@sith.fr")
-                        .password("obscur").build(),
+                        .password("obscur").role(Role.USER).build(),
                 User.builder().id(Hasher.sha3("dsidious")).login("dsidious").name("Darth Sidious").mail("darth.sidious@sith.fr")
-                        .password("obscur").build()
+                        .password("obscur").role(Role.MANAGER).build()
         )).collectList().block();
 
         {

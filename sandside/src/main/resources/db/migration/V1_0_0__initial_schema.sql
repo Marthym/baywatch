@@ -22,7 +22,8 @@ CREATE TABLE USERS
     USER_LOGIN    VARCHAR(50) NOT NULL UNIQUE,
     USER_EMAIL    VARCHAR(250),
     USER_NAME     VARCHAR(250),
-    USER_PASSWORD VARCHAR(72) NOT NULL
+    USER_PASSWORD VARCHAR(72) NOT NULL,
+    USER_ROLE     VARCHAR(7)  NOT NULL
 );
 
 CREATE TABLE NEWS_FEEDS
@@ -64,5 +65,6 @@ VALUES ('076b66c63e571578374ffa8e3197554cd185c6911658747e52373358e938b5cf', 'Tes
         'https://www.reddit.com/r/programming/top/.rss', null);
 
 INSERT INTO USERS
-VALUES ('fcombes', 'fcombes', 'marthym@gmail.com', 'Fred',
-        '$2a$10$uuFG89ZGXcFMKkj3naDhK.e/rjE1SQhh6GvOoimTlyrRfnT5lHlEO');
+VALUES ('baywatch', 'baywatch', 'baywatch@ght1pc9kc.fr', 'System', RANDOM_UUID(), 'SYSTEM'),
+       ('fcombes', 'fcombes', 'marthym@gmail.com', 'Fred',
+        '$2a$10$uuFG89ZGXcFMKkj3naDhK.e/rjE1SQhh6GvOoimTlyrRfnT5lHlEO', 'ADMIN');

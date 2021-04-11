@@ -64,7 +64,13 @@ public class JooqConditionVisitor implements Criteria.Visitor<Condition> {
     @SuppressWarnings("unchecked")
     private <T> Condition readFieldToCondition(BiOperand<T> operation, BiFunction<Field<T>, T, Condition> op) {
         return Optional.ofNullable(propertiesSupplier.apply(operation.field.property))
-                .map(f -> op.apply((Field<T>) f, operation.value.value))
+                .map(f -> {
+                    if (operation.value.isNull()) {
+                        return f.isNull();
+                    } else {
+                        return op.apply((Field<T>) f, operation.value.value);
+                    }
+                })
                 .orElse(DSL.noCondition());
     }
 }

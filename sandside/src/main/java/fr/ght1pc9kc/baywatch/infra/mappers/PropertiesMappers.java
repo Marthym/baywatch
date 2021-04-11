@@ -21,7 +21,8 @@ public final class PropertiesMappers {
             EntitiesProperties.NAME, FEEDS.FEED_NAME,
             EntitiesProperties.URL, FEEDS.FEED_URL,
             EntitiesProperties.LAST_WATCH, FEEDS.FEED_LAST_WATCH,
-            EntitiesProperties.USER_ID, FEEDS_USERS.FEUS_USER_ID
+            EntitiesProperties.USER_ID, FEEDS_USERS.FEUS_USER_ID,
+            EntitiesProperties.FEED_ID, FEEDS_USERS.FEUS_FEED_ID
     );
     public static final Map<String, Field<?>> NEWS_PROPERTIES_MAPPING = Map.of(
             EntitiesProperties.ID, NEWS.NEWS_ID,

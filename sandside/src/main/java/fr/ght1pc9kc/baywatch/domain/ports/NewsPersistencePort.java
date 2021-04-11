@@ -40,6 +40,8 @@ public interface NewsPersistencePort {
     Mono<Integer> removeStateFlag(String newsId, String userId,
                                   @MagicConstant(flagsFromClass = Flags.class) int flag);
 
+    Mono<Integer> deleteFeedLink(Collection<String> ids);
+
     Mono<Integer> delete(Collection<String> ids);
 
     Mono<Integer> count();
