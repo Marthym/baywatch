@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
-import static fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers.ID;
+import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers.NEWS_PROPERTIES_MAPPING;
 
 @Slf4j

@@ -1,9 +1,9 @@
 package fr.ght1pc9kc.baywatch.infra.request.pagination;
 
+import fr.ght1pc9kc.baywatch.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.pagination.Order;
 import fr.ght1pc9kc.baywatch.api.model.request.pagination.Sort;
-import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
 import org.assertj.core.api.Assertions;
 import org.jooq.Record1;
 import org.jooq.Record2;
@@ -33,8 +33,8 @@ class JooqPaginationTest {
     void should_sort_query() {
         PageRequest pageRequest = PageRequest.builder()
                 .sort(Sort.of(
-                        Order.asc(PropertiesMappers.PUBLICATION),
-                        Order.desc(PropertiesMappers.TITLE)))
+                        Order.asc(EntitiesProperties.PUBLICATION),
+                        Order.desc(EntitiesProperties.TITLE)))
                 .build();
         Select<Record2<String, LocalDateTime>> actual = JooqPagination.apply(
                 pageRequest, NEWS_PROPERTIES_MAPPING, DSL.select(NEWS.NEWS_TITLE, NEWS.NEWS_PUBLICATION).from(NEWS));

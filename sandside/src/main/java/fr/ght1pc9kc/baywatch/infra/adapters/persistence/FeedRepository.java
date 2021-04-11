@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
+import fr.ght1pc9kc.baywatch.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
@@ -40,7 +41,7 @@ public class FeedRepository implements FeedPersistencePort {
 
     @Override
     public Mono<Feed> get(String id) {
-        return list(PageRequest.one(Criteria.property(PropertiesMappers.ID).eq(id))).next();
+        return list(PageRequest.one(Criteria.property(EntitiesProperties.ID).eq(id))).next();
     }
 
     @Override
