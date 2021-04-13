@@ -1,11 +1,12 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper;
 
 import com.machinezoo.noexception.Exceptions;
+import fr.ght1pc9kc.baywatch.api.AuthenticationService;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
-import fr.ght1pc9kc.baywatch.api.scrapper.ScrappingHandler;
 import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
+import fr.ght1pc9kc.baywatch.api.scrapper.ScrappingHandler;
 import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
@@ -60,6 +61,7 @@ public final class FeedScrapperService implements Runnable {
     private final NewsPersistencePort newsRepository;
     private final RssAtomParser feedParser;
     private final Collection<ScrappingHandler> scrappingHandlers;
+    private final AuthenticationService authService;
 
     public void startScrapping() {
         Instant now = clock.instant();
@@ -116,7 +118,7 @@ public final class FeedScrapperService implements Runnable {
                     lock.release();
                     stopWatch.stop();
                     log.info("Scrapping finished with {} in {}", signal, Duration.ofMillis(stopWatch.getTotalTimeMillis()));
-                })
+                }).contextWrite(authService.withSystemAuthentication())
                 .subscribe();
     }
 

@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.machinezoo.noexception.Exceptions;
+import fr.ght1pc9kc.baywatch.api.AuthenticationService;
 import fr.ght1pc9kc.baywatch.api.model.*;
 import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
 import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
@@ -24,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.context.Context;
 import wiremock.org.apache.commons.io.IOUtils;
 
 import java.io.InputStream;
@@ -257,7 +259,11 @@ class FeedScrapperServiceTest {
                         .build()).build()
         ));
 
+        AuthenticationService authServiceMock = mock(AuthenticationService.class);
+        when(authServiceMock.withSystemAuthentication()).thenReturn(Context.empty());
+
         tested = new FeedScrapperService(Duration.ofDays(1),
-                openGraphScrapper, feedPersistenceMock, newsPersistenceMock, rssAtomParserMock, Collections.emptyList());
+                openGraphScrapper, feedPersistenceMock, newsPersistenceMock, rssAtomParserMock,
+                Collections.emptyList(), authServiceMock);
     }
 }

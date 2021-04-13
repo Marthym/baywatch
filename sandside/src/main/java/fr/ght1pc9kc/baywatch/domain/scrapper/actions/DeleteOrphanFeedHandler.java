@@ -31,7 +31,7 @@ public class DeleteOrphanFeedHandler implements ScrappingHandler {
 
     @Override
     public Mono<Void> before() {
-
+        log.debug("DeleteOrphanFeedHandler Start ...");
         Sinks.Many<String> shared = Sinks.many().multicast().onBackpressureBuffer();
         Sinks.Many<String> unshared = Sinks.many().multicast().onBackpressureBuffer();
         Sinks.Many<String> feeds = Sinks.many().multicast().onBackpressureBuffer();
@@ -73,7 +73,8 @@ public class DeleteOrphanFeedHandler implements ScrappingHandler {
                     }
                 })
                 .then(finalizeFlux)
-                .then(deletedFeeds);
+                .then(deletedFeeds)
+                .doOnTerminate(() -> log.debug("DeleteOrphanFeedHandler terminated."));
 
     }
 
