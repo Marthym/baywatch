@@ -33,7 +33,9 @@ export default class UserService {
     }
 
     logout(): Observable<void> {
-        return fromFetch(`${this.serviceBaseUrl}/auth/logout`).pipe(
+        return fromFetch(`${this.serviceBaseUrl}/auth/logout`, {
+            method: "DELETE",
+        }).pipe(
             map(response => {
                 if (!response.ok) {
                     throw new HttpStatusError(response.status, `Error while login out user !`);
@@ -46,7 +48,9 @@ export default class UserService {
     }
 
     refresh(): Observable<User> {
-        return fromFetch(`${this.serviceBaseUrl}/auth/refresh`).pipe(
+        return fromFetch(`${this.serviceBaseUrl}/auth/refresh`, {
+            method: "PUT",
+        }).pipe(
             switchMap(response => {
                 if (response.ok) {
                     return response.json();
