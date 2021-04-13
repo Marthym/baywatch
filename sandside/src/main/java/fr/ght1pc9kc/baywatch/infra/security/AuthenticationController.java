@@ -17,10 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -63,7 +60,7 @@ public class AuthenticationController {
                 .onErrorMap(BadCredentialsException.class, BaywatchCredentialsException::new);
     }
 
-    @GetMapping("/logout")
+    @DeleteMapping("/logout")
     public Mono<Void> logout(ServerWebExchange exchange) {
         if (log.isDebugEnabled()) {
             String user = Optional.ofNullable(exchange.getRequest().getCookies().getFirst(securityParams.cookie.name))
@@ -83,7 +80,7 @@ public class AuthenticationController {
                         .build()));
     }
 
-    @GetMapping("/refresh")
+    @PutMapping("/refresh")
     public Mono<User> refresh(ServerWebExchange exchange) {
         String token = Optional.ofNullable(exchange.getRequest().getCookies().getFirst(securityParams.cookie.name))
                 .map(HttpCookie::getValue)

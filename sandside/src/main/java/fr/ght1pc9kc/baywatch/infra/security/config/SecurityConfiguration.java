@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.api.model.Role;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
 import fr.ght1pc9kc.baywatch.infra.config.jackson.NewsMixin;
 import fr.ght1pc9kc.baywatch.infra.security.JwtTokenAuthenticationFilter;
@@ -42,15 +43,13 @@ public class SecurityConfiguration {
 
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange()
-                .pathMatchers("/**").permitAll()
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
-//                .pathMatchers(HttpMethod.POST, "/login").permitAll()
-//                .pathMatchers(HttpMethod.PUT, "/refresh").hasAuthority(TokenAuthority.ROLE_REFRESH.toString())
-//                .pathMatchers(HttpMethod.GET, "/session/validate").hasAuthority(TokenAuthority.ROLE_REFRESH.toString())
-//                .pathMatchers(HttpMethod.DELETE, "/logout").hasAuthority(TokenAuthority.ROLE_REFRESH.toString())
-//                .anyExchange().hasAuthority(TokenAuthority.ROLE_ACCESS.toString())
-//
-//                .and()
+                .pathMatchers(HttpMethod.GET).permitAll()
+                .pathMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                .pathMatchers(HttpMethod.DELETE, "/api/auth/logout").authenticated()
+                .pathMatchers(HttpMethod.PUT, "/api/auth/refresh").authenticated()
+                .anyExchange().hasAnyRole(Role.ADMIN.name(), Role.MANAGER.name(), Role.USER.name())
+
                 .and()
 
                 .addFilterAt(new JwtTokenAuthenticationFilter(jwtTokenProvider, securityParams.cookie.name), SecurityWebFiltersOrder.HTTP_BASIC)
