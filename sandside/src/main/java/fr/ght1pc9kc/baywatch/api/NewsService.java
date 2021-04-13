@@ -46,7 +46,7 @@ public interface NewsService {
      * @param toOrphanize The {@link News} to be orphans
      * @return nothing
      */
-    Mono<Void> orphanize(Collection<String> toOrphanize);
+    Mono<Integer> orphanize(Collection<String> toOrphanize);
 
     /**
      * Delete {@link News} from the database

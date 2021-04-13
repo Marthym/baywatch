@@ -87,12 +87,11 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Override
-    public Mono<Void> orphanize(Collection<String> toOrphanize) {
+    public Mono<Integer> orphanize(Collection<String> toOrphanize) {
         return authFacade.getConnectedUser()
                 .filter(user -> Role.SYSTEM == user.role)
                 .switchIfEmpty(Mono.error(new UnauthorizedOperation("Orphanize news not permitted for user !")))
-                .flatMap(user -> newsRepository.deleteFeedLink(toOrphanize))
-                .then();
+                .flatMap(user -> newsRepository.deleteFeedLink(toOrphanize));
     }
 
     @Override
