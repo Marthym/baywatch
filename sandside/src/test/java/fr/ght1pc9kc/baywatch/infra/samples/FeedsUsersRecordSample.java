@@ -21,7 +21,8 @@ public class FeedsUsersRecordSample implements RelationalDataSet<FeedsUsersRecor
                 "java,spring",
                 "cpp"
         };
-        FEEDS_USERS_RECORDS = IntStream.range(0, FeedRecordSamples.FEEDS_RECORDS.size())
+        // -1 allow to keep one orphan feed for tests
+        FEEDS_USERS_RECORDS = IntStream.range(0, FeedRecordSamples.FEEDS_RECORDS.size() - 1)
                 .mapToObj(f -> {
                     FeedsRecord feed = FeedRecordSamples.FEEDS_RECORDS.get(f);
                     List<UsersRecord> users = UsersRecordSamples.SAMPLE.records();

@@ -2,6 +2,8 @@ package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.RawFeed;
+import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
+import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
@@ -28,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.FEED_ID;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.infra.samples.UsersRecordSamples.OKENOBI;
@@ -177,4 +180,9 @@ class FeedRepositoryTest {
         }
     }
 
+    @Test
+    void should_list_orphan_feed() {
+        List<Feed> actuals = tested.list(PageRequest.all(Criteria.property(FEED_ID).isNull())).collectList().block();
+        assertThat(actuals).extracting(Feed::getId).containsExactly("5be5a3438e2003946d7ea6a17dda75cf816c640eb827337fe97eb11b27d9465c");
+    }
 }

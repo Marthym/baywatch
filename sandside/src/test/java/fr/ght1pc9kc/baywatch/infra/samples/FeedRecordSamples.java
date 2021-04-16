@@ -23,7 +23,8 @@ public class FeedRecordSamples implements RelationalDataSet<FeedsRecord> {
             JEDI.copy().setFeedId(Hasher.sha3(JEDI.getFeedUrl() + "01")).setFeedUrl(JEDI.getFeedUrl() + "01"),
             JEDI.copy().setFeedId(Hasher.sha3(JEDI.getFeedUrl() + "02")).setFeedUrl(JEDI.getFeedUrl() + "02"),
             JEDI.copy().setFeedId(Hasher.sha3(JEDI.getFeedUrl() + "03")).setFeedUrl(JEDI.getFeedUrl() + "03"),
-            JEDI.copy().setFeedId(Hasher.sha3(JEDI.getFeedUrl() + "04")).setFeedUrl(JEDI.getFeedUrl() + "04")
+            JEDI.copy().setFeedId(Hasher.sha3(JEDI.getFeedUrl() + "04")).setFeedUrl(JEDI.getFeedUrl() + "04"),
+            JEDI.copy().setFeedId(Hasher.sha3(JEDI.getFeedUrl() + "05")).setFeedUrl(JEDI.getFeedUrl() + "05")
     );
 
     @Override
