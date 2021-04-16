@@ -1,14 +1,13 @@
 package fr.ght1pc9kc.baywatch.api.model.request.filter;
 
-import lombok.EqualsAndHashCode;
 import lombok.Value;
 
-import java.util.Set;
+import java.util.List;
+import java.util.Objects;
 
 @Value
-@EqualsAndHashCode(callSuper = true)
 public class OrOperation extends Criteria {
-    public Set<Criteria> orCriteria;
+    public List<Criteria> orCriteria;
 
     @Override
     public boolean isEmpty() {
@@ -18,5 +17,20 @@ public class OrOperation extends Criteria {
     @Override
     public <R> R visit(Visitor<R> visitor) {
         return visitor.visitOr(this);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        OrOperation that = (OrOperation) o;
+        return this.orCriteria.containsAll(that.orCriteria)
+                && that.orCriteria.containsAll(this.orCriteria);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), orCriteria);
     }
 }

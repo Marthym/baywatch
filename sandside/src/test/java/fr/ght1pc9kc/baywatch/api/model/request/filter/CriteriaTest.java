@@ -56,7 +56,7 @@ class CriteriaTest {
                     Criteria.property("leia").eq("organa")
             );
             Assertions.assertThat(actual).isInstanceOf(AndOperation.class);
-            Assertions.assertThat(((AndOperation) actual).andCriteria).containsOnly(
+            Assertions.assertThat(((AndOperation) actual).andCriteria).containsExactly(
                     Criteria.property("obiwan").eq("kenobi"),
                     Criteria.property("luke").eq("skywalker"),
                     Criteria.property("leia").eq("organa")
@@ -78,7 +78,7 @@ class CriteriaTest {
                     Criteria.property("leia").eq("organa")
             );
             Assertions.assertThat(actual).isInstanceOf(OrOperation.class);
-            Assertions.assertThat(((OrOperation) actual).orCriteria).containsOnly(
+            Assertions.assertThat(((OrOperation) actual).orCriteria).containsExactly(
                     Criteria.property("obiwan").eq("kenobi"),
                     Criteria.property("luke").eq("skywalker"),
                     Criteria.property("leia").eq("organa")
