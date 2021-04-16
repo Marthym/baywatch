@@ -65,6 +65,7 @@ VALUES ('076b66c63e571578374ffa8e3197554cd185c6911658747e52373358e938b5cf', 'Tes
         'https://www.reddit.com/r/programming/top/.rss', null);
 
 INSERT INTO USERS
-VALUES ('baywatch', 'baywatch', 'baywatch@ght1pc9kc.fr', 'System', RANDOM_UUID(), 'SYSTEM'),
+VALUES
+--        ('baywatch', 'baywatch', 'baywatch@ght1pc9kc.fr', 'System', RANDOM_UUID(), 'SYSTEM'),
        ('fcombes', 'fcombes', 'marthym@gmail.com', 'Fred',
         '$2a$10$uuFG89ZGXcFMKkj3naDhK.e/rjE1SQhh6GvOoimTlyrRfnT5lHlEO', 'ADMIN');

@@ -72,11 +72,16 @@ public interface BaywatchMapper {
 
     default News recordToNews(Record record) {
         RawNews raw = recordToRawNews(record);
-        State state = State.of(record.get(NEWS_USER_STATE.NURS_STATE));
+        State state = (record.indexOf(NEWS_USER_STATE.NURS_STATE) >= 0)
+                ? State.of(record.get(NEWS_USER_STATE.NURS_STATE))
+                : State.NONE;
+        String feedId = (record.indexOf(NEWS_FEEDS.NEFE_FEED_ID) >= 0)
+                ? record.get(NEWS_FEEDS.NEFE_FEED_ID)
+                : null;
         return News.builder()
                 .raw(raw)
                 .state(state)
-                .feedId(record.get(NEWS_FEEDS.NEFE_FEED_ID))
+                .feedId(feedId)
                 .build();
     }
 

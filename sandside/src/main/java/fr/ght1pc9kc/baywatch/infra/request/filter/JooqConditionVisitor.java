@@ -6,6 +6,7 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -14,6 +15,10 @@ import java.util.function.Function;
 public class JooqConditionVisitor implements Criteria.Visitor<Condition> {
 
     private final Function<String, Field<?>> propertiesSupplier;
+
+    public JooqConditionVisitor(Map<String, Field<?>> properties) {
+        this.propertiesSupplier = properties::get;
+    }
 
     @Override
     public Condition visitNoCriteria(NoCriterion none) {

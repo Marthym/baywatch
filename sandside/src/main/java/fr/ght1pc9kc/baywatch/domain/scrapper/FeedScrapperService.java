@@ -95,7 +95,7 @@ public final class FeedScrapperService implements Runnable {
         stopWatch.start();
         log.info("Start scrapping ...");
         Mono<Set<String>> alreadyHave = newsRepository.list()
-                .map(RawNews::getId)
+                .map(News::getId)
                 .collect(Collectors.toUnmodifiableSet())
                 .cache();
 

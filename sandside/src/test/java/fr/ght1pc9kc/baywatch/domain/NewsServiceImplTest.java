@@ -59,8 +59,6 @@ class NewsServiceImplTest {
     void setUp() {
         NewsPersistencePort mockNewsPersistence = mock(NewsPersistencePort.class);
         when(mockNewsPersistence.list(any())).thenReturn(Flux.just(
-                SAMPLE_NEWS_01.getRaw(), SAMPLE_NEWS_02.getRaw()));
-        when(mockNewsPersistence.userList(any())).thenReturn(Flux.just(
                 SAMPLE_NEWS_01, SAMPLE_NEWS_02));
         mockAuthFacade = mock(AuthenticationFacade.class);
 
@@ -74,7 +72,7 @@ class NewsServiceImplTest {
 
         Assertions.assertThat(actual).isNotNull();
         Assertions.assertThat(actual.getRaw()).isEqualTo(SAMPLE_NEWS_01.getRaw());
-        Assertions.assertThat(actual.getState()).isEqualTo(State.NONE);
+        Assertions.assertThat(actual.getState()).isEqualTo(SAMPLE_NEWS_01.getState());
     }
 
     @Test
@@ -120,7 +118,7 @@ class NewsServiceImplTest {
 
         Assertions.assertThat(actual).isNotNull();
         Assertions.assertThat(actual.getRaw()).isEqualTo(SAMPLE_NEWS_01.getRaw());
-        Assertions.assertThat(actual.getState()).isEqualTo(State.NONE);
+        Assertions.assertThat(actual.getState()).isEqualTo(SAMPLE_NEWS_01.getState());
     }
 
     @Test

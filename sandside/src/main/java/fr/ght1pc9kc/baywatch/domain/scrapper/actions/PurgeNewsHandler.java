@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.actions;
 
+import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
@@ -36,7 +37,7 @@ public class PurgeNewsHandler implements ScrappingHandler {
         LocalDateTime maxPublicationPasDate = LocalDateTime.now(clock).minus(Period.ofMonths(3));
         Criteria criteria = Criteria.property(PUBLICATION).lt(maxPublicationPasDate);
         return newsPersistence.list(PageRequest.all(criteria))
-                .map(RawNews::getId)
+                .map(News::getId)
                 .collectList()
                 .flatMapMany(this::keepStaredNewsIds)
                 .buffer(DELETE_BUFFER_SIZE)

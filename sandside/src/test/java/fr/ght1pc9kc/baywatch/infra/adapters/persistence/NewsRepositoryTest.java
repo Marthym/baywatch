@@ -107,9 +107,10 @@ class NewsRepositoryTest {
     @Test
     void should_get_raw_news(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
-        RawNews actual = tested.get("0479255273c08312a67145eec4852293345555eb1145ce0b4243c8314a85ba0c").block();
+        News actual = tested.get("0479255273c08312a67145eec4852293345555eb1145ce0b4243c8314a85ba0c").block();
 
-        assertThat(actual).isEqualTo(RawNews.builder()
+        assertThat(actual).isNotNull();
+        assertThat(actual.getRaw()).isEqualTo(RawNews.builder()
                 .id("0479255273c08312a67145eec4852293345555eb1145ce0b4243c8314a85ba0c")
                 .title("ght1pc9kc.fr 005")
                 .link(URI.create("https://blog.ght1pc9kc.fr/005"))
@@ -120,7 +121,7 @@ class NewsRepositoryTest {
     @Test
     void should_list_rawnews(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
-        List<RawNews> actuals = tested.list().collectList().block();
+        List<News> actuals = tested.list(PageRequest.all()).collectList().block();
 
         assertThat(actuals).hasSize(50);
     }
@@ -128,7 +129,7 @@ class NewsRepositoryTest {
     @Test
     void should_list_news(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
-        List<News> actual = tested.userList().collectList().block();
+        List<News> actual = tested.list(PageRequest.all()).collectList().block();
         assertThat(actual).hasSize(50);
         assertThat(actual).extracting(News::getId).startsWith(
                 "24abc4ad15dc0ab7824f0192b78cc786a7e57f10c0a50fc0721ac1cc3cd162fc",
@@ -147,7 +148,7 @@ class NewsRepositoryTest {
                 .sort(Sort.of())
                 .filter(Criteria.property("shared").eq(true))
                 .build();
-        List<News> actual = tested.userList(pageRequest).collectList().block();
+        List<News> actual = tested.list(pageRequest).collectList().block();
         assertThat(actual).allMatch(News::isShared);
     }
 
@@ -162,7 +163,7 @@ class NewsRepositoryTest {
         NewsUserStateRecord expectedState = NewsRecordSamples.NewsUserStateSample.SAMPLE.records().stream()
                 .filter(us -> us.getNursNewsId().equals(expected.getNewsId()))
                 .findAny().orElseThrow();
-        News actual = tested.userGet(expected.getNewsId()).block();
+        News actual = tested.get(expected.getNewsId()).block();
 
         assertThat(actual).isNotNull();
         assertThat(actual.getLink().toString()).isEqualTo(expected.getNewsLink());

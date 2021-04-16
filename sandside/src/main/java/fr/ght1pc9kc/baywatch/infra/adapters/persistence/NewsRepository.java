@@ -3,7 +3,6 @@ package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.api.model.News;
-import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
@@ -41,63 +40,21 @@ import static fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers.NEWS_PROPERT
 @AllArgsConstructor
 public class NewsRepository implements NewsPersistencePort {
     public static final JooqConditionVisitor NEWS_CONDITION_VISITOR =
-            new JooqConditionVisitor(NEWS_PROPERTIES_MAPPING::get);
+            new JooqConditionVisitor(NEWS_PROPERTIES_MAPPING);
     public static final JooqConditionVisitor STATE_CONDITION_VISITOR =
-            new JooqConditionVisitor(PropertiesMappers.STATE_PROPERTIES_MAPPING::get);
+            new JooqConditionVisitor(PropertiesMappers.STATE_PROPERTIES_MAPPING);
 
     private final Scheduler databaseScheduler;
     private final DSLContext dsl;
     private final BaywatchMapper baywatchMapper;
 
     @Override
-    public Mono<News> userGet(String id) {
-        return userList(PageRequest.one(Criteria.property(ID).eq(id))).next();
-    }
-
-    @Override
-    public Mono<RawNews> get(String id) {
+    public Mono<News> get(String id) {
         return list(PageRequest.one(Criteria.property(ID).eq(id))).next();
     }
 
     @Override
-    public Mono<Void> persist(Collection<News> toCreate) {
-        List<NewsRecord> records = toCreate.stream()
-                .map(baywatchMapper::newsToNewsRecord)
-                .collect(Collectors.toList());
-
-        List<NewsFeedsRecord> newsFeedsRecords = toCreate.stream()
-                .map(baywatchMapper::newsToNewsFeedsRecord)
-                .collect(Collectors.toList());
-
-        return Mono.fromCallable(() ->
-                dsl.loadInto(NEWS)
-                        .batchAll()
-                        .onDuplicateKeyIgnore()
-                        .onErrorIgnore()
-                        .loadRecords(records)
-                        .fieldsCorresponding()
-                        .execute())
-                .subscribeOn(databaseScheduler)
-                .map(loader -> {
-                    log.info("Load {} News with {} error(s) and {} ignored",
-                            loader.processed(), loader.errors().size(), loader.ignored());
-                    return loader;
-                })
-                .map(Exceptions.wrap().function(x ->
-                        dsl.loadInto(NEWS_FEEDS)
-                                .batchAll()
-                                .onDuplicateKeyIgnore()
-                                .onErrorIgnore()
-                                .loadRecords(newsFeedsRecords)
-                                .fieldsCorresponding()
-                                .execute()))
-                .subscribeOn(databaseScheduler)
-                .then();
-
-    }
-
-    @Override
-    public Flux<News> userList(PageRequest pageRequest) {
+    public Flux<News> list(PageRequest pageRequest) {
         Condition conditions = pageRequest.filter.visit(NEWS_CONDITION_VISITOR);
         PredicateSearchVisitor<News> predicateSearchVisitor = new PredicateSearchVisitor<>();
 
@@ -125,27 +82,38 @@ public class NewsRepository implements NewsPersistencePort {
     }
 
     @Override
-    public Flux<RawNews> list(PageRequest pageRequest) {
-        Condition conditions = pageRequest.filter.visit(NEWS_CONDITION_VISITOR);
-        PredicateSearchVisitor<RawNews> predicateSearchVisitor = new PredicateSearchVisitor<>();
+    public Mono<Void> persist(Collection<News> toCreate) {
+        List<NewsRecord> records = toCreate.stream()
+                .map(baywatchMapper::newsToNewsRecord)
+                .collect(Collectors.toList());
 
-        final Select<NewsRecord> query = JooqPagination.apply(pageRequest, NEWS_PROPERTIES_MAPPING, dsl
-                .selectFrom(NEWS).where(conditions)
-        );
+        List<NewsFeedsRecord> newsFeedsRecords = toCreate.stream()
+                .map(baywatchMapper::newsToNewsFeedsRecord)
+                .collect(Collectors.toList());
 
-        return Flux.<NewsRecord>create(sink -> {
-            Cursor<NewsRecord> cursor = query.fetchLazy();
-            sink.onRequest(n -> {
-                int count = Long.valueOf(n).intValue();
-                Result<NewsRecord> rs = cursor.fetchNext(count);
-                rs.forEach(sink::next);
-                if (rs.size() < count) {
-                    sink.complete();
-                }
-            });
-        }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
-                .map(baywatchMapper::recordToRawNews)
-                .filter(pageRequest.filter.visit(predicateSearchVisitor));
+        return Mono.fromCallable(() ->
+                dsl.loadInto(NEWS).batchAll()
+                        .onDuplicateKeyIgnore()
+                        .onErrorIgnore()
+                        .loadRecords(records)
+                        .fieldsCorresponding()
+                        .execute())
+                .subscribeOn(databaseScheduler)
+                .map(loader -> {
+                    log.info("Load {} News with {} error(s) and {} ignored",
+                            loader.processed(), loader.errors().size(), loader.ignored());
+                    return loader;
+                })
+                .map(Exceptions.wrap().function(x ->
+                        dsl.loadInto(NEWS_FEEDS).batchAll()
+                                .onDuplicateKeyIgnore()
+                                .onErrorIgnore()
+                                .loadRecords(newsFeedsRecords)
+                                .fieldsCorresponding()
+                                .execute()))
+                .subscribeOn(databaseScheduler)
+                .then();
+
     }
 
     @Override

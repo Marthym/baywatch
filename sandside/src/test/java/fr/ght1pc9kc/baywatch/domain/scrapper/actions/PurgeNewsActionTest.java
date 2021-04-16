@@ -1,17 +1,18 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.actions;
 
 import fr.ght1pc9kc.baywatch.api.model.Flags;
-import fr.ght1pc9kc.baywatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
+import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -24,9 +25,11 @@ import static org.mockito.Mockito.*;
 
 class PurgeNewsActionTest {
 
-    private PurgeNewsHandler tested;
+    private static final BaywatchMapper mapper = Mappers.getMapper(BaywatchMapper.class);
 
+    private PurgeNewsHandler tested;
     private NewsPersistencePort newsPersistenceMock;
+
 
     @BeforeEach
     void setUp() {
@@ -50,10 +53,10 @@ class PurgeNewsActionTest {
         )));
     }
 
-    private Flux<RawNews> testDataForPersistenceList() {
+    private Flux<News> testDataForPersistenceList() {
         return Flux.fromStream(
                 NewsRecordSamples.SAMPLE.records().subList(0, 5).stream()
-                        .map(r -> RawNews.builder().id(r.getNewsId()).link(URI.create(r.getNewsLink())).build())
+                        .map(mapper::recordToNews)
         );
     }
 
