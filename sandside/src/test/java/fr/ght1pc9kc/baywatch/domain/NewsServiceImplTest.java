@@ -49,6 +49,7 @@ class NewsServiceImplTest {
             .login("okenobi")
             .name("Obiwan Kenobi")
             .mail("okenobi@jedi.light")
+            .role(Role.USER)
             .build();
 
     private NewsService tested;

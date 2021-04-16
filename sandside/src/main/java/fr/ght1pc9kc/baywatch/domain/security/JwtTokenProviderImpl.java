@@ -6,6 +6,7 @@ import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import fr.ght1pc9kc.baywatch.api.model.BaywatchAuthentication;
+import fr.ght1pc9kc.baywatch.api.model.Role;
 import fr.ght1pc9kc.baywatch.api.model.User;
 import fr.ght1pc9kc.baywatch.domain.exceptions.SecurityException;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
@@ -15,10 +16,7 @@ import java.text.ParseException;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.function.Predicate.not;
@@ -39,7 +37,9 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
 
     @Override
     public String createToken(User user, Collection<String> authorities) {
-        String auths = String.join(",", authorities);
+        List<String> auth = new ArrayList<>(authorities);
+        auth.add(user.role.authority());
+        String auths = String.join(",", auth);
 
         try {
             JWSSigner signer = new MACSigner(secretKey);
@@ -50,10 +50,10 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
                     .issuer("baywatch/sandside")
                     .issueTime(Date.from(now))
                     .expirationTime(Date.from(now.plus(validity)))
-                    .claim(AUTHORITIES_KEY, auths)
                     .claim("login", user.login)
                     .claim("name", user.name)
                     .claim("mail", user.mail)
+                    .claim(AUTHORITIES_KEY, auths)
                     .build();
             SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
             signedJWT.sign(signer);
@@ -74,17 +74,23 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
                 throw new SecurityException("Invalid Token signature !");
             }
             JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
+
+            List<String> authorities = Arrays.stream(claims.getStringClaim(AUTHORITIES_KEY).split(","))
+                    .map(String::trim)
+                    .filter(not(String::isBlank))
+                    .collect(Collectors.toList());
+
+            Role role = Arrays.stream(Role.values())
+                    .filter(r -> authorities.contains(r.authority()))
+                    .findAny().orElse(Role.ANONYMOUS);
+
             User user = User.builder()
                     .id(claims.getSubject())
                     .login(claims.getStringClaim("login"))
                     .name(claims.getStringClaim("name"))
                     .mail(claims.getStringClaim("mail"))
+                    .role(role)
                     .build();
-
-            List<String> authorities = Arrays.stream(claims.getStringClaim(AUTHORITIES_KEY).split(","))
-                    .map(String::trim)
-                    .filter(not(String::isBlank))
-                    .collect(Collectors.toUnmodifiableList());
 
             return new BaywatchAuthentication(user, token, authorities);
         } catch (ParseException | JOSEException e) {

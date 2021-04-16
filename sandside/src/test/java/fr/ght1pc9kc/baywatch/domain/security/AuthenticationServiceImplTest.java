@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.domain.security;
 
 import fr.ght1pc9kc.baywatch.api.UserService;
 import fr.ght1pc9kc.baywatch.api.model.BaywatchAuthentication;
+import fr.ght1pc9kc.baywatch.api.model.Role;
 import fr.ght1pc9kc.baywatch.api.model.User;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
 import org.assertj.core.api.Assertions;
@@ -25,6 +26,7 @@ class AuthenticationServiceImplTest {
         User user = User.builder()
                 .id("42")
                 .login("okenobi")
+                .role(Role.USER)
                 .build();
         tokenProviderMock = spy(new JwtTokenProvider() {
             @Override
