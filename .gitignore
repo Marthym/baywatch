@@ -17,6 +17,7 @@ target/
 *.iws
 *.iml
 *.ipr
+*.private.env.json
 
 ### VS Code ###
 .vscode/
