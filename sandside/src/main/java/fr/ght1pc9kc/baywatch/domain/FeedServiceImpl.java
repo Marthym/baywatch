@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.domain;
 
 import fr.ght1pc9kc.baywatch.api.FeedService;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthenticatedUser;
@@ -36,6 +37,12 @@ public class FeedServiceImpl implements FeedService {
                 .map(u -> pageRequest.and(Criteria.property("userId").eq(u.id)))
                 .onErrorResume(UnauthenticatedUser.class, (e) -> Mono.just(pageRequest))
                 .flatMapMany(feedRepository::list);
+    }
+
+    @Override
+    public Flux<RawFeed> raw(PageRequest pageRequest) {
+        return feedRepository.list(pageRequest)
+                .map(Feed::getRaw);
     }
 
     @Override

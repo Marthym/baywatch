@@ -57,7 +57,7 @@ public class DeleteOrphanFeedHandler implements ScrappingHandler {
                 .doOnSuccess(count -> log.debug("{} Feed(s) deleted.", count))
                 .then();
 
-        return feedService.list(PageRequest.all(Criteria.property(FEED_ID).isNull()))
+        return feedService.raw(PageRequest.all(Criteria.property(FEED_ID).isNull()))
                 .doOnNext(feed -> feeds.tryEmitNext(feed.getId()))
                 .doOnComplete(feeds::tryEmitComplete)
                 .flatMap(feed -> newsService.list(PageRequest.all(Criteria.property(FEED_ID).eq(feed.getId()))))

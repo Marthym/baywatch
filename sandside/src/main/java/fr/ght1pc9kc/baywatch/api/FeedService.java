@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.api;
 
 import fr.ght1pc9kc.baywatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -13,6 +14,14 @@ public interface FeedService {
     Flux<Feed> list();
 
     Flux<Feed> list(PageRequest pageRequest);
+
+    /**
+     * List {@link Feed} independently of the {@link fr.ght1pc9kc.baywatch.api.model.User} or any other entity.
+     *
+     * @param pageRequest The query parameters
+     * @return The {@link RawFeed} version of the {@link Feed}
+     */
+    Flux<RawFeed> raw(PageRequest pageRequest);
 
     Mono<Void> persist(Collection<Feed> toPersist);
 
