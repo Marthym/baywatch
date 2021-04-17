@@ -7,7 +7,6 @@ import fr.ght1pc9kc.baywatch.domain.exceptions.BadCriteriaFilter;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.infra.model.FeedForm;
 import fr.ght1pc9kc.baywatch.infra.request.PageRequestFormatter;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +19,7 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -60,5 +60,20 @@ public class FeedController {
     public Mono<Feed> unsubscribe(String feedId) {
         return feedService.get(feedId)
                 .flatMap(feed -> feedService.delete(Collections.singleton(feedId)).thenReturn(feed));
+    }
+
+    @PostMapping("/import")
+    public Flux<Feed> importFeeds(@RequestBody @Valid Flux<FeedForm> feedForms) {
+        return feedForms.map(form -> {
+            URI url = URI.create(form.url);
+            return Feed.builder()
+                    .raw(RawFeed.builder()
+                            .id(Hasher.sha3(form.url))
+                            .url(url)
+                            .name(Optional.ofNullable(form.name).orElseGet(url::getHost))
+                            .build())
+                    .build();
+        }).collectList()
+                .flatMapMany(feeds -> feedService.persist(feeds).thenMany(Flux.fromIterable(feeds)));
     }
 }

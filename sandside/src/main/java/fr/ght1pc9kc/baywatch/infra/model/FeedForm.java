@@ -7,6 +7,6 @@ import javax.validation.constraints.NotBlank;
 
 @Value
 public class FeedForm {
-    public @NotBlank String name;
+    public String name;
     public @NotBlank @URL String url;
 }
