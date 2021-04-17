@@ -1,15 +1,12 @@
 package fr.ght1pc9kc.baywatch.infra.mappers;
 
 import fr.ght1pc9kc.baywatch.api.model.*;
-import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.*;
 import org.jooq.Record;
 import org.jooq.tools.StringUtils;
-import org.mapstruct.InheritInverseConfiguration;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.*;
 
 import java.net.URI;
 import java.time.Instant;
@@ -118,6 +115,7 @@ public interface BaywatchMapper {
     FeedsRecord feedToFeedsRecord(Feed feed);
 
     @Mapping(target = "feusFeedId", source = "raw.id")
-    @Mapping(target = "feusTags", expression = "java( String.join(\",\", feed.getTags()) )")
+    @Mapping(target = "feusTags",
+            expression = "java( (feed.getTags() != null)?String.join(\",\", feed.getTags()):null )")
     FeedsUsersRecord feedToFeedsUsersRecord(Feed feed);
 }

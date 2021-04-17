@@ -1,17 +1,10 @@
 package fr.ght1pc9kc.baywatch.infra.security.config;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
-import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
-import fr.ght1pc9kc.baywatch.infra.config.jackson.NewsMixin;
 import fr.ght1pc9kc.baywatch.infra.security.JwtTokenAuthenticationFilter;
 import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,19 +50,6 @@ public class SecurityConfiguration {
                 .and()
 
                 .build();
-    }
-
-    @Bean
-    public Jackson2ObjectMapperBuilderCustomizer jacksonMapperCustomizer() {
-        return builder -> {
-            log.debug("Configure Jackson");
-            builder.findModulesViaServiceLoader(true);
-            builder.featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-            builder.featuresToDisable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-            builder.filters(new SimpleFilterProvider().setFailOnUnknownId(false));
-            builder.serializationInclusion(JsonInclude.Include.NON_NULL);
-            builder.mixIn(News.class, NewsMixin.class);
-        };
     }
 
     @Bean
