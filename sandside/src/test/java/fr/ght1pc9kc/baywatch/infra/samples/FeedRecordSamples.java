@@ -2,12 +2,15 @@ package fr.ght1pc9kc.baywatch.infra.samples;
 
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.irun.testy.jooq.model.RelationalDataSet;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
+import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 
 public class FeedRecordSamples implements RelationalDataSet<FeedsRecord> {
     public static final FeedRecordSamples SAMPLE = new FeedRecordSamples();
@@ -30,5 +33,20 @@ public class FeedRecordSamples implements RelationalDataSet<FeedsRecord> {
     @Override
     public List<FeedsRecord> records() {
         return FEEDS_RECORDS;
+    }
+
+    public static final class FeedUserRecordSamples implements RelationalDataSet<FeedsUsersRecord> {
+        public static final FeedUserRecordSamples SAMPLE = new FeedUserRecordSamples();
+
+        public static final List<FeedsUsersRecord> FEEDS_USERS_RECORDS = FEEDS_RECORDS.stream()
+                .map(fr -> FEEDS_USERS.newRecord()
+                        .setFeusFeedId(fr.getFeedId())
+                        .setFeusUserId(UsersRecordSamples.OKENOBI.getUserId()))
+                .collect(Collectors.toUnmodifiableList());
+
+        @Override
+        public List<FeedsUsersRecord> records() {
+            return FEEDS_USERS_RECORDS;
+        }
     }
 }

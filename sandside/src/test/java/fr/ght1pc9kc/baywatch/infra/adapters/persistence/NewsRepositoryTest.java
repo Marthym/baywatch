@@ -54,6 +54,7 @@ class NewsRepositoryTest {
             .addDataset(NewsRecordSamples.SAMPLE)
             .addDataset(NewsRecordSamples.NewsFeedsRecordSample.SAMPLE)
             .addDataset(NewsRecordSamples.NewsUserStateSample.SAMPLE)
+            .addDataset(FeedRecordSamples.FeedUserRecordSamples.SAMPLE)
             .build();
     private static final String NEWS_ID = UUID.randomUUID().toString();
     @RegisterExtension

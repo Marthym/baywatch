@@ -5,6 +5,7 @@ import fr.ght1pc9kc.baywatch.api.AuthenticationService;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.scrapper.ScrappingHandler;
 import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;

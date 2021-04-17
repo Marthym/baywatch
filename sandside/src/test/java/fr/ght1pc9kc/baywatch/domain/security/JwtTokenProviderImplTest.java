@@ -2,9 +2,9 @@ package fr.ght1pc9kc.baywatch.domain.security;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.ght1pc9kc.baywatch.api.model.BaywatchAuthentication;
-import fr.ght1pc9kc.baywatch.api.model.Role;
-import fr.ght1pc9kc.baywatch.api.model.User;
+import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
+import fr.ght1pc9kc.baywatch.api.security.model.Role;
+import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.exceptions.SecurityException;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
 import org.assertj.core.api.Assertions;

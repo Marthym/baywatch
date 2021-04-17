@@ -1,6 +1,8 @@
 package fr.ght1pc9kc.baywatch.infra.mappers;
 
 import fr.ght1pc9kc.baywatch.api.model.*;
+import fr.ght1pc9kc.baywatch.api.model.State;
+import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.*;
 import org.jooq.Record;

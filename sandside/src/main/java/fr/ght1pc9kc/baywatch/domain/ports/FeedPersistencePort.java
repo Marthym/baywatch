@@ -20,7 +20,8 @@ public interface FeedPersistencePort {
 
     /**
      * Delete {@link Feed} for all the users. Only the link between {@link Feed} and users
-     * was deleted. The {@link Feed} will be deleted at next purge time.
+     * was deleted. Use {@link fr.ght1pc9kc.baywatch.domain.admin.ports.FeedAdministrationPort} to delete
+     * {@link Feed} completely.
      *
      * @param toDelete The feed IDs to remove
      * @return The number of feed effectively deleted
@@ -33,7 +34,7 @@ public interface FeedPersistencePort {
      * be deleted at next purge time.
      *
      * @param toDelete The feed IDs to remove
-     * @param userId The ID of the concerned user
+     * @param userId   The ID of the concerned user
      * @return The number of feed effectively deleted
      */
     Mono<Integer> delete(Collection<String> toDelete, String userId);

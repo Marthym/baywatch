@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.actions;
 
-import fr.ght1pc9kc.baywatch.api.FeedService;
 import fr.ght1pc9kc.baywatch.api.NewsService;
+import fr.ght1pc9kc.baywatch.api.admin.FeedAdminService;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.domain.samples.FeedSamples;
 import fr.ght1pc9kc.baywatch.domain.samples.NewsSamples;
@@ -21,8 +21,8 @@ class DeleteOrphanFeedHandlerTest {
 
     @BeforeEach
     void setUp() {
-        FeedService feedServiceMock = mock(FeedService.class);
-        when(feedServiceMock.raw(any())).thenReturn(Flux.fromIterable(FeedSamples.SAMPLES).map(Feed::getRaw));
+        FeedAdminService feedServiceMock = mock(FeedAdminService.class);
+        when(feedServiceMock.list(any())).thenReturn(Flux.fromIterable(FeedSamples.SAMPLES).map(Feed::getRaw));
         when(feedServiceMock.delete(anyCollection())).thenReturn(Mono.just(2));
 
         NewsService newsServiceMock = mock(NewsService.class);

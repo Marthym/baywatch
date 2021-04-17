@@ -6,8 +6,6 @@ import lombok.Value;
 import lombok.With;
 import lombok.experimental.Delegate;
 
-import java.net.URI;
-
 /**
  * The News element customized with state and {@link RawFeed#id}
  */

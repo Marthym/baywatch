@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.api;
 
-import fr.ght1pc9kc.baywatch.api.model.User;
+import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

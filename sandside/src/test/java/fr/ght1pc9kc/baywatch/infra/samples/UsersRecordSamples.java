@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.samples;
 
-import fr.ght1pc9kc.baywatch.api.model.Role;
+import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.Users;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;

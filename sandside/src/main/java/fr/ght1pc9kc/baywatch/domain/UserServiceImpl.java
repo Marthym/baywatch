@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.domain;
 
 import fr.ght1pc9kc.baywatch.api.UserService;
-import fr.ght1pc9kc.baywatch.api.model.User;
+import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.domain.ports.UserPersistencePort;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
-import fr.ght1pc9kc.baywatch.api.model.User;
+import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.domain.ports.UserPersistencePort;

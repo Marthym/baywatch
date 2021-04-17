@@ -2,7 +2,7 @@ package fr.ght1pc9kc.baywatch.domain;
 
 import fr.ght1pc9kc.baywatch.api.FeedService;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.api.model.User;
+import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;

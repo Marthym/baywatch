@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.api.model.User;
+import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;

@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.api;
 
-import fr.ght1pc9kc.baywatch.api.model.BaywatchAuthentication;
+import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 

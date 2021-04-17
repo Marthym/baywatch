@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.api;
+package fr.ght1pc9kc.baywatch.api.admin;
 
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.RawFeed;
@@ -9,12 +9,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.Collection;
 
-public interface FeedService {
-    Mono<Feed> get(String id);
+public interface FeedAdminService {
+    Mono<RawFeed> get(String id);
 
-    Flux<Feed> list();
-
-    Flux<Feed> list(PageRequest pageRequest);
+    Flux<RawFeed> list();
 
     /**
      * List {@link Feed} independently of the {@link User} or any other entity.
@@ -22,9 +20,7 @@ public interface FeedService {
      * @param pageRequest The query parameters
      * @return The {@link RawFeed} version of the {@link Feed}
      */
-    Flux<RawFeed> raw(PageRequest pageRequest);
-
-    Mono<Void> persist(Collection<Feed> toPersist);
+    Flux<RawFeed> list(PageRequest pageRequest);
 
     Mono<Integer> delete(Collection<String> toDelete);
 }

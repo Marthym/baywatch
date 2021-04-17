@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.security;
 
-import fr.ght1pc9kc.baywatch.api.model.User;
+import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.exceptions.SecurityException;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;

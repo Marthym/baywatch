@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.security;
 
-import fr.ght1pc9kc.baywatch.api.model.BaywatchAuthentication;
+import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

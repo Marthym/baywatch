@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.actions;
 
-import fr.ght1pc9kc.baywatch.api.FeedService;
 import fr.ght1pc9kc.baywatch.api.NewsService;
+import fr.ght1pc9kc.baywatch.api.admin.FeedAdminService;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.api.scrapper.ScrappingHandler;
@@ -26,7 +26,7 @@ public class DeleteOrphanFeedHandler implements ScrappingHandler {
 
     private static final int BATCH_BUFFER_SIZE = 500;
 
-    private final FeedService feedService;
+    private final FeedAdminService feedAdminService;
     private final NewsService newsService;
 
     @Override
@@ -52,12 +52,12 @@ public class DeleteOrphanFeedHandler implements ScrappingHandler {
 
         Mono<Void> deletedFeeds = feeds.asFlux()
                 .buffer(BATCH_BUFFER_SIZE)
-                .flatMap(feedService::delete)
+                .flatMap(feedAdminService::delete)
                 .reduce(0, Integer::sum)
                 .doOnSuccess(count -> log.debug("{} Feed(s) deleted.", count))
                 .then();
 
-        return feedService.raw(PageRequest.all(Criteria.property(FEED_ID).isNull()))
+        return feedAdminService.list(PageRequest.all(Criteria.property(FEED_ID).isNull()))
                 .doOnNext(feed -> feeds.tryEmitNext(feed.getId()))
                 .doOnComplete(feeds::tryEmitComplete)
                 .flatMap(feed -> newsService.list(PageRequest.all(Criteria.property(FEED_ID).eq(feed.getId()))))
@@ -75,7 +75,6 @@ public class DeleteOrphanFeedHandler implements ScrappingHandler {
                 .then(finalizeFlux)
                 .then(deletedFeeds)
                 .doOnTerminate(() -> log.debug("DeleteOrphanFeedHandler terminated."));
-
     }
 
 }

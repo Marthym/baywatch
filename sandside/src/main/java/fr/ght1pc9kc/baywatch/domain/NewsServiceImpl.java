@@ -2,7 +2,7 @@ package fr.ght1pc9kc.baywatch.domain;
 
 import fr.ght1pc9kc.baywatch.api.NewsService;
 import fr.ght1pc9kc.baywatch.api.model.News;
-import fr.ght1pc9kc.baywatch.api.model.Role;
+import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.domain.exceptions.BadCriteriaFilter;
