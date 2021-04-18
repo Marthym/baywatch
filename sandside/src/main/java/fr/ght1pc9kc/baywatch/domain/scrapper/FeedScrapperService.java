@@ -18,6 +18,7 @@ import org.jetbrains.annotations.VisibleForTesting;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.util.StopWatch;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -25,6 +26,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
+import reactor.netty.http.client.HttpClient;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -52,7 +54,12 @@ public final class FeedScrapperService implements Runnable {
             new CustomizableThreadFactory("scrapSched-"));
     private final Scheduler scrapperScheduler =
             Schedulers.newBoundedElastic(5, Integer.MAX_VALUE, "scrapper");
-    private final WebClient http = WebClient.create();
+    private final WebClient http = WebClient.builder()
+            .clientConnector(new ReactorClientHttpConnector(
+                    HttpClient.create()
+                            .followRedirect(true)
+                            .compress(true)
+            )).build();
     private final Clock clock = Clock.systemUTC();
     private final Semaphore lock = new Semaphore(1);
 
