@@ -6,7 +6,7 @@ import fr.ght1pc9kc.baywatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.domain.exceptions.BadCriteriaFilter;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.infra.model.FeedForm;
-import fr.ght1pc9kc.baywatch.infra.request.PageRequestFormatter;
+import fr.ght1pc9kc.juery.basic.PageRequestFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

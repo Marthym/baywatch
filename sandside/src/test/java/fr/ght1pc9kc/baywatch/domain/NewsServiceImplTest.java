@@ -1,16 +1,18 @@
 package fr.ght1pc9kc.baywatch.domain;
 
 import fr.ght1pc9kc.baywatch.api.NewsService;
-import fr.ght1pc9kc.baywatch.api.model.*;
-import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
-import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
-import fr.ght1pc9kc.baywatch.api.security.model.Role;
+import fr.ght1pc9kc.baywatch.api.model.Flags;
+import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.State;
+import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.exceptions.BadCriteriaFilter;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
-import fr.ght1pc9kc.baywatch.infra.request.filter.ListPropertiesCriteriaVisitor;
+import fr.ght1pc9kc.juery.api.Criteria;
+import fr.ght1pc9kc.juery.api.PageRequest;
+import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -2,15 +2,15 @@ package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
-import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
-import fr.ght1pc9kc.baywatch.infra.request.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.baywatch.infra.request.filter.PredicateSearchVisitor;
+import fr.ght1pc9kc.juery.api.Criteria;
+import fr.ght1pc9kc.juery.api.PageRequest;
+import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.*;

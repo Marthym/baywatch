@@ -1,11 +1,11 @@
 package fr.ght1pc9kc.baywatch.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.api.UserService;
-import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
-import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.domain.UserServiceImpl;
 import fr.ght1pc9kc.baywatch.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.infra.security.model.BaywatchUserDetails;
+import fr.ght1pc9kc.juery.api.Criteria;
+import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.experimental.Delegate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

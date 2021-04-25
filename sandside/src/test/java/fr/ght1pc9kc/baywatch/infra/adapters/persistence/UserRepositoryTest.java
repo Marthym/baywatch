@@ -2,8 +2,6 @@ package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
-import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
-import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.Users;
 import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
@@ -11,6 +9,8 @@ import fr.ght1pc9kc.baywatch.infra.samples.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.FeedsUsersRecordSample;
 import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.UsersRecordSamples;
+import fr.ght1pc9kc.juery.api.Criteria;
+import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.irun.testy.core.extensions.ChainedExtension;
 import fr.irun.testy.jooq.WithDatabaseLoaded;
 import fr.irun.testy.jooq.WithDslContext;

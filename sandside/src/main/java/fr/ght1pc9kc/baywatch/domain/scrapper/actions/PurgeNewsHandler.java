@@ -1,11 +1,10 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.actions;
 
 import fr.ght1pc9kc.baywatch.api.model.News;
-import fr.ght1pc9kc.baywatch.api.model.RawNews;
-import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
-import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
 import fr.ght1pc9kc.baywatch.api.scrapper.ScrappingHandler;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
+import fr.ght1pc9kc.juery.api.Criteria;
+import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;

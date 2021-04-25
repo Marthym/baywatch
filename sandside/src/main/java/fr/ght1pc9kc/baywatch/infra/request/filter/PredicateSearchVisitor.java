@@ -2,7 +2,8 @@ package fr.ght1pc9kc.baywatch.infra.request.filter;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.ght1pc9kc.baywatch.api.model.request.filter.*;
+import fr.ght1pc9kc.juery.api.Criteria;
+import fr.ght1pc9kc.juery.api.filter.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
