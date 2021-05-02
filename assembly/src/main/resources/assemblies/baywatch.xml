@@ -1,0 +1,56 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+    <id>baywatch-assembly</id>
+    <formats>
+        <format>tar.bz2</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>libs</outputDirectory>
+            <useProjectArtifact>false</useProjectArtifact>
+            <unpack>false</unpack>
+            <scope>runtime</scope>
+            <excludes>
+                <exclude>fr.ght1pc9kc:sandside</exclude>
+                <exclude>fr.ght1pc9kc:seaside</exclude>
+            </excludes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <unpack>false</unpack>
+            <scope>runtime</scope>
+            <includes>
+                <include>fr.ght1pc9kc:sandside</include>
+                <include>fr.ght1pc9kc:seaside</include>
+            </includes>
+        </dependencySet>
+    </dependencySets>
+
+    <fileSets>
+<!--        <fileSet>-->
+<!--            <useDefaultExcludes>false</useDefaultExcludes>-->
+<!--            <fileMode>0644</fileMode>-->
+<!--            <directory>${project.build.directory}</directory>-->
+<!--            <excludes>-->
+<!--                <exclude>*-sources.jar</exclude>-->
+<!--            </excludes>-->
+<!--            <includes>-->
+<!--                <include>*.jar</include>-->
+<!--            </includes>-->
+<!--            <outputDirectory/>-->
+<!--        </fileSet>-->
+        <fileSet>
+            <fileMode>0755</fileMode>
+            <directory>src/shell</directory>
+            <outputDirectory/>
+        </fileSet>
+        <fileSet>
+            <fileMode>0644</fileMode>
+            <directory>src/main/resources</directory>
+            <outputDirectory/>
+        </fileSet>
+    </fileSets>
+</assembly>
