@@ -38,9 +38,9 @@ public class SecurityConfiguration {
                 .authorizeExchange()
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
                 .pathMatchers(HttpMethod.GET).permitAll()
-                .pathMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                .pathMatchers(HttpMethod.DELETE, "/api/auth/logout").authenticated()
-                .pathMatchers(HttpMethod.PUT, "/api/auth/refresh").authenticated()
+                .pathMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                .pathMatchers(HttpMethod.DELETE, "/auth/logout").authenticated()
+                .pathMatchers(HttpMethod.PUT, "/auth/refresh").authenticated()
                 .anyExchange().hasAnyRole(Role.ADMIN.name(), Role.MANAGER.name(), Role.USER.name())
 
                 .and()

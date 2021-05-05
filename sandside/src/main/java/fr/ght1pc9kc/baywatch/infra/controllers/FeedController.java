@@ -23,7 +23,7 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/feeds")
+@RequestMapping("/feeds")
 public class FeedController {
 
     private final FeedService feedService;

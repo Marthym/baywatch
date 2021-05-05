@@ -5,6 +5,8 @@ spring:
     driver-class-name: org.h2.Driver
     username: baywatch
     password: hasselhoff
+  webflux:
+    base-path: "/api"
 
 server:
   port: 8081
