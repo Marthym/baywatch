@@ -13,6 +13,21 @@
 
     <dependencies>
         <dependency>
+            <groupId>fr.ght1pc9kc</groupId>
+            <artifactId>juery-api</artifactId>
+            <version>${juery.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.ght1pc9kc</groupId>
+            <artifactId>juery-basic</artifactId>
+            <version>${juery.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.ght1pc9kc</groupId>
+            <artifactId>juery-jooq</artifactId>
+            <version>${juery.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
@@ -81,10 +96,6 @@
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -101,7 +112,7 @@
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>${jetbrains.version}</version>
-            <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
 
 
@@ -170,10 +181,10 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.springframework.boot</groupId>-->
+<!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
+<!--            </plugin>-->
             <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>

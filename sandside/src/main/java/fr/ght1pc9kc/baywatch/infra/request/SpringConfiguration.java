@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.request;
 
-import fr.ght1pc9kc.baywatch.api.model.request.filter.Criteria;
-import fr.ght1pc9kc.baywatch.infra.request.filter.ListPropertiesCriteriaVisitor;
+import fr.ght1pc9kc.juery.api.Criteria;
+import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

@@ -2,9 +2,9 @@ package fr.ght1pc9kc.baywatch.api;
 
 import fr.ght1pc9kc.baywatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.api.model.News;
-import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
+import fr.ght1pc9kc.juery.api.PageRequest;
 import org.intellij.lang.annotations.MagicConstant;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

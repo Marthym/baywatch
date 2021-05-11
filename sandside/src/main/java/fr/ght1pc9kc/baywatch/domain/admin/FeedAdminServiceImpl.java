@@ -2,12 +2,12 @@ package fr.ght1pc9kc.baywatch.domain.admin;
 
 import fr.ght1pc9kc.baywatch.api.admin.FeedAdminService;
 import fr.ght1pc9kc.baywatch.api.model.RawFeed;
-import fr.ght1pc9kc.baywatch.api.model.request.PageRequest;
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.api.security.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.domain.admin.ports.FeedAdministrationPort;
 import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
+import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

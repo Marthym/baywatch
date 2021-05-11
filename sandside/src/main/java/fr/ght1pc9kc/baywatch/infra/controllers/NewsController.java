@@ -4,7 +4,7 @@ import fr.ght1pc9kc.baywatch.api.NewsService;
 import fr.ght1pc9kc.baywatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.domain.exceptions.BadCriteriaFilter;
-import fr.ght1pc9kc.baywatch.infra.request.PageRequestFormatter;
+import fr.ght1pc9kc.juery.basic.PageRequestFormatter;
 import lombok.AllArgsConstructor;
 import org.intellij.lang.annotations.MagicConstant;
 import org.springframework.http.HttpStatus;
@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/news")
+@RequestMapping("/news")
 @AllArgsConstructor
 public class NewsController {
 

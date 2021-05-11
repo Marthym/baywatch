@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/stats")
 @RequiredArgsConstructor
 public class StatController {
     private final StatService statService;
 
-    @GetMapping("/stats")
+    @GetMapping()
     public Mono<Statistics> stats() {
         return Mono.zip(
                 statService.getUsersCount(),
