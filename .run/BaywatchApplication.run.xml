@@ -10,6 +10,9 @@
     <option name="SPRING_BOOT_MAIN_CLASS" value="fr.ght1pc9kc.baywatch.BaywatchApplication" />
     <option name="ALTERNATIVE_JRE_PATH" />
     <option name="SHORTEN_COMMAND_LINE" value="NONE" />
+    <envs>
+      <env name="BAYWATCH_HOME" value="$USER_HOME$" />
+    </envs>
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/stats")
+@RequestMapping("${baywatch.base-route}/stats")
 @RequiredArgsConstructor
 public class StatController {
     private final StatService statService;

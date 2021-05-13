@@ -5,6 +5,7 @@ import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
 import fr.ght1pc9kc.baywatch.infra.security.JwtTokenAuthenticationFilter;
 import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +29,8 @@ import org.springframework.security.web.server.context.NoOpServerSecurityContext
 public class SecurityConfiguration {
     @Bean
     SecurityWebFilterChain springSecurityFilterChain(
-            ServerHttpSecurity http, JwtTokenProvider jwtTokenProvider, SecurityParams securityParams) {
+            ServerHttpSecurity http, JwtTokenProvider jwtTokenProvider, SecurityParams securityParams,
+            @Value("${baywatch.base-route}") String baseRoute) {
         return http
                 .csrf().disable()
                 .httpBasic().disable()
@@ -38,9 +40,9 @@ public class SecurityConfiguration {
                 .authorizeExchange()
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
                 .pathMatchers(HttpMethod.GET).permitAll()
-                .pathMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                .pathMatchers(HttpMethod.DELETE, "/auth/logout").authenticated()
-                .pathMatchers(HttpMethod.PUT, "/auth/refresh").authenticated()
+                .pathMatchers(HttpMethod.POST, baseRoute + "/auth/login").permitAll()
+                .pathMatchers(HttpMethod.DELETE, baseRoute + "/auth/logout").authenticated()
+                .pathMatchers(HttpMethod.PUT, baseRoute + "/auth/refresh").authenticated()
                 .anyExchange().hasAnyRole(Role.ADMIN.name(), Role.MANAGER.name(), Role.USER.name())
 
                 .and()
