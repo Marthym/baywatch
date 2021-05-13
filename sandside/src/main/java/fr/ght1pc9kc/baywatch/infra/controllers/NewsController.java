@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/news")
+@RequestMapping("${baywatch.base-route}/news")
 @AllArgsConstructor
 public class NewsController {
 

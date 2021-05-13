@@ -1,15 +1,13 @@
 ---
 spring:
   datasource:
-    url: jdbc:h2:file:${HOME:~}/.baywatch/baywatch
+    url: jdbc:h2:file:${BAYWATCH_HOME:.}/.baywatch/baywatch
     driver-class-name: org.h2.Driver
     username: baywatch
     password: hasselhoff
-  webflux:
-    base-path: "/api"
 
 server:
-  port: 8081
+  port: ${BAYWATCH_SERVER_PORT:8081}
   error:
     include-message: ALWAYS
 
@@ -22,6 +20,7 @@ logging:
     fr.ght1pc9kc.baywatch: DEBUG
 
 baywatch:
+  base-route: /api
   security:
     cookie.name: X-TOKEN
     jwt.validity: 1h

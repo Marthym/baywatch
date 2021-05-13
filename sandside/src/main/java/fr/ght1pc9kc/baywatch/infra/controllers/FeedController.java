@@ -23,7 +23,7 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/feeds")
+@RequestMapping("${baywatch.base-route}/feeds")
 public class FeedController {
 
     private final FeedService feedService;

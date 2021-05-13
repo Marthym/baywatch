@@ -27,7 +27,7 @@ import java.util.Set;
 
 @Slf4j
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("${baywatch.base-route}/auth")
 @RequiredArgsConstructor
 public class AuthenticationController {
 
