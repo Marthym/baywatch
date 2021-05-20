@@ -27,6 +27,7 @@ class DefaultFeedParserTest {
             "feeds/reddit-prog.xml, 25",
             "feeds/sebosss.xml, 20",
             "feeds/spring-blog.xml, 20",
+            "feeds/lemonde.xml, 18",
     })
     void should_parse_default_feed(String feedFile, int expectedFeedCount) throws IOException {
         try (InputStream is = DefaultFeedParserTest.class.getResourceAsStream(feedFile)) {

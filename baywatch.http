@@ -18,3 +18,26 @@ PUT http://{{host}}/api/news/{{newId}}/unmark/shared
 
 ### /auth/logout
 DELETE http://{{host}}/api/auth/logout
+
+### Import feeds
+POST http://{{host}}//api/feeds/import
+
+[
+    { "name": "A Java Geek", "url": "https://blog.frankel.ch/feed.xml" },
+    { "name": "Clubic High Tech", "url": "https://www.clubic.com/feed/news-pro.rss" },
+    { "name": "Debian Bits", "url": "https://bits.debian.org/feeds/feed.rss" },
+    { "name": "Developpez.com", "url": "https://www.developpez.com/index/rss" },
+    { "name": "Human Coders", "url": "https://news.humancoders.com/items/feed.rss" },
+    { "name": "Journal Du Hacker", "url": "https://www.journalduhacker.net/rss" },
+    { "name": "Sebosss", "url": "https://blog.seboss666.info/feed/" },
+    { "name": "Le Monde", "url": "https://www.lemonde.fr/rss/une.xml" },
+    { "name": "Les Cast Codeurs", "url": "https://lescastcodeurs.libsyn.com/rss" },
+    { "name": "OCTO Talk!", "url": "https://blog.octo.com/feed/" },
+    { "name": "Planet Libre", "url": "https://www.planet-libre.org/feed.php?type=rss" },
+    { "name": "Presse Citron", "url": "https://feeds.feedburner.com/Pressecitron" },
+    { "name": "Reddit Top Java", "url": "https://www.reddit.com/r/java/top/.rss" },
+    { "name": "Reddit Top Programming", "url": "https://www.reddit.com/r/programming/top/.rss" },
+    { "name": "Spring", "url": "https://spring.io/blog.atom" }
+]
+
+###
