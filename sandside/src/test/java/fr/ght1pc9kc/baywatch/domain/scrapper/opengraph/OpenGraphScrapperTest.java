@@ -8,21 +8,28 @@ import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OpenGraph;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Random;
+
+import static org.mockito.Mockito.*;
 
 class OpenGraphScrapperTest {
     static final WireMockServer mockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
 
-    private final OpenGraphScrapper tested = new OpenGraphScrapper(new OpenGraphMetaReader());
+    private final OpenGraphMetaReader ogReader = spy(new OpenGraphMetaReader());
+    private final OpenGraphScrapper tested = new OpenGraphScrapper(ogReader);
 
     @BeforeAll
     static void stubAllMockServerRoute() throws IOException {
@@ -35,7 +42,16 @@ class OpenGraphScrapperTest {
                                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE)
                                     .withStatus(HttpStatus.OK.value())
                                     .withBody(htmlBody.readAllBytes())));
+
         }
+        Random rd = new Random();
+        byte[] arr = new byte[2048];
+        rd.nextBytes(arr);
+        mockServer.stubFor(WireMock.get(WireMock.urlMatching(".*/podcast\\.mp3"))
+                .willReturn(WireMock.aResponse()
+                        .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE)
+                        .withStatus(HttpStatus.OK.value())
+                        .withBody(arr)));
 
         mockServer.stubFor(WireMock.get(WireMock.urlMatching(".*/not-found\\.html"))
                 .willReturn(WireMock.notFound()));
@@ -45,6 +61,11 @@ class OpenGraphScrapperTest {
     @AfterAll
     static void afterAll() {
         mockServer.stop();
+    }
+
+    @BeforeEach
+    void setUp() {
+        reset(ogReader);
     }
 
     @Test
@@ -68,5 +89,13 @@ class OpenGraphScrapperTest {
         URI page = URI.create(mockServer.baseUrl() + "/not-found.html");
         OpenGraph actual = tested.scrap(page).block();
         Assertions.assertThat(actual).isEqualTo(OpenGraph.builder().build());
+    }
+
+    @Test
+    void should_scrap_not_html() {
+        URI page = URI.create(mockServer.baseUrl() + "/podcast.mp3");
+        Mono<OpenGraph> actual = tested.scrap(page);
+
+        StepVerifier.create(actual).verifyComplete();
     }
 }

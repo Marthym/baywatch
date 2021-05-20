@@ -17,11 +17,16 @@ import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 import java.net.URI;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.util.function.Predicate.not;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -44,6 +49,9 @@ public final class OpenGraphScrapper {
     private final OpenGraphMetaReader ogReader;
 
     private static Flux<Meta> extractMetaFromHead(String html) {
+        if (html.isBlank()) {
+            return Flux.empty();
+        }
         int headStopIdx = html.indexOf(HEAD_END_TAG);
         String head = (headStopIdx > 0) ? html.substring(0, headStopIdx) : html;
         Matcher m = META_PATTERN.matcher(head);
@@ -70,7 +78,25 @@ public final class OpenGraphScrapper {
                     Charset responseCharset = response.headers().contentType()
                             .map(MimeType::getCharset)
                             .orElse(StandardCharsets.UTF_8);
+
+                    CharsetDecoder charsetDecoder = responseCharset.newDecoder();
                     return response.bodyToFlux(DataBuffer.class)
+
+                            .switchOnFirst((signal, fBuff) -> {
+                                if (signal.hasValue()) {
+                                    DataBuffer dataBuffer = signal.get();
+                                    assert dataBuffer != null;
+                                    try {
+                                        //noinspection BlockingMethodInNonBlockingContext
+                                        charsetDecoder.decode(dataBuffer.asByteBuffer());
+                                    } catch (CharacterCodingException e) {
+                                        DataBufferUtils.release(dataBuffer);
+                                        return Flux.empty();
+                                    }
+                                }
+                                return fBuff;
+                            })
+
                             .scan(new StringBuilder(), (sb, buff) -> {
                                 StringBuilder bldr = sb.append(buff.toString(responseCharset));
                                 DataBufferUtils.release(buff);
@@ -80,12 +106,13 @@ public final class OpenGraphScrapper {
                             .last();
                 })
                 .map(StringBuilder::toString)
+                .doFirst(() -> log.trace("Receiving data from {}...", location))
 
                 .flatMapMany(OpenGraphScrapper::extractMetaFromHead)
                 .collectList()
+                .filter(not(List::isEmpty))
                 .map(metas -> ogReader.read(metas, location))
 
-                .doFirst(() -> log.trace("Receiving data from {}...", location))
                 .onErrorResume(e -> {
                     log.warn("{}", e.getLocalizedMessage());
                     log.debug("STACKTRACE", e);
