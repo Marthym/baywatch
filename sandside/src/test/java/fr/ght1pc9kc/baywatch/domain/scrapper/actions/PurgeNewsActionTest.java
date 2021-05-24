@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.domain.scrapper.actions;
 import fr.ght1pc9kc.baywatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.State;
-import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
+import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.infra.config.ScrapperProperties;
 import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;

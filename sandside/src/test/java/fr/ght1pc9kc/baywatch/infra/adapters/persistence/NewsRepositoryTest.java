@@ -4,6 +4,7 @@ import fr.ght1pc9kc.baywatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.State;
+import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
@@ -12,8 +13,6 @@ import fr.ght1pc9kc.baywatch.infra.samples.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.UsersRecordSamples;
 import fr.ght1pc9kc.juery.api.Criteria;
-import fr.ght1pc9kc.juery.api.PageRequest;
-import fr.ght1pc9kc.juery.api.pagination.Sort;
 import fr.irun.testy.core.extensions.ChainedExtension;
 import fr.irun.testy.jooq.WithDatabaseLoaded;
 import fr.irun.testy.jooq.WithDslContext;
@@ -122,7 +121,7 @@ class NewsRepositoryTest {
     @Test
     void should_list_rawnews(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
-        List<News> actuals = tested.list(PageRequest.all()).collectList().block();
+        List<News> actuals = tested.list().collectList().block();
 
         assertThat(actuals).hasSize(50);
     }
@@ -130,7 +129,7 @@ class NewsRepositoryTest {
     @Test
     void should_list_news(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
-        List<News> actual = tested.list(PageRequest.all()).collectList().block();
+        List<News> actual = tested.list().collectList().block();
         assertThat(actual).hasSize(50);
         assertThat(actual).extracting(News::getId).startsWith(
                 "24abc4ad15dc0ab7824f0192b78cc786a7e57f10c0a50fc0721ac1cc3cd162fc",
@@ -144,12 +143,8 @@ class NewsRepositoryTest {
     @Test
     void should_list_news_for_user_with_criteria(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
-        PageRequest pageRequest = PageRequest.builder()
-                .page(-1).size(-1)
-                .sort(Sort.of())
-                .filter(Criteria.property("shared").eq(true))
-                .build();
-        List<News> actual = tested.list(pageRequest).collectList().block();
+        QueryContext qCtx = QueryContext.filter(Criteria.property("shared").eq(true));
+        List<News> actual = tested.list(qCtx).collectList().block();
         assertThat(actual).allMatch(News::isShared);
     }
 

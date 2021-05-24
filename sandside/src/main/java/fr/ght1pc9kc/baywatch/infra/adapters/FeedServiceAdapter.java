@@ -1,9 +1,9 @@
 package fr.ght1pc9kc.baywatch.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.api.FeedService;
-import fr.ght1pc9kc.baywatch.domain.FeedServiceImpl;
+import fr.ght1pc9kc.baywatch.domain.techwatch.FeedServiceImpl;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.domain.ports.FeedPersistencePort;
+import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
 import lombok.experimental.Delegate;
 import org.springframework.stereotype.Service;
 

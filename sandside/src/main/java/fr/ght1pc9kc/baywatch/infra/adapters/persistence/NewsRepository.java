@@ -4,7 +4,8 @@ import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.State;
-import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
+import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
+import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
@@ -12,7 +13,8 @@ import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.infra.request.filter.PredicateSearchVisitor;
 import fr.ght1pc9kc.juery.api.Criteria;
-import fr.ght1pc9kc.juery.api.PageRequest;
+import fr.ght1pc9kc.juery.api.Pagination;
+import fr.ght1pc9kc.juery.basic.common.lang3.StringUtils;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
 import lombok.AllArgsConstructor;
@@ -50,21 +52,33 @@ public class NewsRepository implements NewsPersistencePort {
 
     @Override
     public Mono<News> get(String id) {
-        return list(PageRequest.one(Criteria.property(ID).eq(id))).next();
+        QueryContext firstById = QueryContext.builder()
+                .pagination(Pagination.FIRST)
+                .filter(Criteria.property(ID).eq(id))
+                .build();
+        return list(firstById).next();
     }
 
     @Override
-    public Flux<News> list(PageRequest pageRequest) {
-        Condition conditions = pageRequest.filter.visit(NEWS_CONDITION_VISITOR);
+    public Flux<News> list(QueryContext qCtx) {
+        Condition conditions = qCtx.filter.visit(NEWS_CONDITION_VISITOR);
         PredicateSearchVisitor<News> predicateSearchVisitor = new PredicateSearchVisitor<>();
 
-        final Select<Record> query = JooqPagination.apply(pageRequest, NEWS_PROPERTIES_MAPPING, dsl
-                .select(NEWS.fields()).select(NEWS_FEEDS.NEFE_FEED_ID).select(NEWS_USER_STATE.NURS_STATE)
-                .from(NEWS)
-                .leftJoin(NEWS_USER_STATE).on(NEWS.NEWS_ID.eq(NEWS_USER_STATE.NURS_NEWS_ID))
-                .leftJoin(NEWS_FEEDS).on(NEWS.NEWS_ID.eq(NEWS_FEEDS.NEFE_NEWS_ID))
-                .where(conditions)
-        );
+        SelectQuery<Record> select = dsl.selectQuery();
+        select.addSelect(NEWS.fields());
+        select.addFrom(NEWS);
+        select.addConditions(conditions);
+
+        select.addSelect(NEWS_FEEDS.NEFE_FEED_ID);
+        select.addJoin(NEWS_FEEDS, NEWS.NEWS_ID.eq(NEWS_FEEDS.NEFE_NEWS_ID));
+
+        if (!StringUtils.isBlank(qCtx.userId)) {
+            select.addSelect(NEWS_USER_STATE.NURS_STATE);
+            select.addJoin(NEWS_USER_STATE, NEWS.NEWS_ID.eq(NEWS_USER_STATE.NURS_NEWS_ID));
+            select.addConditions(NEWS_USER_STATE.NURS_USER_ID.eq(qCtx.userId));
+        }
+
+        final Select<Record> query = JooqPagination.apply(qCtx.pagination, NEWS_PROPERTIES_MAPPING, select);
 
         return Flux.<Record>create(sink -> {
             Cursor<Record> cursor = query.fetchLazy();
@@ -78,7 +92,7 @@ public class NewsRepository implements NewsPersistencePort {
             });
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(baywatchMapper::recordToNews)
-                .filter(pageRequest.filter.visit(predicateSearchVisitor));
+                .filter(qCtx.filter.visit(predicateSearchVisitor));
     }
 
     @Override

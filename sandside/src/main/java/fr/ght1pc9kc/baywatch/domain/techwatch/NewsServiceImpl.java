@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.domain;
+package fr.ght1pc9kc.baywatch.domain.techwatch;
 
 import fr.ght1pc9kc.baywatch.api.NewsService;
 import fr.ght1pc9kc.baywatch.api.model.News;
@@ -7,7 +7,8 @@ import fr.ght1pc9kc.baywatch.domain.exceptions.BadCriteriaFilter;
 import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthorizedOperation;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
+import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
+import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.AllArgsConstructor;
@@ -40,10 +41,10 @@ public class NewsServiceImpl implements NewsService {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
                 .map(user -> throwOnInvalidRequestFilters(pageRequest, user))
-                .map(user -> pageRequest.and(Criteria.property(USER_ID).eq(user.id)))
+                .map(user -> QueryContext.from(pageRequest).withUserId(user.id))
                 .onErrorResume(UnauthenticatedUser.class, (e) ->
                         Mono.fromCallable(() -> throwOnInvalidRequestFilters(pageRequest, null))
-                                .thenReturn(pageRequest))
+                                .thenReturn(QueryContext.from(pageRequest)))
                 .flatMapMany(newsRepository::list);
     }
 
@@ -85,7 +86,7 @@ public class NewsServiceImpl implements NewsService {
     }
 
     private <T> T throwOnInvalidRequestFilters(PageRequest request, @Nullable T ignore) {
-        Stream<String> stream = request.filter.visit(propertiesExtractor).stream()
+        Stream<String> stream = request.filter().visit(propertiesExtractor).stream()
                 .filter(not(ALLOWED_CRITERIA::contains));
         Stream<String> authStream = (ignore != null)
                 ? stream.filter(not(ALLOWED_AUTHENTICATED_CRITERIA::contains))

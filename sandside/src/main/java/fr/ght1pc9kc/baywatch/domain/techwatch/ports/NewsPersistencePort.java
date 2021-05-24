@@ -1,10 +1,10 @@
-package fr.ght1pc9kc.baywatch.domain.ports;
+package fr.ght1pc9kc.baywatch.domain.techwatch.ports;
 
 import fr.ght1pc9kc.baywatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.State;
+import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.juery.api.Criteria;
-import fr.ght1pc9kc.juery.api.PageRequest;
 import org.intellij.lang.annotations.MagicConstant;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -16,10 +16,10 @@ public interface NewsPersistencePort {
     Mono<News> get(String id);
 
     default Flux<News> list() {
-        return list(PageRequest.all());
+        return list(QueryContext.empty());
     }
 
-    Flux<News> list(PageRequest pageRequest);
+    Flux<News> list(QueryContext qCtx);
 
     Mono<Void> persist(Collection<News> toCreate);
 
