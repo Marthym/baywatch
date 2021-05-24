@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.With;
 
+import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.ID;
+
 @Value
 @Builder
 public final class QueryContext {
@@ -19,8 +21,16 @@ public final class QueryContext {
         return new QueryContext(pr.pagination(), pr.filter(), null);
     }
 
-    public static QueryContext filter(Criteria filter) {
+    public static QueryContext all(Criteria filter) {
         return new QueryContext(Pagination.ALL, filter, null);
+    }
+
+    public static QueryContext first(Criteria filter) {
+        return new QueryContext(Pagination.FIRST, filter, null);
+    }
+
+    public static QueryContext id(String id) {
+        return new QueryContext(Pagination.FIRST, Criteria.property(ID).eq(id), null);
     }
 
     public static QueryContext empty() {

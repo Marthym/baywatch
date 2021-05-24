@@ -19,13 +19,16 @@ import fr.irun.testy.jooq.WithDslContext;
 import fr.irun.testy.jooq.WithInMemoryDatasource;
 import fr.irun.testy.jooq.WithSampleDataLoaded;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mapstruct.factory.Mappers;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import reactor.test.StepVerifier;
 
 import java.net.URI;
 import java.time.Instant;
@@ -107,15 +110,18 @@ class NewsRepositoryTest {
     @Test
     void should_get_raw_news(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
-        News actual = tested.get("0479255273c08312a67145eec4852293345555eb1145ce0b4243c8314a85ba0c").block();
+        Mono<News> actual = tested.get(QueryContext.id("0479255273c08312a67145eec4852293345555eb1145ce0b4243c8314a85ba0c"));
 
-        assertThat(actual).isNotNull();
-        assertThat(actual.getRaw()).isEqualTo(RawNews.builder()
+        RawNews expected = RawNews.builder()
                 .id("0479255273c08312a67145eec4852293345555eb1145ce0b4243c8314a85ba0c")
                 .title("ght1pc9kc.fr 005")
                 .link(URI.create("https://blog.ght1pc9kc.fr/005"))
                 .publication(Instant.parse("2021-05-10T10:42:42Z"))
-                .build());
+                .build();
+
+        StepVerifier.create(actual)
+                .expectNextMatches(n -> n.getRaw().equals(expected))
+                .verifyComplete();
     }
 
     @Test
@@ -143,9 +149,11 @@ class NewsRepositoryTest {
     @Test
     void should_list_news_for_user_with_criteria(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
-        QueryContext qCtx = QueryContext.filter(Criteria.property("shared").eq(true));
+        QueryContext qCtx = QueryContext.all(Criteria.property("read").eq(true))
+                .withUserId(UsersRecordSamples.LSKYWALKER.getUserId());
         List<News> actual = tested.list(qCtx).collectList().block();
-        assertThat(actual).allMatch(News::isShared);
+        assertThat(actual).isNotEmpty();
+        assertThat(actual).allMatch(News::isRead);
     }
 
     @Test
@@ -159,15 +167,20 @@ class NewsRepositoryTest {
         NewsUserStateRecord expectedState = NewsRecordSamples.NewsUserStateSample.SAMPLE.records().stream()
                 .filter(us -> us.getNursNewsId().equals(expected.getNewsId()))
                 .findAny().orElseThrow();
-        News actual = tested.get(expected.getNewsId()).block();
+
+        QueryContext qCtx = QueryContext.id(expected.getNewsId())
+                .withUserId(expectedState.getNursUserId());
+        News actual = tested.get(qCtx).block();
 
         assertThat(actual).isNotNull();
-        assertThat(actual.getLink().toString()).isEqualTo(expected.getNewsLink());
-        assertThat(actual.getTitle()).isEqualTo(expected.getNewsTitle());
-        assertThat(actual.getId()).isEqualTo(expected.getNewsId());
-        assertThat(actual.getFeedId()).isEqualTo(expectedNefe.getNefeFeedId());
-        assertThat(actual.isRead()).isEqualTo((expectedState.getNursState() & Flags.READ) != 0);
-        assertThat(actual.isShared()).isEqualTo((expectedState.getNursState() & Flags.SHARED) != 0);
+        Assertions.assertAll(
+                () -> assertThat(actual.getLink().toString()).isEqualTo(expected.getNewsLink()),
+                () -> assertThat(actual.getTitle()).isEqualTo(expected.getNewsTitle()),
+                () -> assertThat(actual.getId()).isEqualTo(expected.getNewsId()),
+                () -> assertThat(actual.getFeedId()).isEqualTo(expectedNefe.getNefeFeedId()),
+                () -> assertThat(actual.isRead()).isEqualTo(State.of(expectedState.getNursState()).isRead()),
+                () -> assertThat(actual.isShared()).isEqualTo((expectedState.getNursState() & Flags.SHARED) != 0)
+        );
     }
 
     @Test

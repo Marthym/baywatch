@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.Map.Entry;
 
 public interface NewsPersistencePort {
-    Mono<News> get(String id);
+    Mono<News> get(QueryContext qCtx);
 
     default Flux<News> list() {
         return list(QueryContext.empty());

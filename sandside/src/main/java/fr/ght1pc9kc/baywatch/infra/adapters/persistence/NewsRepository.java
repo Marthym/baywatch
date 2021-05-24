@@ -13,7 +13,6 @@ import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.infra.request.filter.PredicateSearchVisitor;
 import fr.ght1pc9kc.juery.api.Criteria;
-import fr.ght1pc9kc.juery.api.Pagination;
 import fr.ght1pc9kc.juery.basic.common.lang3.StringUtils;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
@@ -31,7 +30,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
@@ -51,12 +49,8 @@ public class NewsRepository implements NewsPersistencePort {
     private final BaywatchMapper baywatchMapper;
 
     @Override
-    public Mono<News> get(String id) {
-        QueryContext firstById = QueryContext.builder()
-                .pagination(Pagination.FIRST)
-                .filter(Criteria.property(ID).eq(id))
-                .build();
-        return list(firstById).next();
+    public Mono<News> get(QueryContext qCtx) {
+        return list(qCtx).next();
     }
 
     @Override
@@ -70,12 +64,12 @@ public class NewsRepository implements NewsPersistencePort {
         select.addConditions(conditions);
 
         select.addSelect(NEWS_FEEDS.NEFE_FEED_ID);
-        select.addJoin(NEWS_FEEDS, NEWS.NEWS_ID.eq(NEWS_FEEDS.NEFE_NEWS_ID));
+        select.addJoin(NEWS_FEEDS, JoinType.LEFT_OUTER_JOIN, NEWS.NEWS_ID.eq(NEWS_FEEDS.NEFE_NEWS_ID));
 
         if (!StringUtils.isBlank(qCtx.userId)) {
             select.addSelect(NEWS_USER_STATE.NURS_STATE);
-            select.addJoin(NEWS_USER_STATE, NEWS.NEWS_ID.eq(NEWS_USER_STATE.NURS_NEWS_ID));
-            select.addConditions(NEWS_USER_STATE.NURS_USER_ID.eq(qCtx.userId));
+            select.addJoin(NEWS_USER_STATE, JoinType.LEFT_OUTER_JOIN,
+                    NEWS.NEWS_ID.eq(NEWS_USER_STATE.NURS_NEWS_ID).and(NEWS_USER_STATE.NURS_USER_ID.eq(qCtx.userId)));
         }
 
         final Select<Record> query = JooqPagination.apply(qCtx.pagination, NEWS_PROPERTIES_MAPPING, select);
