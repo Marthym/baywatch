@@ -21,6 +21,7 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.util.StopWatch;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
@@ -149,7 +150,7 @@ public final class FeedScrapperService implements Runnable {
                         return Flux.empty();
                     });
 
-            DataBufferUtils.write(buffers, osPipe)
+            Disposable feedReadingSubscription = DataBufferUtils.write(buffers, osPipe)
                     .doFinally(Exceptions.wrap().consumer(signal -> {
                         osPipe.flush();
                         osPipe.close();
@@ -157,6 +158,7 @@ public final class FeedScrapperService implements Runnable {
                     })).subscribe(DataBufferUtils.releaseConsumer());
 
             return feedParser.parse(feed, isFeedPayload)
+                    .doOnComplete(feedReadingSubscription::dispose)
                     .doFinally(Exceptions.wrap().consumer(signal -> {
                         isFeedPayload.close();
                         log.trace("Finish Parsing feed {}.", feed.getUrl().getHost());

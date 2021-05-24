@@ -23,7 +23,8 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Random;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 
 class OpenGraphScrapperTest {
     static final WireMockServer mockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
@@ -88,7 +89,7 @@ class OpenGraphScrapperTest {
     void should_scrap_not_found() {
         URI page = URI.create(mockServer.baseUrl() + "/not-found.html");
         OpenGraph actual = tested.scrap(page).block();
-        Assertions.assertThat(actual).isEqualTo(OpenGraph.builder().build());
+        Assertions.assertThat(actual).isNull();
     }
 
     @Test

@@ -5,12 +5,14 @@ import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.domain.scrapper.plugins.DefaultParserPlugin;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
+import fr.ght1pc9kc.baywatch.infra.config.ScrapperProperties;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.time.*;
 import java.util.List;
 import java.util.Objects;
 
@@ -18,18 +20,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class DefaultFeedParserTest {
 
-    private final RssAtomParserImpl tested = new RssAtomParserImpl(List.of(new DefaultParserPlugin()));
+    private final ScrapperProperties props = new ScrapperProperties(false, Duration.ZERO, Period.ofDays(2));
+    private final RssAtomParserImpl tested = new RssAtomParserImpl(props, List.of(new DefaultParserPlugin()));
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "{1}")
     @CsvSource({
-            "feeds/journal_du_hacker.xml, 25",
-            "feeds/reddit-java.xml, 7",
-            "feeds/reddit-prog.xml, 25",
-            "feeds/sebosss.xml, 20",
-            "feeds/spring-blog.xml, 20",
-            "feeds/lemonde.xml, 18",
+            "2020-11-30T12:10:00Z, feeds/journal_du_hacker.xml, 25",
+            "2020-11-30T12:10:00Z, feeds/reddit-java.xml, 7",
+            "2020-11-30T12:10:00Z, feeds/reddit-prog.xml, 25",
+            "2020-11-18T12:10:00Z, feeds/sebosss.xml, 2",
+            "2020-11-26T12:10:00Z, feeds/spring-blog.xml, 4",
+            "2021-05-20T12:10:00Z, feeds/lemonde.xml, 10",
     })
-    void should_parse_default_feed(String feedFile, int expectedFeedCount) throws IOException {
+    void should_parse_default_feed(Instant clock, String feedFile, int expectedFeedCount) throws IOException {
+        tested.setClock(Clock.fixed(clock, ZoneOffset.UTC));
         try (InputStream is = DefaultFeedParserTest.class.getResourceAsStream(feedFile)) {
             assertThat(is).isNotNull();
 

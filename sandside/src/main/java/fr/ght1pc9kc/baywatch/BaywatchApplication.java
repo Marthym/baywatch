@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch;
 
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphMetaReader;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
+import fr.ght1pc9kc.baywatch.infra.config.ScrapperProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,7 +13,7 @@ import reactor.core.scheduler.Schedulers;
 
 @Slf4j
 @SpringBootApplication
-@EnableConfigurationProperties
+@EnableConfigurationProperties({ScrapperProperties.class})
 public class BaywatchApplication {
 
     public static final String APPLICATION_NAME = "Baywatch";

@@ -7,6 +7,9 @@ import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.api.scrapper.FeedParserPlugin;
 import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
+import fr.ght1pc9kc.baywatch.infra.config.ScrapperProperties;
+import fr.ght1pc9kc.baywatch.infra.mappers.DateUtils;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.owasp.html.PolicyFactory;
 import org.owasp.html.Sanitizers;
@@ -24,8 +27,10 @@ import javax.xml.stream.events.XMLEvent;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,14 +52,21 @@ public final class RssAtomParserImpl implements RssAtomParser {
     private static final QName HREF = new QName("href");
     private static final PolicyFactory HTML_POLICY = Sanitizers.FORMATTING;
 
+    private final ScrapperProperties properties;
     private final Map<String, FeedParserPlugin> plugins;
 
-    public RssAtomParserImpl(List<FeedParserPlugin> plugins) {
+    @Setter
+    private Clock clock = Clock.systemUTC();
+
+    public RssAtomParserImpl(ScrapperProperties properties, List<FeedParserPlugin> plugins) {
+        this.properties = properties;
         this.plugins = plugins.stream()
                 .collect(Collectors.toUnmodifiableMap(FeedParserPlugin::pluginForDomain, Function.identity()));
     }
 
     public Flux<News> parse(Feed feed, InputStream is) {
+        final Instant maxAge = DateUtils.toInstant(DateUtils.toLocalDate(clock.instant()).minus(properties.conservation));
+
         return Flux.create(sink -> {
             try {
                 XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
@@ -133,6 +145,11 @@ public final class RssAtomParserImpl implements RssAtomParser {
                                         .feedId(feed.getId())
                                         .state(State.NONE)
                                         .build();
+
+                                if (news.getPublication().isBefore(maxAge)) {
+                                    // Stop scrapping if news was older than purge date
+                                    break;
+                                }
                                 sink.next(news);
                             }
                         }

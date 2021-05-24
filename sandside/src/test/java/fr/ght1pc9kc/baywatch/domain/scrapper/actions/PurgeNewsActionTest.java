@@ -5,6 +5,7 @@ import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
+import fr.ght1pc9kc.baywatch.infra.config.ScrapperProperties;
 import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,9 +14,7 @@ import org.mapstruct.factory.Mappers;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,7 +33,7 @@ class PurgeNewsActionTest {
     @BeforeEach
     void setUp() {
         newsPersistenceMock = mock(NewsPersistencePort.class);
-        tested = new PurgeNewsHandler(newsPersistenceMock)
+        tested = new PurgeNewsHandler(newsPersistenceMock, new ScrapperProperties(true, Duration.ofHours(1), Period.ofMonths(5)))
                 .clock(Clock.fixed(Instant.parse("2020-12-18T22:42:42Z"), ZoneOffset.UTC));
 
         when(newsPersistenceMock.list(any())).thenReturn(testDataForPersistenceList());
