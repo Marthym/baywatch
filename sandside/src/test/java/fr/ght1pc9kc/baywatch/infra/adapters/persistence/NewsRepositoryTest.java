@@ -4,6 +4,7 @@ import fr.ght1pc9kc.baywatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.State;
+import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
@@ -12,21 +13,22 @@ import fr.ght1pc9kc.baywatch.infra.samples.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.UsersRecordSamples;
 import fr.ght1pc9kc.juery.api.Criteria;
-import fr.ght1pc9kc.juery.api.PageRequest;
-import fr.ght1pc9kc.juery.api.pagination.Sort;
 import fr.irun.testy.core.extensions.ChainedExtension;
 import fr.irun.testy.jooq.WithDatabaseLoaded;
 import fr.irun.testy.jooq.WithDslContext;
 import fr.irun.testy.jooq.WithInMemoryDatasource;
 import fr.irun.testy.jooq.WithSampleDataLoaded;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mapstruct.factory.Mappers;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import reactor.test.StepVerifier;
 
 import java.net.URI;
 import java.time.Instant;
@@ -108,21 +110,24 @@ class NewsRepositoryTest {
     @Test
     void should_get_raw_news(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
-        News actual = tested.get("0479255273c08312a67145eec4852293345555eb1145ce0b4243c8314a85ba0c").block();
+        Mono<News> actual = tested.get(QueryContext.id("0479255273c08312a67145eec4852293345555eb1145ce0b4243c8314a85ba0c"));
 
-        assertThat(actual).isNotNull();
-        assertThat(actual.getRaw()).isEqualTo(RawNews.builder()
+        RawNews expected = RawNews.builder()
                 .id("0479255273c08312a67145eec4852293345555eb1145ce0b4243c8314a85ba0c")
                 .title("ght1pc9kc.fr 005")
                 .link(URI.create("https://blog.ght1pc9kc.fr/005"))
                 .publication(Instant.parse("2021-05-10T10:42:42Z"))
-                .build());
+                .build();
+
+        StepVerifier.create(actual)
+                .expectNextMatches(n -> n.getRaw().equals(expected))
+                .verifyComplete();
     }
 
     @Test
     void should_list_rawnews(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
-        List<News> actuals = tested.list(PageRequest.all()).collectList().block();
+        List<News> actuals = tested.list().collectList().block();
 
         assertThat(actuals).hasSize(50);
     }
@@ -130,7 +135,7 @@ class NewsRepositoryTest {
     @Test
     void should_list_news(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
-        List<News> actual = tested.list(PageRequest.all()).collectList().block();
+        List<News> actual = tested.list().collectList().block();
         assertThat(actual).hasSize(50);
         assertThat(actual).extracting(News::getId).startsWith(
                 "24abc4ad15dc0ab7824f0192b78cc786a7e57f10c0a50fc0721ac1cc3cd162fc",
@@ -144,13 +149,11 @@ class NewsRepositoryTest {
     @Test
     void should_list_news_for_user_with_criteria(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
-        PageRequest pageRequest = PageRequest.builder()
-                .page(-1).size(-1)
-                .sort(Sort.of())
-                .filter(Criteria.property("shared").eq(true))
-                .build();
-        List<News> actual = tested.list(pageRequest).collectList().block();
-        assertThat(actual).allMatch(News::isShared);
+        QueryContext qCtx = QueryContext.all(Criteria.property("read").eq(true))
+                .withUserId(UsersRecordSamples.LSKYWALKER.getUserId());
+        List<News> actual = tested.list(qCtx).collectList().block();
+        assertThat(actual).isNotEmpty();
+        assertThat(actual).allMatch(News::isRead);
     }
 
     @Test
@@ -164,15 +167,20 @@ class NewsRepositoryTest {
         NewsUserStateRecord expectedState = NewsRecordSamples.NewsUserStateSample.SAMPLE.records().stream()
                 .filter(us -> us.getNursNewsId().equals(expected.getNewsId()))
                 .findAny().orElseThrow();
-        News actual = tested.get(expected.getNewsId()).block();
+
+        QueryContext qCtx = QueryContext.id(expected.getNewsId())
+                .withUserId(expectedState.getNursUserId());
+        News actual = tested.get(qCtx).block();
 
         assertThat(actual).isNotNull();
-        assertThat(actual.getLink().toString()).isEqualTo(expected.getNewsLink());
-        assertThat(actual.getTitle()).isEqualTo(expected.getNewsTitle());
-        assertThat(actual.getId()).isEqualTo(expected.getNewsId());
-        assertThat(actual.getFeedId()).isEqualTo(expectedNefe.getNefeFeedId());
-        assertThat(actual.isRead()).isEqualTo((expectedState.getNursState() & Flags.READ) != 0);
-        assertThat(actual.isShared()).isEqualTo((expectedState.getNursState() & Flags.SHARED) != 0);
+        Assertions.assertAll(
+                () -> assertThat(actual.getLink().toString()).isEqualTo(expected.getNewsLink()),
+                () -> assertThat(actual.getTitle()).isEqualTo(expected.getNewsTitle()),
+                () -> assertThat(actual.getId()).isEqualTo(expected.getNewsId()),
+                () -> assertThat(actual.getFeedId()).isEqualTo(expectedNefe.getNefeFeedId()),
+                () -> assertThat(actual.isRead()).isEqualTo(State.of(expectedState.getNursState()).isRead()),
+                () -> assertThat(actual.isShared()).isEqualTo((expectedState.getNursState() & Flags.SHARED) != 0)
+        );
     }
 
     @Test

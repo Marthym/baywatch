@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.domain.ports;
+package fr.ght1pc9kc.baywatch.domain.techwatch.ports;
 
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.juery.api.PageRequest;
