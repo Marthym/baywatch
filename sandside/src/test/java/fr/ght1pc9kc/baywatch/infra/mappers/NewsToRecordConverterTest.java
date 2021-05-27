@@ -21,7 +21,7 @@ class NewsToRecordConverterTest {
     @Test
     void should_convert_News_pojo_to_NewsRecord_with_id() {
         URI link = URI.create("https://blog.ght1pc9kc.fr/index.xml");
-        String uuid = Hasher.sha3(link.toString());
+        String uuid = Hasher.identify(link);
         NewsRecord actual = tested.newsToNewsRecord(News.builder()
                 .raw(RawNews.builder()
                         .id(uuid)

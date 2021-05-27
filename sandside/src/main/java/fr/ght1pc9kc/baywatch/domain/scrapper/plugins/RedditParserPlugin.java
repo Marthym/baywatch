@@ -40,6 +40,6 @@ public final class RedditParserPlugin implements FeedParserPlugin {
                 .map(n -> n.link)
                 .orElse(link);
 
-        return builder.id(Hasher.sha3(uri.toString())).link(uri);
+        return builder.id(Hasher.identify(uri)).link(uri);
     }
 }

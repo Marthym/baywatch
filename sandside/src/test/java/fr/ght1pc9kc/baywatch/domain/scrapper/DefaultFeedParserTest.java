@@ -32,13 +32,13 @@ class DefaultFeedParserTest {
             "2020-11-26T12:10:00Z, feeds/spring-blog.xml, 4",
             "2021-05-20T12:10:00Z, feeds/lemonde.xml, 10",
     })
-    void should_parse_default_feed(Instant clock, String feedFile, int expectedFeedCount) throws IOException {
+    void should_parse_default_feed(Instant clock, URI feedFile, int expectedFeedCount) throws IOException {
         tested.setClock(Clock.fixed(clock, ZoneOffset.UTC));
-        try (InputStream is = DefaultFeedParserTest.class.getResourceAsStream(feedFile)) {
+        try (InputStream is = DefaultFeedParserTest.class.getResourceAsStream(feedFile.toString())) {
             assertThat(is).isNotNull();
 
             Feed feed = Feed.builder()
-                    .raw(RawFeed.builder().id(Hasher.sha3(feedFile)).url(URI.create(feedFile)).build())
+                    .raw(RawFeed.builder().id(Hasher.identify(feedFile)).url(feedFile).build())
                     .build();
             List<News> actuals = tested.parse(feed, is).collectList().block();
 
