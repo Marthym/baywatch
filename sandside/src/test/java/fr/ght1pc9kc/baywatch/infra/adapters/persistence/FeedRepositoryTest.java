@@ -100,10 +100,11 @@ class FeedRepositoryTest {
 
     @Test
     void should_persist_feeds(DSLContext dsl) {
+        URI uri = URI.create("https://obiwan.kenobi.jedi/.rss");
         Feed expected = Feed.builder()
                 .raw(RawFeed.builder()
-                        .id(Hasher.sha3("https://obiwan.kenobi.jedi/.rss"))
-                        .url(URI.create("https://obiwan.kenobi.jedi/.rss"))
+                        .id(Hasher.identify(uri))
+                        .url(uri)
                         .name("Obiwan Kenobi")
                         .build())
                 .tags(Set.of("jedi", "light"))
@@ -118,10 +119,11 @@ class FeedRepositoryTest {
 
     @Test
     void should_persist_feeds_to_user(DSLContext dsl) {
+        URI uri = URI.create("https://obiwan.kenobi.jedi/.rss");
         Feed expected = Feed.builder()
                 .raw(RawFeed.builder()
-                        .id(Hasher.sha3("https://obiwan.kenobi.jedi/.rss"))
-                        .url(URI.create("https://obiwan.kenobi.jedi/.rss"))
+                        .id(Hasher.identify(uri))
+                        .url(uri)
                         .name("Obiwan Kenobi")
                         .build())
                 .tags(Set.of("jedi", "light"))
@@ -146,8 +148,8 @@ class FeedRepositoryTest {
     @Test
     void should_delete_feeds(DSLContext dsl) {
         List<String> ids = List.of(
-                "530a28c0c7a93eb97c46114bdd6b276b665b3f3100548e1a849ece1955e45b57",
-                "75ac07c9803c0dffe3d1769a3ec0037068bc040cff01032721dbb1d79f68e95a");
+                "0649957555efd5c7155641c9d51567b87601f147fe47588a047fabc9ffe7c6f1",
+                "95b7849e51b7708d1aa4809b8c1872179d06c3ca4ce0e3ecc15cdcf5e3b02bed");
         {
             int countUser = dsl.fetchCount(FEEDS_USERS, FEEDS_USERS.FEUS_FEED_ID.in(ids));
             assertThat(countUser).isEqualTo(ids.size());
@@ -164,8 +166,8 @@ class FeedRepositoryTest {
     @Test
     void should_delete_feeds_for_user(DSLContext dsl) {
         List<String> ids = List.of(
-                "530a28c0c7a93eb97c46114bdd6b276b665b3f3100548e1a849ece1955e45b57",
-                "75ac07c9803c0dffe3d1769a3ec0037068bc040cff01032721dbb1d79f68e95a");
+                "0649957555efd5c7155641c9d51567b87601f147fe47588a047fabc9ffe7c6f1",
+                "95b7849e51b7708d1aa4809b8c1872179d06c3ca4ce0e3ecc15cdcf5e3b02bed");
         {
             int countUser = dsl.fetchCount(FEEDS_USERS, FEEDS_USERS.FEUS_FEED_ID.in(ids)
                     .and(FEEDS_USERS.FEUS_USER_ID.eq(OKENOBI.getUserId())));
@@ -183,6 +185,6 @@ class FeedRepositoryTest {
     @Test
     void should_list_orphan_feed() {
         List<Feed> actuals = tested.list(PageRequest.all(Criteria.property(FEED_ID).isNull())).collectList().block();
-        assertThat(actuals).extracting(Feed::getId).containsExactly("5be5a3438e2003946d7ea6a17dda75cf816c640eb827337fe97eb11b27d9465c");
+        assertThat(actuals).extracting(Feed::getId).containsExactly("a6e68b72e99e2e9e54258d98f175f504ad128bf2142597815c6c116f1925411c");
     }
 }

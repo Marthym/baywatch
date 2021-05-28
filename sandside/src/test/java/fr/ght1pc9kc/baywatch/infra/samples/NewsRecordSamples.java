@@ -10,6 +10,7 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
 import fr.irun.testy.jooq.model.RelationalDataSet;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.stream.IntStream;
 
 public class NewsRecordSamples implements RelationalDataSet<NewsRecord> {
     public static final NewsRecordSamples SAMPLE = new NewsRecordSamples();
+    public static final URI BASE_TEST_URI = URI.create("https://blog.ght1pc9kc.fr/");
 
     private static final List<NewsRecord> RECORDS;
     private static final List<NewsFeedsRecord> NEWS_FEEDS_RECORDS;
@@ -25,9 +27,9 @@ public class NewsRecordSamples implements RelationalDataSet<NewsRecord> {
 
     static {
         RECORDS = IntStream.range(1, 51).mapToObj(i -> News.NEWS.newRecord()
-                .setNewsId(Hasher.sha3(String.format("https://blog.ght1pc9kc.fr/%03d", i)))
-                .setNewsLink(String.format("https://blog.ght1pc9kc.fr/%03d", i))
-                .setNewsTitle(String.format("ght1pc9kc.fr %03d", i))
+                .setNewsId(Hasher.identify(BASE_TEST_URI.resolve(String.format("%03d", i))))
+                .setNewsLink(BASE_TEST_URI.resolve(String.format("%03d", i)).toString())
+                .setNewsTitle(String.format("%s %03d", BASE_TEST_URI.getHost(), i))
                 .setNewsPublication(LocalDateTime.parse("2020-12-10T10:42:42").plus(Period.ofMonths(i)))
         ).collect(Collectors.toUnmodifiableList());
 
@@ -35,7 +37,7 @@ public class NewsRecordSamples implements RelationalDataSet<NewsRecord> {
                     int feedIdx = i % FeedRecordSamples.SAMPLE.records().size();
                     return NewsFeeds.NEWS_FEEDS.newRecord()
                             .setNefeFeedId(FeedRecordSamples.SAMPLE.records().get(feedIdx).getFeedId())
-                            .setNefeNewsId(Hasher.sha3(String.format("https://blog.ght1pc9kc.fr/%03d", i)));
+                            .setNefeNewsId(Hasher.identify(BASE_TEST_URI.resolve(String.format("%03d", i))));
                 }
         ).collect(Collectors.toUnmodifiableList());
 

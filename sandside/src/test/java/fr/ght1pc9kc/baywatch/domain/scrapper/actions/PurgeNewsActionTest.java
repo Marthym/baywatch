@@ -45,10 +45,10 @@ class PurgeNewsActionTest {
     void should_purge_news() {
         tested.before().block();
         verify(newsPersistenceMock).delete(eq(List.of(
-                "24abc4ad15dc0ab7824f0192b78cc786a7e57f10c0a50fc0721ac1cc3cd162fc",
-                "60b59b7b9b35aa3805af8cf300fcb289055bbc78b012921f231aab5d5921a39c",
-                "e35d5a3be1d1fbf1363fbeb1bca2ca248da0dcdfe41b88beb80e9548d9a10c8f",
-                "0479255273c08312a67145eec4852293345555eb1145ce0b4243c8314a85ba0c"
+                "22f530b91e1dac4854cd3273b1ca45784e08a00fac25ca01792c6989db152fc0",
+                "1fff2b3142d5d27677567a0da6811c09a428e7636f169d77006dede02ee6cec0",
+                "900cf7d10afd3c1584d6d3122743a86c0315fde7d8acbe3a585a2cb7c301807c",
+                "8a1161a7d2fc70fd5e865d3394eddfc0dbad40a792973f9dad50ff62afdb088b"
         )));
     }
 
