@@ -43,14 +43,16 @@ public class FeedController {
     @PutMapping
     @PostMapping
     public Mono<ResponseEntity<Feed>> subscribe(@Valid Mono<FeedForm> feedForm) {
-        return feedForm.map(form ->
-                Feed.builder()
-                        .raw(RawFeed.builder()
-                                .id(Hasher.sha3(form.url))
-                                .url(URI.create(form.url))
-                                .name(form.name)
-                                .build())
-                        .build())
+        return feedForm.map(form -> {
+            URI uri = URI.create(form.url);
+            return Feed.builder()
+                    .raw(RawFeed.builder()
+                            .id(Hasher.identify(uri))
+                            .url(uri)
+                            .name(form.name)
+                            .build())
+                    .build();
+        })
                 .flatMap(feed -> feedService.persist(Collections.singleton(feed)).thenReturn(feed))
                 .map(feed -> ResponseEntity.created(URI.create("/api/feeds/" + feed.getId())).body(feed));
 
@@ -65,12 +67,12 @@ public class FeedController {
     @PostMapping("/import")
     public Flux<Feed> importFeeds(@RequestBody @Valid Flux<FeedForm> feedForms) {
         return feedForms.map(form -> {
-            URI url = URI.create(form.url);
+            URI uri = URI.create(form.url);
             return Feed.builder()
                     .raw(RawFeed.builder()
-                            .id(Hasher.sha3(form.url))
-                            .url(url)
-                            .name(Optional.ofNullable(form.name).orElseGet(url::getHost))
+                            .id(Hasher.identify(uri))
+                            .url(uri)
+                            .name(Optional.ofNullable(form.name).orElseGet(uri::getHost))
                             .build())
                     .build();
         }).collectList()

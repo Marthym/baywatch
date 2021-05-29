@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RecordToFeedConverterTest {
     private static final Instant PUBLICATION = Instant.parse("2020-11-30T20:09:42Z");
     private static final URI TEST_URL = URI.create("https://blog.ght1pc9kc.fr/index.xml");
-    private static final String TEST_SHA3 = Hasher.sha3(TEST_URL.toString());
+    private static final String TEST_SHA3 = Hasher.identify(TEST_URL);
 
     BaywatchMapper tested;
 

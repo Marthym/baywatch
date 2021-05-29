@@ -7,11 +7,10 @@ import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.api.AuthenticationService;
 import fr.ght1pc9kc.baywatch.api.model.*;
 import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
-import fr.ght1pc9kc.baywatch.api.model.State;
-import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
-import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OpenGraph;
+import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
+import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
@@ -93,8 +92,8 @@ class FeedScrapperServiceTest {
     void should_fail_scrapper_without_fail_scrapping() {
         URI darthVaderUri = URI.create("http://localhost:" + mockServer.port() + "/error/darth-vader.xml");
         URI springUri = URI.create("http://localhost:" + mockServer.port() + "/feeds/spring-blog.xml");
-        String darthVaderSha3 = Hasher.sha3(darthVaderUri.toString());
-        String springSha3 = Hasher.sha3(springUri.toString());
+        String darthVaderSha3 = Hasher.identify(darthVaderUri);
+        String springSha3 = Hasher.identify(springUri);
 
         when(feedPersistenceMock.list()).thenReturn(Flux.just(
                 Feed.builder().raw(RawFeed.builder()
@@ -240,8 +239,8 @@ class FeedScrapperServiceTest {
 
         URI springUri = URI.create("http://localhost:" + mockServer.port() + "/feeds/spring-blog.xml");
         URI jdhUri = URI.create("http://localhost:" + mockServer.port() + "/feeds/journal_du_hacker.xml");
-        String springSha3 = Hasher.sha3(springUri.toString());
-        String jdhSha3 = Hasher.sha3(jdhUri.toString());
+        String springSha3 = Hasher.identify(springUri);
+        String jdhSha3 = Hasher.identify(jdhUri);
 
         openGraphScrapper = mock(OpenGraphScrapper.class);
         when(openGraphScrapper.scrap(any(URI.class))).thenReturn(Mono.empty());

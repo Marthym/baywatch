@@ -45,7 +45,7 @@ public interface BaywatchMapper {
     }
 
     @Mapping(target = "newsId",
-            expression = "java((news.getId() == null) ? Hasher.sha3(news.getLink().toString()) : news.getId())")
+            expression = "java((news.getId() == null) ? Hasher.identify(news.getLink()) : news.getId())")
     @Mapping(target = "newsTitle", expression = "java( StringUtils.abbreviate(news.getTitle(), 250) )")
     @Mapping(target = "newsDescription", source = "raw.description")
     @Mapping(target = "newsImgLink", expression = "java( Optional.ofNullable(news.getImage()).map(URI::toString).orElse(null) )")
@@ -54,7 +54,7 @@ public interface BaywatchMapper {
     NewsRecord newsToNewsRecord(News news);
 
     @Mapping(target = "nefeNewsId",
-            expression = "java((news.getId() == null) ? Hasher.sha3(news.getLink().toString()) : news.getId())")
+            expression = "java((news.getId() == null) ? Hasher.identify(news.getLink()) : news.getId())")
     @Mapping(target = "nefeFeedId", source = "feedId")
     NewsFeedsRecord newsToNewsFeedsRecord(News news);
 

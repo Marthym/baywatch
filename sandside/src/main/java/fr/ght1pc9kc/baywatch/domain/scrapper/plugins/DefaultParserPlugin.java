@@ -22,7 +22,7 @@ public final class DefaultParserPlugin implements FeedParserPlugin {
 
     @Override
     public RawNews.RawNewsBuilder handleLinkEvent(@Nonnull RawNews.RawNewsBuilder builder, URI link) {
-        return builder.id(Hasher.sha3(link.toString()))
+        return builder.id(Hasher.identify(link))
                 .link(link);
     }
 }
