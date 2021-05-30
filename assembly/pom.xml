@@ -44,7 +44,7 @@
                             <goal>single</goal>
                         </goals>
                         <configuration>
-                            <finalName>${project.name}-${project.version}</finalName>
+                            <finalName>${project.parent.artifactId}-${project.parent.version}</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                             <descriptorRefs>
                                 <descriptorRef>baywatch</descriptorRef>

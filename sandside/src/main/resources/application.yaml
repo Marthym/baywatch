@@ -17,7 +17,7 @@ logging:
   level:
     root: INFO
     org.jooq: WARN
-    fr.ght1pc9kc.baywatch: DEBUG
+    fr.ght1pc9kc.baywatch: ${BAYWATCH_LOG_LEVEL:DEBUG}
 
 baywatch:
   base-route: /api
