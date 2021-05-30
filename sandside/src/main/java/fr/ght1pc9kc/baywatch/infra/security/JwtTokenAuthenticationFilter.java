@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -34,6 +35,17 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
                     bwAuth.user, bwAuth.token, AuthorityUtils.createAuthorityList(bwAuth.authorities.toArray(String[]::new))
             );
             return chain.filter(exchange).contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
+        }
+
+        if (StringUtils.hasText(token)) {
+            exchange.getResponse().addCookie(
+                    ResponseCookie.from(cookieName, "")
+                            .httpOnly(true)
+                            .secure("https".equals(exchange.getRequest().getURI().getScheme()))
+                            .sameSite("Strict")
+                            .path("/api")
+                            .maxAge(0)
+                            .build());
         }
         return chain.filter(exchange);
     }
