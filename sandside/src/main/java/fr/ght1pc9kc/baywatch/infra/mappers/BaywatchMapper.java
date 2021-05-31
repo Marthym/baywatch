@@ -3,10 +3,15 @@ package fr.ght1pc9kc.baywatch.infra.mappers;
 import fr.ght1pc9kc.baywatch.api.model.*;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
-import fr.ght1pc9kc.baywatch.dsl.tables.records.*;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
 import org.jooq.Record;
 import org.jooq.tools.StringUtils;
-import org.mapstruct.*;
+import org.mapstruct.InheritInverseConfiguration;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.net.URI;
 import java.time.Instant;
@@ -53,11 +58,6 @@ public interface BaywatchMapper {
     @Mapping(target = "newsPublication", source = "raw.publication")
     NewsRecord newsToNewsRecord(News news);
 
-    @Mapping(target = "nefeNewsId",
-            expression = "java((news.getId() == null) ? Hasher.identify(news.getLink()) : news.getId())")
-    @Mapping(target = "nefeFeedId", source = "feedId")
-    NewsFeedsRecord newsToNewsFeedsRecord(News news);
-
     default RawNews recordToRawNews(Record record) {
         return RawNews.builder()
                 .id(record.get(NEWS.NEWS_ID))
@@ -74,13 +74,13 @@ public interface BaywatchMapper {
         State state = (record.indexOf(NEWS_USER_STATE.NURS_STATE) >= 0)
                 ? State.of(record.get(NEWS_USER_STATE.NURS_STATE))
                 : State.NONE;
-        String feedId = (record.indexOf(NEWS_FEEDS.NEFE_FEED_ID) >= 0)
-                ? record.get(NEWS_FEEDS.NEFE_FEED_ID)
-                : null;
+        Set<String> feeds = (record.indexOf(NEWS_FEEDS.NEFE_FEED_ID) >= 0)
+                ? Set.of(record.get(NEWS_FEEDS.NEFE_FEED_ID))
+                : Set.of();
         return News.builder()
                 .raw(raw)
                 .state(state)
-                .feedId(feedId)
+                .feeds(feeds)
                 .build();
     }
 

@@ -32,10 +32,7 @@ import reactor.test.StepVerifier;
 
 import java.net.URI;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
@@ -91,7 +88,7 @@ class NewsRepositoryTest {
                         .link(URI.create("http://obiwan.kenobi.jedi/"))
                         .publication(Instant.now())
                         .build())
-                .feedId(FeedRecordSamples.JEDI.getFeedId())
+                .feeds(Set.of(FeedRecordSamples.JEDI.getFeedId()))
                 .state(State.NONE)
                 .build();
 
@@ -130,14 +127,14 @@ class NewsRepositoryTest {
         tracker.skipNextSampleLoad();
         List<News> actuals = tested.list().collectList().block();
 
-        assertThat(actuals).hasSize(50);
+        assertThat(actuals).hasSize(51);
     }
 
     @Test
     void should_list_news(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
         List<News> actual = tested.list().collectList().block();
-        assertThat(actual).hasSize(50);
+        assertThat(actual).hasSize(51);
         assertThat(actual).extracting(News::getId).startsWith(
                 "22f530b91e1dac4854cd3273b1ca45784e08a00fac25ca01792c6989db152fc0",
                 "1fff2b3142d5d27677567a0da6811c09a428e7636f169d77006dede02ee6cec0",
@@ -178,7 +175,7 @@ class NewsRepositoryTest {
                 () -> assertThat(actual.getLink().toString()).isEqualTo(expected.getNewsLink()),
                 () -> assertThat(actual.getTitle()).isEqualTo(expected.getNewsTitle()),
                 () -> assertThat(actual.getId()).isEqualTo(expected.getNewsId()),
-                () -> assertThat(actual.getFeedId()).isEqualTo(expectedNefe.getNefeFeedId()),
+                () -> assertThat(actual.getFeeds()).isEqualTo(expectedNefe.getNefeFeedId()),
                 () -> assertThat(actual.isRead()).isEqualTo(State.of(expectedState.getNursState()).isRead()),
                 () -> assertThat(actual.isShared()).isEqualTo((expectedState.getNursState() & Flags.SHARED) != 0)
         );

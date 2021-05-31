@@ -19,6 +19,7 @@ import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.*;
+import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
@@ -63,8 +65,9 @@ public class NewsRepository implements NewsPersistencePort {
         select.addFrom(NEWS);
         select.addConditions(conditions);
 
-        select.addSelect(NEWS_FEEDS.NEFE_FEED_ID);
+        select.addSelect(DSL.arrayAggDistinct(NEWS_FEEDS.NEFE_FEED_ID).as(NEWS_FEEDS.NEFE_FEED_ID));
         select.addJoin(NEWS_FEEDS, JoinType.LEFT_OUTER_JOIN, NEWS.NEWS_ID.eq(NEWS_FEEDS.NEFE_NEWS_ID));
+        select.addGroupBy(NEWS.fields());
 
         if (!StringUtils.isBlank(qCtx.userId)) {
             select.addSelect(NEWS_USER_STATE.NURS_STATE);
@@ -96,7 +99,7 @@ public class NewsRepository implements NewsPersistencePort {
                 .collect(Collectors.toList());
 
         List<NewsFeedsRecord> newsFeedsRecords = toCreate.stream()
-                .map(baywatchMapper::newsToNewsFeedsRecord)
+                .flatMap(NewsRepository::toNewsFeedsRecords)
                 .collect(Collectors.toList());
 
         return Mono.fromCallable(() ->
@@ -191,5 +194,12 @@ public class NewsRepository implements NewsPersistencePort {
     public Mono<Integer> count() {
         return Mono.fromCallable(() -> dsl.fetchCount(NEWS))
                 .subscribeOn(databaseScheduler);
+    }
+
+    private static Stream<NewsFeedsRecord> toNewsFeedsRecords(News news) {
+        return news.getFeeds().stream()
+                .map(f -> NEWS_FEEDS.newRecord()
+                        .setNefeNewsId(news.getId())
+                        .setNefeFeedId(f));
     }
 }
