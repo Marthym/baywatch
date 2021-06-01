@@ -74,8 +74,9 @@ public interface BaywatchMapper {
         State state = (record.indexOf(NEWS_USER_STATE.NURS_STATE) >= 0)
                 ? State.of(record.get(NEWS_USER_STATE.NURS_STATE))
                 : State.NONE;
-        Set<String> feeds = (record.indexOf(NEWS_FEEDS.NEFE_FEED_ID) >= 0)
-                ? Set.of(record.get(NEWS_FEEDS.NEFE_FEED_ID))
+        Set<String> feeds = (record.indexOf(NEWS_FEEDS.NEFE_FEED_ID.getName()) >= 0)
+                ? Optional.ofNullable(record.get(NEWS_FEEDS.NEFE_FEED_ID.getName(), String[].class))
+                .map(Set::of).orElse(Set.of())
                 : Set.of();
         return News.builder()
                 .raw(raw)
