@@ -22,6 +22,7 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.time.Instant;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -37,7 +38,7 @@ class NewsServiceImplTest {
                     .publication(Instant.parse("2020-12-30T10:10:01Z"))
                     .build())
             .state(State.of(Flags.READ))
-            .feedId("1000000000000000000000000000000000000000000000000000000000000000")
+            .feeds(Set.of("1000000000000000000000000000000000000000000000000000000000000000"))
             .build();
     private static final News SAMPLE_NEWS_02 = News.builder()
             .raw(RawNews.builder()
@@ -48,7 +49,7 @@ class NewsServiceImplTest {
                     .publication(Instant.parse("2020-12-30T10:10:01Z"))
                     .build())
             .state(State.of(Flags.SHARED | Flags.READ))
-            .feedId("1000000000000000000000000000000000000000000000000000000000000000")
+            .feeds(Set.of("1000000000000000000000000000000000000000000000000000000000000000"))
             .build();
     private static final User SAMPLE_USER_01 = User.builder()
             .id("6400659ef2153aa3dacdf921fd9490f39cc681317431d22db274bff220df9eed")

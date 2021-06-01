@@ -6,6 +6,8 @@ import lombok.Value;
 import lombok.With;
 import lombok.experimental.Delegate;
 
+import java.util.Set;
+
 /**
  * The News element customized with state and {@link RawFeed#id}
  */
@@ -16,7 +18,7 @@ public class News {
     @Delegate(types = RawNews.class)
     @NonNull RawNews raw;
 
-    String feedId;
+    Set<String> feeds;
 
     @Delegate(types = State.class)
     @NonNull State state;

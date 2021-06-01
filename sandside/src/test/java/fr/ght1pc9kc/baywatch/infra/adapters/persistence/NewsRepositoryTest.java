@@ -5,6 +5,7 @@ import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
+import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
@@ -32,10 +33,7 @@ import reactor.test.StepVerifier;
 
 import java.net.URI;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
@@ -91,7 +89,7 @@ class NewsRepositoryTest {
                         .link(URI.create("http://obiwan.kenobi.jedi/"))
                         .publication(Instant.now())
                         .build())
-                .feedId(FeedRecordSamples.JEDI.getFeedId())
+                .feeds(Set.of(FeedRecordSamples.JEDI.getFeedId()))
                 .state(State.NONE)
                 .build();
 
@@ -130,20 +128,20 @@ class NewsRepositoryTest {
         tracker.skipNextSampleLoad();
         List<News> actuals = tested.list().collectList().block();
 
-        assertThat(actuals).hasSize(50);
+        assertThat(actuals).hasSize(51);
     }
 
     @Test
     void should_list_news(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
         List<News> actual = tested.list().collectList().block();
-        assertThat(actual).hasSize(50);
+        assertThat(actual).hasSize(51);
         assertThat(actual).extracting(News::getId).startsWith(
-                "22f530b91e1dac4854cd3273b1ca45784e08a00fac25ca01792c6989db152fc0",
+                "134d1ba72a9cf41060f39349c8042d203c02b69b9082383153c423f3633a419f",
+                "155759bd7796715f439c9c25739bc34b8fa4cac7036f8bdd61148a4ceac76a57",
                 "1fff2b3142d5d27677567a0da6811c09a428e7636f169d77006dede02ee6cec0",
-                "37c8fbce87cae77f34aac2a2a52511f60b1369317dec57f38df3f3ae30c42840",
-                "900cf7d10afd3c1584d6d3122743a86c0315fde7d8acbe3a585a2cb7c301807c",
-                "8a1161a7d2fc70fd5e865d3394eddfc0dbad40a792973f9dad50ff62afdb088b"
+                "22f530b91e1dac4854cd3273b1ca45784e08a00fac25ca01792c6989db152fc0",
+                "26897ef9efde81583efc3b5e690d00c548a8e6fd8d9d8de08fc6543da5fffd9d"
         );
     }
 
@@ -178,7 +176,7 @@ class NewsRepositoryTest {
                 () -> assertThat(actual.getLink().toString()).isEqualTo(expected.getNewsLink()),
                 () -> assertThat(actual.getTitle()).isEqualTo(expected.getNewsTitle()),
                 () -> assertThat(actual.getId()).isEqualTo(expected.getNewsId()),
-                () -> assertThat(actual.getFeedId()).isEqualTo(expectedNefe.getNefeFeedId()),
+                () -> assertThat(actual.getFeeds()).isEqualTo(Set.of(expectedNefe.getNefeFeedId())),
                 () -> assertThat(actual.isRead()).isEqualTo(State.of(expectedState.getNursState()).isRead()),
                 () -> assertThat(actual.isShared()).isEqualTo((expectedState.getNursState() & Flags.SHARED) != 0)
         );
@@ -187,23 +185,27 @@ class NewsRepositoryTest {
     @Test
     void should_list_state(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
-        List<Map.Entry<String, State>> actuals = tested.listState(Criteria.property("newsId").in(
-                "37c8fbce87cae77f34aac2a2a52511f60b1369317dec57f38df3f3ae30c42840",
-                "8a1161a7d2fc70fd5e865d3394eddfc0dbad40a792973f9dad50ff62afdb088b",
-                "22f530b91e1dac4854cd3273b1ca45784e08a00fac25ca01792c6989db152fc0"
-        )).collectList().block();
+
+        String id21 = Hasher.identify(NewsRecordSamples.BASE_TEST_URI.resolve("021"));
+        String id22 = Hasher.identify(NewsRecordSamples.BASE_TEST_URI.resolve("022"));
+        String id23 = Hasher.identify(NewsRecordSamples.BASE_TEST_URI.resolve("023"));
+        List<Map.Entry<String, State>> actuals = tested.listState(Criteria.property("newsId")
+                .in(id21, id22, id23))
+                .collectList().block();
 
         assertThat(actuals).containsOnly(
-                Map.entry("37c8fbce87cae77f34aac2a2a52511f60b1369317dec57f38df3f3ae30c42840", State.of(2)),
-                Map.entry("8a1161a7d2fc70fd5e865d3394eddfc0dbad40a792973f9dad50ff62afdb088b", State.of(0)),
-                Map.entry("22f530b91e1dac4854cd3273b1ca45784e08a00fac25ca01792c6989db152fc0", State.of(2)));
+                Map.entry(id21, State.of(0)),
+                Map.entry(id22, State.of(1)),
+                Map.entry(id23, State.of(2))
+        );
     }
 
     @Test
     void should_delete_news(DSLContext dsl) {
         List<String> ids = List.of(
-                "22f530b91e1dac4854cd3273b1ca45784e08a00fac25ca01792c6989db152fc0",
-                "900cf7d10afd3c1584d6d3122743a86c0315fde7d8acbe3a585a2cb7c301807c");
+                Hasher.identify(NewsRecordSamples.BASE_TEST_URI.resolve("024")),
+                Hasher.identify(NewsRecordSamples.BASE_TEST_URI.resolve("042"))
+        );
         {
             int countNews = dsl.fetchCount(NEWS, NEWS.NEWS_ID.in(ids));
             assertThat(countNews).isEqualTo(ids.size());
