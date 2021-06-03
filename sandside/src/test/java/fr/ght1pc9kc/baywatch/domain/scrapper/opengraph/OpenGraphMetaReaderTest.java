@@ -45,8 +45,11 @@ public class OpenGraphMetaReaderTest {
     @ParameterizedTest
     @CsvSource({
             "http://obiwan.kenobi.jedi/tatooine/featured.jpg",
+            "http://obiwan.kenobi.jedi/tatooine/featured.jpg?name=Obiwan",
             "//obiwan.kenobi.jedi/tatooine/featured.jpg",
+            "//obiwan.kenobi.jedi/tatooine/featured.jpg?name=Obiwan",
             "/tatooine/featured.jpg",
+            "/tatooine/featured.jpg?name=Obiwan",
             "../tatooine/featured.jpg",
     })
     void should_parse_relative_url(String imageLink) {

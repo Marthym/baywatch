@@ -71,10 +71,13 @@ public final class OpenGraphMetaReader {
 
     private Optional<URI> readMetaUri(String link, URI location) {
         Optional<URI> uri = Optional.ofNullable(link)
-                .flatMap(Exceptions.silence().function(URI::create));
+                .flatMap(Exceptions.silence().function(URI::create))
+                .map(Exceptions.wrap().function(u -> new URI(u.getScheme(), u.getHost(), u.getPath(), null)));
+
         if (location != null) {
             return uri.map(location::resolve);
         }
+
         return uri;
     }
 }
