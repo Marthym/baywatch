@@ -9,6 +9,7 @@ import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.Tags;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Locale;
@@ -72,7 +73,15 @@ public final class OpenGraphMetaReader {
     private Optional<URI> readMetaUri(String link, URI location) {
         Optional<URI> uri = Optional.ofNullable(link)
                 .flatMap(Exceptions.silence().function(URI::create))
-                .map(Exceptions.wrap().function(u -> new URI(u.getScheme(), u.getHost(), u.getPath(), null)));
+                .flatMap(u -> {
+                    try {
+                        return Optional.of(new URI(u.getScheme(), u.getHost(), u.getPath(), null));
+                    } catch (URISyntaxException e) {
+                        log.info("{}: {} -> {}", e.getClass(), e.getLocalizedMessage(), u);
+                        log.debug("STACKTRACE", e);
+                        return Optional.empty();
+                    }
+                });
 
         if (location != null) {
             return uri.map(location::resolve);
