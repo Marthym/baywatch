@@ -51,7 +51,7 @@ public class FeedRepository implements FeedPersistencePort {
 
     @Override
     public Flux<Feed> list(PageRequest pageRequest) {
-        Condition conditions = pageRequest.filter().visit(JOOQ_CONDITION_VISITOR);
+        Condition conditions = pageRequest.filter().accept(JOOQ_CONDITION_VISITOR);
         return Flux.<Record>create(sink -> {
             Cursor<Record> cursor = dsl.select(FEEDS.fields()).select(FEEDS_USERS.FEUS_TAGS)
                     .from(FEEDS)
@@ -66,7 +66,7 @@ public class FeedRepository implements FeedPersistencePort {
             });
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(baywatchMapper::recordToFeed)
-                .filter(pageRequest.filter().visit(FEEDS_PREDICATE_VISITOR));
+                .filter(pageRequest.filter().accept(FEEDS_PREDICATE_VISITOR));
     }
 
     @Override

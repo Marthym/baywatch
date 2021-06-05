@@ -46,7 +46,7 @@ public class FeedAdminRepository implements FeedAdministrationPort {
 
     @Override
     public Flux<RawFeed> list(PageRequest pageRequest) {
-        Condition conditions = pageRequest.filter().visit(JOOQ_CONDITION_VISITOR);
+        Condition conditions = pageRequest.filter().accept(JOOQ_CONDITION_VISITOR);
         return Flux.<Record>create(sink -> {
             Cursor<Record> cursor = dsl.select().from(FEEDS)
                     .leftJoin(FEEDS_USERS).on(FEEDS.FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID))
@@ -60,7 +60,7 @@ public class FeedAdminRepository implements FeedAdministrationPort {
             });
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(baywatchMapper::recordToRawFeed)
-                .filter(pageRequest.filter().visit(FEEDS_PREDICATE_VISITOR));
+                .filter(pageRequest.filter().accept(FEEDS_PREDICATE_VISITOR));
     }
 
     @Override

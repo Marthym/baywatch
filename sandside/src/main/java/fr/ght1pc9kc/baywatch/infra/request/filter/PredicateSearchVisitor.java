@@ -2,7 +2,6 @@ package fr.ght1pc9kc.baywatch.infra.request.filter;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.filter.*;
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,7 +10,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 @Slf4j
-public class PredicateSearchVisitor<E> implements Criteria.Visitor<Predicate<E>> {
+public class PredicateSearchVisitor<E> implements CriteriaVisitor<Predicate<E>> {
     private final ObjectMapper mapper = new ObjectMapper()
             .findAndRegisterModules();
 
@@ -23,19 +22,19 @@ public class PredicateSearchVisitor<E> implements Criteria.Visitor<Predicate<E>>
     @Override
     public Predicate<E> visitAnd(AndOperation operation) {
         return n -> operation.andCriteria.stream()
-                .map(a -> a.visit(this))
+                .map(a -> a.accept(this))
                 .allMatch(a -> a.test(n));
     }
 
     @Override
     public Predicate<E> visitNot(NotOperation operation) {
-        return n -> !operation.negative.visit(this).test(n);
+        return n -> !operation.negative.accept(this).test(n);
     }
 
     @Override
     public Predicate<E> visitOr(OrOperation operation) {
         return n -> operation.orCriteria.stream()
-                .map(a -> a.visit(this))
+                .map(a -> a.accept(this))
                 .anyMatch(a -> a.test(n));
     }
 

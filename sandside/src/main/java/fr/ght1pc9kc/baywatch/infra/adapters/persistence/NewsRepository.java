@@ -57,7 +57,7 @@ public class NewsRepository implements NewsPersistencePort {
 
     @Override
     public Flux<News> list(QueryContext qCtx) {
-        Condition conditions = qCtx.filter.visit(NEWS_CONDITION_VISITOR);
+        Condition conditions = qCtx.filter.accept(NEWS_CONDITION_VISITOR);
         PredicateSearchVisitor<News> predicateSearchVisitor = new PredicateSearchVisitor<>();
 
         SelectQuery<Record> select = dsl.selectQuery();
@@ -89,7 +89,7 @@ public class NewsRepository implements NewsPersistencePort {
             });
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(baywatchMapper::recordToNews)
-                .filter(qCtx.filter.visit(predicateSearchVisitor));
+                .filter(qCtx.filter.accept(predicateSearchVisitor));
     }
 
     @Override
@@ -129,7 +129,7 @@ public class NewsRepository implements NewsPersistencePort {
 
     @Override
     public Flux<Entry<String, State>> listState(Criteria searchCriteria) {
-        Condition conditions = searchCriteria.visit(STATE_CONDITION_VISITOR);
+        Condition conditions = searchCriteria.accept(STATE_CONDITION_VISITOR);
         PredicateSearchVisitor<State> predicateSearchVisitor = new PredicateSearchVisitor<>();
         return Flux.<NewsUserStateRecord>create(sink -> {
             Cursor<NewsUserStateRecord> cursor = dsl.selectFrom(NEWS_USER_STATE).where(conditions).fetchLazy();
@@ -143,7 +143,7 @@ public class NewsRepository implements NewsPersistencePort {
             });
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(r -> Map.entry(r.getNursNewsId(), State.of(r.getNursState())))
-                .filter(s -> searchCriteria.visit(predicateSearchVisitor).test(s.getValue()));
+                .filter(s -> searchCriteria.accept(predicateSearchVisitor).test(s.getValue()));
     }
 
     @Override

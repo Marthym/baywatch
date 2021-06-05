@@ -47,7 +47,7 @@ public class UserRepository implements UserPersistencePort {
 
     @Override
     public Flux<User> list(PageRequest pageRequest) {
-        Condition conditions = pageRequest.filter().visit(JOOQ_CONDITION_VISITOR);
+        Condition conditions = pageRequest.filter().accept(JOOQ_CONDITION_VISITOR);
 
         return Flux.<UsersRecord>create(sink -> {
             Cursor<UsersRecord> cursor = dsl.selectFrom(USERS).where(conditions).fetchLazy();
@@ -61,7 +61,7 @@ public class UserRepository implements UserPersistencePort {
             });
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(baywatchConverter::recordToUser)
-                .filter(pageRequest.filter().visit(USER_PREDICATE_VISITOR));
+                .filter(pageRequest.filter().accept(USER_PREDICATE_VISITOR));
     }
 
     @Override

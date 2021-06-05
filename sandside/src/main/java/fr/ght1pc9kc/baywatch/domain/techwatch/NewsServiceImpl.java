@@ -11,6 +11,7 @@ import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
+import fr.ght1pc9kc.juery.api.filter.CriteriaVisitor;
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,7 @@ public class NewsServiceImpl implements NewsService {
     private static final Set<String> ALLOWED_CRITERIA = Set.of(ID, PUBLICATION, SHARED, STATE, TITLE, FEED_ID);
     private static final Set<String> ALLOWED_AUTHENTICATED_CRITERIA = Set.of(READ);
 
-    private final Criteria.Visitor<List<String>> propertiesExtractor;
+    private final CriteriaVisitor<List<String>> propertiesExtractor;
     private final NewsPersistencePort newsRepository;
     private final AuthenticationFacade authFacade;
 
@@ -86,7 +87,7 @@ public class NewsServiceImpl implements NewsService {
     }
 
     private <T> T throwOnInvalidRequestFilters(PageRequest request, @Nullable T ignore) {
-        Stream<String> stream = request.filter().visit(propertiesExtractor).stream()
+        Stream<String> stream = request.filter().accept(propertiesExtractor).stream()
                 .filter(not(ALLOWED_CRITERIA::contains));
         Stream<String> authStream = (ignore != null)
                 ? stream.filter(not(ALLOWED_AUTHENTICATED_CRITERIA::contains))
