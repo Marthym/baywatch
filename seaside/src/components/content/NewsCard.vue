@@ -17,17 +17,17 @@
     <div v-bind:class="{ 'm-6': card.isActive, 'm-4': !card.isActive}" class="flex-grow"><!-- Middle -->
       <div class="flex flex-col h-full"
            v-bind:class="{
-              'text-black': !card.data.read,
-              'text-gray-400': card.data.read,
-              'dark:text-gray-200': !card.data.read,
-              'dark:text-gray-500': card.data.read
+              'text-black': !card.data.read || card.isActive,
+              'text-gray-400': card.data.read && !card.isActive,
+              'dark:text-gray-200': !card.data.read || card.isActive,
+              'dark:text-gray-500': card.data.read && !card.isActive
             }">
-        <a class="font-semibold text-xl" :href="card.data.link" v-html="card.data.title"></a>
+        <a class="font-semibold text-xl" :href="card.data.link" :title="card.data.link" v-html="card.data.title"></a>
         <span v-bind:class="{
-                'text-gray-600': !card.data.read,
-                'text-gray-300': card.data.read,
-                'dark:text-gray-300': !card.data.read,
-                'dark:text-gray-500': card.data.read,
+                'text-gray-600': !card.data.read || card.isActive,
+                'text-gray-300': card.data.read && !card.isActive,
+                'dark:text-gray-300': !card.data.read || card.isActive,
+                'dark:text-gray-500': card.data.read && !card.isActive,
               }"
               v-html="card.data.description" class="mt-2 text-base flex-grow overflow-hidden"></span>
 
