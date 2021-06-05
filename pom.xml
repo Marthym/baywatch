@@ -30,7 +30,7 @@
         <db.username>security</db.username>
         <db.password>security</db.password>
 
-        <juery.version>1.0.1-SNAPSHOT</juery.version>
+        <juery.version>1.1.0</juery.version>
         <html-sanitizer.version>20200713.1</html-sanitizer.version>
         <noexception.version>1.6.2</noexception.version>
         <mapstruct.version>1.4.2.Final</mapstruct.version>
