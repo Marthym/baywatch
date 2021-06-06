@@ -55,6 +55,7 @@ import ScrollActivable from "@/services/model/ScrollActivable";
 import InfiniteScrollBehaviour from "@/services/InfiniteScrollBehaviour";
 import InfiniteScrollable from "@/services/model/InfiniteScrollable";
 import {Mark} from "@/services/model/Mark.enum";
+import FeedService from "@/services/FeedService";
 
 @Component({
   components: {
@@ -71,7 +72,9 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
   private readonly infiniteScroll = InfiniteScrollBehaviour.apply(this);
   private newsService: NewsService = new NewsService(process.env.VUE_APP_API_BASE_URL);
   private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
+  private feedService: FeedService = new FeedService(process.env.VUE_APP_API_BASE_URL);
   private news: NewsView[] = new Array(0);
+  private feeds = new Map();
 
   private activeNews = -1;
   private page = 0;
@@ -107,11 +110,26 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
           this.$nextTick(() => {
             ns.forEach(n => elements.next(this.getRefElement(n.data.id)));
             elements.complete();
+            this.loadFeeds(ns.map(n => n.data.id));
           })
         },
         e => elements.next(e)
     );
     return elements.asObservable();
+  }
+
+  loadFeeds(ids: string[]) {
+    const query = new URLSearchParams(FeedService.DEFAULT_QUERY);
+    for (const id of ids) {
+      if (!this.feeds.has(id)) {
+        query.append('id', id);
+      }
+    }
+    this.feedService.list(-1, query).subscribe(fs => {
+      for (const f of fs) {
+        this.feeds.set(f.id, f);
+      }
+    })
   }
 
   onKeyDownListener(event: KeyboardEvent): void {
