@@ -9,12 +9,11 @@ import lombok.AllArgsConstructor;
 import org.intellij.lang.annotations.MagicConstant;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("${baywatch.base-route}/news")
@@ -36,7 +35,7 @@ public class NewsController {
     }
 
     @GetMapping
-    public Flux<News> listNews(@RequestParam Map<String, String> queryStringParams) {
+    public Flux<News> listNews(@RequestParam MultiValueMap<String, String> queryStringParams) {
         return newsService.list(PageRequestFormatter.parse(queryStringParams))
                 .onErrorMap(BadCriteriaFilter.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
     }
