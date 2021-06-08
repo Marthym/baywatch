@@ -56,6 +56,7 @@ import InfiniteScrollBehaviour from "@/services/InfiniteScrollBehaviour";
 import InfiniteScrollable from "@/services/model/InfiniteScrollable";
 import {Mark} from "@/services/model/Mark.enum";
 import FeedService from "@/services/FeedService";
+import {Feed} from "@/services/model/Feed";
 
 @Component({
   components: {
@@ -74,7 +75,7 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
   private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
   private feedService: FeedService = new FeedService(process.env.VUE_APP_API_BASE_URL);
   private news: NewsView[] = new Array(0);
-  private feeds = new Map();
+  private feeds = new Map<string, Feed>();
 
   private activeNews = -1;
   private page = 0;
@@ -103,33 +104,56 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
       query.append('read', 'false');
     }
     const elements = new Subject<Element>();
-    this.subscriptions = this.newsService.getNews(++this.page, query).pipe(
-        map(ns => ns.map(n => ({data: n, isActive: false, keepMark: false}) as NewsView)),
+    const currentPage = ++this.page;
+    this.subscriptions = this.newsService.getNews(currentPage, query).pipe(
+        map(ns => ns.map(n => ({data: n, feeds: [], isActive: false, keepMark: false}) as NewsView)),
         tap(ns => this.news.push(...ns))
     ).subscribe(ns => {
           this.$nextTick(() => {
-            ns.forEach(n => elements.next(this.getRefElement(n.data.id)));
+            const feeds = new Map<string, string>();
+            ns.forEach(n => {
+              n.data.feeds.forEach(fid => feeds.set(n.data.id, fid));
+              return elements.next(this.getRefElement(n.data.id));
+            });
             elements.complete();
-            this.loadFeeds(ns.map(n => n.data.id));
-          })
+            this.loadFeeds(currentPage, feeds);
+          });
         },
         e => elements.next(e)
     );
     return elements.asObservable();
   }
 
-  loadFeeds(ids: string[]) {
+  loadFeeds(page: number, ids: Map<string, string>) {
+    const fromIdx = this.news.length - Math.round(this.news.length / page);
+    const feedIds = this.updateNewsView(fromIdx, ids);
+
     const query = new URLSearchParams(FeedService.DEFAULT_QUERY);
-    for (const id of ids) {
-      if (!this.feeds.has(id)) {
-        query.append('id', id);
-      }
-    }
+    feedIds.forEach(f => query.append('id', f));
     this.feedService.list(-1, query).subscribe(fs => {
       for (const f of fs) {
         this.feeds.set(f.id, f);
       }
-    })
+      this.updateNewsView(fromIdx, ids);
+    });
+  }
+
+  private updateNewsView(fromIdx: number, ids: Map<string, string>): Set<string> {
+    const feedIds = new Set<string>();
+    for (let i = fromIdx; i < this.news.length; i++) {
+      console.log(i, this.news.length);
+      const news = this.news[i];
+      const feedId = ids.get(news.data.id);
+      if (feedId === undefined) continue;
+      const feed = this.feeds.get(feedId);
+      if (feed === undefined) {
+        feedIds.add(feedId);
+      } else {
+        if (!news.feeds.includes(feed.name))
+          news.feeds.push(feed.name);
+      }
+    }
+    return feedIds;
   }
 
   onKeyDownListener(event: KeyboardEvent): void {
@@ -237,7 +261,6 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
   }
 
   beforeDestroy(): void {
-    console.log("beforeDestroy MainContent");
     window.removeEventListener('keydown', this.onKeyDownListener, false);
   }
 }

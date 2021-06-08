@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-row bg-white dark:bg-gray-600 shadow rounded-lg"
-       v-bind:class="{ 'shadow-lg h-56 my-8 border border-gray-400': card.isActive, 'h-48 m-5': !card.isActive}"
+       v-bind:class="{ 'shadow-lg h-60 my-8 border border-gray-400': card.isActive, 'h-56 m-5': !card.isActive}"
        @click="$emit('activate')">
     <!-- Card -->
     <div class="flex-none"><!-- Left side -->
@@ -31,10 +31,13 @@
               }"
               v-html="card.data.description" class="mt-2 text-base flex-grow overflow-hidden"></span>
 
-        <div class="flex flex-row-reverse text-sm italic mt-1" v-bind:class="{'-mb-2': card.isActive}">
+        <div class="flex flex-row-reverse text-sm italic mt-1" >
           <span>{{ card.data.publication }}</span>
           <span class="flex-grow"></span>
           <slot name="actions"></slot>
+        </div>
+        <div class="flex flex-row-reverse text-xs italic" v-bind:class="{'-mb-2': card.isActive}">
+          <span>{{ card.feeds.join(' | ') }}</span>
         </div>
 
       </div>

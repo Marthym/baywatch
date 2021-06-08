@@ -2,6 +2,7 @@ import {News} from "@/services/model/News";
 
 export type NewsView = {
     data: News;
+    feeds: string[];
     isActive: boolean;
 
     /**
