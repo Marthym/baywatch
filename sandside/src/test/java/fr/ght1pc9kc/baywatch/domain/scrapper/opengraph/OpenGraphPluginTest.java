@@ -3,10 +3,9 @@ package fr.ght1pc9kc.baywatch.domain.scrapper.opengraph;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OGType;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OpenGraph;
+import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.plugins.YoutubeRequestPlugin;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,32 +14,24 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.web.util.UriBuilder;
 import reactor.netty.http.client.HttpClient;
-import reactor.test.StepVerifier;
+import wiremock.org.apache.http.client.utils.URIBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.util.List;
 import java.util.Random;
 
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 
-class OpenGraphScrapperTest {
+public class OpenGraphPluginTest {
     static final WireMockServer mockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
 
     private final OpenGraphMetaReader ogReader = spy(new OpenGraphMetaReader());
-    private final WebClient webClient = WebClient.builder()
-            .clientConnector(new ReactorClientHttpConnector(
-                    HttpClient.create()
-                            .followRedirect(true)
-                            .compress(true)
-            )).build();
-    private final OpenGraphScrapper tested = new OpenGraphScrapper(webClient, ogReader, List.of());
+
+    private OpenGraphScrapper tested;
 
     @BeforeAll
     static void stubAllMockServerRoute() throws IOException {
@@ -71,42 +62,19 @@ class OpenGraphScrapperTest {
 
     @BeforeEach
     void setUp() {
-        reset(ogReader);
-    }
-
-    @AfterAll
-    static void afterAll() {
-        mockServer.stop();
-    }
-
-    @Test
-    void should_parse_opengraph() throws MalformedURLException {
-        URI page = URI.create(mockServer.baseUrl() + "/article.html");
-        OpenGraph actual = tested.scrap(page).block();
-
-        Assertions.assertThat(actual).isEqualTo(OpenGraph.builder()
-                .title("De Paris à Toulouse")
-                .description("Déplacement des serveurs de l’infrastructure i-Run depuis Paris jusqu’à Toulouse chez " +
-                        "notre hébergeur FullSave. Nouvelles machines, nouvelle infra pour plus de résilience et une " +
-                        "meilleure tenue de la charge sur les sites publics comme sur le backoffice.")
-                .type(OGType.ARTICLE)
-                .url(new URL("https://blog.i-run.si/posts/silife/infra-de-paris-a-toulouse/"))
-                .image(URI.create("https://blog.i-run.si/posts/silife/infra-de-paris-a-toulouse/featured.jpg"))
-                .build());
+        WebClient webClient = WebClient.builder()
+                .baseUrl(mockServer.baseUrl())
+                .clientConnector(new ReactorClientHttpConnector(
+                        HttpClient.create()
+                                .followRedirect(true)
+                                .compress(true)
+                )).build();
+        this.tested = new OpenGraphScrapper(webClient, ogReader, List.of(new YoutubeRequestPlugin()));
     }
 
     @Test
-    void should_scrap_not_found() {
-        URI page = URI.create(mockServer.baseUrl() + "/not-found.html");
-        OpenGraph actual = tested.scrap(page).block();
-        Assertions.assertThat(actual).isNull();
-    }
-
-    @Test
-    void should_scrap_not_html() {
-        URI page = URI.create(mockServer.baseUrl() + "/podcast.mp3");
-        Mono<OpenGraph> actual = tested.scrap(page);
-
-        StepVerifier.create(actual).verifyComplete();
+    void should_use_plugin_for_scrapper() {
+        OpenGraph block = tested.scrap(URI.create("https://www.youtube.com/watch?v=l9nh1l8ZIJQ")).block();
+        System.out.println(block);
     }
 }
