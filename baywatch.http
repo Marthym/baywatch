@@ -25,8 +25,10 @@ POST http://{{host}}//api/feeds/import
 [
     { "name": "A Java Geek", "url": "https://blog.frankel.ch/feed.xml" },
     { "name": "Clubic High Tech", "url": "https://www.clubic.com/feed/news-pro.rss" },
+    { "name": "Clubic", "url": "https://www.clubic.com/feed/news.rss" },
     { "name": "Debian Bits", "url": "https://bits.debian.org/feeds/feed.rss" },
     { "name": "Developpez.com", "url": "https://www.developpez.com/index/rss" },
+    { "name": "ght1kp9kc.fr", "url": "https://blog.ght1pc9kc.fr/index.xml" },
     { "name": "Human Coders", "url": "https://news.humancoders.com/items/feed.rss" },
     { "name": "Journal Du Hacker", "url": "https://www.journalduhacker.net/rss" },
     { "name": "Sebosss", "url": "https://blog.seboss666.info/feed/" },
