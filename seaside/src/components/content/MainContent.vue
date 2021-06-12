@@ -138,10 +138,16 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
     });
   }
 
+  /**
+   * For each news from the index to the and of the array, update the feed with the uptodate feed map
+   *
+   * @param fromIdx The start index for looping in news array
+   * @param ids The list of couple of News Id and Feed Id
+   * @private A Set containing Feed Id not found in feeds map
+   */
   private updateNewsView(fromIdx: number, ids: Map<string, string>): Set<string> {
     const feedIds = new Set<string>();
     for (let i = fromIdx; i < this.news.length; i++) {
-      console.log(i, this.news.length);
       const news = this.news[i];
       const feedId = ids.get(news.data.id);
       if (feedId === undefined) continue;
