@@ -110,9 +110,9 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
         tap(ns => this.news.push(...ns))
     ).subscribe(ns => {
           this.$nextTick(() => {
-            const feeds = new Map<string, string>();
+            const feeds = new Map<string, string[]>();
             ns.forEach(n => {
-              n.data.feeds.forEach(fid => feeds.set(n.data.id, fid));
+              feeds.set(n.data.id, n.data.feeds);
               return elements.next(this.getRefElement(n.data.id));
             });
             elements.complete();
@@ -124,7 +124,7 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
     return elements.asObservable();
   }
 
-  loadFeeds(page: number, ids: Map<string, string>) {
+  loadFeeds(page: number, ids: Map<string, string[]>) {
     const fromIdx = this.news.length - Math.round(this.news.length / page);
     const feedIds = this.updateNewsView(fromIdx, ids);
 
@@ -145,19 +145,22 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
    * @param ids The list of couple of News Id and Feed Id
    * @private A Set containing Feed Id not found in feeds map
    */
-  private updateNewsView(fromIdx: number, ids: Map<string, string>): Set<string> {
+  private updateNewsView(fromIdx: number, ids: Map<string, string[]>): Set<string> {
     const feedIds = new Set<string>();
     for (let i = fromIdx; i < this.news.length; i++) {
       const news = this.news[i];
-      const feedId = ids.get(news.data.id);
-      if (feedId === undefined) continue;
-      const feed = this.feeds.get(feedId);
-      if (feed === undefined) {
-        feedIds.add(feedId);
-      } else {
-        if (!news.feeds.includes(feed.name))
-          news.feeds.push(feed.name);
-      }
+      const receivedFeedIds = ids.get(news.data.id);
+      if (receivedFeedIds === undefined) continue;
+
+      receivedFeedIds.forEach(feedId => {
+        const feed = this.feeds.get(feedId);
+        if (feed === undefined) {
+          feedIds.add(feedId);
+        } else {
+          if (!news.feeds.includes(feed.name))
+            news.feeds.push(feed.name);
+        }
+      });
     }
     return feedIds;
   }

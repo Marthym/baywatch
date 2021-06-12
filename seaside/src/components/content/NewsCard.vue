@@ -31,13 +31,13 @@
               }"
               v-html="card.data.description" class="mt-2 text-base flex-grow overflow-hidden"></span>
 
-        <div class="flex flex-row-reverse text-sm italic mt-1" >
+        <div class="flex flex-row-reverse text-sm italic mt-1">
           <span>{{ card.data.publication }}</span>
-          <span class="flex-grow"></span>
-          <slot name="actions"></slot>
         </div>
         <div class="flex flex-row-reverse text-xs italic" v-bind:class="{'-mb-2': card.isActive}">
           <span>{{ card.feeds.join(' | ') }}</span>
+          <span class="flex-grow"></span>
+          <slot name="actions"></slot>
         </div>
 
       </div>
