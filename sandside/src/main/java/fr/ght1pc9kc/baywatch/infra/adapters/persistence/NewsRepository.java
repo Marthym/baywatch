@@ -32,6 +32,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
@@ -70,6 +71,10 @@ public class NewsRepository implements NewsPersistencePort {
         select.addGroupBy(NEWS.fields());
 
         if (!StringUtils.isBlank(qCtx.userId)) {
+            select.addSelect(FEEDS_USERS.FEUS_TAGS);
+            select.addJoin(FEEDS_USERS, JoinType.JOIN,
+                    NEWS_FEEDS.NEFE_FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID).and(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId)));
+
             select.addSelect(NEWS_USER_STATE.NURS_STATE);
             select.addJoin(NEWS_USER_STATE, JoinType.LEFT_OUTER_JOIN,
                     NEWS.NEWS_ID.eq(NEWS_USER_STATE.NURS_NEWS_ID).and(NEWS_USER_STATE.NURS_USER_ID.eq(qCtx.userId)));
