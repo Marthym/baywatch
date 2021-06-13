@@ -43,7 +43,7 @@ public class NewsServiceImpl implements NewsService {
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
                 .map(user -> throwOnInvalidRequestFilters(pageRequest, user))
                 .map(user -> QueryContext.from(pageRequest).withUserId(user.id))
-                .onErrorResume(UnauthenticatedUser.class, (e) ->
+                .onErrorResume(UnauthenticatedUser.class, e ->
                         Mono.fromCallable(() -> throwOnInvalidRequestFilters(pageRequest, null))
                                 .thenReturn(QueryContext.from(pageRequest)))
                 .flatMapMany(newsRepository::list);

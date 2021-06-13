@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
@@ -9,7 +10,6 @@ import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.infra.request.filter.PredicateSearchVisitor;
 import fr.ght1pc9kc.juery.api.Criteria;
-import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
+import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 
 @Slf4j
 @Repository
@@ -41,22 +42,29 @@ public class FeedRepository implements FeedPersistencePort {
 
     @Override
     public Mono<Feed> get(String id) {
-        return list(PageRequest.one(Criteria.property(EntitiesProperties.ID).eq(id))).next();
+        return list(QueryContext.first(Criteria.property(EntitiesProperties.ID).eq(id))).next();
     }
 
     @Override
     public Flux<Feed> list() {
-        return list(PageRequest.all());
+        return list(QueryContext.empty());
     }
 
     @Override
-    public Flux<Feed> list(PageRequest pageRequest) {
-        Condition conditions = pageRequest.filter().accept(JOOQ_CONDITION_VISITOR);
+    public Flux<Feed> list(QueryContext qCtx) {
+        Condition conditions = qCtx.filter.accept(JOOQ_CONDITION_VISITOR);
+        SelectQuery<Record> select = dsl.selectQuery();
+        select.addSelect(FEEDS.fields());
+        select.addConditions(conditions);
+
+        if (qCtx.isScoped()) {
+            select.addSelect(FEEDS_USERS.FEUS_TAGS);
+            select.addJoin(FEEDS_USERS, JoinType.JOIN,
+                    NEWS_FEEDS.NEFE_FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID).and(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId)));
+        }
+
         return Flux.<Record>create(sink -> {
-            Cursor<Record> cursor = dsl.select(FEEDS.fields()).select(FEEDS_USERS.FEUS_TAGS)
-                    .from(FEEDS)
-                    .leftJoin(FEEDS_USERS).on(FEEDS_USERS.FEUS_FEED_ID.eq(FEEDS.FEED_ID))
-                    .where(conditions).fetchLazy();
+            Cursor<Record> cursor = select.fetchLazy();
             sink.onRequest(n -> {
                 Result<Record> rs = cursor.fetchNext(Long.valueOf(n).intValue());
                 rs.forEach(sink::next);
@@ -66,7 +74,7 @@ public class FeedRepository implements FeedPersistencePort {
             });
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(baywatchMapper::recordToFeed)
-                .filter(pageRequest.filter().accept(FEEDS_PREDICATE_VISITOR));
+                .filter(qCtx.filter.accept(FEEDS_PREDICATE_VISITOR));
     }
 
     @Override

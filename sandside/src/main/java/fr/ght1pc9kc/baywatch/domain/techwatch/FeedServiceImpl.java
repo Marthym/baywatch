@@ -5,8 +5,8 @@ import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
-import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
@@ -34,14 +34,14 @@ public class FeedServiceImpl implements FeedService {
     public Flux<Feed> list(PageRequest pageRequest) {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
-                .map(u -> pageRequest.and(Criteria.property("userId").eq(u.id)))
-                .onErrorResume(UnauthenticatedUser.class, (e) -> Mono.just(pageRequest))
+                .map(u -> QueryContext.from(pageRequest).withUserId(u.id))
+                .onErrorResume(UnauthenticatedUser.class, (e) -> Mono.just(QueryContext.from(pageRequest)))
                 .flatMapMany(feedRepository::list);
     }
 
     @Override
     public Flux<RawFeed> raw(PageRequest pageRequest) {
-        return feedRepository.list(pageRequest)
+        return feedRepository.list(QueryContext.from(pageRequest))
                 .map(Feed::getRaw);
     }
 

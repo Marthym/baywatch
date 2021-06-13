@@ -36,4 +36,8 @@ public final class QueryContext {
     public static QueryContext empty() {
         return new QueryContext(Pagination.ALL, Criteria.none(), null);
     }
+
+    public boolean isScoped() {
+        return userId != null && !userId.isBlank();
+    }
 }

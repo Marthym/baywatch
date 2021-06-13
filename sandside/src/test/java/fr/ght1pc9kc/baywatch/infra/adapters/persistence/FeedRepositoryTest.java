@@ -2,17 +2,16 @@ package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.RawFeed;
+import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.mappers.DateUtils;
 import fr.ght1pc9kc.baywatch.infra.samples.FeedRecordSamples;
-import fr.ght1pc9kc.baywatch.infra.samples.FeedsUsersRecordSample;
 import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.UsersRecordSamples;
 import fr.ght1pc9kc.juery.api.Criteria;
-import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.irun.testy.core.extensions.ChainedExtension;
 import fr.irun.testy.jooq.WithDatabaseLoaded;
 import fr.irun.testy.jooq.WithDslContext;
@@ -49,7 +48,7 @@ class FeedRepositoryTest {
             .addDataset(UsersRecordSamples.SAMPLE)
             .addDataset(NewsRecordSamples.SAMPLE)
             .addDataset(NewsRecordSamples.NewsFeedsRecordSample.SAMPLE)
-            .addDataset(FeedsUsersRecordSample.SAMPLE)
+            .addDataset(FeedRecordSamples.FeedUserRecordSamples.SAMPLE)
             .build();
 
     @RegisterExtension
@@ -80,7 +79,7 @@ class FeedRepositoryTest {
                         .name(expected.getFeedName())
                         .lastWatch(DateUtils.toInstant(expected.getFeedLastWatch()))
                         .build())
-                .tags(Set.of("java", "spring"))
+                .tags(Set.of())
                 .build());
     }
 
@@ -147,12 +146,13 @@ class FeedRepositoryTest {
 
     @Test
     void should_delete_feeds(DSLContext dsl) {
-        List<String> ids = List.of(
-                "0649957555efd5c7155641c9d51567b87601f147fe47588a047fabc9ffe7c6f1",
-                "95b7849e51b7708d1aa4809b8c1872179d06c3ca4ce0e3ecc15cdcf5e3b02bed");
+        String feedOwnedByObiwanAndSkywalker = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("01"));
+        String feedOwnedOnlyByObywan = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("03"));
+        List<String> ids = List.of(feedOwnedByObiwanAndSkywalker, feedOwnedOnlyByObywan);
+
         {
             int countUser = dsl.fetchCount(FEEDS_USERS, FEEDS_USERS.FEUS_FEED_ID.in(ids));
-            assertThat(countUser).isEqualTo(ids.size());
+            assertThat(countUser).isEqualTo(3);
         }
 
         tested.delete(ids).block();
@@ -165,26 +165,29 @@ class FeedRepositoryTest {
 
     @Test
     void should_delete_feeds_for_user(DSLContext dsl) {
-        List<String> ids = List.of(
-                "0649957555efd5c7155641c9d51567b87601f147fe47588a047fabc9ffe7c6f1",
-                "95b7849e51b7708d1aa4809b8c1872179d06c3ca4ce0e3ecc15cdcf5e3b02bed");
+        String feedOwnedByObiwanAndSkywalker = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("01"));
+        String feedOwnedOnlyByObywan = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("03"));
+        List<String> ids = List.of(feedOwnedByObiwanAndSkywalker, feedOwnedOnlyByObywan);
+
         {
             int countUser = dsl.fetchCount(FEEDS_USERS, FEEDS_USERS.FEUS_FEED_ID.in(ids)
                     .and(FEEDS_USERS.FEUS_USER_ID.eq(OKENOBI.getUserId())));
-            assertThat(countUser).isEqualTo(ids.size());
+            assertThat(countUser).isEqualTo(2);
         }
 
         tested.delete(ids, OKENOBI.getUserId()).block();
 
         {
             int countUser = dsl.fetchCount(FEEDS_USERS, FEEDS_USERS.FEUS_FEED_ID.in(ids));
-            assertThat(countUser).isEqualTo(0);
+            assertThat(countUser)
+                    .describedAs("Feed 02 was remove, feed 01, owned by LSKYWALKER was kept")
+                    .isEqualTo(1);
         }
     }
 
     @Test
     void should_list_orphan_feed() {
-        List<Feed> actuals = tested.list(PageRequest.all(Criteria.property(FEED_ID).isNull())).collectList().block();
+        List<Feed> actuals = tested.list(QueryContext.all(Criteria.property(FEED_ID).isNull())).collectList().block();
         assertThat(actuals).extracting(Feed::getId).containsExactly("a6e68b72e99e2e9e54258d98f175f504ad128bf2142597815c6c116f1925411c");
     }
 }

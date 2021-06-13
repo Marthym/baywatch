@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.domain.techwatch.ports;
 
 import fr.ght1pc9kc.baywatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -12,7 +13,7 @@ public interface FeedPersistencePort {
 
     Flux<Feed> list();
 
-    Flux<Feed> list(PageRequest pageRequest);
+    Flux<Feed> list(QueryContext qCtx);
 
     Mono<Void> persist(Collection<Feed> toPersist);
 
