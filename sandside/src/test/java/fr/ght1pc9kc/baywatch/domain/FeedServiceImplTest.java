@@ -41,7 +41,7 @@ public class FeedServiceImplTest {
     @Test
     void should_get_feed() {
         tested.get("42").block();
-        verify(mockFeedRepository, times(1)).get(anyString());
+        verify(mockFeedRepository, times(1)).get(any());
     }
 
     @Test

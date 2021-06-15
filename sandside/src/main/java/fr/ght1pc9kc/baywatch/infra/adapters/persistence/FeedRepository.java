@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.domain.exceptions.BadCriteriaFilter;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
@@ -9,7 +10,8 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.infra.request.filter.PredicateSearchVisitor;
-import fr.ght1pc9kc.juery.api.Criteria;
+import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
+import fr.ght1pc9kc.juery.basic.filter.QueryStringFilterVisitor;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,7 @@ import reactor.core.scheduler.Scheduler;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
@@ -35,19 +38,15 @@ public class FeedRepository implements FeedPersistencePort {
     private static final JooqConditionVisitor JOOQ_CONDITION_VISITOR =
             new JooqConditionVisitor(PropertiesMappers.FEEDS_PROPERTIES_MAPPING::get);
     private static final PredicateSearchVisitor<Feed> FEEDS_PREDICATE_VISITOR = new PredicateSearchVisitor<>();
+    private static final ListPropertiesCriteriaVisitor PROPERTIES_CRITERIA_VISITOR = new ListPropertiesCriteriaVisitor();
 
     private final Scheduler databaseScheduler;
     private final DSLContext dsl;
     private final BaywatchMapper baywatchMapper;
 
     @Override
-    public Mono<Feed> get(String id) {
-        return list(QueryContext.first(Criteria.property(EntitiesProperties.ID).eq(id))).next();
-    }
-
-    @Override
-    public Flux<Feed> list() {
-        return list(QueryContext.empty());
+    public Mono<Feed> get(QueryContext qCtx) {
+        return list(QueryContext.first(qCtx)).next();
     }
 
     @Override
@@ -124,16 +123,31 @@ public class FeedRepository implements FeedPersistencePort {
     }
 
     @Override
-    public Mono<Integer> delete(Collection<String> toDelete) {
-        return Mono.fromCallable(() ->
-                dsl.deleteFrom(FEEDS_USERS).where(FEEDS_USERS.FEUS_FEED_ID.in(toDelete)).execute());
-    }
+    public Mono<Integer> delete(QueryContext qCtx) {
+        Set<String> allowed = Set.of(EntitiesProperties.FEED_ID);
+        if (!allowed.containsAll(qCtx.filter.accept(PROPERTIES_CRITERIA_VISITOR))) {
+            return Mono.error(new BadCriteriaFilter(
+                    String.format("Only %s allowed for filter deletion !", allowed)));
+        }
 
-    @Override
-    public Mono<Integer> delete(Collection<String> toDelete, String userId) {
-        return Mono.fromCallable(() ->
-                dsl.deleteFrom(FEEDS_USERS).where(FEEDS_USERS.FEUS_FEED_ID.in(toDelete))
-                        .and(FEEDS_USERS.FEUS_USER_ID.eq(userId)).execute());
-    }
+        Condition condition = qCtx.filter.accept(JOOQ_CONDITION_VISITOR);
 
+        var deleteUserLinkQuery = dsl.deleteQuery(FEEDS_USERS);
+        deleteUserLinkQuery.addConditions(condition);
+        if (qCtx.isScoped()) {
+            deleteUserLinkQuery.addConditions(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId));
+        }
+
+        qCtx.filter.accept(new QueryStringFilterVisitor())
+        var deleteFeedQuery = dsl.deleteFrom(FEEDS)
+                .where(FEEDS.FEED_ID.notIn(dsl.select(FEEDS_USERS.FEUS_FEED_ID).from(FEEDS_USERS).where(condition)))
+                .and(FEEDS.FEED_ID.in());
+
+        return Mono.fromCallable(() ->
+                dsl.transactionResult(tx -> {
+                    int countDeleted = tx.dsl().execute(deleteUserLinkQuery);
+                    tx.dsl().execute(deleteFeedQuery);
+                    return countDeleted;
+                }));
+    }
 }

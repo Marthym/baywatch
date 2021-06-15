@@ -32,6 +32,7 @@ import java.util.Set;
 import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.FEED_ID;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
+import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.infra.samples.UsersRecordSamples.OKENOBI;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -70,7 +71,7 @@ class FeedRepositoryTest {
     @Test
     void should_get_user_feed() {
         FeedsRecord expected = FeedRecordSamples.SAMPLE.records().get(0);
-        Feed actual = tested.get(expected.getFeedId()).block();
+        Feed actual = tested.get(QueryContext.id(expected.getFeedId())).block();
 
         assertThat(actual).isEqualTo(Feed.builder()
                 .raw(RawFeed.builder()
@@ -155,7 +156,7 @@ class FeedRepositoryTest {
             assertThat(countUser).isEqualTo(3);
         }
 
-        tested.delete(ids).block();
+        tested.delete(QueryContext.all(Criteria.property(FEED_ID).in(ids))).block();
 
         {
             int countUser = dsl.fetchCount(FEEDS_USERS, FEEDS_USERS.FEUS_FEED_ID.in(ids));
@@ -169,13 +170,19 @@ class FeedRepositoryTest {
         String feedOwnedOnlyByObywan = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("03"));
         List<String> ids = List.of(feedOwnedByObiwanAndSkywalker, feedOwnedOnlyByObywan);
 
+        // Clean news -> feed link
+        dsl.deleteFrom(NEWS_FEEDS).where(NEWS_FEEDS.NEFE_FEED_ID.in(ids)).execute();
+
         {
             int countUser = dsl.fetchCount(FEEDS_USERS, FEEDS_USERS.FEUS_FEED_ID.in(ids)
                     .and(FEEDS_USERS.FEUS_USER_ID.eq(OKENOBI.getUserId())));
             assertThat(countUser).isEqualTo(2);
         }
 
-        tested.delete(ids, OKENOBI.getUserId()).block();
+        tested.delete(QueryContext.builder()
+                .filter(Criteria.property(FEED_ID).in(ids))
+                .userId(OKENOBI.getUserId())
+                .build()).block();
 
         {
             int countUser = dsl.fetchCount(FEEDS_USERS, FEEDS_USERS.FEUS_FEED_ID.in(ids));

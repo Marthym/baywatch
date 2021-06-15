@@ -2,16 +2,17 @@ package fr.ght1pc9kc.baywatch.domain.techwatch.ports;
 
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
-import fr.ght1pc9kc.juery.api.PageRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
 
 public interface FeedPersistencePort {
-    Mono<Feed> get(String id);
+    Mono<Feed> get(QueryContext qCtx);
 
-    Flux<Feed> list();
+    default Flux<Feed> list() {
+        return list(QueryContext.empty());
+    }
 
     Flux<Feed> list(QueryContext qCtx);
 
@@ -21,22 +22,11 @@ public interface FeedPersistencePort {
 
     /**
      * Delete {@link Feed} for all the users. Only the link between {@link Feed} and users
-     * was deleted. Use {@link fr.ght1pc9kc.baywatch.domain.admin.ports.FeedAdministrationPort} to delete
-     * {@link Feed} completely.
+     * was deleted.
      *
-     * @param toDelete The feed IDs to remove
+     * @param qCtx Context of the query, containing the filter of the {@link Feed} to delete
+     *             and the {@link fr.ght1pc9kc.baywatch.api.security.model.User}
      * @return The number of feed effectively deleted
      */
-    Mono<Integer> delete(Collection<String> toDelete);
-
-    /**
-     * Delete {@link Feed} for a specific user. Only the link between {@link Feed} and the user
-     * was deleted. If the user was the only owner for the {@link Feed}, the {@link Feed} will
-     * be deleted at next purge time.
-     *
-     * @param toDelete The feed IDs to remove
-     * @param userId   The ID of the concerned user
-     * @return The number of feed effectively deleted
-     */
-    Mono<Integer> delete(Collection<String> toDelete, String userId);
+    Mono<Integer> delete(QueryContext qCtx);
 }
