@@ -6,6 +6,7 @@ import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.Meta;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OGType;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OpenGraph;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.Tags;
+import fr.ght1pc9kc.juery.basic.common.lang3.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
@@ -52,7 +53,9 @@ public final class OpenGraphMetaReader {
                     readMetaUri(m.content, location).ifPresent(builder::image);
                     break;
                 case Tags.OG_DESCRIPTION:
-                    builder.description(m.content);
+                    if (!StringUtils.isBlank(m.content)) {
+                        builder.description(m.content);
+                    }
                     break;
                 case Tags.OG_LOCALE:
                     if (m.content != null) {
@@ -71,7 +74,10 @@ public final class OpenGraphMetaReader {
     }
 
     private Optional<URI> readMetaUri(String link, URI location) {
-        Optional<URI> uri = Optional.ofNullable(link)
+        if (StringUtils.isBlank(link)) {
+            return Optional.empty();
+        }
+        Optional<URI> uri = Optional.of(link)
                 .flatMap(Exceptions.silence().function(URI::create))
                 .flatMap(u -> {
                     try {

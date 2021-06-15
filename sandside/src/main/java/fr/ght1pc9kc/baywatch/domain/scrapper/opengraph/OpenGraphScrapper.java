@@ -35,7 +35,7 @@ public final class OpenGraphScrapper {
     private static final String META_CONTENT = "content";
     private static final Pattern META_PATTERN = Pattern.compile("<meta(?:" +
             "[^>]*(?:" + META_NAME + "|" + META_PROPERTY + ")\\W*=\\W*(?<" + META_PROPERTY + ">[\\w:]*)[^>]" +
-            "|[^>]" + META_CONTENT + "\\W*=\\W*(?<" + META_CONTENT + ">[^>\"']*)[^>]*" +
+            "|[^>]*" + META_CONTENT + "\\s*=\\s*\\W(?<" + META_CONTENT + ">[^>\"']*)[^>]*" +
             "){2}/?>", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
     private final WebClient http;
