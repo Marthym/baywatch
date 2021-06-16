@@ -42,6 +42,27 @@ public class OpenGraphMetaReaderTest {
                         .build());
     }
 
+    @Test
+    void should_build_from_metas_with_empty_fields() throws MalformedURLException {
+        OpenGraph actual = tested.read(List.of(
+                new Meta("twiter:title", "Title de twiter"),
+                new Meta("og:title", "Title de OG"),
+                new Meta("og:image", ""),
+                new Meta("og:type", "article"),
+                new Meta("og:url", "https://blog.ght1pc9kc.fr/img/over-the-top.html"),
+                new Meta("og:description", ""),
+                new Meta("og:locale", "fr-fr")
+        ));
+
+        Assertions.assertThat(actual).isEqualTo(
+                OpenGraph.builder()
+                        .title("Title de OG")
+                        .type(OGType.ARTICLE)
+                        .url(new URL("https://blog.ght1pc9kc.fr/img/over-the-top.html"))
+                        .locale(Locale.FRANCE)
+                        .build());
+    }
+
     @ParameterizedTest
     @CsvSource({
             "http://obiwan.kenobi.jedi/tatooine/featured.jpg",
