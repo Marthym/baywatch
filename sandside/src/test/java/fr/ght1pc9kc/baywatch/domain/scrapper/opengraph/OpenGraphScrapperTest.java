@@ -1,68 +1,41 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.opengraph;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OGType;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OpenGraph;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.client.ClientRequest;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.ExchangeFunction;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 import java.util.Random;
 
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 
 class OpenGraphScrapperTest {
-    static final WireMockServer mockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
-
     private final OpenGraphMetaReader ogReader = spy(new OpenGraphMetaReader());
-    private final OpenGraphScrapper tested = new OpenGraphScrapper(ogReader);
-
-    @BeforeAll
-    static void stubAllMockServerRoute() throws IOException {
-        try (InputStream htmlBody = OpenGraphScrapperTest.class.getResourceAsStream("og-head-test.html")) {
-            Assertions.assertThat(htmlBody).isNotNull();
-
-            mockServer.stubFor(
-                    WireMock.get(WireMock.urlMatching(".*/article\\.html"))
-                            .willReturn(WireMock.aResponse()
-                                    .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE)
-                                    .withStatus(HttpStatus.OK.value())
-                                    .withBody(htmlBody.readAllBytes())));
-
-        }
-        Random rd = new Random();
-        byte[] arr = new byte[2048];
-        rd.nextBytes(arr);
-        mockServer.stubFor(WireMock.get(WireMock.urlMatching(".*/podcast\\.mp3"))
-                .willReturn(WireMock.aResponse()
-                        .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE)
-                        .withStatus(HttpStatus.OK.value())
-                        .withBody(arr)));
-
-        mockServer.stubFor(WireMock.get(WireMock.urlMatching(".*/not-found\\.html"))
-                .willReturn(WireMock.notFound()));
-        mockServer.start();
-    }
-
-    @AfterAll
-    static void afterAll() {
-        mockServer.stop();
-    }
+    private final WebClient webClient = WebClient.builder()
+            .exchangeFunction(new MockExchangeFunction()).build();
+    private final OpenGraphScrapper tested = new OpenGraphScrapper(webClient, ogReader, List.of());
 
     @BeforeEach
     void setUp() {
@@ -71,7 +44,7 @@ class OpenGraphScrapperTest {
 
     @Test
     void should_parse_opengraph() throws MalformedURLException {
-        URI page = URI.create(mockServer.baseUrl() + "/article.html");
+        URI page = URI.create("https://blog.ght1pc9kc.fr/og-head-test.html");
         OpenGraph actual = tested.scrap(page).block();
 
         Assertions.assertThat(actual).isEqualTo(OpenGraph.builder()
@@ -86,17 +59,59 @@ class OpenGraphScrapperTest {
     }
 
     @Test
+    void should_parse_opengraph_with_empty_fields() throws MalformedURLException {
+        URI page = URI.create("https://blog.ght1pc9kc.fr/ght-bad-parsing.html");
+        OpenGraph actual = tested.scrap(page).block();
+
+        Assertions.assertThat(actual).isEqualTo(OpenGraph.builder()
+                .title("Les Critères de recherche avec Juery")
+                .type(OGType.ARTICLE)
+                .url(new URL("https://blog.ght1pc9kc.fr/2021/les-critères-de-recherche-avec-juery.html"))
+                .build());
+    }
+
+    @Test
     void should_scrap_not_found() {
-        URI page = URI.create(mockServer.baseUrl() + "/not-found.html");
+        URI page = URI.create("https://blog.ght1pc9kc.fr/not-found.html");
         OpenGraph actual = tested.scrap(page).block();
         Assertions.assertThat(actual).isNull();
     }
 
     @Test
     void should_scrap_not_html() {
-        URI page = URI.create(mockServer.baseUrl() + "/podcast.mp3");
+        URI page = URI.create("https://blog.ght1pc9kc.fr/podcast.mp3");
         Mono<OpenGraph> actual = tested.scrap(page);
 
         StepVerifier.create(actual).verifyComplete();
+    }
+
+    public static final class MockExchangeFunction implements ExchangeFunction {
+        @Override
+        public @NotNull Mono<ClientResponse> exchange(@NotNull ClientRequest request) {
+            DefaultDataBufferFactory factory = new DefaultDataBufferFactory();
+
+            if (!request.url().getPath().endsWith(".html")) {
+                Random rd = new Random();
+                byte[] arr = new byte[2048];
+                rd.nextBytes(arr);
+                return Mono.just(ClientResponse.create(HttpStatus.OK)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE)
+                        .body(Flux.just(factory.wrap(arr)))
+                        .build());
+            }
+
+            InputStream is = OpenGraphScrapperTest.class.getResourceAsStream(request.url().getPath().replaceAll("^/", ""));
+            if (is == null) {
+                return Mono.just(ClientResponse.create(HttpStatus.NOT_FOUND).build());
+            }
+
+            Flux<DataBuffer> data = DataBufferUtils.readInputStream(() -> is, factory, 1024)
+                    .doAfterTerminate(Exceptions.wrap().runnable(is::close));
+            return Mono.just(ClientResponse.create(HttpStatus.OK)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE)
+                    .body(data)
+                    .build());
+
+        }
     }
 }

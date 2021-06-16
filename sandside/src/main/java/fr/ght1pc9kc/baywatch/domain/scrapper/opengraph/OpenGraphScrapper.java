@@ -7,12 +7,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.util.MimeType;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.netty.http.client.HttpClient;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
@@ -37,16 +35,14 @@ public final class OpenGraphScrapper {
     private static final String META_CONTENT = "content";
     private static final Pattern META_PATTERN = Pattern.compile("<meta(?:" +
             "[^>]*(?:" + META_NAME + "|" + META_PROPERTY + ")\\W*=\\W*(?<" + META_PROPERTY + ">[\\w:]*)[^>]" +
-            "|[^>]" + META_CONTENT + "\\W*=\\W*(?<" + META_CONTENT + ">[^>\"']*)[^>]*" +
+            "|[^>]*" + META_CONTENT + "\\s*=\\s*\\W(?<" + META_CONTENT + ">[^>\"']*)[^>]*" +
             "){2}/?>", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
-    private final WebClient http = WebClient.builder()
-            .clientConnector(new ReactorClientHttpConnector(
-                    HttpClient.create()
-                            .followRedirect(true)
-                            .compress(true)
-            )).build();
+    private final WebClient http;
+
     private final OpenGraphMetaReader ogReader;
+
+    private final List<OpenGraphPlugin> scrapperPlugins;
 
     private static Flux<Meta> extractMetaFromHead(String html) {
         if (html.isBlank()) {
@@ -72,7 +68,14 @@ public final class OpenGraphScrapper {
     }
 
     public Mono<OpenGraph> scrap(URI location) {
-        return http.get().uri(location)
+        WebClient.RequestHeadersSpec<?> uri = http.get().uri(location);
+        for (OpenGraphPlugin scrapperPlugin : scrapperPlugins) {
+            if (scrapperPlugin.isApplicable(location)) {
+                scrapperPlugin.additionalCookies().forEach(uri::cookie);
+                scrapperPlugin.additionalHeaders().forEach(uri::header);
+            }
+        }
+        return uri
                 .acceptCharset(StandardCharsets.UTF_8)
                 .exchangeToMono(response -> {
                     Charset responseCharset = response.headers().contentType()
