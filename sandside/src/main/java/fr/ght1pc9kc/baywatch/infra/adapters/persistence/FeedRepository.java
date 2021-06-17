@@ -1,19 +1,17 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
-import fr.ght1pc9kc.baywatch.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
-import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.infra.request.filter.PredicateSearchVisitor;
-import fr.ght1pc9kc.juery.api.Criteria;
-import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.*;
+import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -22,17 +20,19 @@ import reactor.core.scheduler.Scheduler;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
+import static fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers.FEEDS_PROPERTIES_MAPPING;
 
 @Slf4j
 @Repository
 @AllArgsConstructor
 public class FeedRepository implements FeedPersistencePort {
     private static final JooqConditionVisitor JOOQ_CONDITION_VISITOR =
-            new JooqConditionVisitor(PropertiesMappers.FEEDS_PROPERTIES_MAPPING::get);
+            new JooqConditionVisitor(FEEDS_PROPERTIES_MAPPING::get);
     private static final PredicateSearchVisitor<Feed> FEEDS_PREDICATE_VISITOR = new PredicateSearchVisitor<>();
 
     private final Scheduler databaseScheduler;
@@ -40,23 +40,33 @@ public class FeedRepository implements FeedPersistencePort {
     private final BaywatchMapper baywatchMapper;
 
     @Override
-    public Mono<Feed> get(String id) {
-        return list(PageRequest.one(Criteria.property(EntitiesProperties.ID).eq(id))).next();
+    public Mono<Feed> get(QueryContext qCtx) {
+        return list(QueryContext.first(qCtx)).next();
     }
 
     @Override
-    public Flux<Feed> list() {
-        return list(PageRequest.all());
-    }
+    public Flux<Feed> list(QueryContext qCtx) {
+        Condition conditions = qCtx.filter.accept(JOOQ_CONDITION_VISITOR);
+        SelectQuery<Record> select = dsl.selectQuery();
+        select.addSelect(FEEDS.fields());
+        select.addFrom(FEEDS);
+        select.addConditions(conditions);
 
-    @Override
-    public Flux<Feed> list(PageRequest pageRequest) {
-        Condition conditions = pageRequest.filter().accept(JOOQ_CONDITION_VISITOR);
+        if (qCtx.isScoped()) {
+            select.addSelect(FEEDS_USERS.FEUS_TAGS);
+            select.addJoin(FEEDS_USERS, JoinType.JOIN,
+                    FEEDS.FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID).and(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId)));
+        } else {
+            select.addSelect(DSL.count(FEEDS_USERS.FEUS_USER_ID).as(FEEDS_USERS.FEUS_USER_ID));
+            select.addJoin(FEEDS_USERS, JoinType.LEFT_OUTER_JOIN,
+                    FEEDS.FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID));
+            select.addGroupBy(FEEDS.fields());
+            Condition havings = qCtx.filter.accept(FeedConditionsVisitors.feedUserHavingVisitor());
+            select.addHaving(havings);
+        }
+
         return Flux.<Record>create(sink -> {
-            Cursor<Record> cursor = dsl.select(FEEDS.fields()).select(FEEDS_USERS.FEUS_TAGS)
-                    .from(FEEDS)
-                    .leftJoin(FEEDS_USERS).on(FEEDS_USERS.FEUS_FEED_ID.eq(FEEDS.FEED_ID))
-                    .where(conditions).fetchLazy();
+            Cursor<Record> cursor = select.fetchLazy();
             sink.onRequest(n -> {
                 Result<Record> rs = cursor.fetchNext(Long.valueOf(n).intValue());
                 rs.forEach(sink::next);
@@ -66,7 +76,7 @@ public class FeedRepository implements FeedPersistencePort {
             });
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(baywatchMapper::recordToFeed)
-                .filter(pageRequest.filter().accept(FEEDS_PREDICATE_VISITOR));
+                .filter(qCtx.filter.accept(FEEDS_PREDICATE_VISITOR));
     }
 
     @Override
@@ -116,16 +126,37 @@ public class FeedRepository implements FeedPersistencePort {
     }
 
     @Override
-    public Mono<Integer> delete(Collection<String> toDelete) {
-        return Mono.fromCallable(() ->
-                dsl.deleteFrom(FEEDS_USERS).where(FEEDS_USERS.FEUS_FEED_ID.in(toDelete)).execute());
-    }
+    public Mono<Integer> delete(QueryContext qCtx) {
+        Condition feedsUsersConditions = qCtx.filter.accept(FeedConditionsVisitors.feedUserIdVisitor());
+        final Optional<Query> deleteUserLinkQuery;
+        if (DSL.noCondition().equals(feedsUsersConditions)) {
+            deleteUserLinkQuery = Optional.empty();
+        } else {
+            var query = dsl.deleteQuery(FEEDS_USERS);
+            query.addConditions(feedsUsersConditions);
+            if (qCtx.isScoped()) {
+                query.addConditions(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId));
+            }
+            deleteUserLinkQuery = Optional.of(query);
+        }
 
-    @Override
-    public Mono<Integer> delete(Collection<String> toDelete, String userId) {
-        return Mono.fromCallable(() ->
-                dsl.deleteFrom(FEEDS_USERS).where(FEEDS_USERS.FEUS_FEED_ID.in(toDelete))
-                        .and(FEEDS_USERS.FEUS_USER_ID.eq(userId)).execute());
-    }
+        Condition feedsConditions = qCtx.filter.accept(FeedConditionsVisitors.feedIdVisitor());
+        final Optional<Query> deleteFeedQuery;
+        if (DSL.noCondition().equals(feedsConditions)) {
+            deleteFeedQuery = Optional.empty();
+        } else {
+            var query =
+                    dsl.deleteFrom(FEEDS).where(feedsConditions)
+                            .and(FEEDS.FEED_ID.notIn(
+                                    dsl.select(FEEDS_USERS.FEUS_FEED_ID).from(FEEDS_USERS).where(feedsUsersConditions)));
+            deleteFeedQuery = Optional.of(query);
 
+        }
+        return Mono.fromCallable(() ->
+                dsl.transactionResult(tx -> {
+                    int countDeleted = deleteUserLinkQuery.map(q -> tx.dsl().execute(q)).orElse(0);
+                    deleteFeedQuery.ifPresent(q -> tx.dsl().execute(q));
+                    return countDeleted;
+                }));
+    }
 }

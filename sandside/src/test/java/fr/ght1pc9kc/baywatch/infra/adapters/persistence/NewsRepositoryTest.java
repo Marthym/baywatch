@@ -158,7 +158,7 @@ class NewsRepositoryTest {
     @Test
     void should_get_news_for_user(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
-        NewsRecord expected = NewsRecordSamples.SAMPLE.records().get(5);
+        NewsRecord expected = NewsRecordSamples.SAMPLE.records().get(4);
         NewsFeedsRecord expectedNefe = NewsRecordSamples.NewsFeedsRecordSample.SAMPLE.records().stream()
                 .filter(nf -> nf.getNefeNewsId().equals(expected.getNewsId()))
                 .findAny()

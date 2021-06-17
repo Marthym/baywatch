@@ -5,6 +5,7 @@ import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.techwatch.FeedServiceImpl;
+import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.samples.FeedRecordSamples;
@@ -40,32 +41,32 @@ public class FeedServiceImplTest {
     @Test
     void should_get_feed() {
         tested.get("42").block();
-        verify(mockFeedRepository, times(1)).get(anyString());
+        verify(mockFeedRepository, times(1)).get(any());
     }
 
     @Test
     void should_list_feed_for_anonymous() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.empty());
-        ArgumentCaptor<PageRequest> captor = ArgumentCaptor.forClass(PageRequest.class);
+        ArgumentCaptor<QueryContext> captor = ArgumentCaptor.forClass(QueryContext.class);
 
         tested.list().collectList().block();
 
         verify(mockFeedRepository, times(1)).list(captor.capture());
 
-        assertThat(captor.getValue()).isEqualTo(PageRequest.all());
+        assertThat(captor.getValue()).isEqualTo(QueryContext.empty());
     }
 
     @Test
     void should_list_feed_for_user() {
         User okenobi = BAYWATCH_MAPPER.recordToUser(UsersRecordSamples.OKENOBI);
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(okenobi));
-        ArgumentCaptor<PageRequest> captor = ArgumentCaptor.forClass(PageRequest.class);
+        ArgumentCaptor<QueryContext> captor = ArgumentCaptor.forClass(QueryContext.class);
 
         {
             tested.list().collectList().block();
 
             verify(mockFeedRepository, times(1)).list(captor.capture());
-            assertThat(captor.getValue()).isEqualTo(PageRequest.all(Criteria.property("userId").eq(okenobi.id)));
+            assertThat(captor.getValue()).isEqualTo(QueryContext.empty().withUserId(okenobi.id));
         }
 
         {
@@ -73,8 +74,8 @@ public class FeedServiceImplTest {
             tested.list(PageRequest.one(Criteria.property("name").eq("jedi"))).collectList().block();
 
             verify(mockFeedRepository, times(1)).list(captor.capture());
-            assertThat(captor.getValue()).isEqualTo(PageRequest.one(
-                    Criteria.property("name").eq("jedi").and(Criteria.property("userId").eq(okenobi.id))));
+            assertThat(captor.getValue()).isEqualTo(QueryContext.first(
+                    Criteria.property("name").eq("jedi")).withUserId(okenobi.id));
         }
     }
 

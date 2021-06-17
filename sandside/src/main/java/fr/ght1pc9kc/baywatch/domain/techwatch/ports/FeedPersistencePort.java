@@ -1,41 +1,38 @@
 package fr.ght1pc9kc.baywatch.domain.techwatch.ports;
 
 import fr.ght1pc9kc.baywatch.api.model.Feed;
-import fr.ght1pc9kc.juery.api.PageRequest;
+import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
 
 public interface FeedPersistencePort {
-    Mono<Feed> get(String id);
+    Mono<Feed> get(QueryContext qCtx);
 
-    Flux<Feed> list();
+    default Flux<Feed> list() {
+        return list(QueryContext.empty());
+    }
 
-    Flux<Feed> list(PageRequest pageRequest);
+    Flux<Feed> list(QueryContext qCtx);
 
     Mono<Void> persist(Collection<Feed> toPersist);
 
     Mono<Void> persist(Collection<Feed> toPersist, String userId);
 
     /**
-     * Delete {@link Feed} for all the users. Only the link between {@link Feed} and users
-     * was deleted. Use {@link fr.ght1pc9kc.baywatch.domain.admin.ports.FeedAdministrationPort} to delete
-     * {@link Feed} completely.
+     * Delete {@link Feed} from `FEEDS_USERS` and `FEEDS`, depending on the filter in {@link QueryContext}.
+     * The deletion was scoped to the {@link fr.ght1pc9kc.baywatch.api.security.model.User} is provided in
+     * {@link QueryContext}.
+     * <p>Allowed properties was:</p>
+     * <ul>
+     *    <li>{@link fr.ght1pc9kc.baywatch.api.model.EntitiesProperties#ID}: For the table `FEEDS`</li>
+     *    <li>{@link fr.ght1pc9kc.baywatch.api.model.EntitiesProperties#FEED_ID}: For the table `FEEDS_USERS`</li>
+     * </ul>
+     * <p>Deletion was apply only if a filter was present for a table.</p>
      *
-     * @param toDelete The feed IDs to remove
+     * @param qCtx Context of the query, containing the filter.
      * @return The number of feed effectively deleted
      */
-    Mono<Integer> delete(Collection<String> toDelete);
-
-    /**
-     * Delete {@link Feed} for a specific user. Only the link between {@link Feed} and the user
-     * was deleted. If the user was the only owner for the {@link Feed}, the {@link Feed} will
-     * be deleted at next purge time.
-     *
-     * @param toDelete The feed IDs to remove
-     * @param userId   The ID of the concerned user
-     * @return The number of feed effectively deleted
-     */
-    Mono<Integer> delete(Collection<String> toDelete, String userId);
+    Mono<Integer> delete(QueryContext qCtx);
 }

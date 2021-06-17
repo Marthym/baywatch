@@ -70,7 +70,7 @@ class UserRepositoryTest {
         User actual = tested.get(UsersRecordSamples.OKENOBI.getUserId()).block();
 
         assertThat(actual).isEqualTo(User.builder()
-                .id("77631629354e5d72ed95921c3ef87dc6a43a9208b8c293651c76f664accfd5a6")
+                .id("okenobi")
                 .name("Obiwan Kenobi")
                 .login("okenobi")
                 .mail("obiwan.kenobi@jedi.fr")
@@ -94,7 +94,7 @@ class UserRepositoryTest {
 
         assertThat(actuals).isNotNull();
         assertThat(actuals).hasSize(1);
-        assertThat(actuals.get(0).id).isEqualTo("77631629354e5d72ed95921c3ef87dc6a43a9208b8c293651c76f664accfd5a6");
+        assertThat(actuals.get(0).id).isEqualTo("okenobi");
     }
 
     @Test

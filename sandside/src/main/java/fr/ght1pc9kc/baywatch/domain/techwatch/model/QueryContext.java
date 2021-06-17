@@ -29,11 +29,19 @@ public final class QueryContext {
         return new QueryContext(Pagination.FIRST, filter, null);
     }
 
+    public static QueryContext first(QueryContext qCtx) {
+        return new QueryContext(Pagination.FIRST, qCtx.filter, qCtx.userId);
+    }
+
     public static QueryContext id(String id) {
         return new QueryContext(Pagination.FIRST, Criteria.property(ID).eq(id), null);
     }
 
     public static QueryContext empty() {
         return new QueryContext(Pagination.ALL, Criteria.none(), null);
+    }
+
+    public boolean isScoped() {
+        return userId != null && !userId.isBlank();
     }
 }
