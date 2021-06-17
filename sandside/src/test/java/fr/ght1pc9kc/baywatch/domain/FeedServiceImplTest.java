@@ -66,7 +66,7 @@ public class FeedServiceImplTest {
             tested.list().collectList().block();
 
             verify(mockFeedRepository, times(1)).list(captor.capture());
-            assertThat(captor.getValue()).isEqualTo(QueryContext.all(Criteria.property("userId").eq(okenobi.id)));
+            assertThat(captor.getValue()).isEqualTo(QueryContext.empty().withUserId(okenobi.id));
         }
 
         {
@@ -75,7 +75,7 @@ public class FeedServiceImplTest {
 
             verify(mockFeedRepository, times(1)).list(captor.capture());
             assertThat(captor.getValue()).isEqualTo(QueryContext.first(
-                    Criteria.property("name").eq("jedi").and(Criteria.property("userId").eq(okenobi.id))));
+                    Criteria.property("name").eq("jedi")).withUserId(okenobi.id));
         }
     }
 
