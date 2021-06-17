@@ -22,17 +22,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mapstruct.factory.Mappers;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import reactor.test.StepVerifier;
 
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.COUNT;
 import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.FEED_ID;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
-import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.infra.samples.UsersRecordSamples.OKENOBI;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -165,13 +167,22 @@ class FeedRepositoryTest {
     }
 
     @Test
+    void should_delete_without_filter() {
+        Mono<Integer> actual = tested.delete(QueryContext.builder()
+                .filter(Criteria.property(FEED_ID).in("1", "2"))
+                .userId(OKENOBI.getUserId())
+                .build());
+
+        StepVerifier.create(actual)
+                .expectNext(0)
+                .verifyComplete();
+    }
+
+    @Test
     void should_delete_feeds_for_user(DSLContext dsl) {
         String feedOwnedByObiwanAndSkywalker = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("01"));
         String feedOwnedOnlyByObywan = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("03"));
         List<String> ids = List.of(feedOwnedByObiwanAndSkywalker, feedOwnedOnlyByObywan);
-
-        // Clean news -> feed link
-        dsl.deleteFrom(NEWS_FEEDS).where(NEWS_FEEDS.NEFE_FEED_ID.in(ids)).execute();
 
         {
             int countUser = dsl.fetchCount(FEEDS_USERS, FEEDS_USERS.FEUS_FEED_ID.in(ids)
@@ -194,7 +205,7 @@ class FeedRepositoryTest {
 
     @Test
     void should_list_orphan_feed() {
-        List<Feed> actuals = tested.list(QueryContext.all(Criteria.property(FEED_ID).isNull())).collectList().block();
-        assertThat(actuals).extracting(Feed::getId).containsExactly("a6e68b72e99e2e9e54258d98f175f504ad128bf2142597815c6c116f1925411c");
+        List<Feed> actuals = tested.list(QueryContext.all(Criteria.property(COUNT).eq(0))).collectList().block();
+        assertThat(actuals).extracting(Feed::getId).containsExactly("17a323e6f4ffc872e5adc5575da0b22f4af56b903b2efa0d070e0cfb2295d7c7");
     }
 }

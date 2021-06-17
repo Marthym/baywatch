@@ -21,11 +21,17 @@ public interface FeedPersistencePort {
     Mono<Void> persist(Collection<Feed> toPersist, String userId);
 
     /**
-     * Delete {@link Feed} for all the users. Only the link between {@link Feed} and users
-     * was deleted.
+     * Delete {@link Feed} from `FEEDS_USERS` and `FEEDS`, depending on the filter in {@link QueryContext}.
+     * The deletion was scoped to the {@link fr.ght1pc9kc.baywatch.api.security.model.User} is provided in
+     * {@link QueryContext}.
+     * <p>Allowed properties was:</p>
+     * <ul>
+     *    <li>{@link fr.ght1pc9kc.baywatch.api.model.EntitiesProperties#ID}: For the table `FEEDS`</li>
+     *    <li>{@link fr.ght1pc9kc.baywatch.api.model.EntitiesProperties#FEED_ID}: For the table `FEEDS_USERS`</li>
+     * </ul>
+     * <p>Deletion was apply only if a filter was present for a table.</p>
      *
-     * @param qCtx Context of the query, containing the filter of the {@link Feed} to delete
-     *             and the {@link fr.ght1pc9kc.baywatch.api.security.model.User}
+     * @param qCtx Context of the query, containing the filter.
      * @return The number of feed effectively deleted
      */
     Mono<Integer> delete(QueryContext qCtx);

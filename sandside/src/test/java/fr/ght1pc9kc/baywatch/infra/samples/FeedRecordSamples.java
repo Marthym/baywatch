@@ -47,9 +47,14 @@ public class FeedRecordSamples implements RelationalDataSet<FeedsRecord> {
             List<FeedsUsersRecord> feedsUsersRecords = new ArrayList<>();
             int idx = 0;
             for (FeedsRecord fr : FEEDS_RECORDS) {
+                if (idx == 0) {
+                    ++idx;
+                    continue;
+                }
                 feedsUsersRecords.add(FEEDS_USERS.newRecord()
                         .setFeusFeedId(fr.getFeedId())
                         .setFeusUserId(UsersRecordSamples.OKENOBI.getUserId()));
+
                 if (idx++ < 3) {
                     feedsUsersRecords.add(FEEDS_USERS.newRecord()
                             .setFeusFeedId(fr.getFeedId())

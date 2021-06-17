@@ -12,6 +12,7 @@ import reactor.core.publisher.Sinks;
 
 import java.util.Collection;
 
+import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.COUNT;
 import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.FEED_ID;
 
 /**
@@ -57,7 +58,7 @@ public class DeleteOrphanFeedHandler implements ScrappingHandler {
                 .doOnSuccess(count -> log.debug("{} Feed(s) deleted.", count))
                 .then();
 
-        return feedAdminService.list(PageRequest.all(Criteria.property(FEED_ID).isNull()))
+        return feedAdminService.list(PageRequest.all(Criteria.property(COUNT).eq(0)))
                 .doOnNext(feed -> feeds.tryEmitNext(feed.getId()))
                 .doOnComplete(feeds::tryEmitComplete)
                 .flatMap(feed -> newsService.list(PageRequest.all(Criteria.property(FEED_ID).eq(feed.getId()))))
