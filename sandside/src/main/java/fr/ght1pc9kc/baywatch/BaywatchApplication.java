@@ -16,6 +16,7 @@ import reactor.core.scheduler.Schedulers;
 import reactor.netty.http.client.HttpClient;
 
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @SpringBootApplication
@@ -38,7 +39,8 @@ public class BaywatchApplication {
         return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(
                         HttpClient.create()
-                                .followRedirect(true)
+                                .followRedirect((req, res) -> // 303 was not in the default code
+                                        Set.of(301, 302, 303, 307, 308).contains(res.status().code()))
                                 .compress(true)
                 )).build();
     }
