@@ -47,9 +47,9 @@
         </svg>
       </router-link>
       <div v-if="unread > 0" class="
-          absolute w-4 h-4 text-center rounded-full text-xs text-white font-semibold
-          bg-green-500 dark-hover:bg-green-300 right-0 mb-3.5 bottom-0">
-        {{ unread }}
+          absolute w-2 h-2 text-center rounded-full text-xs text-white font-semibold
+          bg-green-500 dark-hover:bg-green-300 right-0 mb-5 bottom-0">
+
       </div>
     </div>
 
