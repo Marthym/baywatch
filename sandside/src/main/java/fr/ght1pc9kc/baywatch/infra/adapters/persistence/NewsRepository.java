@@ -58,29 +58,9 @@ public class NewsRepository implements NewsPersistencePort {
 
     @Override
     public Flux<News> list(QueryContext qCtx) {
-        Condition conditions = qCtx.filter.accept(NEWS_CONDITION_VISITOR);
         PredicateSearchVisitor<News> predicateSearchVisitor = new PredicateSearchVisitor<>();
 
-        SelectQuery<Record> select = dsl.selectQuery();
-        select.addSelect(NEWS.fields());
-        select.addFrom(NEWS);
-        select.addConditions(conditions);
-
-        select.addSelect(DSL.arrayAggDistinct(NEWS_FEEDS.NEFE_FEED_ID).as(NEWS_FEEDS.NEFE_FEED_ID));
-        select.addJoin(NEWS_FEEDS, JoinType.LEFT_OUTER_JOIN, NEWS.NEWS_ID.eq(NEWS_FEEDS.NEFE_NEWS_ID));
-        select.addGroupBy(NEWS.fields());
-
-        if (!StringUtils.isBlank(qCtx.userId)) {
-            select.addSelect(FEEDS_USERS.FEUS_TAGS);
-            select.addJoin(FEEDS_USERS, JoinType.JOIN,
-                    NEWS_FEEDS.NEFE_FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID).and(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId)));
-
-            select.addSelect(NEWS_USER_STATE.NURS_STATE);
-            select.addJoin(NEWS_USER_STATE, JoinType.LEFT_OUTER_JOIN,
-                    NEWS.NEWS_ID.eq(NEWS_USER_STATE.NURS_NEWS_ID).and(NEWS_USER_STATE.NURS_USER_ID.eq(qCtx.userId)));
-        }
-
-        final Select<Record> query = JooqPagination.apply(qCtx.pagination, NEWS_PROPERTIES_MAPPING, select);
+        final Select<Record> query = buildSelectQuery(qCtx);
 
         return Flux.<Record>create(sink -> {
             Cursor<Record> cursor = query.fetchLazy();
@@ -196,9 +176,35 @@ public class NewsRepository implements NewsPersistencePort {
     }
 
     @Override
-    public Mono<Integer> count() {
-        return Mono.fromCallable(() -> dsl.fetchCount(NEWS))
+    public Mono<Integer> count(QueryContext qCtx) {
+        SelectQuery<Record> select = buildSelectQuery(qCtx);
+        return Mono.fromCallable(() -> dsl.fetchCount(select))
                 .subscribeOn(databaseScheduler);
+    }
+
+    private SelectQuery<Record> buildSelectQuery(QueryContext qCtx) {
+        Condition conditions = qCtx.filter.accept(NEWS_CONDITION_VISITOR);
+
+        SelectQuery<Record> select = dsl.selectQuery();
+        select.addSelect(NEWS.fields());
+        select.addFrom(NEWS);
+        select.addConditions(conditions);
+
+        select.addSelect(DSL.arrayAggDistinct(NEWS_FEEDS.NEFE_FEED_ID).as(NEWS_FEEDS.NEFE_FEED_ID));
+        select.addJoin(NEWS_FEEDS, JoinType.LEFT_OUTER_JOIN, NEWS.NEWS_ID.eq(NEWS_FEEDS.NEFE_NEWS_ID));
+        select.addGroupBy(NEWS.fields());
+
+        if (!StringUtils.isBlank(qCtx.userId)) {
+            select.addSelect(FEEDS_USERS.FEUS_TAGS);
+            select.addJoin(FEEDS_USERS, JoinType.JOIN,
+                    NEWS_FEEDS.NEFE_FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID).and(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId)));
+
+            select.addSelect(NEWS_USER_STATE.NURS_STATE);
+            select.addJoin(NEWS_USER_STATE, JoinType.LEFT_OUTER_JOIN,
+                    NEWS.NEWS_ID.eq(NEWS_USER_STATE.NURS_NEWS_ID).and(NEWS_USER_STATE.NURS_USER_ID.eq(qCtx.userId)));
+        }
+
+        return (SelectQuery<Record>) JooqPagination.apply(qCtx.pagination, NEWS_PROPERTIES_MAPPING, select);
     }
 
     private static Stream<NewsFeedsRecord> toNewsFeedsRecords(News news) {

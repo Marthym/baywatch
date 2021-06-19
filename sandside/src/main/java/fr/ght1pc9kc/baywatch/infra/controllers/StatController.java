@@ -17,13 +17,13 @@ public class StatController {
     @GetMapping()
     public Mono<Statistics> stats() {
         return Mono.zip(
-                statService.getUsersCount(),
                 statService.getFeedsCount(),
-                statService.getNewsCount()
+                statService.getNewsCount(),
+                statService.getUnreadCount()
         ).map(t -> Statistics.builder()
-                .users(t.getT1())
-                .feeds(t.getT2())
-                .news(t.getT3())
+                .feeds(t.getT1())
+                .news(t.getT2())
+                .unread(t.getT3())
                 .build());
     }
 }

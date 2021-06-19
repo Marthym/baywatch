@@ -35,5 +35,5 @@ public interface NewsPersistencePort {
 
     Mono<Integer> delete(Collection<String> ids);
 
-    Mono<Integer> count();
+    Mono<Integer> count(QueryContext qCtx);
 }

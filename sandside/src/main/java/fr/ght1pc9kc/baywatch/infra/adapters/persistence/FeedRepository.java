@@ -46,24 +46,7 @@ public class FeedRepository implements FeedPersistencePort {
 
     @Override
     public Flux<Feed> list(QueryContext qCtx) {
-        Condition conditions = qCtx.filter.accept(JOOQ_CONDITION_VISITOR);
-        SelectQuery<Record> select = dsl.selectQuery();
-        select.addSelect(FEEDS.fields());
-        select.addFrom(FEEDS);
-        select.addConditions(conditions);
-
-        if (qCtx.isScoped()) {
-            select.addSelect(FEEDS_USERS.FEUS_TAGS);
-            select.addJoin(FEEDS_USERS, JoinType.JOIN,
-                    FEEDS.FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID).and(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId)));
-        } else {
-            select.addSelect(DSL.count(FEEDS_USERS.FEUS_USER_ID).as(FEEDS_USERS.FEUS_USER_ID));
-            select.addJoin(FEEDS_USERS, JoinType.LEFT_OUTER_JOIN,
-                    FEEDS.FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID));
-            select.addGroupBy(FEEDS.fields());
-            Condition havings = qCtx.filter.accept(FeedConditionsVisitors.feedUserHavingVisitor());
-            select.addHaving(havings);
-        }
+        Select<Record> select = buildSelectQuery(qCtx);
 
         return Flux.<Record>create(sink -> {
             Cursor<Record> cursor = select.fetchLazy();
@@ -77,6 +60,13 @@ public class FeedRepository implements FeedPersistencePort {
         }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(baywatchMapper::recordToFeed)
                 .filter(qCtx.filter.accept(FEEDS_PREDICATE_VISITOR));
+    }
+
+    @Override
+    public Mono<Integer> count(QueryContext qCtx) {
+        Select<Record> select = buildSelectQuery(qCtx);
+        return Mono.fromCallable(() -> dsl.fetchCount(select))
+                .subscribeOn(databaseScheduler);
     }
 
     @Override
@@ -158,5 +148,28 @@ public class FeedRepository implements FeedPersistencePort {
                     deleteFeedQuery.ifPresent(q -> tx.dsl().execute(q));
                     return countDeleted;
                 }));
+    }
+
+    private Select<Record> buildSelectQuery(QueryContext qCtx) {
+        Condition conditions = qCtx.filter.accept(JOOQ_CONDITION_VISITOR);
+        SelectQuery<Record> select = dsl.selectQuery();
+        select.addSelect(FEEDS.fields());
+        select.addFrom(FEEDS);
+        select.addConditions(conditions);
+
+        if (qCtx.isScoped()) {
+            select.addSelect(FEEDS_USERS.FEUS_TAGS);
+            select.addJoin(FEEDS_USERS, JoinType.JOIN,
+                    FEEDS.FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID).and(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId)));
+        } else {
+            select.addSelect(DSL.count(FEEDS_USERS.FEUS_USER_ID).as(FEEDS_USERS.FEUS_USER_ID));
+            select.addJoin(FEEDS_USERS, JoinType.LEFT_OUTER_JOIN,
+                    FEEDS.FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID));
+            select.addGroupBy(FEEDS.fields());
+            Condition havings = qCtx.filter.accept(FeedConditionsVisitors.feedUserHavingVisitor());
+            select.addHaving(havings);
+        }
+
+        return select;
     }
 }

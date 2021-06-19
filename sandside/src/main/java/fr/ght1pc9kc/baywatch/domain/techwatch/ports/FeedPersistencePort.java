@@ -16,6 +16,8 @@ public interface FeedPersistencePort {
 
     Flux<Feed> list(QueryContext qCtx);
 
+    Mono<Integer> count(QueryContext qCtx);
+
     Mono<Void> persist(Collection<Feed> toPersist);
 
     Mono<Void> persist(Collection<Feed> toPersist, String userId);
