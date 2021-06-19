@@ -1,9 +1,10 @@
 <template>
-  <nav class="flex flex-col bg-gray-200 dark:bg-gray-900 md:w-64 px-12 pt-4 pb-6">
+  <nav class="flex flex-col bg-gray-200 dark:bg-gray-900 md:w-64 px-10 pt-4 pb-6">
 
     <SideNavHeader :unread="statistics.unread"/>
 
     <SideNavUserInfo :user="user"/>
+    <SideNavStatistics :statistics="statistics"/>
 
     <button class="mt-8 flex items-center justify-between py-3 px-2 text-white
 			dark:text-gray-200 bg-green-400 dark:bg-green-500 rounded-lg shadow">
@@ -31,9 +32,11 @@ import SideNavImportantActions from "./SideNavImportantActions.vue";
 import SideNavFeeds from "./SideNavFeeds.vue";
 import {Statistics} from "@/services/model/Statistics";
 import UserService from "@/services/UserService";
+import SideNavStatistics from "@/components/sidenav/SideNavStatistics.vue";
 
 @Component({
   components: {
+    SideNavStatistics,
     SideNavHeader,
     SideNavUserInfo,
     SideNavFeeds,

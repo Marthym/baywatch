@@ -3,7 +3,6 @@
       class="flex-1 flex flex-col bg-gray-100 dark:bg-gray-700 transition duration-500 ease-in-out overflow-y-auto px-10 py-2">
     <ContentTopNav/>
     <div class="xl:w-2/3">
-      <ContentHeader :users="statistics.users" :feeds="statistics.feeds" :news="statistics.news"/>
 
       <template v-for="(card, idx) in news">
         <NewsCard :ref="card.data.id" :card="card" v-bind:key="card.data.id" @activate="activateNewsCard(idx)">
@@ -39,14 +38,12 @@
 }
 </style>
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
+import {Component, Vue} from 'vue-property-decorator';
 import ContentTopNav from "./ContentTopNav.vue";
-import ContentHeader from "./ContentHeader.vue";
 import NewsListHeader from "@/components/content/NewsListHeader.vue";
 import NewsCard from "@/components/content/NewsCard.vue";
 import NewsService from "@/services/NewsService";
 import {Observable, Subject, Subscription} from "rxjs";
-import {Statistics} from "@/services/model/Statistics";
 import {map, take, tap} from "rxjs/operators";
 import {NewsView} from "@/components/content/model/NewsView";
 import UserService from "@/services/UserService";
@@ -62,12 +59,10 @@ import {Feed} from "@/services/model/Feed";
   components: {
     NewsCard,
     NewsListHeader,
-    ContentHeader,
     ContentTopNav,
   }
 })
 export default class MainContent extends Vue implements ScrollActivable, InfiniteScrollable {
-  @Prop() statistics?: Statistics;
 
   private readonly activateOnScroll = ScrollingActivationBehaviour.apply(this);
   private readonly infiniteScroll = InfiniteScrollBehaviour.apply(this);

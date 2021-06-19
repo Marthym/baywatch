@@ -1,16 +1,17 @@
-<template>
-  <div class="mt-8" v-if="user.id">
-    <!-- User info -->
-    <img class="h-12 w-12 rounded-full object-cover"
+<template><!-- User info -->
+  <div class="flex mt-5" v-if="user.id">
+    <img class="h-12 w-12 mr-2 rounded-full object-cover"
          :src="avatar"
          alt="enoshima profile"/>
-    <h2 class="mt-4 text-xl dark:text-gray-300 font-extrabold capitalize">
-      {{ user.name }}
-    </h2>
-    <span class="text-sm dark:text-gray-300">
+    <div>
+      <h2 class="text-xl dark:text-gray-300 font-extrabold capitalize">
+        {{ user.name }}
+      </h2>
+      <span class="text-sm dark:text-gray-300">
 				<span class="font-semibold text-green-600 dark:text-green-300">Admin</span>
       {{ user.id }}
     </span>
+    </div>
   </div>
 </template>
 
