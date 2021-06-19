@@ -59,7 +59,7 @@ export default class SideNav extends Vue {
       this.userService.refresh()
           .subscribe(
               user => this.$nextTick(() => this.user = user),
-              () => this.$nextTick(() => delete this.user));
+              () => this.$nextTick(() => this.user = {}));
     }
   }
 
