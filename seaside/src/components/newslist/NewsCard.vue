@@ -47,7 +47,7 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import {NewsView} from "@/components/content/model/NewsView";
+import {NewsView} from "@/components/newslist/model/NewsView";
 
 @Component
 export default class NewsCard extends Vue {

@@ -5,7 +5,7 @@
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
 
-// const MainContent = () => import('../components/content/MainContent.vue');
+// const MainContent = () => import('../components/content/NewsList.vue');
 
 @Component({
   components: {

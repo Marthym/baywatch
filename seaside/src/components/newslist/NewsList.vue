@@ -34,11 +34,11 @@
 </style>
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
-import NewsCard from "@/components/content/NewsCard.vue";
+import NewsCard from "@/components/newslist/NewsCard.vue";
 import NewsService from "@/services/NewsService";
 import {Observable, Subject, Subscription} from "rxjs";
 import {map, take, tap} from "rxjs/operators";
-import {NewsView} from "@/components/content/model/NewsView";
+import {NewsView} from "@/components/newslist/model/NewsView";
 import UserService from "@/services/UserService";
 import ScrollingActivationBehaviour from "@/services/ScrollingActivationBehaviour";
 import ScrollActivable from "@/services/model/ScrollActivable";
