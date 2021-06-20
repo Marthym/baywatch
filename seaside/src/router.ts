@@ -1,9 +1,9 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import FeedsConfigPage from "@/pages/FeedsConfigPage.vue";
 
 const HomePage = () => import('./pages/HomePage.vue');
 const LoginPage = () => import('./pages/LoginPage.vue');
+const FeedsConfigPage = () => import('@/pages/FeedsConfigPage.vue');
 
 Vue.use(VueRouter)
 
