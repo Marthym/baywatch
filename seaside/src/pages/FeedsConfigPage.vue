@@ -1,15 +1,15 @@
 <template>
-  <p>Tset</p>
+  <FeedsList/>
 </template>
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
 
-// const MainContent = () => import('../components/content/NewsList.vue');
+const FeedsList = () => import('@/components/feedslist/FeedsList.vue');
 
 @Component({
   components: {
-    // MainContent,
+    FeedsList,
   },
 })
 export default class FeedsConfigPage extends Vue {
