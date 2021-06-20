@@ -39,7 +39,6 @@ import NewsService from "@/services/NewsService";
 import {Observable, Subject, Subscription} from "rxjs";
 import {map, take, tap} from "rxjs/operators";
 import {NewsView} from "@/components/newslist/model/NewsView";
-import UserService from "@/services/UserService";
 import ScrollingActivationBehaviour from "@/services/ScrollingActivationBehaviour";
 import ScrollActivable from "@/services/model/ScrollActivable";
 import InfiniteScrollBehaviour from "@/services/InfiniteScrollBehaviour";
@@ -47,6 +46,7 @@ import InfiniteScrollable from "@/services/model/InfiniteScrollable";
 import {Mark} from "@/services/model/Mark.enum";
 import FeedService from "@/services/FeedService";
 import {Feed} from "@/services/model/Feed";
+import userService from "@/services/UserService";
 
 @Component({
   components: {
@@ -58,7 +58,6 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
   private readonly activateOnScroll = ScrollingActivationBehaviour.apply(this);
   private readonly infiniteScroll = InfiniteScrollBehaviour.apply(this);
   private newsService: NewsService = new NewsService(process.env.VUE_APP_API_BASE_URL);
-  private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
   private feedService: FeedService = new FeedService(process.env.VUE_APP_API_BASE_URL);
   private news: NewsView[] = new Array(0);
   private feeds = new Map<string, Feed>();
@@ -69,7 +68,7 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
   private subscriptions?: Subscription;
 
   get isAuthenticated(): boolean {
-    return this.userService.get() !== undefined;
+    return userService.get() !== undefined;
   }
 
   mounted(): void {
@@ -94,19 +93,20 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
     this.subscriptions = this.newsService.getNews(currentPage, query).pipe(
         map(ns => ns.map(n => ({data: n, feeds: [], isActive: false, keepMark: false}) as NewsView)),
         tap(ns => this.news.push(...ns))
-    ).subscribe(ns => {
-          this.$nextTick(() => {
-            const feeds = new Map<string, string[]>();
-            ns.forEach(n => {
-              feeds.set(n.data.id, n.data.feeds);
-              return elements.next(this.getRefElement(n.data.id));
-            });
-            elements.complete();
-            this.loadFeeds(currentPage, feeds);
+    ).subscribe({
+      next: ns => {
+        this.$nextTick(() => {
+          const feeds = new Map<string, string[]>();
+          ns.forEach(n => {
+            feeds.set(n.data.id, n.data.feeds);
+            return elements.next(this.getRefElement(n.data.id));
           });
-        },
-        e => elements.next(e)
-    );
+          elements.complete();
+          this.loadFeeds(currentPage, feeds);
+        });
+      },
+      error: e => elements.next(e)
+    });
     return elements.asObservable();
   }
 

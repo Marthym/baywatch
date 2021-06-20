@@ -1,10 +1,10 @@
 import {Observable} from 'rxjs';
 import {fromFetch} from "rxjs/fetch";
-import {switchMap} from "rxjs/operators";
+import {switchMap, take} from "rxjs/operators";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 import {Statistics} from "@/services/model/Statistics";
 
-export default class StatsService {
+export class StatsService {
 
     serviceBaseUrl: string;
 
@@ -20,7 +20,10 @@ export default class StatsService {
                 } else {
                     throw new HttpStatusError(response.status, `Error while getting news.`);
                 }
-            })
+            }),
+            take(1)
         );
     }
 }
+
+export default new StatsService(process.env.VUE_APP_API_BASE_URL);

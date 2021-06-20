@@ -40,18 +40,16 @@
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
-import UserService from "@/services/UserService";
+import userService from "@/services/UserService";
 
 @Component
 export default class LoginWindow extends Vue {
-  private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
-
   public username = '';
   public password = '';
 
   onLogin(): void {
-    this.userService.login(this.username, this.password)
-        .subscribe(() => this.$router.push("/"));
+    userService.login(this.username, this.password)
+        .subscribe(() => this.$router.push("/news"));
   }
 
 }

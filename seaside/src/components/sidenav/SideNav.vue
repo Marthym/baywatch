@@ -1,10 +1,10 @@
 <template>
   <nav class="flex flex-col bg-gray-200 dark:bg-gray-900 md:w-64 px-10 pt-4 pb-6">
 
-    <SideNavHeader :unread="statistics.unread"/>
+    <SideNavHeader :unread="baywatchStats.unread"/>
 
     <SideNavUserInfo :user="user"/>
-    <SideNavStatistics :statistics="statistics"/>
+    <SideNavStatistics :statistics="baywatchStats"/>
 
     <button class="mt-8 flex items-center justify-between py-3 px-2 text-white
 			dark:text-gray-200 bg-green-400 dark:bg-green-500 rounded-lg shadow">
@@ -19,20 +19,21 @@
 
     <SideNavFeeds/>
 
-    <SideNavImportantActions
-        :isLoggedIn="isLoggedIn" @logout="logoutUser()"/>
+    <SideNavImportantActions :isLoggedIn="isLoggedIn" @logout="logoutUser()"/>
   </nav>
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
+import {Component, Vue} from 'vue-property-decorator';
 import SideNavHeader from "./SideNavHeader.vue";
 import SideNavUserInfo from "./SideNavUserInfo.vue";
 import SideNavImportantActions from "./SideNavImportantActions.vue";
 import SideNavFeeds from "./SideNavFeeds.vue";
 import {Statistics} from "@/services/model/Statistics";
-import UserService from "@/services/UserService";
 import SideNavStatistics from "@/components/sidenav/SideNavStatistics.vue";
+
+import userService from "@/services/UserService";
+import statsService from "@/services/StatsService";
 
 @Component({
   components: {
@@ -44,28 +45,46 @@ import SideNavStatistics from "@/components/sidenav/SideNavStatistics.vue";
   },
 })
 export default class SideNav extends Vue {
-  @Prop() statistics?: Statistics;
+  private baywatchStats: Statistics = {
+    users: 0,
+    feeds: 0,
+    news: 0,
+    unread: 0
+  };
 
-  private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
-
-  private user = this.userService.get() || {};
+  private user = userService.get() || {};
 
   get isLoggedIn(): boolean {
     return 'id' in this.user;
   }
 
   mounted(): void {
-    if ('id' in this.user) {
-      this.userService.refresh()
-          .subscribe(
-              user => this.$nextTick(() => this.user = user),
-              () => this.$nextTick(() => this.user = {}));
+    if (this.isLoggedIn) {
+      userService.refresh()
+          .subscribe({
+            next: user => this.$nextTick(() => this.user = user),
+            error: () => this.$nextTick(() => this.user = {})
+          });
     }
+    this.upgradeStatistics();
+
+    userService.listenUser(u => {
+      this.user = u;
+      this.upgradeStatistics();
+    });
   }
 
   logoutUser(): void {
-    this.userService.logout()
+    userService.logout()
         .subscribe(() => this.$router.go(0));
+  }
+
+  private upgradeStatistics(): void {
+    statsService.getBaywatchStats()
+        .subscribe({
+          next: stats => this.baywatchStats = stats,
+          error: e => console.log(e)
+        });
   }
 }
 </script>
