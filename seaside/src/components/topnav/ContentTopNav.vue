@@ -1,30 +1,25 @@
 <template>
   <nav class="flex flex-row justify-between border-b
-        dark:border-gray-600 dark:text-gray-400 transition duration-500
-				ease-in-out">
+        dark:border-gray-600 dark:text-gray-400
+        transition duration-500 ease-in-out">
     <div class="flex">
       <!-- Top NavBar -->
-      <router-link to="/"
-                   class="py-2 block text-green-500 border-green-500
-						dark:text-green-200 dark:border-green-200
-						focus:outline-none border-b-2 font-medium capitalize
-						transition duration-500 ease-in-out">
+      <router-link to="/news"
+                   active-class="border-b-2 text-green-500 border-green-500 dark:text-green-200 dark:border-green-200"
+                   class="py-2 block font-medium capitalize focus:outline-none
+                          transition duration-500 ease-in-out">
         news
       </router-link>
       <router-link to="/feeds"
-                   class="ml-6 py-2 block border-b-2 border-transparent
-						focus:outline-none font-medium capitalize text-center
-						focus:text-green-500 focus:border-green-500
-						dark-focus:text-green-200 dark-focus:border-green-200
-						transition duration-500 ease-in-out">
+                   active-class="border-b-2 text-green-500 border-green-500 dark:text-green-200 dark:border-green-200"
+                   class="ml-6 py-2 block focus:outline-none font-medium capitalize text-center
+                          transition duration-500 ease-in-out">
         feeds
       </router-link>
       <router-link to="/categories"
-                   class="ml-6 py-2 block border-b-2 border-transparent
-						focus:outline-none font-medium capitalize text-center
-						focus:text-green-500 focus:border-green-500
-						dark-focus:text-green-200 dark-focus:border-green-200
-						transition duration-500 ease-in-out">
+                   active-class="border-b-2 text-green-500 border-green-500 dark:text-green-200 dark:border-green-200"
+                   class="ml-6 py-2 block focus:outline-none font-medium capitalize text-center
+                          transition duration-500 ease-in-out">
         categories
       </router-link>
     </div>
