@@ -119,7 +119,7 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
     return elements.asObservable();
   }
 
-  loadFeeds(page: number, ids: Map<string, string[]>) {
+  loadFeeds(page: number, ids: Map<string, string[]>): void {
     const fromIdx = this.news.length - Math.round(this.news.length / page);
     const feedIds = this.updateNewsView(fromIdx, ids);
 
@@ -207,7 +207,7 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
     this.activateOnScroll.observe(this.getRefElement(this.news[this.activeNews].data.id))
   }
 
-  toggleRead(idx: number) {
+  toggleRead(idx: number): void {
     this.markNewsRead(idx, !this.news[idx].data.read);
     this.news[idx].keepMark = true;
   }

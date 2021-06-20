@@ -17,7 +17,7 @@ export default class ScrollingNewsActivationMixin extends Vue {
         return 0;
     }
 
-    activateNewsCard(idx: number): void {
-
+    activateNewsCard(): void {
+        return;
     }
 }
