@@ -44,8 +44,8 @@ import ScrollActivable from "@/services/model/ScrollActivable";
 import InfiniteScrollBehaviour from "@/services/InfiniteScrollBehaviour";
 import InfiniteScrollable from "@/services/model/InfiniteScrollable";
 import {Mark} from "@/services/model/Mark.enum";
-import FeedService from "@/services/FeedService";
 import {Feed} from "@/services/model/Feed";
+import feedService, {FeedService} from "@/services/FeedService";
 import userService from "@/services/UserService";
 
 @Component({
@@ -58,7 +58,6 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
   private readonly activateOnScroll = ScrollingActivationBehaviour.apply(this);
   private readonly infiniteScroll = InfiniteScrollBehaviour.apply(this);
   private newsService: NewsService = new NewsService(process.env.VUE_APP_API_BASE_URL);
-  private feedService: FeedService = new FeedService(process.env.VUE_APP_API_BASE_URL);
   private news: NewsView[] = new Array(0);
   private feeds = new Map<string, Feed>();
 
@@ -116,7 +115,7 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
 
     const query = new URLSearchParams(FeedService.DEFAULT_QUERY);
     feedIds.forEach(f => query.append('id', f));
-    this.feedService.list(-1, query).subscribe(fs => {
+    feedService.list(-1, query).subscribe(fs => {
       for (const f of fs) {
         this.feeds.set(f.id, f);
       }

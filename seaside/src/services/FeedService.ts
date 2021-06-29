@@ -4,7 +4,7 @@ import {switchMap, take} from "rxjs/operators";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 import {Feed} from "@/services/model/Feed";
 
-export default class FeedService {
+export class FeedService {
 
     public static readonly DEFAULT_QUERY: string = '?_pp=20';
 
@@ -36,3 +36,5 @@ export default class FeedService {
         );
     }
 }
+
+export default new FeedService(process.env.VUE_APP_API_BASE_URL);

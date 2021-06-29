@@ -4855,6 +4855,11 @@ cyclist@^1.0.1:
   resolved "https://registry.yarnpkg.com/cyclist/-/cyclist-1.0.1.tgz#596e9698fd0c80e12038c2b82d6eb1b35b6224d9"
   integrity sha1-WW6WmP0MgOEgOMK4LW6xs1tiJNk=
 
+daisyui@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/daisyui/-/daisyui-1.6.0.tgz#cb8cc1546c9fe78dc0c089d02391f775fd0319ed"
+  integrity sha512-pNe6lFuE5/AOJdDrBeXHBl2y+49deiePzwl6BAdlm7nBeemq5aNk/2y1YRT5t/veuMGcYk85PZcX8It6HJGB7Q==
+
 dashdash@^1.12.0:
   version "1.14.1"
   resolved "https://registry.yarnpkg.com/dashdash/-/dashdash-1.14.1.tgz#853cfa0f7cbe2fed5de20326b8dd581035f6e2f0"
