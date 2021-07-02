@@ -978,7 +978,7 @@ module.exports = {
         themes: [
             {
                 'baywatch': {
-                    // 'primary': colors.coolGray['300'],
+                    'primary': colors.emerald['500'],
                     'primary-focus': colors.emerald['200'],
                     // 'primary-content': colors.coolGray['300'],
                     // 'secondary': '#f000b8',

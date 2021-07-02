@@ -25,8 +25,11 @@
         <th></th>
         <th>Name</th>
         <th>Job</th>
-        <th>Favorite Color</th>
-        <th></th>
+        <th colspan="2">
+          <div class="btn-group justify-end" v-if="feeds.length > this.PER_PAGE">
+            <button class="btn btn-sm" v-for="i in pagesNumber" :key="i">{{ i }}</button>
+          </div>
+        </th>
       </tr>
       </tfoot>
     </table>
@@ -44,13 +47,20 @@ import {map, tap} from "rxjs/operators";
   components: {FeedListItem, FeedListHeader},
 })
 export default class FeedsList extends Vue {
+  private readonly PER_PAGE: number = 5;
   private feeds: FeedView[] = new Array(0);
 
   mounted(): void {
-    feedsService.list(-1).pipe(
+    const params = new URLSearchParams();
+    params.set('_pp', this.PER_PAGE.toString());
+    feedsService.list(-1, params).pipe(
         map(fs => fs.map(f => ({data: f, feeds: [], isSelected: false}) as FeedView)),
         tap(fs => this.feeds.push(...fs))
     ).subscribe();
+  }
+
+  get pagesNumber(): number {
+    return (this.feeds.length / this.PER_PAGE) | 0;
   }
 }
 </script>
