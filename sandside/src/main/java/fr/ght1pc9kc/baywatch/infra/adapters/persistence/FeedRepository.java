@@ -8,6 +8,7 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.request.filter.PredicateSearchVisitor;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
+import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.*;
@@ -170,6 +171,6 @@ public class FeedRepository implements FeedPersistencePort {
             select.addHaving(havings);
         }
 
-        return select;
+        return JooqPagination.apply(qCtx.pagination, FEEDS_PROPERTIES_MAPPING, select);
     }
 }

@@ -16,6 +16,8 @@ public interface FeedService {
 
     Flux<Feed> list(PageRequest pageRequest);
 
+    Mono<Integer> count(PageRequest pageRequest);
+
     /**
      * List {@link Feed} independently of the {@link User} or any other entity.
      *

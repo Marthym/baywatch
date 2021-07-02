@@ -42,6 +42,15 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
+    public Mono<Integer> count(PageRequest pageRequest) {
+        return authFacade.getConnectedUser()
+                .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
+                .map(u -> QueryContext.from(pageRequest).withUserId(u.id))
+                .onErrorResume(UnauthenticatedUser.class, (e) -> Mono.just(QueryContext.from(pageRequest)))
+                .flatMap(feedRepository::count);
+    }
+
+    @Override
     public Flux<RawFeed> raw(PageRequest pageRequest) {
         return feedRepository.list(QueryContext.from(pageRequest))
                 .map(Feed::getRaw);
