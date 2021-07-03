@@ -5,7 +5,7 @@ import fr.ght1pc9kc.baywatch.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
 import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
-import fr.ght1pc9kc.baywatch.infra.request.filter.PredicateSearchVisitor;
+import fr.ght1pc9kc.baywatch.infra.http.filter.PredicateSearchVisitor;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;

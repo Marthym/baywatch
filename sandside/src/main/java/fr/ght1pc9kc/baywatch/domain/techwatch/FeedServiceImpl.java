@@ -45,8 +45,8 @@ public class FeedServiceImpl implements FeedService {
     public Mono<Integer> count(PageRequest pageRequest) {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
-                .map(u -> QueryContext.from(pageRequest).withUserId(u.id))
-                .onErrorResume(UnauthenticatedUser.class, (e) -> Mono.just(QueryContext.from(pageRequest)))
+                .map(u -> QueryContext.all(pageRequest.filter()).withUserId(u.id))
+                .onErrorResume(UnauthenticatedUser.class, (e) -> Mono.just(QueryContext.all(pageRequest.filter())))
                 .flatMap(feedRepository::count);
     }
 
