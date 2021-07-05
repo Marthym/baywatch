@@ -37,7 +37,7 @@ import {Component, Vue} from 'vue-property-decorator';
 import NewsCard from "@/components/newslist/NewsCard.vue";
 import NewsService from "@/services/NewsService";
 import {Observable, Subject, Subscription} from "rxjs";
-import {map, take, tap} from "rxjs/operators";
+import {map, switchMap, take, tap} from "rxjs/operators";
 import {NewsView} from "@/components/newslist/model/NewsView";
 import ScrollingActivationBehaviour from "@/services/ScrollingActivationBehaviour";
 import ScrollActivable from "@/services/model/ScrollActivable";
@@ -115,7 +115,9 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
 
     const query = new URLSearchParams(FeedService.DEFAULT_QUERY);
     feedIds.forEach(f => query.append('id', f));
-    feedService.list(-1, query).subscribe(fs => {
+    feedService.list(-1, query).pipe(
+        switchMap(page => page.data)
+    ).subscribe(fs => {
       for (const f of fs) {
         this.feeds.set(f.id, f);
       }

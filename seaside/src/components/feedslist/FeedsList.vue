@@ -26,7 +26,7 @@
         <th>Name</th>
         <th>Job</th>
         <th colspan="2">
-          <div class="btn-group justify-end" v-if="feeds.length > this.PER_PAGE">
+          <div class="btn-group justify-end" v-if="pagesNumber > 0">
             <button class="btn btn-sm" v-for="i in pagesNumber" :key="i">{{ i }}</button>
           </div>
         </th>
@@ -41,7 +41,7 @@ import FeedListHeader from "@/components/feedslist/FeedListHeader.vue";
 import FeedListItem from "@/components/feedslist/FeedListItem.vue";
 import {FeedView} from "@/components/feedslist/model/FeedView";
 import feedsService from "@/services/FeedService";
-import {map, tap} from "rxjs/operators";
+import {map, switchMap, tap} from "rxjs/operators";
 
 @Component({
   components: {FeedListItem, FeedListHeader},
@@ -49,18 +49,24 @@ import {map, tap} from "rxjs/operators";
 export default class FeedsList extends Vue {
   private readonly PER_PAGE: number = 5;
   private feeds: FeedView[] = new Array(0);
+  private feedCount = 0;
+  private activePage = 0;
 
   mounted(): void {
     const params = new URLSearchParams();
     params.set('_pp', this.PER_PAGE.toString());
     feedsService.list(-1, params).pipe(
+        switchMap(page => {
+          this.feedCount = page.totalCount;
+          return page.data;
+        }),
         map(fs => fs.map(f => ({data: f, feeds: [], isSelected: false}) as FeedView)),
         tap(fs => this.feeds.push(...fs))
     ).subscribe();
   }
 
   get pagesNumber(): number {
-    return (this.feeds.length / this.PER_PAGE) | 0;
+    return (this.feedCount / this.PER_PAGE) | 0;
   }
 }
 </script>

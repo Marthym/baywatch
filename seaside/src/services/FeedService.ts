@@ -1,8 +1,9 @@
-import {Observable} from "rxjs";
 import {fromFetch} from "rxjs/fetch";
-import {switchMap, take} from "rxjs/operators";
+import {map, take} from "rxjs/operators";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 import {Feed} from "@/services/model/Feed";
+import {Page} from "@/services/model/Page";
+import {from, Observable} from "rxjs";
 
 export class FeedService {
 
@@ -20,14 +21,16 @@ export class FeedService {
      * @param page The to display
      * @param query The possible query parameters
      */
-    list(page = 1, query: URLSearchParams = new URLSearchParams(FeedService.DEFAULT_QUERY)): Observable<Feed[]> {
+    list(page = 1, query: URLSearchParams = new URLSearchParams(FeedService.DEFAULT_QUERY)): Observable<Page<Feed>> {
         if (page > 1) {
             query.append('_p', String(page));
         }
         return fromFetch(`${this.serviceBaseUrl}/feeds?${query.toString()}`).pipe(
-            switchMap(response => {
+            map(response => {
                 if (response.ok) {
-                    return response.json();
+                    const totalCount = parseInt(response.headers.get('X-Total-Count') || "-1");
+                    const data: Observable<Feed[]> = from(response.json());
+                    return {totalCount: totalCount, data: data};
                 } else {
                     throw new HttpStatusError(response.status, `Error while getting news.`);
                 }
