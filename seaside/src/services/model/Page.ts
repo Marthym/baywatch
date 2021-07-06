@@ -1,6 +1,7 @@
 import {Observable} from "rxjs";
 
 export type Page<T> = {
-    totalCount: number;
+    currentPage: number;
+    totalPage: number;
     data: Observable<T[]>
 }

@@ -4,10 +4,12 @@ import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 import {Feed} from "@/services/model/Feed";
 import {Page} from "@/services/model/Page";
 import {from, Observable} from "rxjs";
+import {ConstantFilters, ConstantHttpHeaders} from "@/constants";
 
 export class FeedService {
 
-    public static readonly DEFAULT_QUERY: string = '?_pp=20';
+    public static readonly DEFAULT_PER_PAGE: number = 20;
+    public static readonly DEFAULT_QUERY: string = `?${ConstantFilters.PER_PAGE}=${FeedService.DEFAULT_PER_PAGE}`;
 
     serviceBaseUrl: string;
 
@@ -21,16 +23,25 @@ export class FeedService {
      * @param page The to display
      * @param query The possible query parameters
      */
-    list(page = 1, query: URLSearchParams = new URLSearchParams(FeedService.DEFAULT_QUERY)): Observable<Page<Feed>> {
-        if (page > 1) {
-            query.append('_p', String(page));
+    list(page = 0, query: URLSearchParams = new URLSearchParams(FeedService.DEFAULT_QUERY)): Observable<Page<Feed>> {
+        const resolvedPage = (page > 0) ? page : 0;
+        query.set(ConstantFilters.PAGE, String(resolvedPage));
+        let resolvedPerPage = query.get(ConstantFilters.PER_PAGE);
+        if (resolvedPerPage === null) {
+            resolvedPerPage = String(FeedService.DEFAULT_PER_PAGE);
+            query.append(ConstantFilters.PER_PAGE, resolvedPerPage);
         }
+
         return fromFetch(`${this.serviceBaseUrl}/feeds?${query.toString()}`).pipe(
             map(response => {
                 if (response.ok) {
-                    const totalCount = parseInt(response.headers.get('X-Total-Count') || "-1");
+                    const totalCount = parseInt(response.headers.get(ConstantHttpHeaders.X_TOTAL_COUNT) || "-1");
                     const data: Observable<Feed[]> = from(response.json());
-                    return {totalCount: totalCount, data: data};
+                    return {
+                        currentPage: resolvedPage,
+                        totalPage: Math.ceil(totalCount / Number(resolvedPerPage)),
+                        data: data
+                    };
                 } else {
                     throw new HttpStatusError(response.status, `Error while getting news.`);
                 }

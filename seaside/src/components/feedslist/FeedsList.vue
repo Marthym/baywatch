@@ -16,7 +16,7 @@
       </tr>
       </thead>
       <tbody>
-      <template v-for="vFeed in feeds">
+      <template v-for="vFeed in this.feeds">
         <FeedListItem :ref="vFeed.data.id" :view="vFeed" v-bind:key="vFeed.data.id"/>
       </template>
       </tbody>
@@ -26,8 +26,12 @@
         <th>Name</th>
         <th>Job</th>
         <th colspan="2">
-          <div class="btn-group justify-end" v-if="pagesNumber > 0">
-            <button class="btn btn-sm" v-for="i in pagesNumber" :key="i">{{ i }}</button>
+          <div class="btn-group justify-end" v-if="pagesNumber > 1">
+            <button v-for="i in pagesNumber" :key="i"
+                    :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
+                    v-on:click="loadFeedPage(i-1).subscribe()">
+              {{ i }}
+            </button>
           </div>
         </th>
       </tr>
@@ -42,31 +46,32 @@ import FeedListItem from "@/components/feedslist/FeedListItem.vue";
 import {FeedView} from "@/components/feedslist/model/FeedView";
 import feedsService from "@/services/FeedService";
 import {map, switchMap, tap} from "rxjs/operators";
+import {Observable} from "rxjs";
 
 @Component({
   components: {FeedListItem, FeedListHeader},
 })
 export default class FeedsList extends Vue {
-  private readonly PER_PAGE: number = 5;
+// noinspection JSMismatchedCollectionQueryUpdate
   private feeds: FeedView[] = new Array(0);
-  private feedCount = 0;
+  private pagesNumber = 0;
   private activePage = 0;
 
   mounted(): void {
-    const params = new URLSearchParams();
-    params.set('_pp', this.PER_PAGE.toString());
-    feedsService.list(-1, params).pipe(
-        switchMap(page => {
-          this.feedCount = page.totalCount;
-          return page.data;
-        }),
-        map(fs => fs.map(f => ({data: f, feeds: [], isSelected: false}) as FeedView)),
-        tap(fs => this.feeds.push(...fs))
-    ).subscribe();
+    this.loadFeedPage(0).subscribe();
   }
 
-  get pagesNumber(): number {
-    return (this.feedCount / this.PER_PAGE) | 0;
+  loadFeedPage(page: number): Observable<FeedView[]> {
+    const resolvedPage = (page > 0) ? page : 0;
+    return feedsService.list(resolvedPage).pipe(
+        switchMap(page => {
+          this.pagesNumber = page.totalPage;
+          this.activePage = page.currentPage;
+          return page.data;
+        }),
+        map(fs => fs.map(f => ({data: f, isSelected: false}) as FeedView)),
+        tap(fs => this.feeds = fs)
+    )
   }
 }
 </script>
