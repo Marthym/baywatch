@@ -1,5 +1,5 @@
 <template>
-  <div class="overflow-x-auto mt-5">
+  <div class="overflow-x-auto mt-5 pr-5">
     <table class="table w-full">
       <thead>
       <tr>
@@ -10,9 +10,16 @@
           </label>
         </th>
         <th>Name</th>
-        <th>Job</th>
-        <th>Favorite Color</th>
-        <th></th>
+        <th>Link / Categories</th>
+        <th colspan="2">
+          <div class="btn-group justify-end" v-if="pagesNumber > 1">
+            <button v-for="i in pagesNumber" :key="i"
+                    :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
+                    v-on:click="loadFeedPage(i-1).subscribe()">
+              {{ i }}
+            </button>
+          </div>
+        </th>
       </tr>
       </thead>
       <tbody>
@@ -24,7 +31,7 @@
       <tr>
         <th></th>
         <th>Name</th>
-        <th>Job</th>
+        <th>Link / Categories</th>
         <th colspan="2">
           <div class="btn-group justify-end" v-if="pagesNumber > 1">
             <button v-for="i in pagesNumber" :key="i"
@@ -47,6 +54,7 @@ import {FeedView} from "@/components/feedslist/model/FeedView";
 import feedsService from "@/services/FeedService";
 import {map, switchMap, tap} from "rxjs/operators";
 import {Observable} from "rxjs";
+import {Feed} from "@/services/model/Feed";
 
 @Component({
   components: {FeedListItem, FeedListHeader},
@@ -69,9 +77,18 @@ export default class FeedsList extends Vue {
           this.activePage = page.currentPage;
           return page.data;
         }),
-        map(fs => fs.map(f => ({data: f, isSelected: false}) as FeedView)),
+        map(fs => fs.map(f => this.modelToView(f))),
         tap(fs => this.feeds = fs)
     )
+  }
+
+  modelToView(feed: Feed): FeedView {
+    console.log(new URL(feed.url).origin + '/favicon.ico')
+    return {
+      icon: new URL(feed.url).origin + '/favicon.ico',
+      data: feed,
+      isSelected: false
+    } as FeedView
   }
 }
 </script>
