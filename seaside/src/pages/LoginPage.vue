@@ -1,6 +1,6 @@
 <template>
-  <div class="py-6">
-    <div class="flex bg-white rounded-lg shadow-lg overflow-hidden mx-auto max-w-sm lg:max-w-4xl">
+  <div class="absolute inset-0 h-screen w-screen backdrop-filter bg-gray-100 dark:bg-gray-700 bg-opacity-90">
+    <div class="flex bg-white rounded-lg shadow-lg overflow-hidden mt-8 mx-auto max-w-sm lg:max-w-4xl">
       <div class="hidden lg:block lg:w-1/2 bg-cover"
            style="background-image:url('https://images.unsplash.com/photo-1546514714-df0ccc50d7bf?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=667&q=80')"></div>
       <div class="w-full p-8 lg:w-1/2">
@@ -40,18 +40,16 @@
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
-import UserService from "@/services/UserService";
+import userService from "@/services/UserService";
 
 @Component
 export default class LoginWindow extends Vue {
-  private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
-
   public username = '';
   public password = '';
 
   onLogin(): void {
-    this.userService.login(this.username, this.password)
-        .subscribe(() => this.$router.push("/"));
+    userService.login(this.username, this.password)
+        .subscribe(() => this.$router.push("/news"));
   }
 
 }

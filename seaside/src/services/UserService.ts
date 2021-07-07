@@ -4,12 +4,17 @@ import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 import {User} from "@/services/model/User";
 import {catchError, map, switchMap, take} from "rxjs/operators";
 
-export default class UserService {
+export class UserService {
 
+    private userListeners: { (data: User): void; } [] = [];
     serviceBaseUrl: string;
 
     constructor(baseURL: string) {
         this.serviceBaseUrl = baseURL;
+    }
+
+    listenUser(consumer: { (data: User): void; }): void {
+        this.userListeners.push(consumer);
     }
 
     login(username: string, password: string): Observable<User> {
@@ -70,6 +75,7 @@ export default class UserService {
     save(user: User): User {
         const parsed = JSON.stringify(user);
         localStorage.setItem('user', parsed);
+        this.userListeners.forEach(consumer => consumer(user))
         return user;
     }
 
@@ -85,3 +91,5 @@ export default class UserService {
         }
     }
 }
+
+export default new UserService(process.env.VUE_APP_API_BASE_URL);

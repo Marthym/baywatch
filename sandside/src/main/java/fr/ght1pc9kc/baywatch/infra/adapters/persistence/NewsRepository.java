@@ -11,7 +11,7 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
 import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
-import fr.ght1pc9kc.baywatch.infra.request.filter.PredicateSearchVisitor;
+import fr.ght1pc9kc.baywatch.infra.http.filter.PredicateSearchVisitor;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.basic.common.lang3.StringUtils;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;

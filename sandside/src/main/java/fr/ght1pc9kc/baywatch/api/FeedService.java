@@ -17,6 +17,15 @@ public interface FeedService {
     Flux<Feed> list(PageRequest pageRequest);
 
     /**
+     * Count the total number of elements returned by the {@link PageRequest}
+     * ignoring {@link fr.ght1pc9kc.juery.api.Pagination}
+     *
+     * @param pageRequest The page request with filters
+     * @return The total elements count
+     */
+    Mono<Integer> count(PageRequest pageRequest);
+
+    /**
      * List {@link Feed} independently of the {@link User} or any other entity.
      *
      * @param pageRequest The query parameters

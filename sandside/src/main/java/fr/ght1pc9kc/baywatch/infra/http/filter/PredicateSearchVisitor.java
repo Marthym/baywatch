@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.infra.request.filter;
+package fr.ght1pc9kc.baywatch.infra.http.filter;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
