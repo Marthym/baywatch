@@ -3,7 +3,7 @@
     <table class="table w-full">
       <thead>
       <tr>
-        <th>
+        <th v-if="isAuthenticated">
           <label>
             <input type="checkbox" class="checkbox">
             <span class="checkbox-mark"></span>
@@ -11,7 +11,7 @@
         </th>
         <th>Name</th>
         <th>Link / Categories</th>
-        <th colspan="2">
+        <th colspan="2" v-if="isAuthenticated">
           <div class="btn-group justify-end" v-if="pagesNumber > 1">
             <button v-for="i in pagesNumber" :key="i"
                     :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
@@ -24,15 +24,16 @@
       </thead>
       <tbody>
       <template v-for="vFeed in this.feeds">
-        <FeedListItem :ref="vFeed.data.id" :view="vFeed" v-bind:key="vFeed.data.id"/>
+        <FeedListItem :ref="vFeed.data.id" :view="vFeed" v-bind:key="vFeed.data.id"
+                      :is-authenticated="isAuthenticated" />
       </template>
       </tbody>
       <tfoot>
       <tr>
-        <th></th>
+        <th v-if="isAuthenticated"></th>
         <th>Name</th>
         <th>Link / Categories</th>
-        <th colspan="2">
+        <th colspan="2" v-if="isAuthenticated">
           <div class="btn-group justify-end" v-if="pagesNumber > 1">
             <button v-for="i in pagesNumber" :key="i"
                     :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
@@ -55,6 +56,7 @@ import feedsService from "@/services/FeedService";
 import {map, switchMap, tap} from "rxjs/operators";
 import {Observable} from "rxjs";
 import {Feed} from "@/services/model/Feed";
+import userService from "@/services/UserService";
 
 @Component({
   components: {FeedListItem, FeedListHeader},
@@ -67,6 +69,10 @@ export default class FeedsList extends Vue {
 
   mounted(): void {
     this.loadFeedPage(0).subscribe();
+  }
+
+  get isAuthenticated(): boolean {
+    return userService.get() !== undefined;
   }
 
   loadFeedPage(page: number): Observable<FeedView[]> {

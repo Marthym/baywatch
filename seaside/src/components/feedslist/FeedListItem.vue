@@ -1,6 +1,6 @@
 <template>
   <tr>
-    <th>
+    <th v-if="isAuthenticated">
       <label>
         <input type="checkbox" class="checkbox">
         <span class="checkbox-mark"></span>
@@ -29,9 +29,9 @@
       <a class="link">{{ view.data.url }}</a>
 
       <br>
-      <span class="badge badge-outline badge-sm">Desktop Support Technician</span>
+<!--      <span class="badge badge-outline badge-sm">Desktop Support Technician</span>-->
     </td>
-    <th>
+    <th v-if="isAuthenticated">
       <div class="btn-group">
         <button class="btn btn-sm btn-square btn-ghost">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -57,6 +57,7 @@ import {FeedView} from "@/components/feedslist/model/FeedView";
 })
 export default class FeedsListItem extends Vue {
   @Prop() private view!: FeedView;
+  @Prop() private isAuthenticated!: boolean;
 
   iconFallback(event: ErrorEvent): void {
     (event.target as HTMLImageElement).src = '/favicon.ico'
