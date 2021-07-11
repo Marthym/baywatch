@@ -1,6 +1,15 @@
 <template v-if="isOpened">
-  <ModalWindow :is-visible="isOpened">
-    <p>Prout</p>
+  <ModalWindow :title="modalTitle" :is-visible="isOpened">
+    <form class="form-control">
+      <label class="label">
+        <span class="label-text">Nom</span>
+      </label>
+      <input type="text" placeholder="username" class="input input-bordered">
+      <label class="label">
+        <span class="label-text">URL</span>
+      </label>
+      <input type="text" placeholder="username" class="input input-bordered">
+    </form>
     <template v-slot:actions>
       <button class="btn btn-primary">Enregistrer</button>
       <button class="btn" @click.stop="isOpened = false">Fermer</button>
@@ -22,6 +31,7 @@ import ModalWindow from "@/components/shared/ModalWindow.vue";
 export default class FeedEditor extends Vue {
   private feed!: Feed;
   private isOpened = false;
+  private modalTitle = 'Ajouter un fil';
 
   public openEmpty(): Observable<Feed> {
     this.isOpened = true;

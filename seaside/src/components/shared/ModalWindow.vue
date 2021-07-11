@@ -1,7 +1,10 @@
 <template>
-  <div class="modal"
-       :class="{'modal-active': isOpened}" v-if="isOpened">
-    <div class="modal-box rounded-none">
+  <div class="modal compact flex-col space-x-0" :class="{'modal-active': isOpened}" v-if="isOpened">
+    <div v-if="title !== undefined" class="modal-box translate-y-0 rounded-none
+      text-lg bg-base-200 text-base-content uppercase font-bold p-4">
+      {{ title }}
+    </div>
+    <div class="modal-box translate-y-0 rounded-none" :class="{'pt-2': title !== undefined}">
       <slot></slot>
       <div class="modal-action">
         <slot name="actions">
@@ -28,6 +31,7 @@ import {Component, Prop, Vue} from "vue-property-decorator";
 })
 export default class ModalWindow extends Vue {
   @Prop() isVisible?: boolean;
+  @Prop() title?: string;
   private internalVisible = true;
 
   get isOpened(): boolean {
