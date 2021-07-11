@@ -1,5 +1,14 @@
 <template>
   <div class="overflow-x-auto mt-5 pr-5">
+    <div class="btn-group mb-2" v-if="isAuthenticated">
+      <button class="btn btn-primary" @click="feedEditor.openEmpty()">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        Ajouter
+      </button>
+    </div>
     <table class="table w-full">
       <thead>
       <tr>
@@ -45,6 +54,7 @@
       </tr>
       </tfoot>
     </table>
+    <FeedEditor ref="feedEditor"/>
   </div>
 </template>
 <script lang="ts">
@@ -57,11 +67,13 @@ import {map, switchMap, tap} from "rxjs/operators";
 import {Observable} from "rxjs";
 import {Feed} from "@/services/model/Feed";
 import userService from "@/services/UserService";
+import FeedEditor from "@/components/feedslist/FeedEditor.vue";
 
 @Component({
-  components: {FeedListItem, FeedListHeader},
+  components: {FeedEditor, FeedListItem, FeedListHeader},
 })
 export default class FeedsList extends Vue {
+  private feedEditor!: FeedEditor;
 // noinspection JSMismatchedCollectionQueryUpdate
   private feeds: FeedView[] = new Array(0);
   private pagesNumber = 0;
@@ -69,6 +81,7 @@ export default class FeedsList extends Vue {
 
   mounted(): void {
     this.loadFeedPage(0).subscribe();
+    this.feedEditor =  this.$refs.feedEditor as FeedEditor;
   }
 
   get isAuthenticated(): boolean {
