@@ -9,10 +9,10 @@
         <span class="label-text">URL</span>
       </label>
       <input type="text" placeholder="username" class="input input-bordered">
-      <TagInput/>
+      <TagInput v-model="tags"/>
     </form>
     <template v-slot:actions>
-      <button class="btn btn-primary">Enregistrer</button>
+      <button class="btn btn-primary" @click="onTagChanges">Enregistrer</button>
       <button class="btn" @click.stop="isOpened = false">Annuler</button>
     </template>
   </ModalWindow>
@@ -36,7 +36,6 @@ export default class FeedEditor extends Vue {
   private isOpened = false;
   private modalTitle = 'Ajouter un fil';
 
-  private tag = '';
   private tags: string[] = [];
 
   public openEmpty(): Observable<Feed> {
@@ -48,6 +47,10 @@ export default class FeedEditor extends Vue {
     this.feed = feed;
     this.isOpened = true;
     return new Observable<Feed>();
+  }
+
+  private onTagChanges() {
+    console.log(this.tags);
   }
 }
 </script>

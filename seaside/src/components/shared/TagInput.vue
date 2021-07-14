@@ -32,7 +32,6 @@ export default class TagInput extends Vue {
   }
 
   private onRemoveTag(tv: TagView) {
-    console.log('remove', tv);
     const idx = this.tags.indexOf(tv);
     this.tags.splice(idx, 1);
     this.emitInputEvent();

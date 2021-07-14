@@ -35,7 +35,6 @@ export default class ModalWindow extends Vue {
   private internalVisible = true;
 
   get isOpened(): boolean {
-    console.log(this.isVisible, this.internalVisible);
     return (this.isVisible == undefined) ? this.internalVisible : this.isVisible;
   }
 }
