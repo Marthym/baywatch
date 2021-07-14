@@ -4,16 +4,16 @@
       <label class="label">
         <span class="label-text">Nom</span>
       </label>
-      <input type="text" placeholder="username" class="input input-bordered">
+      <input v-model="feed.name" type="text" placeholder="username" class="input input-bordered">
       <label class="label">
         <span class="label-text">URL</span>
       </label>
-      <input type="text" placeholder="username" class="input input-bordered">
-      <TagInput v-model="tags"/>
+      <input v-model="feed.url" type="text" placeholder="username" class="input input-bordered">
+      <TagInput v-model="feed.tags"/>
     </form>
     <template v-slot:actions>
-      <button class="btn btn-primary" @click="onTagChanges">Enregistrer</button>
-      <button class="btn" @click.stop="isOpened = false">Annuler</button>
+      <button class="btn" @click.stop="resetAndCloseModal">Annuler</button>
+      <button class="btn btn-primary" @click="onSaveFeed">Enregistrer</button>
     </template>
   </ModalWindow>
 </template>
@@ -21,7 +21,7 @@
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
 import {Feed} from '@/services/model/Feed';
-import {Observable} from "rxjs";
+import {Observable, Subject} from "rxjs";
 import ModalWindow from "@/components/shared/ModalWindow.vue";
 import TagInput from "@/components/shared/TagInput.vue";
 
@@ -32,25 +32,32 @@ import TagInput from "@/components/shared/TagInput.vue";
   },
 })
 export default class FeedEditor extends Vue {
-  private feed!: Feed;
+  private feed: Feed = {} as Feed;
   private isOpened = false;
   private modalTitle = 'Ajouter un fil';
-
-  private tags: string[] = [];
+  private subject?: Subject<Feed>;
 
   public openEmpty(): Observable<Feed> {
-    this.isOpened = true;
-    return new Observable<Feed>();
+    return this.openFeed({} as Feed);
   }
 
   public openFeed(feed: Feed): Observable<Feed> {
     this.feed = feed;
     this.isOpened = true;
-    return new Observable<Feed>();
+    this.subject = new Subject<Feed>();
+    return this.subject.asObservable();
   }
 
-  private onTagChanges() {
-    console.log(this.tags);
+  private resetAndCloseModal(): void {
+    this.isOpened = false
+    this.feed = {} as Feed;
+    this.subject?.complete();
+    this.subject = undefined;
+  }
+
+  private onSaveFeed() {
+    this.subject?.next(this.feed);
+    this.resetAndCloseModal();
   }
 }
 </script>

@@ -22,7 +22,7 @@ import {Component, Prop, Vue} from "vue-property-decorator";
   components: {},
 })
 export default class TagInput extends Vue {
-  @Prop({default: []}) private value!: string[];
+  @Prop({default: () => []}) private value!: string[];
 
   private tag = '';
   private tags: TagView[] = [];
