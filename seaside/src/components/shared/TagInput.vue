@@ -40,12 +40,18 @@ export default class TagInput extends Vue {
   private onKeydown(event: KeyboardEvent): void {
     switch (event.key) {
       case 'Enter':
-        if (this.tags.filter(tv => tv.name === this.tag).length === 0) {
+      case ' ':
+      case ',':
+        event.preventDefault();
+        if (this.tag !== '' && this.tags.filter(tv => tv.name === this.tag).length === 0) {
           this.tags.push({name: this.tag, status: TagStatus.PRIMARY});
         }
+        console.log('this.tag', this.tag);
         this.tag = '';
+        console.log('this.tag', this.tag);
         this.emitInputEvent();
         break;
+
       case 'Backspace':
         if (this.tag === '' && this.tags.length > 0) {
           event.preventDefault();
