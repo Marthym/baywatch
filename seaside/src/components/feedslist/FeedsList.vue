@@ -1,7 +1,7 @@
 <template>
   <div class="overflow-x-auto mt-5 pr-5">
     <div class="btn-group mb-2" v-if="isAuthenticated">
-      <button class="btn btn-primary" @click="feedEditor.openEmpty()">
+      <button class="btn btn-primary" @click="addNewFeed">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -34,7 +34,7 @@
       <tbody>
       <template v-for="vFeed in this.feeds">
         <FeedListItem :ref="vFeed.data.id" :view="vFeed" v-bind:key="vFeed.data.id"
-                      :is-authenticated="isAuthenticated" />
+                      :is-authenticated="isAuthenticated"/>
       </template>
       </tbody>
       <tfoot>
@@ -62,12 +62,12 @@ import {Component, Vue} from 'vue-property-decorator';
 import FeedListHeader from "@/components/feedslist/FeedListHeader.vue";
 import FeedListItem from "@/components/feedslist/FeedListItem.vue";
 import {FeedView} from "@/components/feedslist/model/FeedView";
-import feedsService from "@/services/FeedService";
-import {map, switchMap, tap} from "rxjs/operators";
+import {map, switchMap, take, tap} from "rxjs/operators";
 import {Observable} from "rxjs";
 import {Feed} from "@/services/model/Feed";
-import userService from "@/services/UserService";
 import FeedEditor from "@/components/feedslist/FeedEditor.vue";
+import feedsService from "@/services/FeedService";
+import userService from "@/services/UserService";
 
 @Component({
   components: {FeedEditor, FeedListItem, FeedListHeader},
@@ -81,7 +81,7 @@ export default class FeedsList extends Vue {
 
   mounted(): void {
     this.loadFeedPage(0).subscribe();
-    this.feedEditor =  this.$refs.feedEditor as FeedEditor;
+    this.feedEditor = this.$refs.feedEditor as FeedEditor;
   }
 
   get isAuthenticated(): boolean {
@@ -102,12 +102,22 @@ export default class FeedsList extends Vue {
   }
 
   modelToView(feed: Feed): FeedView {
-    console.log(new URL(feed.url).origin + '/favicon.ico')
     return {
       icon: new URL(feed.url).origin + '/favicon.ico',
       data: feed,
       isSelected: false
     } as FeedView
+  }
+
+  private addNewFeed(): void {
+    this.feedEditor.openEmpty().pipe(
+        take(1),
+        switchMap(feed => feedsService.add(feed)),
+        switchMap(() => this.loadFeedPage(this.activePage)),
+    ).subscribe(() => {
+      // TODO: Add notification
+      console.info('Feed added successfully !');
+    });
   }
 }
 </script>

@@ -1,10 +1,10 @@
 import {fromFetch} from "rxjs/fetch";
-import {map, take} from "rxjs/operators";
+import {map, switchMap, take} from "rxjs/operators";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 import {Feed} from "@/services/model/Feed";
 import {Page} from "@/services/model/Page";
 import {from, Observable} from "rxjs";
-import {ConstantFilters, ConstantHttpHeaders} from "@/constants";
+import {ConstantFilters, ConstantHttpHeaders, ConstantMediaTypes} from "@/constants";
 
 export class FeedService {
 
@@ -44,6 +44,25 @@ export class FeedService {
                     };
                 } else {
                     throw new HttpStatusError(response.status, `Error while getting news.`);
+                }
+            }),
+            take(1)
+        );
+    }
+
+    add(feed: Feed): Observable<Feed> {
+        const headers = new Headers();
+        headers.set(ConstantHttpHeaders.CONTENT_TYPE, ConstantMediaTypes.JSON_UTF8);
+        return fromFetch(`${this.serviceBaseUrl}/feeds`, {
+            method: 'POST',
+            body: JSON.stringify(feed),
+            headers: headers,
+        }).pipe(
+            switchMap(response => {
+                if (response.ok) {
+                    return from(response.json());
+                } else {
+                    throw new HttpStatusError(response.status, `Error while subscribing feed.`);
                 }
             }),
             take(1)
