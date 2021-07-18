@@ -22,6 +22,7 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,9 +47,8 @@ public class FeedController {
                 .map(count -> Page.of(feeds, count));
     }
 
-    @PutMapping
-    @PostMapping
-    public Mono<ResponseEntity<Feed>> subscribe(@Valid Mono<FeedForm> feedForm) {
+    @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT})
+    public Mono<ResponseEntity<Feed>> subscribe(@Valid @RequestBody Mono<FeedForm> feedForm) {
         return feedForm.map(form -> {
             URI uri = URI.create(form.url);
             return Feed.builder()
@@ -57,6 +57,7 @@ public class FeedController {
                             .url(uri)
                             .name(form.name)
                             .build())
+                    .tags(Set.of(form.tags))
                     .build();
         })
                 .flatMap(feed -> feedService.persist(Collections.singleton(feed)).thenReturn(feed))

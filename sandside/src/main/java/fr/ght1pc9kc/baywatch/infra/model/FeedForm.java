@@ -9,4 +9,5 @@ import javax.validation.constraints.NotBlank;
 public class FeedForm {
     public String name;
     public @NotBlank @URL String url;
+    public String[] tags;
 }
