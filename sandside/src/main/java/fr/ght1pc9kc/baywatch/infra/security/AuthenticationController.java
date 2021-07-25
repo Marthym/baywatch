@@ -9,6 +9,7 @@ import fr.ght1pc9kc.baywatch.infra.security.exceptions.BaywatchCredentialsExcept
 import fr.ght1pc9kc.baywatch.infra.security.model.AuthenticationRequest;
 import fr.ght1pc9kc.baywatch.infra.security.model.BaywatchUserDetails;
 import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams;
+import fr.ght1pc9kc.baywatch.infra.security.model.Session;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpCookie;
@@ -81,7 +82,7 @@ public class AuthenticationController {
     }
 
     @PutMapping("/refresh")
-    public Mono<User> refresh(ServerWebExchange exchange) {
+    public Mono<Session> refresh(ServerWebExchange exchange) {
         String token = Optional.ofNullable(exchange.getRequest().getCookies().getFirst(securityParams.cookie.name))
                 .map(HttpCookie::getValue)
                 .orElseThrow(() -> new BaywatchCredentialsException("User not login on !"));
@@ -95,7 +96,10 @@ public class AuthenticationController {
                             .maxAge(securityParams.jwt.validity)
                             .path("/api")
                             .build());
-                    return auth.user.withPassword(null);
+                    return Session.builder()
+                            .user(auth.user.withPassword(null))
+                            .maxAge(securityParams.jwt.validity.toSeconds())
+                            .build();
                 })
                 .onErrorMap(SecurityException.class, BaywatchCredentialsException::new);
     }
