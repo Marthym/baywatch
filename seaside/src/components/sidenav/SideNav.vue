@@ -52,20 +52,18 @@ export default class SideNav extends Vue {
     unread: 0
   };
 
-  private user = userService.get() || {};
+  private user = {};
 
   get isLoggedIn(): boolean {
     return 'id' in this.user;
   }
 
   mounted(): void {
-    if (this.isLoggedIn) {
-      userService.refresh()
-          .subscribe({
-            next: user => this.$nextTick(() => this.user = user),
-            error: () => this.$nextTick(() => this.user = {})
-          });
-    }
+    userService.get().subscribe({
+      next: user => this.$nextTick(() => this.user = user),
+      error: () => this.$nextTick(() => this.user = {})
+    });
+
     this.upgradeStatistics();
 
     userService.listenUser(u => {

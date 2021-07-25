@@ -1,16 +1,19 @@
 import {Observable, throwError} from "rxjs";
-import {fromFetch} from "rxjs/fetch";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 import {User} from "@/services/model/User";
-import {catchError, map, switchMap, take} from "rxjs/operators";
+import {catchError, map, shareReplay, switchMap, take, tap} from "rxjs/operators";
+import {Session} from "@/services/model/Session";
+import rest from '@/services/http/RestWrapper';
 
 export class UserService {
 
     private userListeners: { (data: User): void; } [] = [];
-    serviceBaseUrl: string;
+    private readonly cache$: Observable<Session>;
 
-    constructor(baseURL: string) {
-        this.serviceBaseUrl = baseURL;
+    constructor() {
+        this.cache$ = this.refresh().pipe(
+            shareReplay(1),
+        );
     }
 
     listenUser(consumer: { (data: User): void; }): void {
@@ -21,10 +24,7 @@ export class UserService {
         const data = new FormData();
         data.append("username", username);
         data.append("password", password);
-        return fromFetch(`${this.serviceBaseUrl}/auth/login`, {
-            method: "POST",
-            body: data
-        }).pipe(
+        return rest.post('/auth/login', data).pipe(
             switchMap(response => {
                 if (response.ok) {
                     return response.json();
@@ -38,9 +38,7 @@ export class UserService {
     }
 
     logout(): Observable<void> {
-        return fromFetch(`${this.serviceBaseUrl}/auth/logout`, {
-            method: "DELETE",
-        }).pipe(
+        return rest.delete('/auth/logout').pipe(
             map(response => {
                 if (!response.ok) {
                     throw new HttpStatusError(response.status, `Error while login out user !`);
@@ -52,10 +50,8 @@ export class UserService {
         );
     }
 
-    refresh(): Observable<User> {
-        return fromFetch(`${this.serviceBaseUrl}/auth/refresh`, {
-            method: "PUT",
-        }).pipe(
+    private refresh(): Observable<Session> {
+        return rest.put('/auth/refresh').pipe(
             switchMap(response => {
                 if (response.ok) {
                     return response.json();
@@ -63,7 +59,7 @@ export class UserService {
                     throw new HttpStatusError(response.status, `Error while refreshing token.`);
                 }
             }),
-            map(user => this.save(user)),
+            tap(session => this.save(session.user)),
             catchError(err => {
                 localStorage.removeItem('user');
                 return throwError(err);
@@ -72,24 +68,18 @@ export class UserService {
         );
     }
 
-    save(user: User): User {
+    private save(user: User): User {
         const parsed = JSON.stringify(user);
         localStorage.setItem('user', parsed);
         this.userListeners.forEach(consumer => consumer(user))
         return user;
     }
 
-    get(): User | undefined {
-        const user = localStorage.getItem('user');
-        if (user) {
-            try {
-                return JSON.parse(user);
-            } catch (e) {
-                localStorage.removeItem('user');
-                throw e;
-            }
-        }
+    get(): Observable<User> {
+        return this.cache$.pipe(
+            map(s => s.user),
+        );
     }
 }
 
-export default new UserService(process.env.VUE_APP_API_BASE_URL);
+export default new UserService();

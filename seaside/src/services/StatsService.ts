@@ -1,19 +1,13 @@
 import {Observable} from 'rxjs';
-import {fromFetch} from "rxjs/fetch";
 import {switchMap, take} from "rxjs/operators";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 import {Statistics} from "@/services/model/Statistics";
+import rest from '@/services/http/RestWrapper';
 
 export class StatsService {
 
-    serviceBaseUrl: string;
-
-    constructor(baseURL: string) {
-        this.serviceBaseUrl = baseURL;
-    }
-
     getBaywatchStats(): Observable<Statistics> {
-        return fromFetch(`${this.serviceBaseUrl}/stats`).pipe(
+        return rest.get('/stats').pipe(
             switchMap(response => {
                 if (response.ok) {
                     return response.json();
@@ -26,4 +20,4 @@ export class StatsService {
     }
 }
 
-export default new StatsService(process.env.VUE_APP_API_BASE_URL);
+export default new StatsService();

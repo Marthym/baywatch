@@ -35,8 +35,7 @@
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
 import NewsCard from "@/components/newslist/NewsCard.vue";
-import NewsService from "@/services/NewsService";
-import {Observable, Subject, Subscription} from "rxjs";
+import {Observable, Subject} from "rxjs";
 import {map, switchMap, take, tap} from "rxjs/operators";
 import {NewsView} from "@/components/newslist/model/NewsView";
 import ScrollingActivationBehaviour from "@/services/ScrollingActivationBehaviour";
@@ -46,7 +45,8 @@ import InfiniteScrollable from "@/services/model/InfiniteScrollable";
 import {Mark} from "@/services/model/Mark.enum";
 import {Feed} from "@/services/model/Feed";
 import feedService, {FeedService} from "@/services/FeedService";
-import userService from "@/services/UserService";
+import newsService, {NewsService} from "@/services/NewsService";
+import userService from '@/services/UserService';
 
 @Component({
   components: {
@@ -57,20 +57,18 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
 
   private readonly activateOnScroll = ScrollingActivationBehaviour.apply(this);
   private readonly infiniteScroll = InfiniteScrollBehaviour.apply(this);
-  private newsService: NewsService = new NewsService(process.env.VUE_APP_API_BASE_URL);
   private news: NewsView[] = new Array(0);
   private feeds = new Map<string, Feed>();
 
   private activeNews = -1;
   private page = 0;
-
-  private subscriptions?: Subscription;
-
-  get isAuthenticated(): boolean {
-    return userService.get() !== undefined;
-  }
+  private isAuthenticated = false;
 
   mounted(): void {
+    userService.get().subscribe({
+      next: () => this.isAuthenticated = true,
+      error: () => this.isAuthenticated = false,
+    });
     this.loadNextPage().pipe(take(1))
         .subscribe(el => {
           this.activateOnScroll.observe(el);
@@ -89,7 +87,7 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
     }
     const elements = new Subject<Element>();
     const currentPage = ++this.page;
-    this.subscriptions = this.newsService.getNews(currentPage, query).pipe(
+    newsService.getNews(currentPage, query).pipe(
         map(ns => ns.map(n => ({data: n, feeds: [], isActive: false, keepMark: false}) as NewsView)),
         tap(ns => this.news.push(...ns))
     ).subscribe({
@@ -214,8 +212,8 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
     }
 
     const markObs = (mark)
-        ? this.newsService.mark(target.data.id, Mark.READ)
-        : this.newsService.unmark(target.data.id, Mark.READ);
+        ? newsService.mark(target.data.id, Mark.READ)
+        : newsService.unmark(target.data.id, Mark.READ);
 
     markObs.subscribe(news => {
       this.$set(this.news, idx, {...target, data: news});
@@ -228,8 +226,8 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
     }
     const target = this.news[idx];
     const markObs = (!target.data.shared)
-        ? this.newsService.mark(target.data.id, Mark.SHARED)
-        : this.newsService.unmark(target.data.id, Mark.SHARED);
+        ? newsService.mark(target.data.id, Mark.SHARED)
+        : newsService.unmark(target.data.id, Mark.SHARED);
 
     markObs.subscribe(news => {
       this.$set(this.news, idx, {...target, data: news});

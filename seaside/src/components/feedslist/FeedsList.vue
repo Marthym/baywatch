@@ -78,14 +78,17 @@ export default class FeedsList extends Vue {
   private feeds: FeedView[] = new Array(0);
   private pagesNumber = 0;
   private activePage = 0;
+  private isAuthenticated = false;
 
   mounted(): void {
+    userService.get().pipe(
+        tap(() => console.log('voilà'))
+    ).subscribe({
+      next: () => this.isAuthenticated = true,
+      error: () => this.isAuthenticated = false,
+    })
     this.loadFeedPage(0).subscribe();
     this.feedEditor = this.$refs.feedEditor as FeedEditor;
-  }
-
-  get isAuthenticated(): boolean {
-    return userService.get() !== undefined;
   }
 
   loadFeedPage(page: number): Observable<FeedView[]> {

@@ -1,21 +1,15 @@
-import {fromFetch} from "rxjs/fetch";
 import {map, switchMap, take} from "rxjs/operators";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 import {Feed} from "@/services/model/Feed";
 import {Page} from "@/services/model/Page";
 import {from, Observable} from "rxjs";
-import {ConstantFilters, ConstantHttpHeaders, ConstantMediaTypes} from "@/constants";
+import {ConstantFilters, ConstantHttpHeaders} from "@/constants";
+import rest from '@/services/http/RestWrapper';
 
 export class FeedService {
 
     public static readonly DEFAULT_PER_PAGE: number = 20;
     public static readonly DEFAULT_QUERY: string = `?${ConstantFilters.PER_PAGE}=${FeedService.DEFAULT_PER_PAGE}`;
-
-    serviceBaseUrl: string;
-
-    constructor(baseURL: string) {
-        this.serviceBaseUrl = baseURL;
-    }
 
     /**
      * Get the {@link Feed} from backend
@@ -32,7 +26,7 @@ export class FeedService {
             query.append(ConstantFilters.PER_PAGE, resolvedPerPage);
         }
 
-        return fromFetch(`${this.serviceBaseUrl}/feeds?${query.toString()}`).pipe(
+        return rest.get(`/feeds?${query.toString()}`).pipe(
             map(response => {
                 if (response.ok) {
                     const totalCount = parseInt(response.headers.get(ConstantHttpHeaders.X_TOTAL_COUNT) || "-1");
@@ -51,13 +45,7 @@ export class FeedService {
     }
 
     add(feed: Feed): Observable<Feed> {
-        const headers = new Headers();
-        headers.set(ConstantHttpHeaders.CONTENT_TYPE, ConstantMediaTypes.JSON_UTF8);
-        return fromFetch(`${this.serviceBaseUrl}/feeds`, {
-            method: 'POST',
-            body: JSON.stringify(feed),
-            headers: headers,
-        }).pipe(
+        return rest.post('/feeds', feed).pipe(
             switchMap(response => {
                 if (response.ok) {
                     return from(response.json());
@@ -70,4 +58,4 @@ export class FeedService {
     }
 }
 
-export default new FeedService(process.env.VUE_APP_API_BASE_URL);
+export default new FeedService();
