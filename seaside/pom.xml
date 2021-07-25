@@ -34,9 +34,10 @@
                         <id>NPM Install</id>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <executable>npm</executable>
+                            <executable>yarn</executable>
                             <arguments>
-                                <argument>ci</argument>
+                                <argument>install</argument>
+                                <argument>--frozen-lockfile</argument>
                             </arguments>
                         </configuration>
                         <goals>
@@ -47,9 +48,8 @@
                         <id>Webpack build</id>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <executable>npm</executable>
+                            <executable>yarn</executable>
                             <arguments>
-                                <argument>run</argument>
                                 <argument>build</argument>
                             </arguments>
                         </configuration>
