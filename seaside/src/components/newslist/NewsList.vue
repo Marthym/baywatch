@@ -35,8 +35,8 @@
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
 import NewsCard from "@/components/newslist/NewsCard.vue";
-import {Observable, Subject} from "rxjs";
-import {map, switchMap, take, tap} from "rxjs/operators";
+import {Observable, of, Subject} from "rxjs";
+import {catchError, map, switchMap, take, tap} from "rxjs/operators";
 import {NewsView} from "@/components/newslist/model/NewsView";
 import ScrollingActivationBehaviour from "@/services/ScrollingActivationBehaviour";
 import ScrollActivable from "@/services/model/ScrollActivable";
@@ -65,17 +65,20 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
   private isAuthenticated = false;
 
   mounted(): void {
-    userService.get().subscribe({
-      next: () => this.isAuthenticated = true,
-      error: () => this.isAuthenticated = false,
+    userService.get().pipe(
+        tap(() => this.isAuthenticated = true),
+        catchError(() => {
+          this.isAuthenticated = false;
+          return of({});
+        }),
+        switchMap(() => this.loadNextPage()),
+        take(1),
+    ).subscribe(el => {
+      this.activateOnScroll.observe(el);
+      if (this.news.length > 3) {
+        this.infiniteScroll.observe(this.getRefElement(this.news[this.news.length - 3].data.id));
+      }
     });
-    this.loadNextPage().pipe(take(1))
-        .subscribe(el => {
-          this.activateOnScroll.observe(el);
-          if (this.news.length > 3) {
-            this.infiniteScroll.observe(this.getRefElement(this.news[this.news.length - 3].data.id));
-          }
-        });
 
     window.addEventListener('keydown', this.onKeyDownListener, false);
   }

@@ -1000,8 +1000,6 @@ module.exports = {
                     // 'error': '#ff5724',
                 },
             },
-            'light',
-            'dark',
         ],
     },
 }
