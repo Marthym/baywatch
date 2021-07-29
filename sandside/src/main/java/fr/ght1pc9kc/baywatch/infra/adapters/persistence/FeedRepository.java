@@ -5,8 +5,8 @@ import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
-import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.http.filter.PredicateSearchVisitor;
+import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
 import lombok.AllArgsConstructor;
@@ -68,6 +68,15 @@ public class FeedRepository implements FeedPersistencePort {
         Select<Record> select = buildSelectQuery(qCtx);
         return Mono.fromCallable(() -> dsl.fetchCount(select))
                 .subscribeOn(databaseScheduler);
+    }
+
+    @Override
+    public Mono<Feed> update(Feed toUpdate, String userId) {
+        FeedsUsersRecord record = baywatchMapper.feedToFeedsUsersRecord(toUpdate);
+        record.setFeusUserId(userId);
+        return Mono.fromCallable(() -> dsl.executeUpdate(record))
+                .subscribeOn(databaseScheduler)
+                .flatMap((i) -> get(QueryContext.id(toUpdate.getId()).withUserId(userId)));
     }
 
     @Override
@@ -159,7 +168,7 @@ public class FeedRepository implements FeedPersistencePort {
         select.addConditions(conditions);
 
         if (qCtx.isScoped()) {
-            select.addSelect(FEEDS_USERS.FEUS_TAGS);
+            select.addSelect(FEEDS_USERS.FEUS_TAGS, FEEDS_USERS.FEUS_FEED_NAME);
             select.addJoin(FEEDS_USERS, JoinType.JOIN,
                     FEEDS.FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID).and(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId)));
         } else {

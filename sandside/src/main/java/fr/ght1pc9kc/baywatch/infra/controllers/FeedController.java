@@ -32,7 +32,7 @@ public class FeedController {
     private final FeedService feedService;
 
     @GetMapping("/{id}")
-    public Mono<Feed> get(@RequestParam("id") String id) {
+    public Mono<Feed> get(@PathVariable("id") String id) {
         return feedService.get(id)
                 .onErrorMap(BadCriteriaFilter.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
     }
@@ -47,6 +47,26 @@ public class FeedController {
                 .map(count -> Page.of(feeds, count));
     }
 
+    @PutMapping("/{id}")
+    public Mono<Feed> update(@PathVariable("id") String id, @Valid @RequestBody Mono<FeedForm> feedForm) {
+        return feedForm.map(ff -> {
+            URI uri = URI.create(ff.url);
+            if (!id.equals(Hasher.identify(uri))) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Inconsistent ID for URL !");
+            }
+            return Feed.builder()
+                    .raw(RawFeed.builder()
+                            .id(id)
+                            .url(uri)
+                            .name(ff.name)
+                            .build())
+                    .tags(Set.of(ff.tags))
+                    .name(ff.name)
+                    .build();
+        }).flatMap(feedService::update)
+                .onErrorMap(BadCriteriaFilter.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
+    }
+
     @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT})
     public Mono<ResponseEntity<Feed>> subscribe(@Valid @RequestBody Mono<FeedForm> feedForm) {
         return feedForm.map(form -> {
@@ -58,6 +78,7 @@ public class FeedController {
                             .name(form.name)
                             .build())
                     .tags(Set.of(form.tags))
+                    .name(form.name)
                     .build();
         })
                 .flatMap(feed -> feedService.persist(Collections.singleton(feed)).thenReturn(feed))

@@ -57,6 +57,13 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
+    public Mono<Feed> update(Feed toPersist) {
+        return authFacade.getConnectedUser()
+                .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
+                .flatMap(u -> feedRepository.update(toPersist, u.id));
+    }
+
+    @Override
     public Mono<Void> persist(Collection<Feed> toPersist) {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))

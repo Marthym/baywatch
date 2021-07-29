@@ -27,6 +27,7 @@ import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -144,6 +145,35 @@ class FeedRepositoryTest {
             assertThat(actual).isNotNull();
             assertThat(actual.getFeusUserId()).isEqualTo(OKENOBI.getUserId());
             assertThat(actual.getFeusTags()).isEqualTo(String.join(",", expected.getTags()));
+        }
+    }
+
+    @Test
+    void should_update_feed(DSLContext dsl) {
+        String feedOwnedOnlyByObywan = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("03"));
+        RawFeed raw = RawFeed.builder()
+                .id(feedOwnedOnlyByObywan)
+                .url(URI.create("http://www.jedi.light/03"))
+                .name("Jedi")
+                .lastWatch(Instant.parse("2020-12-11T15:12:42Z"))
+                .build();
+        Feed expected = Feed.builder()
+                .raw(raw)
+                .name("Obiwan Kenobi")
+                .tags(Set.of("jedi", "light"))
+                .build();
+        Mono<Feed> update = tested.update(expected, OKENOBI.getUserId());
+        StepVerifier.create(update)
+                .expectNext(expected)
+                .verifyComplete();
+
+        {
+            FeedsUsersRecord actual = dsl.selectFrom(FEEDS_USERS).where(
+                    FEEDS_USERS.FEUS_USER_ID.eq(OKENOBI.getUserId())
+                            .and(FEEDS_USERS.FEUS_FEED_ID.eq(feedOwnedOnlyByObywan)))
+                    .fetchOne();
+            assertThat(actual).isNotNull();
+            assertThat(actual.getFeusFeedName()).isEqualTo("Obiwan Kenobi");
         }
     }
 
