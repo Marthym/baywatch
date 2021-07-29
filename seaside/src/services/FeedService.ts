@@ -56,6 +56,19 @@ export class FeedService {
             take(1)
         );
     }
+
+    update(feed: Feed): Observable<Feed> {
+        return rest.put(`/feeds/${feed.id}`, feed).pipe(
+            switchMap(response => {
+                if (response.ok) {
+                    return from(response.json());
+                } else {
+                    throw new HttpStatusError(response.status, `Error while subscribing feed.`);
+                }
+            }),
+            take(1)
+        );
+    }
 }
 
 export default new FeedService();
