@@ -34,7 +34,8 @@
       <tbody>
       <template v-for="vFeed in this.feeds">
         <FeedListItem :ref="vFeed.data.id" :view="vFeed" v-bind:key="vFeed.data.id"
-                      :is-authenticated="isAuthenticated"/>
+                      :is-authenticated="isAuthenticated"
+                      @item-update="itemUpdate" @item-delete="itemDelete"/>
       </template>
       </tbody>
       <tfoot>
@@ -121,6 +122,21 @@ export default class FeedsList extends Vue {
       // TODO: Add notification
       console.info('Feed added successfully !');
     });
+  }
+
+  private itemUpdate(item: Feed): void {
+    this.feedEditor.openFeed(item).pipe(
+        take(1),
+        switchMap(feed => feedsService.update(feed)),
+        switchMap(() => this.loadFeedPage(this.activePage)),
+    ).subscribe(() => {
+      // TODO: Add notification
+      console.info('Feed updated successfully !');
+    });
+  }
+
+  private itemDelete(itemId: string): void {
+    console.log('delete:', itemId);
   }
 }
 </script>
