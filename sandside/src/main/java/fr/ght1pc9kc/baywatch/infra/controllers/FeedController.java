@@ -71,13 +71,14 @@ public class FeedController {
     public Mono<ResponseEntity<Feed>> subscribe(@Valid @RequestBody Mono<FeedForm> feedForm) {
         return feedForm.map(form -> {
             URI uri = URI.create(form.url);
+            Set<String> tags = Optional.ofNullable(form.tags).map(Set::of).orElseGet(Set::of);
             return Feed.builder()
                     .raw(RawFeed.builder()
                             .id(Hasher.identify(uri))
                             .url(uri)
                             .name(form.name)
                             .build())
-                    .tags(Set.of(form.tags))
+                    .tags(tags)
                     .name(form.name)
                     .build();
         })
@@ -86,10 +87,10 @@ public class FeedController {
 
     }
 
-    @DeleteMapping
-    public Mono<Feed> unsubscribe(String feedId) {
-        return feedService.get(feedId)
-                .flatMap(feed -> feedService.delete(Collections.singleton(feedId)).thenReturn(feed));
+    @DeleteMapping("/{id}")
+    public Mono<Feed> unsubscribe(@PathVariable("id") String id) {
+        return feedService.get(id)
+                .flatMap(feed -> feedService.delete(Collections.singleton(id)).thenReturn(feed));
     }
 
     @PostMapping("/import")

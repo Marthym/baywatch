@@ -12,8 +12,9 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 
 @UtilityClass
 public class FeedConditionsVisitors {
-    private static final JooqConditionVisitor FEED_ID_VISITOR = new JooqConditionVisitor(
-            Map.of(EntitiesProperties.ID, Tables.FEEDS.FEED_ID));
+    private static final JooqConditionVisitor FEED_ID_VISITOR = new JooqConditionVisitor(Map.of(
+            EntitiesProperties.ID, Tables.FEEDS.FEED_ID,
+            EntitiesProperties.FEED_ID, Tables.FEEDS.FEED_ID));
     private static final JooqConditionVisitor FEED_USERS_ID_VISITOR = new JooqConditionVisitor(
             Map.of(EntitiesProperties.FEED_ID, Tables.FEEDS_USERS.FEUS_FEED_ID));
 

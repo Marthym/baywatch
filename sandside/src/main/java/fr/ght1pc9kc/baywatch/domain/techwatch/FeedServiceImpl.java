@@ -78,6 +78,7 @@ public class FeedServiceImpl implements FeedService {
                         .filter(Criteria.property(EntitiesProperties.FEED_ID).in(toDelete))
                         .userId(u.id)
                         .build())
-                .flatMap(feedRepository::delete);
+                .flatMap(feedRepository::delete)
+                .map(r -> r.unsubscribed);
     }
 }

@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.domain.techwatch.ports;
 
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
+import fr.ght1pc9kc.baywatch.infra.model.FeedDeletedResult;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -46,5 +47,5 @@ public interface FeedPersistencePort {
      * @param qCtx Context of the query, containing the filter.
      * @return The number of feed effectively deleted
      */
-    Mono<Integer> delete(QueryContext qCtx);
+    Mono<FeedDeletedResult> delete(QueryContext qCtx);
 }

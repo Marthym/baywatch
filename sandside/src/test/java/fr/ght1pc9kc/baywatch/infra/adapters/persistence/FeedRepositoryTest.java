@@ -8,6 +8,7 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.mappers.DateUtils;
+import fr.ght1pc9kc.baywatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.baywatch.infra.samples.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.UsersRecordSamples;
@@ -198,13 +199,13 @@ class FeedRepositoryTest {
 
     @Test
     void should_delete_without_filter() {
-        Mono<Integer> actual = tested.delete(QueryContext.builder()
+        Mono<FeedDeletedResult> actual = tested.delete(QueryContext.builder()
                 .filter(Criteria.property(FEED_ID).in("1", "2"))
                 .userId(OKENOBI.getUserId())
                 .build());
 
         StepVerifier.create(actual)
-                .expectNext(0)
+                .expectNext(new FeedDeletedResult(0, 0))
                 .verifyComplete();
     }
 

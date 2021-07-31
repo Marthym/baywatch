@@ -7,6 +7,7 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.infra.http.filter.PredicateSearchVisitor;
 import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
+import fr.ght1pc9kc.baywatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
 import lombok.AllArgsConstructor;
@@ -50,15 +51,15 @@ public class FeedRepository implements FeedPersistencePort {
         Select<Record> select = buildSelectQuery(qCtx);
 
         return Flux.<Record>create(sink -> {
-            Cursor<Record> cursor = select.fetchLazy();
-            sink.onRequest(n -> {
-                Result<Record> rs = cursor.fetchNext(Long.valueOf(n).intValue());
-                rs.forEach(sink::next);
-                if (rs.size() < n) {
-                    sink.complete();
-                }
-            });
-        }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
+                    Cursor<Record> cursor = select.fetchLazy();
+                    sink.onRequest(n -> {
+                        Result<Record> rs = cursor.fetchNext(Long.valueOf(n).intValue());
+                        rs.forEach(sink::next);
+                        if (rs.size() < n) {
+                            sink.complete();
+                        }
+                    });
+                }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(baywatchMapper::recordToFeed)
                 .filter(qCtx.filter.accept(FEEDS_PREDICATE_VISITOR));
     }
@@ -87,13 +88,13 @@ public class FeedRepository implements FeedPersistencePort {
                 .collect(Collectors.toList());
 
         return Mono.fromCallable(() ->
-                dsl.loadInto(FEEDS)
-                        .batchAll()
-                        .onDuplicateKeyIgnore()
-                        .onErrorIgnore()
-                        .loadRecords(records)
-                        .fieldsCorresponding()
-                        .execute())
+                        dsl.loadInto(FEEDS)
+                                .batchAll()
+                                .onDuplicateKeyIgnore()
+                                .onErrorIgnore()
+                                .loadRecords(records)
+                                .fieldsCorresponding()
+                                .execute())
                 .subscribeOn(databaseScheduler)
 
                 .map(loader -> {
@@ -114,19 +115,19 @@ public class FeedRepository implements FeedPersistencePort {
 
         return persist(toPersist)
                 .then(Mono.fromCallable(() ->
-                        dsl.loadInto(FEEDS_USERS)
-                                .batchAll()
-                                .onDuplicateKeyIgnore()
-                                .onErrorIgnore()
-                                .loadRecords(feedsUsersRecords)
-                                .fieldsCorresponding()
-                                .execute())
+                                dsl.loadInto(FEEDS_USERS)
+                                        .batchAll()
+                                        .onDuplicateKeyIgnore()
+                                        .onErrorIgnore()
+                                        .loadRecords(feedsUsersRecords)
+                                        .fieldsCorresponding()
+                                        .execute())
                         .subscribeOn(databaseScheduler))
                 .then();
     }
 
     @Override
-    public Mono<Integer> delete(QueryContext qCtx) {
+    public Mono<FeedDeletedResult> delete(QueryContext qCtx) {
         Condition feedsUsersConditions = qCtx.filter.accept(FeedConditionsVisitors.feedUserIdVisitor());
         final Optional<Query> deleteUserLinkQuery;
         if (DSL.noCondition().equals(feedsUsersConditions)) {
@@ -154,9 +155,9 @@ public class FeedRepository implements FeedPersistencePort {
         }
         return Mono.fromCallable(() ->
                 dsl.transactionResult(tx -> {
-                    int countDeleted = deleteUserLinkQuery.map(q -> tx.dsl().execute(q)).orElse(0);
-                    deleteFeedQuery.ifPresent(q -> tx.dsl().execute(q));
-                    return countDeleted;
+                    int unsubscribed = deleteUserLinkQuery.map(q -> tx.dsl().execute(q)).orElse(0);
+                    int purged = deleteFeedQuery.map(q -> tx.dsl().execute(q)).orElse(0);
+                    return new FeedDeletedResult(unsubscribed, purged);
                 }));
     }
 
