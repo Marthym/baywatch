@@ -237,12 +237,23 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
     });
   }
 
+  /**
+   * Scroll to the activated news.
+   *
+   * @remarks
+   * Move the viewport to center the news juste after the activated news. This move the current activate news
+   * to the top of the viewport.
+   *
+   * {@link scrollIntoView} only allow to move center top or bottom, not to middle top.
+   *
+   * @private
+   */
   private scrollToActivateNews() {
-    if (this.activeNews >= this.news.length - 1 || this.activeNews < 0) {
+    if (this.activeNews >= this.news.length - 2 || this.activeNews < 0) {
       // Stop if last news
       return;
     }
-    const current = this.news[this.activeNews];
+    const current = this.news[this.activeNews + 1];
     this.$nextTick(() => {
       this.getRefElement(current.data.id).scrollIntoView(
           {block: 'center', scrollBehavior: 'smooth'} as ScrollIntoViewOptions);
