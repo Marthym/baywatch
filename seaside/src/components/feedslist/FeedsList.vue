@@ -63,12 +63,13 @@ import {Component, Vue} from 'vue-property-decorator';
 import FeedListHeader from "@/components/feedslist/FeedListHeader.vue";
 import FeedListItem from "@/components/feedslist/FeedListItem.vue";
 import {FeedView} from "@/components/feedslist/model/FeedView";
-import {map, switchMap, take, tap} from "rxjs/operators";
+import {filter, map, switchMap, take, tap} from "rxjs/operators";
 import {Observable} from "rxjs";
 import {Feed} from "@/services/model/Feed";
 import FeedEditor from "@/components/feedslist/FeedEditor.vue";
 import feedsService from "@/services/FeedService";
 import userService from "@/services/UserService";
+import {AlertResponse, AlertType} from "@/components/shared/AlertDialog.vue";
 
 @Component({
   components: {FeedEditor, FeedListItem, FeedListHeader},
@@ -82,9 +83,7 @@ export default class FeedsList extends Vue {
   private isAuthenticated = false;
 
   mounted(): void {
-    userService.get().pipe(
-        tap(() => console.log('voilà'))
-    ).subscribe({
+    userService.get().subscribe({
       next: () => this.isAuthenticated = true,
       error: () => this.isAuthenticated = false,
     })
@@ -136,7 +135,19 @@ export default class FeedsList extends Vue {
   }
 
   private itemDelete(itemId: string): void {
-    console.log('delete:', itemId);
+    const idx = this.feeds.findIndex(fv => fv.data.id === itemId);
+    const message = `Supprimer l’abonnement au fil <br/> <b>${this.feeds[idx].data.name}</b>`;
+    this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
+        filter(response => response === AlertResponse.CONFIRM),
+        switchMap(() => feedsService.remove(itemId)),
+        tap(() => {
+          const idx = this.feeds.findIndex(fv => fv.data.id === itemId);
+          this.feeds.splice(idx, 1);
+        })
+    ).subscribe({
+      next: (feed) => console.info(`Feed ${feed.id.substr(0, 10)} deleted successfully !`),
+      error: (err) => console.error(err),
+    });
   }
 }
 </script>
