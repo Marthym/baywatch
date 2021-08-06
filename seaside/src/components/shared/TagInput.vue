@@ -40,15 +40,18 @@ export default class TagInput extends Vue {
   private onKeydown(event: KeyboardEvent): void {
     switch (event.key) {
       case 'Enter':
+        if (this.tag === '') {
+          this.emitSubmitEvent();
+          break;
+        }
+        // falls through
       case ' ':
       case ',':
         event.preventDefault();
         if (this.tag !== '' && this.tags.filter(tv => tv.name === this.tag).length === 0) {
           this.tags.push({name: this.tag, status: TagStatus.PRIMARY});
         }
-        console.log('this.tag', this.tag);
         this.tag = '';
-        console.log('this.tag', this.tag);
         this.emitInputEvent();
         break;
 
@@ -71,6 +74,7 @@ export default class TagInput extends Vue {
     }
   }
 
+  // noinspection JSUnusedLocalSymbols
   private beforeUnmount(): void {
     this.tags.forEach(tv => {
       if (tv.timeout) {
@@ -81,6 +85,10 @@ export default class TagInput extends Vue {
 
   private emitInputEvent(): void {
     this.$emit('input', this.tags.map(tv => tv.name));
+  }
+
+  private emitSubmitEvent(): void {
+    this.$emit('submit');
   }
 }
 

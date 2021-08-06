@@ -1,6 +1,6 @@
 <template v-if="isOpened">
   <ModalWindow :title="modalTitle" :is-visible="isOpened">
-    <form class="form-control">
+    <form class="form-control" @submit.prevent="onSaveFeed">
       <label class="label">
         <span class="label-text">Nom</span>
       </label>
@@ -10,6 +10,7 @@
       </label>
       <input v-model="feed.url" type="text" placeholder="username" class="input input-bordered">
       <TagInput v-model="feed.tags"/>
+      <button class="hidden" type="submit"/>
     </form>
     <template v-slot:actions>
       <button class="btn" @click.stop="resetAndCloseModal">Annuler</button>
