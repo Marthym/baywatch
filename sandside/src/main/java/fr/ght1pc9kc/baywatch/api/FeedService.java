@@ -33,6 +33,8 @@ public interface FeedService {
      */
     Flux<RawFeed> raw(PageRequest pageRequest);
 
+    Mono<Feed> update(Feed toPersist);
+
     Mono<Void> persist(Collection<Feed> toPersist);
 
     Mono<Integer> delete(Collection<String> toDelete);

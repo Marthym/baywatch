@@ -75,8 +75,8 @@ public final class RssAtomParserImpl implements RssAtomParser {
 
                 RawNews.RawNewsBuilder bldr = null;
                 while (reader.hasNext()) {
+                    final XMLEvent nextEvent = reader.nextEvent();
                     try {
-                        final XMLEvent nextEvent = reader.nextEvent();
                         if (nextEvent.isStartElement()) {
                             final StartElement startElement = nextEvent.asStartElement();
                             if (!startElement.getName().getPrefix().isBlank()) {
@@ -154,14 +154,14 @@ public final class RssAtomParserImpl implements RssAtomParser {
                             }
                         }
                     } catch (XMLStreamException e) {
-                        log.error("Error while parsing {}", feed.getUrl());
-                        log.error("{}: {}", e.getCause(), e.getLocalizedMessage());
+                        log.error("Error while parsing element of {}", feed.getUrl());
+                        log.error("{}: {}", e.getClass(), e.getLocalizedMessage());
                         log.debug("STACKTRACE", e);
                     }
                 }
             } catch (XMLStreamException e) {
                 log.error("Error while parsing {}", feed.getUrl());
-                log.error("{}: {}", e.getCause(), e.getLocalizedMessage());
+                log.error("{}: {}", e.getClass(), e.getLocalizedMessage());
                 log.debug("STACKTRACE", e);
             }
             sink.complete();

@@ -54,6 +54,7 @@ public class FeedAdminServiceImpl implements FeedAdminService {
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
                 .map(u -> RoleUtils.hasRoleOrThrow(u, Role.ADMIN))
                 .map(u -> QueryContext.all(Criteria.property(FEED_ID).in(toDelete)))
-                .flatMap(feedRepository::delete);
+                .flatMap(feedRepository::delete)
+                .map(r -> r.purged);
     }
 }

@@ -12,5 +12,6 @@ import java.util.Set;
 public class Feed {
     @Delegate(types = RawFeed.class)
     @NonNull RawFeed raw;
+    String name;
     Set<String> tags;
 }

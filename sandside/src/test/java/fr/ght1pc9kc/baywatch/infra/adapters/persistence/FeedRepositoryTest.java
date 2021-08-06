@@ -8,6 +8,7 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.mappers.DateUtils;
+import fr.ght1pc9kc.baywatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.baywatch.infra.samples.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.UsersRecordSamples;
@@ -27,6 +28,7 @@ import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -148,6 +150,35 @@ class FeedRepositoryTest {
     }
 
     @Test
+    void should_update_feed(DSLContext dsl) {
+        String feedOwnedOnlyByObywan = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("03"));
+        RawFeed raw = RawFeed.builder()
+                .id(feedOwnedOnlyByObywan)
+                .url(URI.create("http://www.jedi.light/03"))
+                .name("Jedi")
+                .lastWatch(Instant.parse("2020-12-11T15:12:42Z"))
+                .build();
+        Feed expected = Feed.builder()
+                .raw(raw)
+                .name("Obiwan Kenobi")
+                .tags(Set.of("jedi", "light"))
+                .build();
+        Mono<Feed> update = tested.update(expected, OKENOBI.getUserId());
+        StepVerifier.create(update)
+                .expectNext(expected)
+                .verifyComplete();
+
+        {
+            FeedsUsersRecord actual = dsl.selectFrom(FEEDS_USERS).where(
+                    FEEDS_USERS.FEUS_USER_ID.eq(OKENOBI.getUserId())
+                            .and(FEEDS_USERS.FEUS_FEED_ID.eq(feedOwnedOnlyByObywan)))
+                    .fetchOne();
+            assertThat(actual).isNotNull();
+            assertThat(actual.getFeusFeedName()).isEqualTo("Obiwan Kenobi");
+        }
+    }
+
+    @Test
     void should_delete_feeds(DSLContext dsl) {
         String feedOwnedByObiwanAndSkywalker = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("01"));
         String feedOwnedOnlyByObywan = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("03"));
@@ -168,13 +199,13 @@ class FeedRepositoryTest {
 
     @Test
     void should_delete_without_filter() {
-        Mono<Integer> actual = tested.delete(QueryContext.builder()
+        Mono<FeedDeletedResult> actual = tested.delete(QueryContext.builder()
                 .filter(Criteria.property(FEED_ID).in("1", "2"))
                 .userId(OKENOBI.getUserId())
                 .build());
 
         StepVerifier.create(actual)
-                .expectNext(0)
+                .expectNext(new FeedDeletedResult(0, 0))
                 .verifyComplete();
     }
 

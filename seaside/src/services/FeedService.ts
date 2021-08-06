@@ -50,7 +50,33 @@ export class FeedService {
                 if (response.ok) {
                     return from(response.json());
                 } else {
-                    throw new HttpStatusError(response.status, `Error while subscribing feed.`);
+                    throw new HttpStatusError(response.status, 'Error while subscribing feed.');
+                }
+            }),
+            take(1)
+        );
+    }
+
+    update(feed: Feed): Observable<Feed> {
+        return rest.put(`/feeds/${feed.id}`, feed).pipe(
+            switchMap(response => {
+                if (response.ok) {
+                    return from(response.json());
+                } else {
+                    throw new HttpStatusError(response.status, 'Error while updating feed.');
+                }
+            }),
+            take(1)
+        );
+    }
+
+    remove(id: string): Observable<Feed> {
+        return rest.delete(`/feeds/${id}`).pipe(
+            switchMap(response => {
+                if (response.ok) {
+                    return from(response.json());
+                } else {
+                    throw new HttpStatusError(response.status, `Error while unsubscribing feed ${id}`);
                 }
             }),
             take(1)

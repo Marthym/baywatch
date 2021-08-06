@@ -103,8 +103,11 @@ public interface BaywatchMapper {
                 : Optional.ofNullable(record.get(FEEDS_USERS.FEUS_TAGS))
                 .map(t -> Set.of(t.split(",")))
                 .orElse(Set.of());
+        String name = (record.indexOf(FEEDS_USERS.FEUS_FEED_NAME) >= 0 && record.get(FEEDS_USERS.FEUS_FEED_NAME) != null)
+                ? record.get(FEEDS_USERS.FEUS_FEED_NAME) : raw.getName();
         return Feed.builder()
                 .raw(raw)
+                .name(name)
                 .tags(tags)
                 .build();
     }
@@ -116,6 +119,7 @@ public interface BaywatchMapper {
     FeedsRecord feedToFeedsRecord(Feed feed);
 
     @Mapping(target = "feusFeedId", source = "raw.id")
+    @Mapping(target = "feusFeedName", source = "name")
     @Mapping(target = "feusTags",
             expression = "java( (feed.getTags() != null)?String.join(\",\", feed.getTags()):null )")
     FeedsUsersRecord feedToFeedsUsersRecord(Feed feed);

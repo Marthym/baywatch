@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.domain.techwatch.ports;
 
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
+import fr.ght1pc9kc.baywatch.infra.model.FeedDeletedResult;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -17,6 +18,16 @@ public interface FeedPersistencePort {
     Flux<Feed> list(QueryContext qCtx);
 
     Mono<Integer> count(QueryContext qCtx);
+
+    /**
+     * Allow user to update {@link Feed} name or tags.
+     * URL was immutable. The Feed was shared and the URL give the ID so the URL was not updatabel.
+     *
+     * @param toUpdate The {@link Feed} to persist
+     * @param userId   The user id used to update
+     * @return The new updated {@link Feed}
+     */
+    Mono<Feed> update(Feed toUpdate, String userId);
 
     Mono<Void> persist(Collection<Feed> toPersist);
 
@@ -36,5 +47,5 @@ public interface FeedPersistencePort {
      * @param qCtx Context of the query, containing the filter.
      * @return The number of feed effectively deleted
      */
-    Mono<Integer> delete(QueryContext qCtx);
+    Mono<FeedDeletedResult> delete(QueryContext qCtx);
 }
