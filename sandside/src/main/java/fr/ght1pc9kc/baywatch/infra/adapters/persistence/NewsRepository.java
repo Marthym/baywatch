@@ -9,9 +9,9 @@ import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
+import fr.ght1pc9kc.baywatch.infra.http.filter.PredicateSearchVisitor;
 import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
-import fr.ght1pc9kc.baywatch.infra.http.filter.PredicateSearchVisitor;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.basic.common.lang3.StringUtils;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
@@ -195,7 +195,7 @@ public class NewsRepository implements NewsPersistencePort {
         select.addGroupBy(NEWS.fields());
 
         if (!StringUtils.isBlank(qCtx.userId)) {
-            select.addSelect(FEEDS_USERS.FEUS_TAGS);
+            select.addSelect(DSL.arrayAggDistinct(FEEDS_USERS.FEUS_TAGS).as(FEEDS_USERS.FEUS_TAGS));
             select.addJoin(FEEDS_USERS, JoinType.JOIN,
                     NEWS_FEEDS.NEFE_FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID).and(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId)));
 
