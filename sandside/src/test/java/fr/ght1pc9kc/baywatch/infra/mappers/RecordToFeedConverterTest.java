@@ -49,11 +49,12 @@ class RecordToFeedConverterTest {
         Feed actual = tested.recordToFeed(record);
 
         assertThat(actual).isEqualTo(Feed.builder().raw(RawFeed.builder()
-                .id(TEST_SHA3)
+                        .id(TEST_SHA3)
+                        .name("Blog ght1pc9kc")
+                        .lastWatch(PUBLICATION)
+                        .url(TEST_URL)
+                        .build())
                 .name("Blog ght1pc9kc")
-                .lastWatch(PUBLICATION)
-                .url(TEST_URL)
-                .build())
                 .tags(Set.of("jedi", "light")).build());
     }
 }

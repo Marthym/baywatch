@@ -158,11 +158,11 @@ class FeedScrapperServiceTest {
         tested.shutdownScrapping();
 
         News actual = captor.getValue().stream()
-                .filter(n -> "5c0a1b1971fb82cf9b6049430f19e6956d1bfe98c3ede589a3656091d5414b63".equals(n.getId()))
+                .filter(n -> "5cb3ec34e0ee141ca87703239d6e285f8cf2a5fec11a13726e5798e61b118c1a".equals(n.getId()))
                 .findAny().orElseThrow();
         Assertions.assertThat(actual).isEqualTo(News.builder()
                 .raw(RawNews.builder()
-                        .id("5c0a1b1971fb82cf9b6049430f19e6956d1bfe98c3ede589a3656091d5414b63")
+                        .id("5cb3ec34e0ee141ca87703239d6e285f8cf2a5fec11a13726e5798e61b118c1a")
                         .title("OpenGraph Title")
                         .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
                         .image(URI.create("http://www.ght1pc9kc.fr/featured.jpg"))
@@ -189,11 +189,11 @@ class FeedScrapperServiceTest {
         tested.shutdownScrapping();
 
         News actual = captor.getValue().stream()
-                .filter(n -> "1d665bbff973032c28c72064f2073a85f8777b6ca3c3e0f9b9c2385cd2b206c0".equals(n.getId()))
+                .filter(n -> "22781b72a72e1a71a533c6096df2de5828ffa6ac58a00843944e7cd4ad38340f".equals(n.getId()))
                 .findAny().orElseThrow();
         Assertions.assertThat(actual).isEqualTo(News.builder()
                 .raw(RawNews.builder()
-                        .id("1d665bbff973032c28c72064f2073a85f8777b6ca3c3e0f9b9c2385cd2b206c0")
+                        .id("22781b72a72e1a71a533c6096df2de5828ffa6ac58a00843944e7cd4ad38340f")
                         .title("Dummy Title 2")
                         .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
                         .image(URI.create("https://practicalprogramming.fr/image.jpg"))

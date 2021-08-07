@@ -84,6 +84,7 @@ class FeedRepositoryTest {
                         .name(expected.getFeedName())
                         .lastWatch(DateUtils.toInstant(expected.getFeedLastWatch()))
                         .build())
+                .name(expected.getFeedName())
                 .tags(Set.of())
                 .build());
     }
@@ -118,7 +119,7 @@ class FeedRepositoryTest {
 
         FeedsRecord actual = dsl.selectFrom(FEEDS).where(FEEDS.FEED_ID.eq(expected.getId())).fetchOne();
         assertThat(actual).isNotNull();
-        assertThat(actual.getFeedName()).isEqualTo(expected.getName());
+        assertThat(actual.getFeedName()).isEqualTo(expected.getRaw().getName());
     }
 
     @Test
@@ -138,7 +139,7 @@ class FeedRepositoryTest {
         {
             FeedsRecord actual = dsl.selectFrom(FEEDS).where(FEEDS.FEED_ID.eq(expected.getId())).fetchOne();
             assertThat(actual).isNotNull();
-            assertThat(actual.getFeedName()).isEqualTo(expected.getName());
+            assertThat(actual.getFeedName()).isEqualTo(expected.getRaw().getName());
         }
         {
             FeedsUsersRecord actual = dsl.selectFrom(FEEDS_USERS).where(FEEDS_USERS.FEUS_FEED_ID.eq(expected.getId()))
@@ -170,8 +171,8 @@ class FeedRepositoryTest {
 
         {
             FeedsUsersRecord actual = dsl.selectFrom(FEEDS_USERS).where(
-                    FEEDS_USERS.FEUS_USER_ID.eq(OKENOBI.getUserId())
-                            .and(FEEDS_USERS.FEUS_FEED_ID.eq(feedOwnedOnlyByObywan)))
+                            FEEDS_USERS.FEUS_USER_ID.eq(OKENOBI.getUserId())
+                                    .and(FEEDS_USERS.FEUS_FEED_ID.eq(feedOwnedOnlyByObywan)))
                     .fetchOne();
             assertThat(actual).isNotNull();
             assertThat(actual.getFeusFeedName()).isEqualTo("Obiwan Kenobi");
