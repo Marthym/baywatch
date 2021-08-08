@@ -195,7 +195,7 @@ public class NewsRepository implements NewsPersistencePort {
         select.addGroupBy(NEWS.fields());
 
         if (!StringUtils.isBlank(qCtx.userId)) {
-            select.addSelect(DSL.arrayAggDistinct(FEEDS_USERS.FEUS_TAGS).as(FEEDS_USERS.FEUS_TAGS));
+            select.addSelect(DSL.listAgg(FEEDS_USERS.FEUS_TAGS).withinGroupOrderBy().as(FEEDS_USERS.FEUS_TAGS));
             select.addJoin(FEEDS_USERS, JoinType.JOIN,
                     NEWS_FEEDS.NEFE_FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID).and(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId)));
 

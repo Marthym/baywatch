@@ -19,6 +19,7 @@ public class News {
     @NonNull RawNews raw;
 
     Set<String> feeds;
+    Set<String> tags;
 
     @Delegate(types = State.class)
     @NonNull State state;

@@ -6,6 +6,7 @@ import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
@@ -166,6 +167,9 @@ class NewsRepositoryTest {
         NewsUserStateRecord expectedState = NewsRecordSamples.NewsUserStateSample.SAMPLE.records().stream()
                 .filter(us -> us.getNursNewsId().equals(expected.getNewsId()))
                 .findAny().orElseThrow();
+        FeedsUsersRecord expectedFeus = FeedRecordSamples.FeedUserRecordSamples.SAMPLE.records().stream()
+                .filter(us -> us.getFeusFeedId().equals(expectedNefe.getNefeFeedId()))
+                .findAny().orElseThrow();
 
         QueryContext qCtx = QueryContext.id(expected.getNewsId())
                 .withUserId(expectedState.getNursUserId());
@@ -177,6 +181,7 @@ class NewsRepositoryTest {
                 () -> assertThat(actual.getTitle()).isEqualTo(expected.getNewsTitle()),
                 () -> assertThat(actual.getId()).isEqualTo(expected.getNewsId()),
                 () -> assertThat(actual.getFeeds()).isEqualTo(Set.of(expectedNefe.getNefeFeedId())),
+                () -> assertThat(actual.getTags()).containsOnly(expectedFeus.getFeusTags().split(",")),
                 () -> assertThat(actual.isRead()).isEqualTo(State.of(expectedState.getNursState()).isRead()),
                 () -> assertThat(actual.isShared()).isEqualTo((expectedState.getNursState() & Flags.SHARED) != 0)
         );

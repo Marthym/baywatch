@@ -78,10 +78,15 @@ public interface BaywatchMapper {
                 ? Optional.ofNullable(record.get(NEWS_FEEDS.NEFE_FEED_ID.getName(), String[].class))
                 .map(Set::of).orElse(Set.of())
                 : Set.of();
+        Set<String> tags = (record.indexOf(FEEDS_USERS.FEUS_TAGS.getName()) >= 0)
+                ? Optional.ofNullable(record.get(FEEDS_USERS.FEUS_TAGS.getName(), String.class))
+                .map(s -> Set.of(s.split(","))).orElse(null)
+                : null;
         return News.builder()
                 .raw(raw)
                 .state(state)
                 .feeds(feeds)
+                .tags(tags)
                 .build();
     }
 
