@@ -7,7 +7,7 @@
         <img class="object-cover" src="login.webp" alt="Baywatch">
       </figure>
       <div class="card-body w-3/4">
-        <form @submit="onLogin">
+        <form @submit.prevent="onLogin">
           <h2 class="card-title">Baywatch</h2>
           <div class="form-control">
             <label class="label"><span class="label-text">Email Address</span></label>
