@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.domain.techwatch;
 import fr.ght1pc9kc.baywatch.api.NewsService;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
-import fr.ght1pc9kc.baywatch.domain.exceptions.BadCriteriaFilter;
+import fr.ght1pc9kc.baywatch.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthorizedOperation;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
@@ -11,6 +11,7 @@ import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
+import fr.ght1pc9kc.juery.api.Pagination;
 import fr.ght1pc9kc.juery.api.filter.CriteriaVisitor;
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.Nullable;
@@ -32,6 +33,7 @@ import static java.util.function.Predicate.not;
 public class NewsServiceImpl implements NewsService {
     private static final Set<String> ALLOWED_CRITERIA = Set.of(ID, PUBLICATION, SHARED, STATE, TITLE, FEED_ID);
     private static final Set<String> ALLOWED_AUTHENTICATED_CRITERIA = Set.of(READ);
+    private static final int MAX_ANONYMOUS_NEWS = 20;
 
     private final CriteriaVisitor<List<String>> propertiesExtractor;
     private final NewsPersistencePort newsRepository;
@@ -41,10 +43,10 @@ public class NewsServiceImpl implements NewsService {
     public Flux<News> list(PageRequest pageRequest) {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
-                .map(user -> throwOnInvalidRequestFilters(pageRequest, user))
+                .map(user -> throwOnInvalidRequest(pageRequest, user))
                 .map(user -> QueryContext.from(pageRequest).withUserId(user.id))
                 .onErrorResume(UnauthenticatedUser.class, e ->
-                        Mono.fromCallable(() -> throwOnInvalidRequestFilters(pageRequest, null))
+                        Mono.fromCallable(() -> throwOnInvalidRequest(pageRequest, null))
                                 .thenReturn(QueryContext.from(pageRequest)))
                 .flatMapMany(newsRepository::list);
     }
@@ -86,17 +88,22 @@ public class NewsServiceImpl implements NewsService {
                 .flatMap(user -> newsRepository.delete(toDelete));
     }
 
-    private <T> T throwOnInvalidRequestFilters(PageRequest request, @Nullable T ignore) {
+    private <T> T throwOnInvalidRequest(PageRequest request, @Nullable T ignore) {
         Stream<String> stream = request.filter().accept(propertiesExtractor).stream()
                 .filter(not(ALLOWED_CRITERIA::contains));
         Stream<String> authStream = (ignore != null)
                 ? stream.filter(not(ALLOWED_AUTHENTICATED_CRITERIA::contains))
                 : stream;
         String bads = authStream.collect(Collectors.joining(", "));
+
+        Pagination pagination = request.pagination();
+        boolean isPaginationForAnonymous = ignore == null && (pagination.page() * pagination.size() > MAX_ANONYMOUS_NEWS);
         if (!bads.isBlank()) {
-            throw new BadCriteriaFilter(String.format("Filters not allowed [ %s ]", bads));
-        } else {
-            return ignore;
+            throw new BadRequestCriteria(String.format("Filters not allowed [ %s ]", bads));
         }
+        if (isPaginationForAnonymous) {
+            throw new BadRequestCriteria("Pagination not allowed for anonymous !");
+        }
+        return ignore;
     }
 }

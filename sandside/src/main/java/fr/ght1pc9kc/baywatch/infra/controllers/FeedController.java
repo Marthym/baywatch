@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.infra.controllers;
 import fr.ght1pc9kc.baywatch.api.FeedService;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.RawFeed;
-import fr.ght1pc9kc.baywatch.domain.exceptions.BadCriteriaFilter;
+import fr.ght1pc9kc.baywatch.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.infra.http.pagination.Page;
 import fr.ght1pc9kc.baywatch.infra.model.FeedForm;
@@ -34,14 +34,14 @@ public class FeedController {
     @GetMapping("/{id}")
     public Mono<Feed> get(@PathVariable("id") String id) {
         return feedService.get(id)
-                .onErrorMap(BadCriteriaFilter.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
+                .onErrorMap(BadRequestCriteria.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
     }
 
     @GetMapping
     public Mono<Page<Feed>> list(ServerHttpRequest request) {
         PageRequest pageRequest = PageRequestFormatter.parse(request.getQueryParams());
         Flux<Feed> feeds = feedService.list(pageRequest)
-                .onErrorMap(BadCriteriaFilter.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
+                .onErrorMap(BadRequestCriteria.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
 
         return feedService.count(pageRequest)
                 .map(count -> Page.of(feeds, count));
@@ -64,7 +64,7 @@ public class FeedController {
                     .name(ff.name)
                     .build();
         }).flatMap(feedService::update)
-                .onErrorMap(BadCriteriaFilter.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
+                .onErrorMap(BadRequestCriteria.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
     }
 
     @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT})

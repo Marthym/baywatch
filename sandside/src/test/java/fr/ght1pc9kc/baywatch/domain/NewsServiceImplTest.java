@@ -7,7 +7,7 @@ import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
-import fr.ght1pc9kc.baywatch.domain.exceptions.BadCriteriaFilter;
+import fr.ght1pc9kc.baywatch.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.techwatch.NewsServiceImpl;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;
@@ -91,7 +91,7 @@ class NewsServiceImplTest {
                 Criteria.property("title").eq("May the Force")
                         .and(Criteria.property("read").eq(true))
         )).next().block())
-                .isInstanceOf(BadCriteriaFilter.class)
+                .isInstanceOf(BadRequestCriteria.class)
                 .hasMessageNotContaining("title")
                 .hasMessageContaining("read");
     }
@@ -104,7 +104,7 @@ class NewsServiceImplTest {
                 Criteria.property("illegal").eq("May the Force")
                         .and(Criteria.property("read").eq(true))
         )).next().block())
-                .isInstanceOf(BadCriteriaFilter.class)
+                .isInstanceOf(BadRequestCriteria.class)
                 .hasMessageNotContaining("read")
                 .hasMessageContaining("illegal");
     }

@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.infra.controllers;
 import fr.ght1pc9kc.baywatch.api.NewsService;
 import fr.ght1pc9kc.baywatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.api.model.News;
-import fr.ght1pc9kc.baywatch.domain.exceptions.BadCriteriaFilter;
+import fr.ght1pc9kc.baywatch.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.juery.basic.PageRequestFormatter;
 import lombok.AllArgsConstructor;
 import org.intellij.lang.annotations.MagicConstant;
@@ -37,7 +37,7 @@ public class NewsController {
     @GetMapping
     public Flux<News> listNews(@RequestParam MultiValueMap<String, String> queryStringParams) {
         return newsService.list(PageRequestFormatter.parse(queryStringParams))
-                .onErrorMap(BadCriteriaFilter.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
+                .onErrorMap(BadRequestCriteria.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
     }
 
     @PreAuthorize("isAuthenticated()")
