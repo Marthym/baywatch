@@ -36,6 +36,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.*;
 
+import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.TAGS_SEPARATOR;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
@@ -84,12 +85,12 @@ class NewsRepositoryTest {
         }
 
         News news = News.builder().raw(
-                RawNews.builder()
-                        .id(NEWS_ID)
-                        .title("Obiwan Kenobi")
-                        .link(URI.create("http://obiwan.kenobi.jedi/"))
-                        .publication(Instant.now())
-                        .build())
+                        RawNews.builder()
+                                .id(NEWS_ID)
+                                .title("Obiwan Kenobi")
+                                .link(URI.create("http://obiwan.kenobi.jedi/"))
+                                .publication(Instant.now())
+                                .build())
                 .feeds(Set.of(FeedRecordSamples.JEDI.getFeedId()))
                 .state(State.NONE)
                 .build();
@@ -157,6 +158,16 @@ class NewsRepositoryTest {
     }
 
     @Test
+    void should_list_news_filter_by_tags(WithSampleDataLoaded.Tracker tracker) {
+        tracker.skipNextSampleLoad();
+        QueryContext qCtx = QueryContext.all(Criteria.property("tags").contains(TAGS_SEPARATOR + "empire" + TAGS_SEPARATOR))
+                .withUserId(UsersRecordSamples.OKENOBI.getUserId());
+        List<News> actual = tested.list(qCtx).collectList().block();
+        assertThat(actual).isNotEmpty();
+        assertThat(actual).allMatch(a -> a.getTags().contains("empire"));
+    }
+
+    @Test
     void should_get_news_for_user(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
         NewsRecord expected = NewsRecordSamples.SAMPLE.records().get(4);
@@ -195,7 +206,7 @@ class NewsRepositoryTest {
         String id22 = Hasher.identify(NewsRecordSamples.BASE_TEST_URI.resolve("022"));
         String id23 = Hasher.identify(NewsRecordSamples.BASE_TEST_URI.resolve("023"));
         List<Map.Entry<String, State>> actuals = tested.listState(Criteria.property("newsId")
-                .in(id21, id22, id23))
+                        .in(id21, id22, id23))
                 .collectList().block();
 
         assertThat(actuals).containsOnly(
