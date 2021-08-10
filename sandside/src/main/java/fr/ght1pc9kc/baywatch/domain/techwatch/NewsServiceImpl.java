@@ -7,6 +7,7 @@ import fr.ght1pc9kc.baywatch.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthorizedOperation;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.domain.techwatch.filter.CriteriaModifierVisitor;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -32,7 +33,7 @@ import static java.util.function.Predicate.not;
 @AllArgsConstructor
 public class NewsServiceImpl implements NewsService {
     private static final Set<String> ALLOWED_CRITERIA = Set.of(ID, PUBLICATION, SHARED, STATE, TITLE, FEED_ID);
-    private static final Set<String> ALLOWED_AUTHENTICATED_CRITERIA = Set.of(READ);
+    private static final Set<String> ALLOWED_AUTHENTICATED_CRITERIA = Set.of(READ, TAGS);
     private static final int MAX_ANONYMOUS_NEWS = 20;
 
     private final CriteriaVisitor<List<String>> propertiesExtractor;
@@ -41,13 +42,14 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public Flux<News> list(PageRequest pageRequest) {
+        PageRequest validRequest = pageRequest.withFilter(pageRequest.filter().accept(new CriteriaModifierVisitor()));
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
-                .map(user -> throwOnInvalidRequest(pageRequest, user))
-                .map(user -> QueryContext.from(pageRequest).withUserId(user.id))
+                .map(user -> throwOnInvalidRequest(validRequest, user))
+                .map(user -> QueryContext.from(validRequest).withUserId(user.id))
                 .onErrorResume(UnauthenticatedUser.class, e ->
-                        Mono.fromCallable(() -> throwOnInvalidRequest(pageRequest, null))
-                                .thenReturn(QueryContext.from(pageRequest)))
+                        Mono.fromCallable(() -> throwOnInvalidRequest(validRequest, null))
+                                .thenReturn(QueryContext.from(validRequest)))
                 .flatMapMany(newsRepository::list);
     }
 
