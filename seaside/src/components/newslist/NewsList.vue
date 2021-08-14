@@ -280,9 +280,12 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
     return (vueRef as Vue[])[0].$el
   }
 
+  beforeDestroy(): void {
+    window.removeEventListener('keydown', this.onKeyDownListener, false);
+  }
+
   unmounted(): void {
     tagsService.unregisterListener(this.tagListenerIndex);
-    window.removeEventListener('keydown', this.onKeyDownListener, false);
   }
 
 }

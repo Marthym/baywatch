@@ -16,15 +16,16 @@
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
 import SideNavHeader from "./SideNavHeader.vue";
-import SideNavUserInfo from "./SideNavUserInfo.vue";
 import SideNavImportantActions from "./SideNavImportantActions.vue";
-import SideNavTags from './SideNavTags.vue';
 import SideNavFeeds from './SideNavFeeds.vue';
 import {Statistics} from "@/services/model/Statistics";
 import SideNavStatistics from "@/components/sidenav/SideNavStatistics.vue";
 
 import userService from "@/services/UserService";
 import statsService from "@/services/StatsService";
+
+const SideNavTags = () => import('./SideNavTags.vue');
+const SideNavUserInfo = () => import('./SideNavUserInfo.vue');
 
 @Component({
   components: {
