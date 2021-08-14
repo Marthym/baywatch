@@ -6,8 +6,8 @@
       transition duration-500 ease-in-out
       overflow-y-auto px-10 py-2">
       <ContentTopNav/>
-      <alert-dialog/>
       <router-view></router-view>
+      <alert-dialog/>
     </main>
   </div>
 </template>

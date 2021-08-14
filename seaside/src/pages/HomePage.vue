@@ -1,15 +1,15 @@
 <template>
-  <MainContent/>
+  <NewsList/>
 </template>
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
 
-const MainContent = () => import('../components/newslist/NewsList.vue');
+const NewsList = () => import('@/components/newslist/NewsList.vue');
 
 @Component({
   components: {
-    MainContent,
+    NewsList,
   },
 })
 export default class Home extends Vue {
