@@ -9,7 +9,7 @@
         <span class="label-text">URL</span>
       </label>
       <input v-model="feed.url" type="text" placeholder="username" class="input input-bordered">
-      <TagInput v-model="feed.tags"/>
+      <TagInput v-model="feed.tags" :available-tags-handler="() => listAvailableTags()"/>
       <button class="hidden" type="submit"/>
     </form>
     <template v-slot:actions>
@@ -25,6 +25,7 @@ import {Feed} from '@/services/model/Feed';
 import {Observable, Subject} from "rxjs";
 import ModalWindow from "@/components/shared/ModalWindow.vue";
 import TagInput from "@/components/shared/TagInput.vue";
+import tagsService from '@/services/TagsService';
 
 @Component({
   components: {
@@ -59,6 +60,10 @@ export default class FeedEditor extends Vue {
   private onSaveFeed() {
     this.subject?.next(this.feed);
     this.resetAndCloseModal();
+  }
+
+  private listAvailableTags(): Observable<string[]> {
+    return tagsService.list();
   }
 }
 </script>
