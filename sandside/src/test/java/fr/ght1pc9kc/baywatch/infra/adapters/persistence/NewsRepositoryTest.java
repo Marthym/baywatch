@@ -6,6 +6,7 @@ import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
@@ -35,6 +36,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.*;
 
+import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.TAGS_SEPARATOR;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
@@ -83,12 +85,12 @@ class NewsRepositoryTest {
         }
 
         News news = News.builder().raw(
-                RawNews.builder()
-                        .id(NEWS_ID)
-                        .title("Obiwan Kenobi")
-                        .link(URI.create("http://obiwan.kenobi.jedi/"))
-                        .publication(Instant.now())
-                        .build())
+                        RawNews.builder()
+                                .id(NEWS_ID)
+                                .title("Obiwan Kenobi")
+                                .link(URI.create("http://obiwan.kenobi.jedi/"))
+                                .publication(Instant.now())
+                                .build())
                 .feeds(Set.of(FeedRecordSamples.JEDI.getFeedId()))
                 .state(State.NONE)
                 .build();
@@ -156,6 +158,16 @@ class NewsRepositoryTest {
     }
 
     @Test
+    void should_list_news_filter_by_tags(WithSampleDataLoaded.Tracker tracker) {
+        tracker.skipNextSampleLoad();
+        QueryContext qCtx = QueryContext.all(Criteria.property("tags").contains(TAGS_SEPARATOR + "empire" + TAGS_SEPARATOR))
+                .withUserId(UsersRecordSamples.OKENOBI.getUserId());
+        List<News> actual = tested.list(qCtx).collectList().block();
+        assertThat(actual).isNotEmpty();
+        assertThat(actual).allMatch(a -> a.getTags().contains("empire"));
+    }
+
+    @Test
     void should_get_news_for_user(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
         NewsRecord expected = NewsRecordSamples.SAMPLE.records().get(4);
@@ -165,6 +177,9 @@ class NewsRepositoryTest {
                 .orElseThrow();
         NewsUserStateRecord expectedState = NewsRecordSamples.NewsUserStateSample.SAMPLE.records().stream()
                 .filter(us -> us.getNursNewsId().equals(expected.getNewsId()))
+                .findAny().orElseThrow();
+        FeedsUsersRecord expectedFeus = FeedRecordSamples.FeedUserRecordSamples.SAMPLE.records().stream()
+                .filter(us -> us.getFeusFeedId().equals(expectedNefe.getNefeFeedId()))
                 .findAny().orElseThrow();
 
         QueryContext qCtx = QueryContext.id(expected.getNewsId())
@@ -177,6 +192,7 @@ class NewsRepositoryTest {
                 () -> assertThat(actual.getTitle()).isEqualTo(expected.getNewsTitle()),
                 () -> assertThat(actual.getId()).isEqualTo(expected.getNewsId()),
                 () -> assertThat(actual.getFeeds()).isEqualTo(Set.of(expectedNefe.getNefeFeedId())),
+                () -> assertThat(actual.getTags()).containsOnly(expectedFeus.getFeusTags().split(",")),
                 () -> assertThat(actual.isRead()).isEqualTo(State.of(expectedState.getNursState()).isRead()),
                 () -> assertThat(actual.isShared()).isEqualTo((expectedState.getNursState() & Flags.SHARED) != 0)
         );
@@ -190,7 +206,7 @@ class NewsRepositoryTest {
         String id22 = Hasher.identify(NewsRecordSamples.BASE_TEST_URI.resolve("022"));
         String id23 = Hasher.identify(NewsRecordSamples.BASE_TEST_URI.resolve("023"));
         List<Map.Entry<String, State>> actuals = tested.listState(Criteria.property("newsId")
-                .in(id21, id22, id23))
+                        .in(id21, id22, id23))
                 .collectList().block();
 
         assertThat(actuals).containsOnly(

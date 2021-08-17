@@ -8,6 +8,7 @@ import org.jooq.impl.DSL;
 
 import java.util.Map;
 
+import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.TAGS_SEPARATOR;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
@@ -31,6 +32,7 @@ public final class PropertiesMappers {
             EntitiesProperties.PUBLICATION, NEWS.NEWS_PUBLICATION,
             EntitiesProperties.READ, DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.READ),
             EntitiesProperties.SHARED, DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.SHARED),
+            EntitiesProperties.TAGS, DSL.concat(DSL.value(TAGS_SEPARATOR), FEEDS_USERS.FEUS_TAGS, DSL.value(TAGS_SEPARATOR)),
             EntitiesProperties.TITLE, NEWS.NEWS_TITLE
     );
     public static final Map<String, Field<?>> STATE_PROPERTIES_MAPPING = Map.of(

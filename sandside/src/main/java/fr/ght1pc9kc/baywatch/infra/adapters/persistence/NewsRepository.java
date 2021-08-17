@@ -63,16 +63,16 @@ public class NewsRepository implements NewsPersistencePort {
         final Select<Record> query = buildSelectQuery(qCtx);
 
         return Flux.<Record>create(sink -> {
-            Cursor<Record> cursor = query.fetchLazy();
-            sink.onRequest(n -> {
-                int count = Long.valueOf(n).intValue();
-                Result<Record> rs = cursor.fetchNext(count);
-                rs.forEach(sink::next);
-                if (rs.size() < count) {
-                    sink.complete();
-                }
-            });
-        }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
+                    Cursor<Record> cursor = query.fetchLazy();
+                    sink.onRequest(n -> {
+                        int count = Long.valueOf(n).intValue();
+                        Result<Record> rs = cursor.fetchNext(count);
+                        rs.forEach(sink::next);
+                        if (rs.size() < count) {
+                            sink.complete();
+                        }
+                    });
+                }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(baywatchMapper::recordToNews)
                 .filter(qCtx.filter.accept(predicateSearchVisitor));
     }
@@ -88,12 +88,12 @@ public class NewsRepository implements NewsPersistencePort {
                 .collect(Collectors.toList());
 
         return Mono.fromCallable(() ->
-                dsl.loadInto(NEWS).batchAll()
-                        .onDuplicateKeyIgnore()
-                        .onErrorIgnore()
-                        .loadRecords(records)
-                        .fieldsCorresponding()
-                        .execute())
+                        dsl.loadInto(NEWS).batchAll()
+                                .onDuplicateKeyIgnore()
+                                .onErrorIgnore()
+                                .loadRecords(records)
+                                .fieldsCorresponding()
+                                .execute())
                 .subscribeOn(databaseScheduler)
                 .map(loader -> {
                     log.info("Load {} News with {} error(s) and {} ignored",
@@ -117,16 +117,16 @@ public class NewsRepository implements NewsPersistencePort {
         Condition conditions = searchCriteria.accept(STATE_CONDITION_VISITOR);
         PredicateSearchVisitor<State> predicateSearchVisitor = new PredicateSearchVisitor<>();
         return Flux.<NewsUserStateRecord>create(sink -> {
-            Cursor<NewsUserStateRecord> cursor = dsl.selectFrom(NEWS_USER_STATE).where(conditions).fetchLazy();
-            sink.onRequest(n -> {
-                int count = Long.valueOf(n).intValue();
-                Result<NewsUserStateRecord> rs = cursor.fetchNext(count);
-                rs.forEach(sink::next);
-                if (rs.size() < count) {
-                    sink.complete();
-                }
-            });
-        }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
+                    Cursor<NewsUserStateRecord> cursor = dsl.selectFrom(NEWS_USER_STATE).where(conditions).fetchLazy();
+                    sink.onRequest(n -> {
+                        int count = Long.valueOf(n).intValue();
+                        Result<NewsUserStateRecord> rs = cursor.fetchNext(count);
+                        rs.forEach(sink::next);
+                        if (rs.size() < count) {
+                            sink.complete();
+                        }
+                    });
+                }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(r -> Map.entry(r.getNursNewsId(), State.of(r.getNursState())))
                 .filter(s -> searchCriteria.accept(predicateSearchVisitor).test(s.getValue()));
     }
@@ -134,12 +134,12 @@ public class NewsRepository implements NewsPersistencePort {
     @Override
     public Mono<Integer> addStateFlag(String newsId, String userId, int flag) {
         return Mono.fromCallable(() -> dsl.insertInto(NEWS_USER_STATE)
-                .columns(NEWS_USER_STATE.NURS_NEWS_ID, NEWS_USER_STATE.NURS_USER_ID, NEWS_USER_STATE.NURS_STATE)
-                .values(newsId, userId, Flags.NONE | flag)
-                .onDuplicateKeyUpdate()
-                .set(NEWS_USER_STATE.NURS_STATE, NEWS_USER_STATE.NURS_STATE.bitOr(flag))
-                .returning()
-                .execute())
+                        .columns(NEWS_USER_STATE.NURS_NEWS_ID, NEWS_USER_STATE.NURS_USER_ID, NEWS_USER_STATE.NURS_STATE)
+                        .values(newsId, userId, Flags.NONE | flag)
+                        .onDuplicateKeyUpdate()
+                        .set(NEWS_USER_STATE.NURS_STATE, NEWS_USER_STATE.NURS_STATE.bitOr(flag))
+                        .returning()
+                        .execute())
                 .subscribeOn(databaseScheduler);
     }
 
@@ -147,19 +147,19 @@ public class NewsRepository implements NewsPersistencePort {
     public Mono<Integer> removeStateFlag(String newsId, String userId, int flag) {
         final int mask = ~(1 << (flag - 1));
         return Mono.fromCallable(() -> dsl.insertInto(NEWS_USER_STATE)
-                .columns(NEWS_USER_STATE.NURS_NEWS_ID, NEWS_USER_STATE.NURS_USER_ID, NEWS_USER_STATE.NURS_STATE)
-                .values(newsId, userId, Flags.NONE)
-                .onDuplicateKeyUpdate()
-                .set(NEWS_USER_STATE.NURS_STATE, NEWS_USER_STATE.NURS_STATE.bitAnd(mask))
-                .returning()
-                .execute())
+                        .columns(NEWS_USER_STATE.NURS_NEWS_ID, NEWS_USER_STATE.NURS_USER_ID, NEWS_USER_STATE.NURS_STATE)
+                        .values(newsId, userId, Flags.NONE)
+                        .onDuplicateKeyUpdate()
+                        .set(NEWS_USER_STATE.NURS_STATE, NEWS_USER_STATE.NURS_STATE.bitAnd(mask))
+                        .returning()
+                        .execute())
                 .subscribeOn(databaseScheduler);
     }
 
     @Override
     public Mono<Integer> deleteFeedLink(Collection<String> ids) {
         return Mono.fromCallable(() ->
-                dsl.deleteFrom(NEWS_FEEDS).where(NEWS_FEEDS.NEFE_NEWS_ID.in(ids)).execute())
+                        dsl.deleteFrom(NEWS_FEEDS).where(NEWS_FEEDS.NEFE_NEWS_ID.in(ids)).execute())
                 .subscribeOn(databaseScheduler);
     }
 
@@ -195,7 +195,7 @@ public class NewsRepository implements NewsPersistencePort {
         select.addGroupBy(NEWS.fields());
 
         if (!StringUtils.isBlank(qCtx.userId)) {
-            select.addSelect(DSL.arrayAggDistinct(FEEDS_USERS.FEUS_TAGS).as(FEEDS_USERS.FEUS_TAGS));
+            select.addSelect(DSL.listAgg(FEEDS_USERS.FEUS_TAGS).withinGroupOrderBy().as(FEEDS_USERS.FEUS_TAGS));
             select.addJoin(FEEDS_USERS, JoinType.JOIN,
                     NEWS_FEEDS.NEFE_FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID).and(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId)));
 

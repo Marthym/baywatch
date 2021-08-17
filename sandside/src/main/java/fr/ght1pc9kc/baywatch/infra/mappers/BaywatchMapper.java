@@ -18,12 +18,15 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
+import static java.util.function.Predicate.not;
 
 @Mapper(componentModel = "spring", imports = {
         Hasher.class, StringUtils.class, Optional.class, URI.class
@@ -78,10 +81,16 @@ public interface BaywatchMapper {
                 ? Optional.ofNullable(record.get(NEWS_FEEDS.NEFE_FEED_ID.getName(), String[].class))
                 .map(Set::of).orElse(Set.of())
                 : Set.of();
+        Set<String> tags = (record.indexOf(FEEDS_USERS.FEUS_TAGS.getName()) >= 0)
+                ? Optional.ofNullable(record.get(FEEDS_USERS.FEUS_TAGS.getName(), String.class))
+                .map(s -> Pattern.compile(",").splitAsStream(s).filter(not(String::isBlank))
+                        .collect(Collectors.toUnmodifiableSet())).orElse(null)
+                : null;
         return News.builder()
                 .raw(raw)
                 .state(state)
                 .feeds(feeds)
+                .tags(tags)
                 .build();
     }
 

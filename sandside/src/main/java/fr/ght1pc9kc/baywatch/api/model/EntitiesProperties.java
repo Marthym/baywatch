@@ -17,8 +17,11 @@ public final class EntitiesProperties {
     public static final String READ = "read";
     public static final String SHARED = "shared";
     public static final String STATE = "state";
+    public static final String TAGS = "tags";
     public static final String TITLE = "title";
     public static final String URL = "url";
     public static final String USER_ID = "userId";
     public static final String COUNT = "count";
+
+    public static final String TAGS_SEPARATOR = ",";
 }

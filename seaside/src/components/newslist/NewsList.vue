@@ -47,6 +47,7 @@ import {Feed} from "@/services/model/Feed";
 import feedService, {FeedService} from "@/services/FeedService";
 import newsService, {NewsService} from "@/services/NewsService";
 import userService from '@/services/UserService';
+import tagsService from '@/services/TagsService';
 
 @Component({
   components: {
@@ -62,7 +63,9 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
 
   private activeNews = -1;
   private page = 0;
+  private tags = '';
   private isAuthenticated = false;
+  private tagListenerIndex = -1;
 
   mounted(): void {
     userService.get().pipe(
@@ -81,12 +84,21 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
     });
 
     window.addEventListener('keydown', this.onKeyDownListener, false);
+    this.tagListenerIndex = tagsService.registerListener(tag => {
+      this.tags = tag;
+      this.page = 0;
+      this.news = [];
+      this.loadNextPage().subscribe()
+    });
   }
 
   loadNextPage(): Observable<Element> {
     const query = new URLSearchParams(NewsService.DEFAULT_QUERY);
     if (this.isAuthenticated) {
       query.append('read', 'false');
+    }
+    if (this.tags !== '') {
+      query.append('tags', `∋${this.tags}`);
     }
     const elements = new Subject<Element>();
     const currentPage = ++this.page;
@@ -271,5 +283,10 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
   beforeDestroy(): void {
     window.removeEventListener('keydown', this.onKeyDownListener, false);
   }
+
+  unmounted(): void {
+    tagsService.unregisterListener(this.tagListenerIndex);
+  }
+
 }
 </script>

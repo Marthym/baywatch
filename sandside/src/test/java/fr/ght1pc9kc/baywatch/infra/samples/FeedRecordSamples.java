@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.samples;
 
+import com.google.common.base.Joiner;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
@@ -42,6 +43,7 @@ public class FeedRecordSamples implements RelationalDataSet<FeedsRecord> {
         public static final FeedUserRecordSamples SAMPLE = new FeedUserRecordSamples();
 
         public static final List<FeedsUsersRecord> FEEDS_USERS_RECORDS;
+        private static final List<String> tags = List.of("jedi", "sith", "light", "dark", "republic", "empire");
 
         static {
             List<FeedsUsersRecord> feedsUsersRecords = new ArrayList<>();
@@ -53,7 +55,8 @@ public class FeedRecordSamples implements RelationalDataSet<FeedsRecord> {
                 }
                 feedsUsersRecords.add(FEEDS_USERS.newRecord()
                         .setFeusFeedId(fr.getFeedId())
-                        .setFeusUserId(UsersRecordSamples.OKENOBI.getUserId()));
+                        .setFeusUserId(UsersRecordSamples.OKENOBI.getUserId())
+                        .setFeusTags(Joiner.on(',').join(tags.subList(idx-1, idx + 1))));
 
                 if (idx++ < 3) {
                     feedsUsersRecords.add(FEEDS_USERS.newRecord()

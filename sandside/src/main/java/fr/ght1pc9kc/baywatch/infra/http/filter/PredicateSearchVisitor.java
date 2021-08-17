@@ -6,6 +6,7 @@ import fr.ght1pc9kc.juery.api.filter.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -79,6 +80,28 @@ public class PredicateSearchVisitor<E> implements CriteriaVisitor<Predicate<E>> 
                 Object o = field.get(n);
                 if (o == null || !o.getClass().isAssignableFrom(Comparable.class)) return true;
                 else return ((Comparable<T>) o).compareTo(operation.value.value) < 0;
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                log.trace("Field '{}' not found in {}", operation.field.property, n);
+                return true;
+            }
+        };
+    }
+
+    @Override
+    public <T> Predicate<E> visitContains(ContainsOperation<T> operation) {
+        return n -> {
+            try {
+                Field field = n.getClass().getDeclaredField(operation.field.property);
+                Object o = field.get(n);
+                if (o == null) {
+                    return false;
+                } else if (o.getClass().isAssignableFrom(Collection.class)) {
+                    return ((Collection<T>) o).contains(operation.value.value);
+                } else if (o.getClass().isAssignableFrom(String.class)) {
+                    return o.toString().contains(operation.value.value.toString());
+                } else {
+                    return false;
+                }
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 log.trace("Field '{}' not found in {}", operation.field.property, n);
                 return true;
