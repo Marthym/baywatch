@@ -1,6 +1,7 @@
 export const ConstantFilters = {
     PAGE: '_p',
     PER_PAGE: '_pp',
+    FROM_PAGE: '_from'
 }
 
 export const ConstantHttpHeaders = {

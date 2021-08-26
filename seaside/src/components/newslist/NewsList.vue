@@ -48,6 +48,7 @@ import feedService, {FeedService} from "@/services/FeedService";
 import newsService, {NewsService} from "@/services/NewsService";
 import userService from '@/services/UserService';
 import tagsService from '@/services/TagsService';
+import {ConstantFilters} from "@/constants";
 
 @Component({
   components: {
@@ -62,7 +63,6 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
   private feeds = new Map<string, Feed>();
 
   private activeNews = -1;
-  private page = 0;
   private tags = '';
   private isAuthenticated = false;
   private tagListenerIndex = -1;
@@ -86,7 +86,6 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
     window.addEventListener('keydown', this.onKeyDownListener, false);
     this.tagListenerIndex = tagsService.registerListener(tag => {
       this.tags = tag;
-      this.page = 0;
       this.news = [];
       this.loadNextPage().subscribe()
     });
@@ -100,9 +99,25 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
     if (this.tags !== '') {
       query.append('tags', `∋${this.tags}`);
     }
+    const lastIndex = this.news.length - 1;
+    if (this.news.length > 0) {
+      let toSkip = 0;
+      const lastNewsView = this.news[lastIndex];
+      // Find unread news at the same date to add offset in query, avoid duplicate
+      for (let i = this.news.length - 1; i >= 0; i--) {
+        if (!this.news[i].data.read && this.news[i].data.publication === lastNewsView.data.publication) {
+          toSkip++;
+        } else {
+          break;
+        }
+      }
+      query.append('publication', `≤${lastNewsView.data.publication}`)
+      if (toSkip > 0) {
+        query.append(ConstantFilters.FROM_PAGE, String(toSkip))
+      }
+    }
     const elements = new Subject<Element>();
-    const currentPage = ++this.page;
-    newsService.getNews(currentPage, query).pipe(
+    newsService.getNews(undefined, query).pipe(
         map(ns => ns.map(n => ({data: n, feeds: [], isActive: false, keepMark: false}) as NewsView)),
         tap(ns => this.news.push(...ns))
     ).subscribe({
@@ -114,7 +129,7 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
             return elements.next(this.getRefElement(n.data.id));
           });
           elements.complete();
-          this.loadFeeds(currentPage, feeds);
+          this.loadFeeds(lastIndex, feeds);
         });
       },
       error: e => elements.next(e)
@@ -122,8 +137,7 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
     return elements.asObservable();
   }
 
-  loadFeeds(page: number, ids: Map<string, string[]>): void {
-    const fromIdx = this.news.length - Math.round(this.news.length / page);
+  loadFeeds(fromIdx: number, ids: Map<string, string[]>): void {
     const feedIds = this.updateNewsView(fromIdx, ids);
 
     const query = new URLSearchParams(FeedService.DEFAULT_QUERY);
@@ -147,7 +161,7 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
    */
   private updateNewsView(fromIdx: number, ids: Map<string, string[]>): Set<string> {
     const feedIds = new Set<string>();
-    for (let i = fromIdx; i < this.news.length; i++) {
+    for (let i = Math.max(fromIdx, 0); i < this.news.length; i++) {
       const news = this.news[i];
       const receivedFeedIds = ids.get(news.data.id);
       if (receivedFeedIds === undefined) continue;

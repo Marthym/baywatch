@@ -18,8 +18,8 @@ export class NewsService {
      * @param page The to display
      * @param query The possible query parameters
      */
-    getNews(page = 1, query: URLSearchParams = new URLSearchParams(NewsService.DEFAULT_QUERY)): Observable<News[]> {
-        if (page > 1) {
+    getNews(page = 0, query: URLSearchParams = new URLSearchParams(NewsService.DEFAULT_QUERY)): Observable<News[]> {
+        if (page > 0) {
             query.append('_p', String(page));
         }
         return rest.get(`/news?${query.toString()}`).pipe(
