@@ -73,6 +73,17 @@ public class PredicateSearchVisitor<E> implements CriteriaVisitor<Predicate<E>> 
     }
 
     @Override
+    public <T> Predicate<E> visitGreaterThanEquals(GreaterThanEqualsOperation<T> operation) {
+        return n -> {
+            Map<String, Comparable<T>> json = mapper.convertValue(n, new TypeReference<>() {
+            });
+            Comparable<T> o = json.get(operation.field.property);
+            if (o == null) return true;
+            else return o.compareTo(operation.value.value) >= 0;
+        };
+    }
+
+    @Override
     public <T> Predicate<E> visitLowerThan(LowerThanOperation<T> operation) {
         return n -> {
             try {
@@ -80,6 +91,21 @@ public class PredicateSearchVisitor<E> implements CriteriaVisitor<Predicate<E>> 
                 Object o = field.get(n);
                 if (o == null || !o.getClass().isAssignableFrom(Comparable.class)) return true;
                 else return ((Comparable<T>) o).compareTo(operation.value.value) < 0;
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                log.trace("Field '{}' not found in {}", operation.field.property, n);
+                return true;
+            }
+        };
+    }
+
+    @Override
+    public <T> Predicate<E> visitLowerThanEquals(LowerThanEqualsOperation<T> operation) {
+        return n -> {
+            try {
+                Field field = n.getClass().getDeclaredField(operation.field.property);
+                Object o = field.get(n);
+                if (o == null || !o.getClass().isAssignableFrom(Comparable.class)) return true;
+                else return ((Comparable<T>) o).compareTo(operation.value.value) <= 0;
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 log.trace("Field '{}' not found in {}", operation.field.property, n);
                 return true;
