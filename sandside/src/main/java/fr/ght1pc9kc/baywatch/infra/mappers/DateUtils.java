@@ -14,7 +14,7 @@ public class DateUtils {
     /**
      * The forced, specified and mandatory {@link ZoneOffset} to use in NORA project
      */
-    public static final ZoneOffset NORA_ZONE_OFFSET = ZoneOffset.UTC;
+    public static final ZoneOffset DEFAULT_ZONE_OFFSET = ZoneOffset.UTC;
 
     /**
      * Convert {@link LocalDateTime} to an {@link Instant} using {@link ZoneOffset#UTC}
@@ -25,7 +25,7 @@ public class DateUtils {
     @Nullable
     public static Instant toInstant(@Nullable LocalDateTime ldt) {
         return Optional.ofNullable(ldt)
-                .map(t -> t.toInstant(NORA_ZONE_OFFSET))
+                .map(t -> t.toInstant(DEFAULT_ZONE_OFFSET))
                 .orElse(null);
     }
 
@@ -38,7 +38,7 @@ public class DateUtils {
     @Nullable
     public static Instant toInstant(@Nullable LocalDate ld) {
         return Optional.ofNullable(ld)
-                .map(t -> t.atStartOfDay().toInstant(NORA_ZONE_OFFSET))
+                .map(t -> t.atStartOfDay().toInstant(DEFAULT_ZONE_OFFSET))
                 .orElse(null);
     }
 
@@ -51,7 +51,7 @@ public class DateUtils {
     @Nullable
     public static LocalDateTime toLocalDateTime(@Nullable Instant t) {
         return Optional.ofNullable(t)
-                .map(i -> i.atOffset(NORA_ZONE_OFFSET).toLocalDateTime())
+                .map(i -> i.atOffset(DEFAULT_ZONE_OFFSET).toLocalDateTime())
                 .orElse(null);
     }
 
@@ -64,7 +64,7 @@ public class DateUtils {
     @Nullable
     public static LocalDate toLocalDate(@Nullable Instant t) {
         return Optional.ofNullable(t)
-                .map(i -> i.atOffset(NORA_ZONE_OFFSET).toLocalDateTime())
+                .map(i -> i.atOffset(DEFAULT_ZONE_OFFSET).toLocalDateTime())
                 .map(LocalDateTime::toLocalDate)
                 .orElse(null);
     }
