@@ -130,6 +130,6 @@ public interface BaywatchMapper {
     @Mapping(target = "feusFeedId", source = "raw.id")
     @Mapping(target = "feusFeedName", source = "name")
     @Mapping(target = "feusTags",
-            expression = "java( (feed.getTags() != null)?String.join(\",\", feed.getTags()):null )")
+            expression = "java( (feed.getTags() != null && !feed.getTags().isEmpty())?String.join(\",\", feed.getTags()):null )")
     FeedsUsersRecord feedToFeedsUsersRecord(Feed feed);
 }

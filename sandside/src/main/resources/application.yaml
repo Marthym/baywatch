@@ -18,6 +18,13 @@ logging:
     root: INFO
     org.jooq: WARN
     fr.ght1pc9kc.baywatch: ${BAYWATCH_LOG_LEVEL:DEBUG}
+  file:
+    name: ${BAYWATCH_LOG_FILE:}
+  logback:
+    rollingpolicy:
+      file-name-pattern: baywatch-%d{yyyy-MM-dd}.%i.log
+      max-file-size: 10MB
+      total-size-cap: 10
 
 baywatch:
   base-route: /api
