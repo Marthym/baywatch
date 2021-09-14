@@ -7,9 +7,9 @@ import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.scrapper.ScrappingHandler;
+import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;
-import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -145,17 +145,22 @@ public final class FeedScrapperService implements Runnable {
                     .bodyToFlux(DataBuffer.class)
                     .doFirst(() -> log.trace("Receiving data from {}...", feed.getUrl().getHost()))
                     .onErrorResume(e -> {
-                        log.error("{}", e.getLocalizedMessage());
+                        log.warn("{}: {}", feed.getUrl().getHost(), e.getLocalizedMessage());
                         log.debug("STACKTRACE", e);
                         return Flux.empty();
                     });
 
             Disposable feedReadingSubscription = DataBufferUtils.write(buffers, osPipe)
-                    .doFinally(Exceptions.wrap().consumer(signal -> {
+                    .onErrorContinue((e, buffer) -> {
+                        log.warn("{}: {}", feed.getUrl().getHost(), e.getLocalizedMessage());
+                        log.debug("STACKTRACE", e);
+                        DataBufferUtils.release((DataBuffer) buffer);
+                    })
+                    .doFinally(Exceptions.silence().consumer(Exceptions.wrap().consumer(signal -> {
                         osPipe.flush();
                         osPipe.close();
                         log.debug("Finish Scrapping feed {}.", feed.getUrl().getHost());
-                    })).subscribe(DataBufferUtils.releaseConsumer());
+                    }))).subscribe(DataBufferUtils.releaseConsumer());
 
             return feedParser.parse(feed, isFeedPayload)
                     .doOnComplete(feedReadingSubscription::dispose)
