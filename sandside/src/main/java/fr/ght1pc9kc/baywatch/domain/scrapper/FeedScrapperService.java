@@ -5,6 +5,7 @@ import fr.ght1pc9kc.baywatch.api.AuthenticationService;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.scrapper.FeedScrapperPlugin;
 import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.scrapper.ScrappingHandler;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
@@ -31,12 +32,14 @@ import reactor.netty.http.client.HttpClient;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -64,12 +67,13 @@ public final class FeedScrapperService implements Runnable {
     private final Semaphore lock = new Semaphore(1);
 
     private final Duration scrapFrequency;
-    private final OpenGraphScrapper ogScrapper;
     private final FeedPersistencePort feedRepository;
     private final NewsPersistencePort newsRepository;
-    private final RssAtomParser feedParser;
-    private final Collection<ScrappingHandler> scrappingHandlers;
     private final AuthenticationService authService;
+    private final RssAtomParser feedParser;
+    private final OpenGraphScrapper ogScrapper;
+    private final Collection<ScrappingHandler> scrappingHandlers;
+    private final Map<String, FeedScrapperPlugin> plugins;
 
     public void startScrapping() {
         Instant now = clock.instant();
@@ -132,41 +136,45 @@ public final class FeedScrapperService implements Runnable {
 
     private Flux<News> wgetFeedNews(Feed feed) {
         try {
-            log.debug("Start scrapping feed {} ...", feed.getUrl().getHost());
+            String feedHost = feed.getUrl().getHost();
+            FeedScrapperPlugin hostPlugin = plugins.get(feedHost);
+            URI feedUrl = (hostPlugin != null) ? hostPlugin.uriModifier(feed.getUrl()) : feed.getUrl();
+
+            log.debug("Start scrapping feed {} ...", feedHost);
             PipedOutputStream osPipe = new PipedOutputStream();
             PipedInputStream isFeedPayload = new PipedInputStream(osPipe);
 
             Flux<DataBuffer> buffers = http.get()
-                    .uri(feed.getUrl())
+                    .uri(feedUrl)
                     .accept(MediaType.APPLICATION_ATOM_XML)
                     .accept(MediaType.APPLICATION_RSS_XML)
                     .acceptCharset(StandardCharsets.UTF_8)
                     .retrieve()
                     .bodyToFlux(DataBuffer.class)
-                    .doFirst(() -> log.trace("Receiving data from {}...", feed.getUrl().getHost()))
+                    .doFirst(() -> log.trace("Receiving data from {}...", feedHost))
                     .onErrorResume(e -> {
-                        log.warn("{}: {}", feed.getUrl().getHost(), e.getLocalizedMessage());
+                        log.warn("{}: {}", feedHost, e.getLocalizedMessage());
                         log.debug("STACKTRACE", e);
                         return Flux.empty();
                     });
 
             Disposable feedReadingSubscription = DataBufferUtils.write(buffers, osPipe)
                     .onErrorContinue((e, buffer) -> {
-                        log.warn("{}: {}", feed.getUrl().getHost(), e.getLocalizedMessage());
+                        log.warn("{}: {}", feedHost, e.getLocalizedMessage());
                         log.debug("STACKTRACE", e);
                         DataBufferUtils.release((DataBuffer) buffer);
                     })
                     .doFinally(Exceptions.silence().consumer(Exceptions.wrap().consumer(signal -> {
                         osPipe.flush();
                         osPipe.close();
-                        log.debug("Finish Scrapping feed {}.", feed.getUrl().getHost());
+                        log.debug("Finish Scrapping feed {}.", feedHost);
                     }))).subscribe(DataBufferUtils.releaseConsumer());
 
             return feedParser.parse(feed, isFeedPayload)
                     .doOnComplete(feedReadingSubscription::dispose)
                     .doFinally(Exceptions.wrap().consumer(signal -> {
                         isFeedPayload.close();
-                        log.trace("Finish Parsing feed {}.", feed.getUrl().getHost());
+                        log.trace("Finish Parsing feed {}.", feedHost);
                     }));
         } catch (IOException e) {
             log.error("{}: {}", e.getClass(), e.getLocalizedMessage());

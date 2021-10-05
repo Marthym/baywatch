@@ -51,9 +51,9 @@ POST http://{{host}}//api/feeds/import
         "tags": ["culture", "techno"]},
     { "name": "Presse Citron", "url": "https://feeds.feedburner.com/Pressecitron" ,
         "tags": ["culture", "hight-tech"]},
-    { "name": "Reddit Top Java", "url": "https://www.reddit.com/r/java/top/.rss?sort=new",
+    { "name": "Reddit Top Java", "url": "https://www.reddit.com/r/java/top/.rss",
         "tags": ["java", "techno", "coding"]},
-    { "name": "Reddit Top Programming", "url": "https://www.reddit.com/r/programming/top/.rss?sort=new",
+    { "name": "Reddit Top Programming", "url": "https://www.reddit.com/r/programming/top/.rss",
         "tags": ["coding", "techno"]},
     { "name": "Spring", "url": "https://spring.io/blog.atom",
         "tags": ["java", "techno"]}

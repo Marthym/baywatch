@@ -1,12 +1,14 @@
 package fr.ght1pc9kc.baywatch.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.api.AuthenticationService;
+import fr.ght1pc9kc.baywatch.api.scrapper.FeedParserPlugin;
+import fr.ght1pc9kc.baywatch.api.scrapper.FeedScrapperPlugin;
 import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.scrapper.ScrappingHandler;
-import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
-import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.scrapper.FeedScrapperService;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
+import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
+import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
@@ -16,6 +18,9 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.time.Duration;
 import java.util.Collection;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @DependsOn({"flyway", "flywayInitializer"}) // Wait after Flyway migrations
@@ -26,12 +31,16 @@ public class FeedScrapperAdapter {
     public FeedScrapperAdapter(FeedPersistencePort feedPersistence, NewsPersistencePort newsPersistence,
                                OpenGraphScrapper ogScrapper, RssAtomParser rssAtomParser,
                                Collection<ScrappingHandler> scrappingHandlers,
+                               Collection<FeedScrapperPlugin> scrapperPlugins,
                                AuthenticationService authService,
                                @Value("${baywatch.scrapper.start}") boolean startScrapper,
                                @Value("${baywatch.scrapper.frequency}") Duration scrapFrequency) {
+        Map<String, FeedScrapperPlugin> plugins = scrapperPlugins.stream()
+                .collect(Collectors.toUnmodifiableMap(FeedScrapperPlugin::pluginForDomain, Function.identity()));
         this.startScrapper = startScrapper;
-        this.scrapper = new FeedScrapperService(scrapFrequency,
-                ogScrapper, feedPersistence, newsPersistence, rssAtomParser, scrappingHandlers, authService);
+        this.scrapper = new FeedScrapperService(
+                scrapFrequency, feedPersistence, newsPersistence, authService,
+                rssAtomParser, ogScrapper, scrappingHandlers, plugins);
     }
 
     @PostConstruct

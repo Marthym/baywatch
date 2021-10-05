@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.domain.scrapper.plugins;
 import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.scrapper.FeedParserPlugin;
+import fr.ght1pc9kc.baywatch.api.scrapper.FeedScrapperPlugin;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.HtmlUtils;
@@ -13,7 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
-public final class RedditParserPlugin implements FeedParserPlugin {
+public final class RedditParserPlugin implements FeedParserPlugin, FeedScrapperPlugin {
 
     private static final String LINK = "link";
     private static final Pattern LINK_EXTRACT_PATTERN =
@@ -41,5 +42,14 @@ public final class RedditParserPlugin implements FeedParserPlugin {
                 .orElse(link);
 
         return builder.id(Hasher.identify(uri)).link(uri);
+    }
+
+    @Override
+    public URI uriModifier(URI original) {
+        if (original.getQuery() == null || original.getQuery().isBlank()) {
+            return URI.create(original + "?sort=new");
+        } else {
+            return URI.create(original + "&sort=new");
+        }
     }
 }
