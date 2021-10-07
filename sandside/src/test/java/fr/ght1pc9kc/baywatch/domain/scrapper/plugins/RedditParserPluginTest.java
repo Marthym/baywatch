@@ -2,6 +2,8 @@ package fr.ght1pc9kc.baywatch.domain.scrapper.plugins;
 
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.net.URI;
 
@@ -49,5 +51,15 @@ class RedditParserPluginTest {
             RawNews actual = tested.handleLinkEvent(RawNews.builder().id("42").link(lukeLink), obiwanLink).build();
             assertThat(actual.link).isEqualTo(lukeLink);
         }
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "https://www.reddit.com/r/programming/.rss, https://www.reddit.com/r/programming/.rss?sort=new",
+            "https://www.reddit.com/r/programming/.rss/, https://www.reddit.com/r/programming/.rss/?sort=new",
+            "https://www.reddit.com/r/programming/.rss?test=yes, https://www.reddit.com/r/programming/.rss?test=yes&sort=new"
+    })
+    void should_modify_url(String uri, String expected) {
+        assertThat(tested.uriModifier(URI.create(uri))).isEqualTo(URI.create(expected));
     }
 }
