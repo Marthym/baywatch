@@ -33,6 +33,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -263,7 +264,7 @@ class FeedScrapperServiceTest {
         when(authServiceMock.withSystemAuthentication()).thenReturn(Context.empty());
 
         tested = new FeedScrapperService(Duration.ofDays(1),
-                openGraphScrapper, feedPersistenceMock, newsPersistenceMock, rssAtomParserMock,
-                Collections.emptyList(), authServiceMock);
+                feedPersistenceMock, newsPersistenceMock, authServiceMock, rssAtomParserMock, openGraphScrapper,
+                Collections.emptyList(), Map.of());
     }
 }
