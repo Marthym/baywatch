@@ -204,7 +204,9 @@ public class NewsRepository implements NewsPersistencePort {
                     NEWS.NEWS_ID.eq(NEWS_USER_STATE.NURS_NEWS_ID).and(NEWS_USER_STATE.NURS_USER_ID.eq(qCtx.userId)));
         }
 
-        return (SelectQuery<Record>) JooqPagination.apply(qCtx.pagination, NEWS_PROPERTIES_MAPPING, select);
+        SelectQuery<Record> paginateSelect = (SelectQuery<Record>) JooqPagination.apply(qCtx.pagination, NEWS_PROPERTIES_MAPPING, select);
+        paginateSelect.addOrderBy(NEWS.NEWS_ID); // This avoid random order for records with same value in ordered fields
+        return paginateSelect;
     }
 
     private static Stream<NewsFeedsRecord> toNewsFeedsRecords(News news) {
