@@ -202,7 +202,7 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
   }
 
   activateElement(incr: number): Element {
-    this.activateNewsCard(this.activeNews + incr)
+    this.activateNewsCard(this.activeNews + incr);
     return this.getRefElement(this.news[this.activeNews].data.id);
   }
 

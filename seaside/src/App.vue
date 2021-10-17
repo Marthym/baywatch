@@ -18,7 +18,7 @@ import {Component, Vue} from 'vue-property-decorator';
 import router from "./router";
 import ContentTopNav from "@/components/topnav/ContentTopNav.vue";
 import SideNav from '@/components/sidenav/SideNav.vue';
-import NotificationArea from "@/components/shared/NotificationArea.vue";
+import NotificationArea from "@/components/shared/notificationArea/NotificationArea.vue";
 
 @Component({
   components: {
