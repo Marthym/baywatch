@@ -1,6 +1,6 @@
 <template>
   <div class="stack absolute bottom-5 right-5">
-    <div class="alert bg-error" v-for="notif in notifications" v-bind:key="notif.message">
+    <div class="alert bg-error" v-for="notif in notifications" :key="notif.id">
       <div class="flex-1">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-6 h-6 mx-2 stroke-current">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -27,29 +27,32 @@
 <script lang="ts">
 import {Component, Vue} from "vue-property-decorator";
 import {NotificationView} from "@/components/shared/notificationArea/NotificationView";
-import notificationService from '@/services/notification/NotificationService';
 import {Notification} from "@/services/notification/Notification";
 import NotificationListener from "@/services/notification/NotificationListener";
+import notificationService from '@/services/notification/NotificationService';
 
 @Component({
   components: {},
 })
 export default class NotificationArea extends Vue implements NotificationListener {
   private notifications: NotificationView[] = [];
+  private keys = 0;
 
   mounted(): void {
     notificationService.registerNotificationListener(this);
   }
 
-  private onPushNotification(notif: Notification): void {
+  onPushNotification(notif: Notification): void {
+    console.info('recieve: ', notif);
     this.notifications.push({
+      id: ++this.keys,
       severity: notif.severity,
       message: notif.message
     });
   }
 
-  private onPopNotification(notif: Notification): void {
-
+  onPopNotification(): void {
+    this.notifications.shift();
   }
 }
 </script>

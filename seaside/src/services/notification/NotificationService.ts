@@ -1,7 +1,7 @@
 import {Notification} from "@/services/notification/Notification";
 import NotificationListener from "@/services/notification/NotificationListener";
 
-const DELAY: number = 5000;
+const DELAY = 5000;
 
 export class NotificationService {
     private notifs: Notification[] = [];
@@ -12,10 +12,10 @@ export class NotificationService {
      * Push a new {@link Notification} to the stack
      * @param notif The new {@link Notification}
      */
-    public pushNotification(notif: Notification) {
+    public pushNotification(notif: Notification): void {
         this.notifs.push(notif);
         if (!this.timeout) {
-            this.timeout = setTimeout(this.onNotificationExpiration, DELAY);
+            this.timeout = setTimeout(NotificationService.onNotificationExpiration, DELAY, this);
         }
         this.listeners.forEach(listener => {
             listener.onPushNotification(notif);
@@ -30,14 +30,14 @@ export class NotificationService {
         this.listeners.push(listener);
     }
 
-    private onNotificationExpiration(): void {
-        clearTimeout(this.timeout);
-        const notif = this.notifs.shift();
+    private static onNotificationExpiration(ns: NotificationService): void {
+        clearTimeout(ns.timeout);
+        const notif = ns.notifs.shift();
         if (notif) {
-            if (this.notifs.length > 0) {
-                this.timeout = setTimeout(this.onNotificationExpiration, DELAY);
+            if (ns.notifs.length > 0) {
+                ns.timeout = setTimeout(NotificationService.onNotificationExpiration, DELAY, ns);
             }
-            this.listeners.forEach(listener => listener.onPopNotification(notif));
+            ns.listeners.forEach(listener => listener.onPopNotification(notif));
         }
     }
 
@@ -45,8 +45,8 @@ export class NotificationService {
      * Remove immediatly all {@link Notification} and all {@link NotificationListener}
      */
     public destroy(): void {
-        this.notifs.forEach(n => {
-            this.onNotificationExpiration(n);
+        this.notifs.forEach(() => {
+            NotificationService.onNotificationExpiration(this);
         });
         this.listeners = [];
     }
