@@ -41,8 +41,8 @@ public class SecurityConfiguration {
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
                 .pathMatchers(HttpMethod.GET).permitAll()
                 .pathMatchers(HttpMethod.POST, baseRoute + "/auth/login").permitAll()
+                .pathMatchers(HttpMethod.PUT, baseRoute + "/auth/refresh").permitAll()
                 .pathMatchers(HttpMethod.DELETE, baseRoute + "/auth/logout").authenticated()
-                .pathMatchers(HttpMethod.PUT, baseRoute + "/auth/refresh").authenticated()
                 .anyExchange().hasAnyRole(Role.ADMIN.name(), Role.MANAGER.name(), Role.USER.name())
 
                 .and()

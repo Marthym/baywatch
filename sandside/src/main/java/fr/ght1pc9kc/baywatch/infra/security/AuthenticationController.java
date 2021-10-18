@@ -6,6 +6,7 @@ import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
 import fr.ght1pc9kc.baywatch.infra.security.adapters.AuthenticationManagerAdapter;
 import fr.ght1pc9kc.baywatch.infra.security.exceptions.BaywatchCredentialsException;
+import fr.ght1pc9kc.baywatch.infra.security.exceptions.NoSessionException;
 import fr.ght1pc9kc.baywatch.infra.security.model.AuthenticationRequest;
 import fr.ght1pc9kc.baywatch.infra.security.model.BaywatchUserDetails;
 import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams;
@@ -85,7 +86,7 @@ public class AuthenticationController {
     public Mono<Session> refresh(ServerWebExchange exchange) {
         String token = Optional.ofNullable(exchange.getRequest().getCookies().getFirst(securityParams.cookie.name))
                 .map(HttpCookie::getValue)
-                .orElseThrow(() -> new BaywatchCredentialsException("User not login on !"));
+                .orElseThrow(() -> new NoSessionException("User not login on !"));
 
         return authenticationManager.refresh(token)
                 .map(auth -> {
