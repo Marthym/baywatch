@@ -1,4 +1,4 @@
-import {Notification} from "@/services/notification/Notification";
+import {Notification} from "@/services/notification/Notification.type";
 
 /**
  * Must be implemented to interact with {@link Notification} evolutions

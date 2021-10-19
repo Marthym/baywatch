@@ -1,7 +1,7 @@
-import {Notification} from "@/services/notification/Notification";
+import {Notification} from "@/services/notification/Notification.type";
 import NotificationListener from "@/services/notification/NotificationListener";
 
-const DELAY = 5000;
+const DELAY = 3000;
 
 export class NotificationService {
     private notifs: Notification[] = [];
@@ -30,8 +30,14 @@ export class NotificationService {
         this.listeners.push(listener);
     }
 
+    public unregisterNotificationListener(listener: NotificationListener): void {
+        const idx = this.listeners.indexOf(listener);
+        this.listeners.splice(idx, 1);
+    }
+
     private static onNotificationExpiration(ns: NotificationService): void {
         clearTimeout(ns.timeout);
+        ns.timeout = undefined;
         const notif = ns.notifs.shift();
         if (notif) {
             if (ns.notifs.length > 0) {

@@ -1,7 +1,6 @@
-import {Severity} from "@/services/notification/Severity.enum";
+import {Notification} from "@/services/notification/Notification.type";
 
 export type NotificationView = {
     id: number;
-    severity: Severity;
-    message: string;
+    raw: Notification;
 }

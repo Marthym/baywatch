@@ -1,10 +1,11 @@
-import {map, Observable} from "rxjs";
+import {EMPTY, Observable, of} from "rxjs";
 import {fromFetch} from "rxjs/fetch";
 import {ConstantHttpHeaders, ConstantMediaTypes} from "@/constants";
-import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 
 import notificationService from '@/services/notification/NotificationService';
 import {Severity} from "@/services/notification/Severity.enum";
+import {NotificationCode} from "@/services/notification/NotificationCode.enum";
+import {switchMap} from "rxjs/operators";
 
 
 export class RestWrapper {
@@ -28,21 +29,13 @@ export class RestWrapper {
     }
 
     put(uri: string, data?: unknown): Observable<Response> {
-        console.info('wrapped put...')
         const headers = new Headers();
         headers.set(ConstantHttpHeaders.CONTENT_TYPE, ConstantMediaTypes.JSON_UTF8);
         return fromFetch(this.baseUrl + uri, {
             method: 'PUT',
             ...RestWrapper.bodyHandler(data),
         }).pipe(
-            map(response => {
-                if (response.ok) {
-                    return response;
-                } else {
-                    notificationService.pushNotification({severity: Severity.error, message: 'Unauthorized'});
-                    throw new HttpStatusError(response.status, 'Error while updating feed.');
-                }
-            }),
+            switchMap(RestWrapper.handleAuthenticationErrors),
         );
     }
 
@@ -72,6 +65,30 @@ export class RestWrapper {
         } else {
             return {};
         }
+    }
+
+    private static handleAuthenticationErrors(response: Response): Observable<Response> {
+        if (response.ok) {
+            return of(response);
+
+        } else if (response.status === 401) {
+            notificationService.pushNotification({
+                code: NotificationCode.UNAUTHORIZED,
+                severity: Severity.error,
+                message: 'You are not login on !'
+            });
+            return EMPTY;
+
+        } else if (response.status === 403) {
+            notificationService.pushNotification({
+                code: NotificationCode.UNAUTHORIZED,
+                severity: Severity.error,
+                message: 'You are not login on !'
+            });
+            return EMPTY;
+        }
+
+        return of(response);
     }
 }
 
