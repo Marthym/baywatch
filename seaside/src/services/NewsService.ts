@@ -1,4 +1,4 @@
-import {Observable} from 'rxjs';
+import {EMPTY, Observable} from 'rxjs';
 import {switchMap, take} from "rxjs/operators";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 import {News} from "@/services/model/News";
@@ -53,7 +53,7 @@ export class NewsService {
                 if (response.ok) {
                     return response.json();
                 } else {
-                    throw new HttpStatusError(response.status, `Error while unmark news ${id} as ${mark}.`);
+                    return EMPTY;
                 }
             }),
             take(1)

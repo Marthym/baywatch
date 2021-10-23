@@ -105,7 +105,7 @@ export default class TagInput extends Vue {
             this.emitInputEvent();
           } else {
             lastTag.status = TagStatus.ALERT;
-            lastTag.timeout = setTimeout(() => lastTag.status = TagStatus.PRIMARY, 1000);
+            lastTag.timeout = window.setTimeout(() => lastTag.status = TagStatus.PRIMARY, 1000);
           }
         }
         break;
@@ -144,7 +144,7 @@ export default class TagInput extends Vue {
   private beforeUnmount(): void {
     this.tags.forEach(tv => {
       if (tv.timeout) {
-        clearTimeout(tv.timeout);
+        window.clearTimeout(tv.timeout);
       }
     })
   }
