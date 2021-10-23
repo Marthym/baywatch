@@ -16,7 +16,9 @@ export class RestWrapper {
     }
 
     get(uri: string): Observable<Response> {
-        return fromFetch(this.baseUrl + uri);
+        return fromFetch(this.baseUrl + uri).pipe(
+            switchMap(RestWrapper.handleAuthenticationErrors),
+        );
     }
 
     post(uri: string, data?: unknown): Observable<Response> {
@@ -25,7 +27,9 @@ export class RestWrapper {
         return fromFetch(this.baseUrl + uri, {
             method: 'POST',
             ...RestWrapper.bodyHandler(data),
-        });
+        }).pipe(
+            switchMap(RestWrapper.handleAuthenticationErrors),
+        );
     }
 
     put(uri: string, data?: unknown): Observable<Response> {
@@ -45,7 +49,9 @@ export class RestWrapper {
         return fromFetch(this.baseUrl + uri, {
             method: 'DELETE',
             ...RestWrapper.bodyHandler(data),
-        });
+        }).pipe(
+            switchMap(RestWrapper.handleAuthenticationErrors),
+        );
     }
 
     private static bodyHandler(data?: unknown): { body?: BodyInit, headers?: HeadersInit } {
