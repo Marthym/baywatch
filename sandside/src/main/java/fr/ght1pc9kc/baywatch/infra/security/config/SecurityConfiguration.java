@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.security.config;
 
+import fr.ght1pc9kc.baywatch.api.UserService;
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
 import fr.ght1pc9kc.baywatch.infra.security.JwtTokenAuthenticationFilter;
@@ -30,6 +31,7 @@ public class SecurityConfiguration {
     @Bean
     SecurityWebFilterChain springSecurityFilterChain(
             ServerHttpSecurity http, JwtTokenProvider jwtTokenProvider, SecurityParams securityParams,
+            UserService userService,
             @Value("${baywatch.base-route}") String baseRoute) {
         return http
                 .csrf().disable()
@@ -47,7 +49,7 @@ public class SecurityConfiguration {
 
                 .and()
 
-                .addFilterAt(new JwtTokenAuthenticationFilter(jwtTokenProvider, securityParams), SecurityWebFiltersOrder.HTTP_BASIC)
+                .addFilterAt(new JwtTokenAuthenticationFilter(jwtTokenProvider, securityParams, userService), SecurityWebFiltersOrder.HTTP_BASIC)
                 .exceptionHandling().authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED))
                 .and()
 

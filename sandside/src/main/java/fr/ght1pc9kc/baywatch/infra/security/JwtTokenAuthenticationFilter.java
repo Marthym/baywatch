@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.security;
 
+import fr.ght1pc9kc.baywatch.api.UserService;
 import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
 import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams;
@@ -20,13 +21,16 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @Slf4j
 @RequiredArgsConstructor
 public class JwtTokenAuthenticationFilter implements WebFilter {
     private final JwtTokenProvider tokenProvider;
     private final SecurityParams securityParams;
+    private final UserService userService;
 
     @Override
     public @NotNull Mono<Void> filter(ServerWebExchange exchange, @NotNull WebFilterChain chain) {
@@ -37,13 +41,17 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
                     bwAuth.user, bwAuth.token, AuthorityUtils.createAuthorityList(bwAuth.authorities.toArray(String[]::new))
             );
 
-            if (!this.tokenProvider.validateToken(token, true)) {
-                log.debug("Refresh valid expirate token for {}", bwAuth.getUser().login);
-                token = this.tokenProvider.createToken(bwAuth.getUser(), bwAuth.getAuthorities());
-                refreshToken(token, exchange.getRequest(), exchange.getResponse());
-            }
+            return Mono.just(!this.tokenProvider.validateToken(token, true))
+                    .filter(Predicate.isEqual(true))
+                    .flatMap(x -> userService.get(bwAuth.getUser().id))
+                    .map(updated -> {
+                        log.debug("Refresh valid expired token for {}", bwAuth.getUser().login);
+                        String t = this.tokenProvider.createToken(bwAuth.getUser(), Collections.emptyList());
+                        refreshToken(t, exchange.getRequest(), exchange.getResponse());
+                        return t;
+                    }).then(chain.filter(exchange).contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication)));
 
-            return chain.filter(exchange).contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
+//            return chain.filter(exchange).contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
         }
 
         if (StringUtils.hasText(token)) {
@@ -76,9 +84,11 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             response.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer " + token);
         } else {
+            //TODO: Mettre tous les paramètres du cookie
+            //TODO: Le cookie doit avoir un délai expiration spécifique
             Optional.ofNullable(request.getCookies().getFirst(securityParams.cookie.name))
                     .ifPresent(old -> response.addCookie(
-                            ResponseCookie.from(securityParams.cookie.name, old.getValue())
+                            ResponseCookie.from(securityParams.cookie.name, token)
                                     .httpOnly(true)
                                     .sameSite("Strict")
                                     .build()));

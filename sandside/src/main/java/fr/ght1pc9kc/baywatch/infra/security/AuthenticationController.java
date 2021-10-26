@@ -22,8 +22,10 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
 
 import javax.validation.Valid;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
 
@@ -42,19 +44,21 @@ public class AuthenticationController {
     public Mono<User> login(@Valid Mono<AuthenticationRequest> authRequest, ServerWebExchange exchange) {
         return authRequest
                 .flatMap(login -> authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(login.getUsername(), login.getPassword())))
+                        new UsernamePasswordAuthenticationToken(login.getUsername(), login.getPassword()))
+                        .map(u -> Tuples.of(login.rememberMe(), u)))
 
                 .map(auth -> {
-                    BaywatchUserDetails user = (BaywatchUserDetails) auth.getPrincipal();
-//                    Set<String> authorities = AuthorityUtils.authorityListToSet(auth.getAuthorities());
-//                    String token = tokenProvider.createToken(user.getEntity(), authorities);
-//                    exchange.getResponse().addCookie(ResponseCookie.from(securityParams.cookie.name, token)
-//                            .httpOnly(true)
-//                            .secure("https".equals(exchange.getRequest().getURI().getScheme()))
-//                            .sameSite("Strict")
-//                            .maxAge(securityParams.jwt.validity)
-//                            .path("/api")
-//                            .build());
+                    BaywatchUserDetails user = (BaywatchUserDetails) auth.getT2().getPrincipal();
+                    Set<String> authorities = AuthorityUtils.authorityListToSet(auth.getT2().getAuthorities());
+                    String token = tokenProvider.createToken(user.getEntity(), authorities);
+                    Duration maxAge = (auth.getT1()) ? Duration.ofSeconds(-1) : securityParams.jwt.validity;
+                    exchange.getResponse().addCookie(ResponseCookie.from(securityParams.cookie.name, token)
+                            .httpOnly(true)
+                            .secure("https".equals(exchange.getRequest().getURI().getScheme()))
+                            .sameSite("Strict")
+                            .maxAge(maxAge)
+                            .path("/api")
+                            .build());
                     log.debug("Login to {}.", user.getUsername());
                     return user.getEntity().withPassword(null);
                 })
