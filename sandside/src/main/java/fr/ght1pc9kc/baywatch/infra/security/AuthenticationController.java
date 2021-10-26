@@ -46,15 +46,15 @@ public class AuthenticationController {
 
                 .map(auth -> {
                     BaywatchUserDetails user = (BaywatchUserDetails) auth.getPrincipal();
-                    Set<String> authorities = AuthorityUtils.authorityListToSet(auth.getAuthorities());
-                    String token = tokenProvider.createToken(user.getEntity(), authorities);
-                    exchange.getResponse().addCookie(ResponseCookie.from(securityParams.cookie.name, token)
-                            .httpOnly(true)
-                            .secure("https".equals(exchange.getRequest().getURI().getScheme()))
-                            .sameSite("Strict")
-                            .maxAge(securityParams.jwt.validity)
-                            .path("/api")
-                            .build());
+//                    Set<String> authorities = AuthorityUtils.authorityListToSet(auth.getAuthorities());
+//                    String token = tokenProvider.createToken(user.getEntity(), authorities);
+//                    exchange.getResponse().addCookie(ResponseCookie.from(securityParams.cookie.name, token)
+//                            .httpOnly(true)
+//                            .secure("https".equals(exchange.getRequest().getURI().getScheme()))
+//                            .sameSite("Strict")
+//                            .maxAge(securityParams.jwt.validity)
+//                            .path("/api")
+//                            .build());
                     log.debug("Login to {}.", user.getUsername());
                     return user.getEntity().withPassword(null);
                 })

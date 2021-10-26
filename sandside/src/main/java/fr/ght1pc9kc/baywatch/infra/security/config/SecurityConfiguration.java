@@ -47,7 +47,7 @@ public class SecurityConfiguration {
 
                 .and()
 
-                .addFilterAt(new JwtTokenAuthenticationFilter(jwtTokenProvider, securityParams.cookie.name), SecurityWebFiltersOrder.HTTP_BASIC)
+                .addFilterAt(new JwtTokenAuthenticationFilter(jwtTokenProvider, securityParams), SecurityWebFiltersOrder.HTTP_BASIC)
                 .exceptionHandling().authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED))
                 .and()
 
