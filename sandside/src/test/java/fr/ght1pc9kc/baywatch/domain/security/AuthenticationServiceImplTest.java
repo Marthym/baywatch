@@ -30,13 +30,13 @@ class AuthenticationServiceImplTest {
                 .build();
         tokenProviderMock = spy(new JwtTokenProvider() {
             @Override
-            public String createToken(User userId, Collection<String> authorities) {
-                return "FAKE_TOKEN";
+            public BaywatchAuthentication createToken(User userId, boolean rememberMe, Collection<String> authorities) {
+                return new BaywatchAuthentication(user, "FAKE_TOKEN", rememberMe, Collections.emptyList());
             }
 
             @Override
             public BaywatchAuthentication getAuthentication(String token) {
-                return new BaywatchAuthentication(user, token, Collections.emptyList());
+                return new BaywatchAuthentication(user, token, false, Collections.emptyList());
             }
 
             @Override

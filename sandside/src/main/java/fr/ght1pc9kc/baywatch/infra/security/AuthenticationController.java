@@ -48,9 +48,8 @@ public class AuthenticationController {
                 .map(auth -> {
                     BaywatchUserDetails user = (BaywatchUserDetails) auth.getT2().getPrincipal();
                     Set<String> authorities = AuthorityUtils.authorityListToSet(auth.getT2().getAuthorities());
-                    String token = tokenProvider.createToken(user.getEntity(), authorities);
-                    ResponseCookie authCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(),
-                            new BaywatchAuthentication(user.getEntity(), token, auth.getT1(), authorities));
+                    BaywatchAuthentication bwAuth = tokenProvider.createToken(user.getEntity(), auth.getT1(), authorities);
+                    ResponseCookie authCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), bwAuth);
                     exchange.getResponse().addCookie(authCookie);
                     log.debug("Login to {}.", user.getUsername());
                     return user.getEntity().withPassword(null);

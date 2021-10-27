@@ -22,21 +22,21 @@ import java.util.stream.Collectors;
 import static java.util.function.Predicate.not;
 
 @Slf4j
-public class JwtTokenProviderImpl implements JwtTokenProvider {
+public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
     private static final String AUTHORITIES_KEY = "roles";
     private final byte[] secretKey;
     private final Duration validity;
 
     private final Clock clock;
 
-    public JwtTokenProviderImpl(byte[] secretKey, Duration validity, Clock clock) {
+    public JwtBaywatchAuthenticationProviderImpl(byte[] secretKey, Duration validity, Clock clock) {
         this.secretKey = secretKey;
         this.clock = clock;
         this.validity = validity;
     }
 
     @Override
-    public String createToken(User user, Collection<String> authorities) {
+    public BaywatchAuthentication createToken(User user, boolean remember, Collection<String> authorities) {
         List<String> auth = new ArrayList<>(authorities);
         auth.add(user.role.authority());
         String auths = String.join(",", auth);
@@ -53,11 +53,13 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
                     .claim("login", user.login)
                     .claim("name", user.name)
                     .claim("mail", user.mail)
+                    .claim("remember", remember)
                     .claim(AUTHORITIES_KEY, auths)
                     .build();
             SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
             signedJWT.sign(signer);
-            return signedJWT.serialize();
+            String token = signedJWT.serialize();
+            return new BaywatchAuthentication(user, token, remember, authorities);
 
         } catch (JOSEException e) {
             log.debug("Username: {}, validity: {}, authorities: {}", user, validity, auths);

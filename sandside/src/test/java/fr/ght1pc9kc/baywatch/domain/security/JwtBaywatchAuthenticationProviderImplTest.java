@@ -18,7 +18,7 @@ import java.time.ZoneOffset;
 import java.util.Base64;
 import java.util.Collections;
 
-class JwtTokenProviderImplTest {
+class JwtBaywatchAuthenticationProviderImplTest {
 
     private static final String GOOD_TOKEN = "eyJhbGciOiJIUzI1NiJ9." +
             "eyJzdWIiOiI0MiIsInJvbGVzIjoiUk9MRV9VU0VSIiwiaXNzIjoiYmF5d2F0Y2hcL3NhbmRzaWRlIiwiZXhwIjoxNjE2MzU0OTMy" +
@@ -29,7 +29,7 @@ class JwtTokenProviderImplTest {
             "b2tlbm9iaSIsImlhdCI6MTYxNjM1NDkyMn0=" +
             ".L3oL_Zw-NvNBQ50QjEIprwlorDvk6MIV33NgQ7Ep_Kc";
 
-    private final JwtTokenProviderImpl tested = new JwtTokenProviderImpl(
+    private final JwtBaywatchAuthenticationProviderImpl tested = new JwtBaywatchAuthenticationProviderImpl(
             new byte[32],
             Duration.ofSeconds(10), Clock.fixed(Instant.parse("2021-03-21T19:28:42Z"), ZoneOffset.UTC));
     private final ObjectMapper mapper = new ObjectMapper();
@@ -37,7 +37,7 @@ class JwtTokenProviderImplTest {
     @Test
     void should_create_token() throws IOException {
         User user = User.builder().id("42").login("okenobi").role(Role.USER).build();
-        String actual = tested.createToken(user, Collections.emptyList());
+        String actual = tested.createToken(user, false, Collections.emptyList()).getToken();
 
         Assertions.assertThat(actual).isNotBlank();
 
@@ -68,7 +68,7 @@ class JwtTokenProviderImplTest {
         Assertions.assertThat(tested.validateToken(BAD_TOKEN)).isEqualTo(false);
         Assertions.assertThat(tested.validateToken(BAD_TOKEN)).isEqualTo(false);
 
-        JwtTokenProvider testedFuture = new JwtTokenProviderImpl(
+        JwtTokenProvider testedFuture = new JwtBaywatchAuthenticationProviderImpl(
                 new byte[32],
                 Duration.ofSeconds(10), Clock.fixed(Instant.parse("2021-03-21T19:29:42Z"), ZoneOffset.UTC));
 

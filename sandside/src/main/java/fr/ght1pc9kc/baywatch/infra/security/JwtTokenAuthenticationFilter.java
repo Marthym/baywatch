@@ -32,7 +32,7 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
 
     @Override
     public @NotNull Mono<Void> filter(ServerWebExchange exchange, @NotNull WebFilterChain chain) {
-        String token = resolveToken(exchange.getRequest());
+        String token = resolveCookieOrHeader(exchange.getRequest());
         if (StringUtils.hasText(token) && this.tokenProvider.validateToken(token, false)) {
             BaywatchAuthentication bwAuth = this.tokenProvider.getAuthentication(token);
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
@@ -44,9 +44,9 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
                     .flatMap(x -> userService.get(bwAuth.getUser().id))
                     .map(updated -> {
                         log.debug("Refresh valid expired token for {}", bwAuth.getUser().login);
-                        String t = this.tokenProvider.createToken(bwAuth.getUser(), Collections.emptyList());
-                        refreshToken(bwAuth, exchange.getRequest(), exchange.getResponse());
-                        return t;
+                        BaywatchAuthentication freshBaywatchAuth = this.tokenProvider.createToken(bwAuth.getUser(), bwAuth.rememberMe, Collections.emptyList());
+                        refreshCookieOrHeader(freshBaywatchAuth, exchange.getRequest(), exchange.getResponse());
+                        return exchange;
                     }).then(chain.filter(exchange).contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication)));
         }
 
@@ -58,7 +58,7 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
         return chain.filter(exchange);
     }
 
-    private String resolveToken(ServerHttpRequest request) {
+    private String resolveCookieOrHeader(ServerHttpRequest request) {
         String bearerToken = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
@@ -69,7 +69,7 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
                 .orElse("");
     }
 
-    private void refreshToken(BaywatchAuthentication bwAuth, ServerHttpRequest request, ServerHttpResponse response) {
+    private void refreshCookieOrHeader(BaywatchAuthentication bwAuth, ServerHttpRequest request, ServerHttpResponse response) {
         String bearerToken = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             response.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer " + bwAuth.getToken());

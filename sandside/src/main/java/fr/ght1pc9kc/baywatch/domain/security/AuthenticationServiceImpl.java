@@ -8,8 +8,6 @@ import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 
-import java.util.Collections;
-
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
     private final JwtTokenProvider tokenProvider;
@@ -23,10 +21,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         return Mono.just(auth);
                     } else {
                         return userService.get(auth.user.id)
-                                .map(user -> {
-                                    String refreshedToken = tokenProvider.createToken(user, auth.getAuthorities());
-                                    return new BaywatchAuthentication(user, refreshedToken, auth.rememberMe, Collections.emptyList());
-                                });
+                                .map(user -> tokenProvider.createToken(user, auth.rememberMe, auth.getAuthorities()));
                     }
                 });
     }
