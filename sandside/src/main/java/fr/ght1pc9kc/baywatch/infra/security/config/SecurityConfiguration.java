@@ -4,6 +4,7 @@ import fr.ght1pc9kc.baywatch.api.UserService;
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
 import fr.ght1pc9kc.baywatch.infra.security.JwtTokenAuthenticationFilter;
+import fr.ght1pc9kc.baywatch.infra.security.TokenCookieManager;
 import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,8 +31,8 @@ import org.springframework.security.web.server.context.NoOpServerSecurityContext
 public class SecurityConfiguration {
     @Bean
     SecurityWebFilterChain springSecurityFilterChain(
-            ServerHttpSecurity http, JwtTokenProvider jwtTokenProvider, SecurityParams securityParams,
-            UserService userService,
+            ServerHttpSecurity http, JwtTokenProvider jwtTokenProvider,
+            TokenCookieManager cookieManager, UserService userService,
             @Value("${baywatch.base-route}") String baseRoute) {
         return http
                 .csrf().disable()
@@ -49,7 +50,7 @@ public class SecurityConfiguration {
 
                 .and()
 
-                .addFilterAt(new JwtTokenAuthenticationFilter(jwtTokenProvider, securityParams, userService), SecurityWebFiltersOrder.HTTP_BASIC)
+                .addFilterAt(new JwtTokenAuthenticationFilter(jwtTokenProvider, cookieManager, userService), SecurityWebFiltersOrder.HTTP_BASIC)
                 .exceptionHandling().authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED))
                 .and()
 

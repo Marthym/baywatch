@@ -92,7 +92,8 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
                     .role(role)
                     .build();
 
-            return new BaywatchAuthentication(user, token, authorities);
+            boolean rememberMe = Optional.ofNullable(claims.getBooleanClaim("remember")).orElse(false);
+            return new BaywatchAuthentication(user, token, rememberMe, authorities);
         } catch (ParseException | JOSEException e) {
             log.debug("Token: {}", token);
             throw new SecurityException("Unable to build Authentication !", e);

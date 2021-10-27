@@ -20,7 +20,9 @@ public class SecurityParams {
     }
 
     @AllArgsConstructor
+    @ConstructorBinding
     public static class CookieParams {
         public final String name;
+        public final Duration validity;
     }
 }

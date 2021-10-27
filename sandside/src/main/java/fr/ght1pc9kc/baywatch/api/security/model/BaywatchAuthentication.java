@@ -8,5 +8,6 @@ import java.util.Collection;
 public class BaywatchAuthentication {
     public User user;
     public String token;
+    public boolean rememberMe;
     public Collection<String> authorities;
 }

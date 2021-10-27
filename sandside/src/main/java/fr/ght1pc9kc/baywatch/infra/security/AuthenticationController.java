@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.security;
 
+import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.exceptions.SecurityException;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
@@ -9,7 +10,6 @@ import fr.ght1pc9kc.baywatch.infra.security.exceptions.BaywatchCredentialsExcept
 import fr.ght1pc9kc.baywatch.infra.security.exceptions.NoSessionException;
 import fr.ght1pc9kc.baywatch.infra.security.model.AuthenticationRequest;
 import fr.ght1pc9kc.baywatch.infra.security.model.BaywatchUserDetails;
-import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams;
 import fr.ght1pc9kc.baywatch.infra.security.model.Session;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +25,6 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
 import javax.validation.Valid;
-import java.time.Duration;
-import java.util.Optional;
 import java.util.Set;
 
 @Slf4j
@@ -38,27 +36,22 @@ public class AuthenticationController {
     private final JwtTokenProvider tokenProvider;
     private final AuthenticationManagerAdapter authenticationManager;
     private final AuthenticationFacade authFacade;
-    private final SecurityParams securityParams;
+    private final TokenCookieManager cookieManager;
 
     @PostMapping("/login")
     public Mono<User> login(@Valid Mono<AuthenticationRequest> authRequest, ServerWebExchange exchange) {
         return authRequest
                 .flatMap(login -> authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(login.getUsername(), login.getPassword()))
+                                new UsernamePasswordAuthenticationToken(login.getUsername(), login.getPassword()))
                         .map(u -> Tuples.of(login.rememberMe(), u)))
 
                 .map(auth -> {
                     BaywatchUserDetails user = (BaywatchUserDetails) auth.getT2().getPrincipal();
                     Set<String> authorities = AuthorityUtils.authorityListToSet(auth.getT2().getAuthorities());
                     String token = tokenProvider.createToken(user.getEntity(), authorities);
-                    Duration maxAge = (auth.getT1()) ? Duration.ofSeconds(-1) : securityParams.jwt.validity;
-                    exchange.getResponse().addCookie(ResponseCookie.from(securityParams.cookie.name, token)
-                            .httpOnly(true)
-                            .secure("https".equals(exchange.getRequest().getURI().getScheme()))
-                            .sameSite("Strict")
-                            .maxAge(maxAge)
-                            .path("/api")
-                            .build());
+                    ResponseCookie authCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(),
+                            new BaywatchAuthentication(user.getEntity(), token, auth.getT1(), authorities));
+                    exchange.getResponse().addCookie(authCookie);
                     log.debug("Login to {}.", user.getUsername());
                     return user.getEntity().withPassword(null);
                 })
@@ -69,7 +62,7 @@ public class AuthenticationController {
     @DeleteMapping("/logout")
     public Mono<Void> logout(ServerWebExchange exchange) {
         if (log.isDebugEnabled()) {
-            String user = Optional.ofNullable(exchange.getRequest().getCookies().getFirst(securityParams.cookie.name))
+            String user = cookieManager.getTokenCookie(exchange.getRequest())
                     .map(HttpCookie::getValue)
                     .map(tokenProvider::getAuthentication)
                     .map(a -> String.format("%s (%s)", a.user.login, a.user.id))
@@ -77,33 +70,22 @@ public class AuthenticationController {
             log.debug("Logout for {}.", user);
         }
         return Mono.fromRunnable(() -> exchange.getResponse().addCookie(
-                ResponseCookie.from(securityParams.cookie.name, "")
-                        .httpOnly(true)
-                        .secure("https".equals(exchange.getRequest().getURI().getScheme()))
-                        .sameSite("Strict")
-                        .path("/api")
-                        .maxAge(0)
-                        .build()));
+                cookieManager.buildTokenCookieDeletion(exchange.getRequest().getURI().getScheme())));
     }
 
     @PutMapping("/refresh")
     public Mono<Session> refresh(ServerWebExchange exchange) {
-        String token = Optional.ofNullable(exchange.getRequest().getCookies().getFirst(securityParams.cookie.name))
+        String token = cookieManager.getTokenCookie(exchange.getRequest())
                 .map(HttpCookie::getValue)
                 .orElseThrow(() -> new NoSessionException("User not login on !"));
 
         return authenticationManager.refresh(token)
                 .map(auth -> {
-                    exchange.getResponse().addCookie(ResponseCookie.from(securityParams.cookie.name, token)
-                            .httpOnly(true)
-                            .secure("https".equals(exchange.getRequest().getURI().getScheme()))
-                            .sameSite("Strict")
-                            .maxAge(securityParams.jwt.validity)
-                            .path("/api")
-                            .build());
+                    ResponseCookie tokenCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), auth);
+                    exchange.getResponse().addCookie(tokenCookie);
                     return Session.builder()
                             .user(auth.user.withPassword(null))
-                            .maxAge(securityParams.jwt.validity.toSeconds())
+                            .maxAge(-1)
                             .build();
                 })
                 .onErrorMap(SecurityException.class, BaywatchCredentialsException::new);

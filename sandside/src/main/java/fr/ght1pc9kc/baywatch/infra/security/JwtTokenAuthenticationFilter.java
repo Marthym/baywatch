@@ -3,7 +3,6 @@ package fr.ght1pc9kc.baywatch.infra.security;
 import fr.ght1pc9kc.baywatch.api.UserService;
 import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
-import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -22,14 +21,13 @@ import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 @Slf4j
 @RequiredArgsConstructor
 public class JwtTokenAuthenticationFilter implements WebFilter {
     private final JwtTokenProvider tokenProvider;
-    private final SecurityParams securityParams;
+    private final TokenCookieManager cookieManager;
     private final UserService userService;
 
     @Override
@@ -47,23 +45,15 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
                     .map(updated -> {
                         log.debug("Refresh valid expired token for {}", bwAuth.getUser().login);
                         String t = this.tokenProvider.createToken(bwAuth.getUser(), Collections.emptyList());
-                        refreshToken(t, exchange.getRequest(), exchange.getResponse());
+                        refreshToken(bwAuth, exchange.getRequest(), exchange.getResponse());
                         return t;
                     }).then(chain.filter(exchange).contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication)));
-
-//            return chain.filter(exchange).contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
         }
 
         if (StringUtils.hasText(token)) {
             // Remove invalid Token Cookie
-            exchange.getResponse().addCookie(
-                    ResponseCookie.from(securityParams.cookie.name, "")
-                            .httpOnly(true)
-                            .secure("https".equals(exchange.getRequest().getURI().getScheme()))
-                            .sameSite("Strict")
-                            .path("/api")
-                            .maxAge(0)
-                            .build());
+            ResponseCookie tokenCookie = cookieManager.buildTokenCookieDeletion(exchange.getRequest().getURI().getScheme());
+            exchange.getResponse().addCookie(tokenCookie);
         }
         return chain.filter(exchange);
     }
@@ -73,25 +63,19 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
-        return Optional.ofNullable(request.getCookies().getFirst(securityParams.cookie.name))
+        return cookieManager.getTokenCookie(request)
                 .map(HttpCookie::getValue)
                 .filter(StringUtils::hasText)
                 .orElse("");
     }
 
-    private void refreshToken(String token, ServerHttpRequest request, ServerHttpResponse response) {
+    private void refreshToken(BaywatchAuthentication bwAuth, ServerHttpRequest request, ServerHttpResponse response) {
         String bearerToken = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            response.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+            response.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer " + bwAuth.getToken());
         } else {
-            //TODO: Mettre tous les paramètres du cookie
-            //TODO: Le cookie doit avoir un délai expiration spécifique
-            Optional.ofNullable(request.getCookies().getFirst(securityParams.cookie.name))
-                    .ifPresent(old -> response.addCookie(
-                            ResponseCookie.from(securityParams.cookie.name, token)
-                                    .httpOnly(true)
-                                    .sameSite("Strict")
-                                    .build()));
+            cookieManager.getTokenCookie(request).ifPresent(old ->
+                    response.addCookie(cookieManager.buildTokenCookie(request.getURI().getScheme(), bwAuth)));
         }
     }
 }

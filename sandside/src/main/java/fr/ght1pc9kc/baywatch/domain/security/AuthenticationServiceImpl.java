@@ -25,7 +25,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         return userService.get(auth.user.id)
                                 .map(user -> {
                                     String refreshedToken = tokenProvider.createToken(user, auth.getAuthorities());
-                                    return new BaywatchAuthentication(user, refreshedToken, Collections.emptyList());
+                                    return new BaywatchAuthentication(user, refreshedToken, auth.rememberMe, Collections.emptyList());
                                 });
                     }
                 });
