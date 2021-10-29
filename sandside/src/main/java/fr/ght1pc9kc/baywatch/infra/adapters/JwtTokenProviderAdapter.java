@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
-import fr.ght1pc9kc.baywatch.domain.security.JwtTokenProviderImpl;
+import fr.ght1pc9kc.baywatch.domain.security.JwtBaywatchAuthenticationProviderImpl;
 import lombok.experimental.Delegate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -20,6 +20,6 @@ public class JwtTokenProviderAdapter implements JwtTokenProvider {
         SecureRandom random = new SecureRandom();
         byte[] sharedSecret = new byte[32];
         random.nextBytes(sharedSecret);
-        this.tokenProvider = new JwtTokenProviderImpl(sharedSecret, tokenValidity, Clock.systemUTC());
+        this.tokenProvider = new JwtBaywatchAuthenticationProviderImpl(sharedSecret, tokenValidity, Clock.systemUTC());
     }
 }

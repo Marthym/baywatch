@@ -7,7 +7,7 @@ import java.util.Collection;
 
 public interface JwtTokenProvider {
 
-    String createToken(User userId, Collection<String> authorities);
+    BaywatchAuthentication createToken(User user, boolean remember, Collection<String> authorities);
 
     BaywatchAuthentication getAuthentication(String token);
 

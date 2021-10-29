@@ -11,4 +11,10 @@ public class AuthenticationRequest {
 
     @NotBlank
     public String password;
+
+    public Boolean remember;
+
+    public boolean rememberMe() {
+        return remember != null && remember;
+    }
 }

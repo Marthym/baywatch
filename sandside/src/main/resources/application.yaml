@@ -29,7 +29,9 @@ logging:
 baywatch:
   base-route: /api
   security:
-    cookie.name: X-TOKEN
+    cookie:
+      name: X-TOKEN
+      validity: 24h
     jwt.validity: 1h
   scrapper:
     start: true
