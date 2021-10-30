@@ -8,7 +8,7 @@ import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.infra.http.pagination.Page;
 import fr.ght1pc9kc.baywatch.infra.model.FeedForm;
 import fr.ght1pc9kc.juery.api.PageRequest;
-import fr.ght1pc9kc.juery.basic.PageRequestFormatter;
+import fr.ght1pc9kc.juery.basic.QueryStringParser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +29,7 @@ import java.util.Set;
 @RequestMapping("${baywatch.base-route}/feeds")
 public class FeedController {
 
+    private static final QueryStringParser qsParser = QueryStringParser.withDefaultConfig();
     private final FeedService feedService;
 
     @GetMapping("/{id}")
@@ -39,7 +40,7 @@ public class FeedController {
 
     @GetMapping
     public Mono<Page<Feed>> list(ServerHttpRequest request) {
-        PageRequest pageRequest = PageRequestFormatter.parse(request.getQueryParams());
+        PageRequest pageRequest = qsParser.parse(request.getQueryParams());
         Flux<Feed> feeds = feedService.list(pageRequest)
                 .onErrorMap(BadRequestCriteria.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
 

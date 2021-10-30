@@ -4,7 +4,7 @@ import fr.ght1pc9kc.baywatch.api.NewsService;
 import fr.ght1pc9kc.baywatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.domain.exceptions.BadRequestCriteria;
-import fr.ght1pc9kc.juery.basic.PageRequestFormatter;
+import fr.ght1pc9kc.juery.basic.QueryStringParser;
 import lombok.AllArgsConstructor;
 import org.intellij.lang.annotations.MagicConstant;
 import org.springframework.http.HttpStatus;
@@ -20,6 +20,7 @@ import reactor.core.publisher.Mono;
 @AllArgsConstructor
 public class NewsController {
 
+    private static final QueryStringParser qsParser = QueryStringParser.withDefaultConfig();
     private final NewsService newsService;
 
     @MagicConstant(flagsFromClass = Flags.class)
@@ -36,7 +37,7 @@ public class NewsController {
 
     @GetMapping
     public Flux<News> listNews(@RequestParam MultiValueMap<String, String> queryStringParams) {
-        return newsService.list(PageRequestFormatter.parse(queryStringParams))
+        return newsService.list(qsParser.parse(queryStringParams))
                 .onErrorMap(BadRequestCriteria.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
     }
 
