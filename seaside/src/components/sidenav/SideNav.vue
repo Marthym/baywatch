@@ -53,31 +53,24 @@ export default class SideNav extends Vue {
   }
 
   mounted(): void {
+    this.baywatchStats = statsService.getBaywatchStats();
     userService.get().subscribe({
       next: user => this.$nextTick(() => this.user = user),
       error: () => {
         this.$nextTick(() => this.user = null)
-        this.upgradeStatistics();
+        statsService.update();
       }
     });
 
     userService.listenUser(u => {
       this.user = u;
-      this.upgradeStatistics();
+      statsService.update();
     });
   }
 
   logoutUser(): void {
     userService.logout()
         .subscribe(() => this.$router.go(0));
-  }
-
-  private upgradeStatistics(): void {
-    statsService.getBaywatchStats()
-        .subscribe({
-          next: stats => this.baywatchStats = stats,
-          error: e => console.log(e)
-        });
   }
 }
 </script>

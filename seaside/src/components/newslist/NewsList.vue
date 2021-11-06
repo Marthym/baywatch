@@ -35,7 +35,7 @@
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
 import NewsCard from "@/components/newslist/NewsCard.vue";
-import {Observable, of, Subject} from "rxjs";
+import {iif, Observable, of, Subject} from "rxjs";
 import {catchError, map, switchMap, take, tap} from "rxjs/operators";
 import {NewsView} from "@/components/newslist/model/NewsView";
 import ScrollingActivationBehaviour from "@/services/ScrollingActivationBehaviour";
@@ -44,10 +44,13 @@ import InfiniteScrollBehaviour from "@/services/InfiniteScrollBehaviour";
 import InfiniteScrollable from "@/services/model/InfiniteScrollable";
 import {Mark} from "@/services/model/Mark.enum";
 import {Feed} from "@/services/model/Feed";
+
 import feedService, {FeedService} from "@/services/FeedService";
 import newsService, {NewsService} from "@/services/NewsService";
 import userService from '@/services/UserService';
 import tagsService from '@/services/TagsService';
+import statsService from "@/services/StatsService";
+
 import {ConstantFilters} from "@/constants";
 
 @Component({
@@ -240,11 +243,10 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
       return;
     }
 
-    const markObs = (mark)
-        ? newsService.mark(target.data.id, Mark.READ)
-        : newsService.unmark(target.data.id, Mark.READ);
-
-    markObs.subscribe(news => {
+    iif(() => mark,
+        newsService.mark(target.data.id, Mark.READ).pipe(tap(() => statsService.decrementUnread())),
+        newsService.unmark(target.data.id, Mark.READ).pipe(tap(() => statsService.incrementUnread())),
+    ).subscribe(news => {
       this.$set(this.news, idx, {...target, data: news});
     });
   }
