@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
+import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers.FEEDS_PROPERTIES_MAPPING;
 
 @Slf4j
@@ -141,21 +142,31 @@ public class FeedRepository implements FeedPersistencePort {
             deleteUserLinkQuery = Optional.of(query);
         }
 
+        Condition newsFeedConditions = qCtx.filter.accept(FeedConditionsVisitors.newsFeedIdVisitor());
+        final Optional<Query> deleteNewsFeedQuery;
+        if (DSL.noCondition().equals(newsFeedConditions)) {
+            deleteNewsFeedQuery = Optional.empty();
+        } else {
+            deleteNewsFeedQuery = Optional.of(dsl.deleteFrom(NEWS_FEEDS).where(newsFeedConditions)
+                    .and(NEWS_FEEDS.NEFE_FEED_ID.notIn(
+                            dsl.select(FEEDS_USERS.FEUS_FEED_ID).from(FEEDS_USERS).where(feedsUsersConditions))));
+        }
+
         Condition feedsConditions = qCtx.filter.accept(FeedConditionsVisitors.feedIdVisitor());
         final Optional<Query> deleteFeedQuery;
         if (DSL.noCondition().equals(feedsConditions)) {
             deleteFeedQuery = Optional.empty();
         } else {
-            var query =
-                    dsl.deleteFrom(FEEDS).where(feedsConditions)
-                            .and(FEEDS.FEED_ID.notIn(
-                                    dsl.select(FEEDS_USERS.FEUS_FEED_ID).from(FEEDS_USERS).where(feedsUsersConditions)));
-            deleteFeedQuery = Optional.of(query);
 
+            deleteFeedQuery = Optional.of(dsl.deleteFrom(FEEDS).where(feedsConditions)
+                    .and(FEEDS.FEED_ID.notIn(
+                            dsl.select(FEEDS_USERS.FEUS_FEED_ID).from(FEEDS_USERS).where(feedsUsersConditions))));
         }
+
         return Mono.fromCallable(() ->
                 dsl.transactionResult(tx -> {
                     int unsubscribed = deleteUserLinkQuery.map(q -> tx.dsl().execute(q)).orElse(0);
+                    deleteNewsFeedQuery.map(q -> tx.dsl().execute(q));
                     int purged = deleteFeedQuery.map(q -> tx.dsl().execute(q)).orElse(0);
                     return new FeedDeletedResult(unsubscribed, purged);
                 }));

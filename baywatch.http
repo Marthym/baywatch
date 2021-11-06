@@ -47,8 +47,6 @@ POST http://{{host}}//api/feeds/import
         "tags": ["culture", "techno"]},
     { "name": "OCTO Talk!", "url": "https://blog.octo.com/feed/" ,
         "tags": ["culture", "techno"]},
-    { "name": "Planet Libre", "url": "https://www.planet-libre.org/feed.php?type=rss" ,
-        "tags": ["culture", "techno"]},
     { "name": "Presse Citron", "url": "https://feeds.feedburner.com/Pressecitron" ,
         "tags": ["culture", "hight-tech"]},
     { "name": "Reddit Top Java", "url": "https://www.reddit.com/r/java/top/.rss",

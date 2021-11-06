@@ -43,6 +43,8 @@ public interface FeedPersistencePort {
      *    <li>{@link fr.ght1pc9kc.baywatch.api.model.EntitiesProperties#FEED_ID}: For the table `FEEDS_USERS`</li>
      * </ul>
      * <p>Deletion was apply only if a filter was present for a table.</p>
+     * <p>If no other {@link fr.ght1pc9kc.baywatch.api.security.model.User} was subscribing this {@link Feed},
+     * The {@link Feed} was deleted with all the `NEWS_FEED` relations.</p>
      *
      * @param qCtx Context of the query, containing the filter.
      * @return The number of feed effectively deleted
