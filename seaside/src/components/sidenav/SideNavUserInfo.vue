@@ -1,8 +1,8 @@
 <template><!-- User info -->
-  <div class="flex mt-5" v-if="user.id">
+  <div class="flex mt-5" v-if="user">
     <img class="h-12 w-12 mr-2 rounded-full object-cover"
          :src="avatar"
-         alt="enoshima profile"/>
+         :alt="user.id"/>
     <div>
       <h2 class="text-xl dark:text-gray-300 font-extrabold capitalize">
         {{ user.name }}

@@ -4,7 +4,7 @@
     <SideNavHeader :unread="baywatchStats.unread"/>
 
     <SideNavUserInfo :user="user"/>
-    <SideNavStatistics :statistics="baywatchStats"/>
+    <SideNavStatistics :statistics="baywatchStats" :isLoggedIn="isLoggedIn"/>
 
     <SideNavTags v-if="isLoggedIn"/>
     <SideNavFeeds v-if="isLoggedIn"/>
@@ -23,9 +23,10 @@ import SideNavStatistics from "@/components/sidenav/SideNavStatistics.vue";
 
 import userService from "@/services/UserService";
 import statsService from "@/services/StatsService";
+import {User} from "@/services/model/User";
 
-const SideNavTags = () => import('./SideNavTags.vue');
-const SideNavUserInfo = () => import('./SideNavUserInfo.vue');
+const SideNavTags = () => import('./SideNavTags.vue').then(m => m.default);
+const SideNavUserInfo = () => import('./SideNavUserInfo.vue').then(m => m.default);
 
 @Component({
   components: {
@@ -45,19 +46,20 @@ export default class SideNav extends Vue {
     unread: 0
   };
 
-  private user = {};
+  private user: User | null = null;
 
   get isLoggedIn(): boolean {
-    return 'id' in this.user;
+    return !!this.user;
   }
 
   mounted(): void {
     userService.get().subscribe({
       next: user => this.$nextTick(() => this.user = user),
-      error: () => this.$nextTick(() => this.user = {})
+      error: () => {
+        this.$nextTick(() => this.user = null)
+        this.upgradeStatistics();
+      }
     });
-
-    this.upgradeStatistics();
 
     userService.listenUser(u => {
       this.user = u;
