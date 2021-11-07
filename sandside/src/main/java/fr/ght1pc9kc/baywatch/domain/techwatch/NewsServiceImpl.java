@@ -32,8 +32,8 @@ import static java.util.function.Predicate.not;
 @Service
 @AllArgsConstructor
 public class NewsServiceImpl implements NewsService {
-    private static final Set<String> ALLOWED_CRITERIA = Set.of(ID, PUBLICATION, SHARED, STATE, TITLE, FEED_ID);
-    private static final Set<String> ALLOWED_AUTHENTICATED_CRITERIA = Set.of(READ, TAGS);
+    private static final Set<String> ALLOWED_CRITERIA = Set.of(ID, SHARED, STATE, TITLE, FEED_ID);
+    private static final Set<String> ALLOWED_AUTHENTICATED_CRITERIA = Set.of(READ, TAGS, PUBLICATION);
     private static final int MAX_ANONYMOUS_NEWS = 20;
 
     private final CriteriaVisitor<List<String>> propertiesExtractor;
@@ -99,7 +99,7 @@ public class NewsServiceImpl implements NewsService {
         String bads = authStream.collect(Collectors.joining(", "));
 
         Pagination pagination = request.pagination();
-        boolean isPaginationForAnonymous = ignore == null && (pagination.page() * pagination.size() > MAX_ANONYMOUS_NEWS);
+        boolean isPaginationForAnonymous = ignore == null && ((pagination.offset() -1) + pagination.size() > MAX_ANONYMOUS_NEWS);
         if (!bads.isBlank()) {
             throw new BadRequestCriteria(String.format("Filters not allowed [ %s ]", bads));
         }

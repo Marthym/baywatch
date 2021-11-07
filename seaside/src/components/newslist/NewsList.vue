@@ -80,9 +80,11 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
         switchMap(() => this.loadNextPage()),
         take(1),
     ).subscribe(el => {
-      this.activateOnScroll.observe(el);
-      if (this.news.length > 3) {
-        this.infiniteScroll.observe(this.getRefElement(this.news[this.news.length - 3].data.id));
+      if (this.isAuthenticated) {
+        this.activateOnScroll.observe(el);
+        if (this.news.length > 3) {
+          this.infiniteScroll.observe(this.getRefElement(this.news[this.news.length - 3].data.id));
+        }
       }
     });
 
