@@ -1,7 +1,7 @@
 <template>
   <div class="flex items-center justify-between flex-shrink-0 pb-2 border-b">
-    <svg class="w-8 h-8" id="Layer_1" enable-background="new 0 0 512.001 512.001" height="512"
-         viewBox="0 0 512.001 512.001" width="512" xmlns="http://www.w3.org/2000/svg">
+    <svg class="w-8 h-8" id="Layer_1" height="512" viewBox="0 0 512.001 512.001" width="512"
+         xmlns="http://www.w3.org/2000/svg">
       <g>
         <g>
           <path
@@ -27,7 +27,7 @@
         </g>
       </g>
     </svg>
-    <span class="text-lg font-semibold capitalize dark:text-gray-300">
+    <span class="text-lg font-semibold capitalize dark:text-gray-300" :class="{'lg:hidden': !open}">
 				Baywatch
     </span>
 
@@ -62,5 +62,6 @@ import {Component, Prop, Vue} from 'vue-property-decorator';
 @Component
 export default class SideNavHeader extends Vue {
   @Prop({default: 0}) unread?: number;
+  @Prop() open!: boolean;
 }
 </script>

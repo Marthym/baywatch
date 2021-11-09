@@ -3,9 +3,16 @@
   <!--        x-show.in.out.opacity="isSidebarOpen"-->
   <!--        class="fixed inset-0 z-10 bg-black bg-opacity-20 backdrop-blur-md lg:hidden"-->
   <!--    ></div>-->
-  <aside class="fixed md:w-64 px-10 pt-4 pb-6 inset-y-0 z-10 flex flex-col flex-shrink-0 w-64 max-h-screen overflow-hidden
+  <aside
+      x-transition:enter="transition transform duration-300"
+      x-transition:enter-start="-translate-x-full opacity-30  ease-in"
+      x-transition:enter-end="translate-x-0 opacity-100 ease-out"
+      x-transition:leave="transition transform duration-300"
+      x-transition:leave-start="translate-x-0 opacity-100 ease-out"
+      x-transition:leave-end="-translate-x-full opacity-0 ease-in"
+      class="fixed md:w-64 px-10 pt-4 pb-6 inset-y-0 z-10 flex flex-col flex-shrink-0 w-64 max-h-screen overflow-hidden
   transition-all transform bg-gray-200 dark:bg-gray-900 shadow-lg lg:z-auto lg:static lg:shadow-none">
-    <SideNavHeader :unread="baywatchStats.unread"/>
+    <SideNavHeader :unread="baywatchStats.unread" :open="isSideNavOpen"/>
 
     <SideNavUserInfo :user="user"/>
     <SideNavStatistics :statistics="baywatchStats" :isLoggedIn="isLoggedIn"/>
@@ -51,6 +58,7 @@ export default class SideNav extends Vue {
   };
 
   private user: User | null = null;
+  private isSideNavOpen = true;
 
   get isLoggedIn(): boolean {
     return !!this.user;
