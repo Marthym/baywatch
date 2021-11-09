@@ -1,5 +1,10 @@
 <template>
   <header class="navbar min-h-0 bg-neutral text-neutral-content">
+    <button @click="$emit('toggleSidenav')" class="btn btn-square btn-sm btn-ghost -mr-2 lg:hidden">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+      </svg>
+    </button>
     <div class="navbar-start border-b border-gray-600 ml-8 h-full">
       <router-link to="/news"
                    active-class="border-b-2 text-green-500 border-green-500 dark:text-green-200 dark:border-green-200"
