@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-row border-b items-center justify-between pb-2">
+  <div class="flex items-center justify-between flex-shrink-0 pb-2 border-b">
     <svg class="w-8 h-8" id="Layer_1" enable-background="new 0 0 512.001 512.001" height="512"
          viewBox="0 0 512.001 512.001" width="512" xmlns="http://www.w3.org/2000/svg">
       <g>

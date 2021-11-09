@@ -1,9 +1,6 @@
 <template>
-  <nav class="flex flex-row justify-between border-b
-        dark:border-gray-600 dark:text-gray-400
-        transition duration-500 ease-in-out">
-    <div class="flex">
-      <!-- Top NavBar -->
+  <header class="navbar min-h-0 bg-neutral text-neutral-content">
+    <div class="navbar-start border-b border-gray-600 ml-8 h-full">
       <router-link to="/news"
                    active-class="border-b-2 text-green-500 border-green-500 dark:text-green-200 dark:border-green-200"
                    class="py-2 block font-medium capitalize focus:outline-none
@@ -23,34 +20,17 @@
         categories
       </router-link>
     </div>
-
-    <div class="flex items-center select-none">
-					<span
-              class="hover:text-green-500 dark-hover:text-green-300
-						cursor-pointer mr-3 transition duration-500 ease-in-out">
-
-						<svg viewBox="0 0 512 512" class="h-5 w-5 fill-current">
-							<path
-                  d="M505 442.7L405.3
-								343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7
-								44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1
-								208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4
-								2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9
-								0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7
-								0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0
-								128 57.2 128 128 0 70.7-57.2 128-128 128z"></path>
-						</svg>
-					</span>
-
-      <label>
-        <input
-            class="w-12 bg-transparent focus:outline-none"
-            placeholder="Search"/>
-      </label>
-
+    <div class="navbar-end border-b border-gray-600 pr-2 mr-2">
+      <input type="text" placeholder="Search" class="input input-ghost input-sm">
+      <button class="btn btn-square btn-ghost btn-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+             class="inline-block w-6 h-6 stroke-current">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </button>
     </div>
-
-  </nav>
+  </header>
 
 </template>
 

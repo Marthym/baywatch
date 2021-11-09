@@ -1,6 +1,10 @@
 <template>
-  <nav class="flex flex-col bg-gray-200 dark:bg-gray-900 md:w-64 px-10 pt-4 pb-6">
-
+  <!--    <div-->
+  <!--        x-show.in.out.opacity="isSidebarOpen"-->
+  <!--        class="fixed inset-0 z-10 bg-black bg-opacity-20 backdrop-blur-md lg:hidden"-->
+  <!--    ></div>-->
+  <aside class="fixed md:w-64 px-10 pt-4 pb-6 inset-y-0 z-10 flex flex-col flex-shrink-0 w-64 max-h-screen overflow-hidden
+  transition-all transform bg-gray-200 dark:bg-gray-900 shadow-lg lg:z-auto lg:static lg:shadow-none">
     <SideNavHeader :unread="baywatchStats.unread"/>
 
     <SideNavUserInfo :user="user"/>
@@ -10,7 +14,7 @@
     <SideNavFeeds v-if="isLoggedIn"/>
 
     <SideNavImportantActions :isLoggedIn="isLoggedIn" @logout="logoutUser()"/>
-  </nav>
+  </aside>
 </template>
 
 <script lang="ts">
