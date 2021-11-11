@@ -1,7 +1,7 @@
 <template>
-  <div class="flex flex-row border-b items-center justify-between pb-2">
-    <svg class="w-8 h-8" id="Layer_1" enable-background="new 0 0 512.001 512.001" height="512"
-         viewBox="0 0 512.001 512.001" width="512" xmlns="http://www.w3.org/2000/svg">
+  <div class="flex items-center justify-between flex-shrink-0 pb-2 border-b">
+    <svg class="w-8 h-8" id="Layer_1" height="512" viewBox="0 0 512.001 512.001" width="512"
+         xmlns="http://www.w3.org/2000/svg">
       <g>
         <g>
           <path
@@ -30,8 +30,7 @@
     <span class="text-lg font-semibold capitalize dark:text-gray-300">
 				Baywatch
     </span>
-
-    <div class="relative">
+    <div class="relative hidden lg:block">
       <router-link to="/" class="hover:text-green-500 dark-hover:text-green-300 text-gray-600 dark:text-gray-300">
         <svg
             width="24"
@@ -49,10 +48,14 @@
       <div v-if="unread > 0" class="
           absolute w-2 h-2 text-center rounded-full text-xs text-white font-semibold
           bg-green-500 dark-hover:bg-green-300 right-0 mb-5 bottom-0">
-
       </div>
     </div>
 
+    <button @click="$emit('toggleSidenav')" class="btn btn-square btn-sm btn-ghost -mr-2 lg:hidden">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
   </div>
 </template>
 
