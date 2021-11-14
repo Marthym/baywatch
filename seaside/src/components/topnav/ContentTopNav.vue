@@ -1,6 +1,6 @@
 <template>
   <header class="navbar min-h-0 bg-neutral text-neutral-content">
-    <button @click="$emit('toggleSidenav')" class="btn btn-square btn-sm btn-ghost -mr-2 lg:hidden">
+    <button @click="toggleSidenav" class="btn btn-square btn-sm btn-ghost -mr-2 lg:hidden">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
       </svg>
@@ -41,8 +41,12 @@
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
+import {SIDENAV_MUTATION_TOGGLE} from "@/store/sidenav/sidenav";
 
 @Component
 export default class ContentTopNav extends Vue {
+  private toggleSidenav(): void {
+    this.$store.commit(SIDENAV_MUTATION_TOGGLE);
+  }
 }
 </script>
