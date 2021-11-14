@@ -6,8 +6,8 @@
   <aside
       class="fixed md:w-64 px-10 pt-4 pb-6 inset-y-0 z-10 flex flex-col flex-shrink-0 w-64 max-h-screen overflow-hidden
   transition-all transform bg-gray-200 dark:bg-gray-900 shadow-lg lg:z-auto lg:static lg:shadow-none"
-      :class="{'-translate-x-full lg:translate-x-0': !open}">
-    <SideNavHeader :unread="baywatchStats.unread" @toggleSidenav="$emit('toggleSidenav')"/>
+      :class="{'-translate-x-full lg:translate-x-0': !state.open}">
+    <SideNavHeader :unread="baywatchStats.unread"/>
 
     <SideNavUserInfo :user="user"/>
     <SideNavStatistics :statistics="baywatchStats" :isLoggedIn="isLoggedIn"/>
@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
+import {Component, Vue} from 'vue-property-decorator';
 import SideNavHeader from "./SideNavHeader.vue";
 import SideNavImportantActions from "./SideNavImportantActions.vue";
 import SideNavFeeds from './SideNavFeeds.vue';
@@ -30,6 +30,7 @@ import SideNavStatistics from "@/components/sidenav/SideNavStatistics.vue";
 import userService from "@/services/UserService";
 import statsService from "@/services/StatsService";
 import {User} from "@/services/model/User";
+import {SidenavState} from "@/store/sidenav/sidenav";
 
 const SideNavTags = () => import('./SideNavTags.vue').then(m => m.default);
 const SideNavUserInfo = () => import('./SideNavUserInfo.vue').then(m => m.default);
@@ -45,7 +46,7 @@ const SideNavUserInfo = () => import('./SideNavUserInfo.vue').then(m => m.defaul
   },
 })
 export default class SideNav extends Vue {
-  @Prop() open!: boolean;
+  private state: SidenavState = this.$store.state.sidenav;
 
   private baywatchStats: Statistics = {
     users: 0,
