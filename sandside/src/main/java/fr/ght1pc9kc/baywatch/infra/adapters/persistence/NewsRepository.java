@@ -78,7 +78,7 @@ public class NewsRepository implements NewsPersistencePort {
     }
 
     @Override
-    public Mono<Void> persist(Collection<News> toCreate) {
+    public Mono<Integer> persist(Collection<News> toCreate) {
         List<NewsRecord> records = toCreate.stream()
                 .map(baywatchMapper::newsToNewsRecord)
                 .collect(Collectors.toList());
@@ -95,21 +95,20 @@ public class NewsRepository implements NewsPersistencePort {
                                 .fieldsCorresponding()
                                 .execute())
                 .subscribeOn(databaseScheduler)
-                .map(loader -> {
-                    log.info("Load {} News with {} error(s) and {} ignored",
-                            loader.processed(), loader.errors().size(), loader.ignored());
-                    return loader;
-                })
-                .map(Exceptions.wrap().function(x ->
-                        dsl.loadInto(NEWS_FEEDS).batchAll()
-                                .onDuplicateKeyIgnore()
-                                .onErrorIgnore()
-                                .loadRecords(newsFeedsRecords)
-                                .fieldsCorresponding()
-                                .execute()))
+                .map(Exceptions.wrap().function(x -> {
+                    dsl.loadInto(NEWS_FEEDS).batchAll()
+                            .onDuplicateKeyIgnore()
+                            .onErrorIgnore()
+                            .loadRecords(newsFeedsRecords)
+                            .fieldsCorresponding()
+                            .execute();
+                    return x;
+                }))
                 .subscribeOn(databaseScheduler)
-                .then();
-
+                .map(loader -> {
+                    log.info("Load {} News with {} error(s).", loader.processed(), loader.errors().size());
+                    return loader.processed();
+                });
     }
 
     @Override
