@@ -36,4 +36,4 @@ baywatch:
   scrapper:
     start: true
     frequency: 1h
-    conservation: 6m
+    conservation: 3m
