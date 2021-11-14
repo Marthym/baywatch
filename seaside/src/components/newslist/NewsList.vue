@@ -49,9 +49,12 @@ import feedService, {FeedService} from "@/services/FeedService";
 import newsService, {NewsService} from "@/services/NewsService";
 import userService from '@/services/UserService';
 import tagsService from '@/services/TagsService';
-import statsService from "@/services/StatsService";
 
 import {ConstantFilters} from "@/constants";
+import {
+  STATISTICS_MUTATION_DECREMENT_UNREAD,
+  STATISTICS_MUTATION_INCREMENT_UNREAD
+} from "@/store/statistics/statistics";
 
 @Component({
   components: {
@@ -246,8 +249,10 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
     }
 
     iif(() => mark,
-        newsService.mark(target.data.id, Mark.READ).pipe(tap(() => statsService.decrementUnread())),
-        newsService.unmark(target.data.id, Mark.READ).pipe(tap(() => statsService.incrementUnread())),
+        newsService.mark(target.data.id, Mark.READ).pipe(
+            tap(() => this.$store.commit(STATISTICS_MUTATION_DECREMENT_UNREAD))),
+        newsService.unmark(target.data.id, Mark.READ).pipe(
+            tap(() => this.$store.commit(STATISTICS_MUTATION_INCREMENT_UNREAD))),
     ).subscribe(news => {
       this.$set(this.news, idx, {...target, data: news});
     });

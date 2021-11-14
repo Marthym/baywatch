@@ -41,11 +41,12 @@
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
+import {SIDENAV_MUTATION_TOGGLE} from "@/store/sidenav/sidenav";
 
 @Component
 export default class ContentTopNav extends Vue {
   private toggleSidenav(): void {
-    this.$store.commit('sidenav/toggleSidenav');
+    this.$store.commit(SIDENAV_MUTATION_TOGGLE);
   }
 }
 </script>

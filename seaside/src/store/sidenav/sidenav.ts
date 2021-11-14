@@ -1,3 +1,5 @@
+export const SIDENAV_MUTATION_TOGGLE = 'sidenav/toggleSidenav';
+
 export type SidenavState = {
     open: boolean;
 }

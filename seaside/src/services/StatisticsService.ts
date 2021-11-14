@@ -2,30 +2,11 @@ import {switchMap, take} from "rxjs/operators";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 import {Statistics} from "@/services/model/Statistics";
 import rest from '@/services/http/RestWrapper';
+import {Observable} from "rxjs";
 
-export class StatsService {
-
-    private readonly stats: Statistics = {
-        news: 0,
-        unread: 0,
-        feeds: 0,
-        users: 0,
-    };
-
-    getBaywatchStats(): Statistics {
-        return this.stats;
-    }
-
-    incrementUnread(): void {
-        ++this.stats.unread;
-    }
-
-    decrementUnread(): void {
-        --this.stats.unread;
-    }
-
-    update(): void {
-        rest.get('/stats').pipe(
+export class StatisticsService {
+    get(): Observable<Statistics> {
+        return rest.get('/stats').pipe(
             switchMap(response => {
                 if (response.ok) {
                     return response.json() as Promise<Statistics>;
@@ -34,10 +15,8 @@ export class StatsService {
                 }
             }),
             take(1)
-        ).subscribe({
-            next: s => Object.assign(this.stats, s),
-        });
+        );
     }
 }
 
-export default new StatsService();
+export default new StatisticsService();

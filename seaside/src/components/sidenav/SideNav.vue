@@ -24,13 +24,13 @@ import {Component, Vue} from 'vue-property-decorator';
 import SideNavHeader from "./SideNavHeader.vue";
 import SideNavImportantActions from "./SideNavImportantActions.vue";
 import SideNavFeeds from './SideNavFeeds.vue';
-import {Statistics} from "@/services/model/Statistics";
 import SideNavStatistics from "@/components/sidenav/SideNavStatistics.vue";
 
 import userService from "@/services/UserService";
-import statsService from "@/services/StatsService";
+import statsService from "@/services/StatisticsService";
 import {User} from "@/services/model/User";
 import {SidenavState} from "@/store/sidenav/sidenav";
+import {STATISTICS_MUTATION_UPDATE, StatisticsState} from "@/store/statistics/statistics";
 
 const SideNavTags = () => import('./SideNavTags.vue').then(m => m.default);
 const SideNavUserInfo = () => import('./SideNavUserInfo.vue').then(m => m.default);
@@ -48,12 +48,7 @@ const SideNavUserInfo = () => import('./SideNavUserInfo.vue').then(m => m.defaul
 export default class SideNav extends Vue {
   private state: SidenavState = this.$store.state.sidenav;
 
-  private baywatchStats: Statistics = {
-    users: 0,
-    feeds: 0,
-    news: 0,
-    unread: 0
-  };
+  private baywatchStats: StatisticsState = this.$store.state.statistics;
 
   private user: User | null = null;
 
@@ -62,19 +57,23 @@ export default class SideNav extends Vue {
   }
 
   mounted(): void {
-    this.baywatchStats = statsService.getBaywatchStats();
+    this.updateStatistics();
     userService.get().subscribe({
       next: user => this.$nextTick(() => this.user = user),
       error: () => {
         this.$nextTick(() => this.user = null)
-        statsService.update();
+        this.updateStatistics();
       }
     });
 
     userService.listenUser(u => {
       this.user = u;
-      statsService.update();
+      this.updateStatistics();
     });
+  }
+
+  private updateStatistics(): void {
+    statsService.get().subscribe(s => this.$store.commit(STATISTICS_MUTATION_UPDATE, s));
   }
 
   logoutUser(): void {
