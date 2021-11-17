@@ -11,7 +11,7 @@ public class NotifyServiceImpl implements NotifyService {
     private final Sinks.Many<Object> sink;
 
     public NotifyServiceImpl() {
-        this.sink = Sinks.many().multicast().onBackpressureBuffer();
+        this.sink = Sinks.many().multicast().directBestEffort();
     }
 
     @Override
@@ -23,7 +23,11 @@ public class NotifyServiceImpl implements NotifyService {
     public <T> void send(T data) {
         EmitResult result = this.sink.tryEmitNext(data);
         if (result.isFailure()) {
-            log.warn("Fail to emit notification {}", data);
+            if (result == EmitResult.FAIL_ZERO_SUBSCRIBER) {
+                log.debug("No subscriber listening the SSE entry point.");
+            } else {
+                log.warn("{} on emit notification {}", result, data);
+            }
         }
     }
 }
