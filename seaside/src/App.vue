@@ -18,6 +18,8 @@ import {Component, Vue} from 'vue-property-decorator';
 import ContentTopNav from "@/components/topnav/ContentTopNav.vue";
 import SideNav from '@/components/sidenav/SideNav.vue';
 import NotificationArea from "@/components/shared/notificationArea/NotificationArea.vue";
+import serverEventService from '@/services/sse/ServerEventService.class'
+import {STATISTICS_MUTATION_UPDATE} from "@/store/statistics/statistics";
 
 @Component({
   components: {
@@ -27,5 +29,11 @@ import NotificationArea from "@/components/shared/notificationArea/NotificationA
   },
 })
 export default class App extends Vue {
+  mounted(): void {
+    serverEventService.registerListener('NEWS', e => {
+      const msg: MessageEvent = e as MessageEvent;
+      this.$store.commit(STATISTICS_MUTATION_UPDATE, JSON.parse(msg.data));
+    });
+  }
 }
 </script>

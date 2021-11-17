@@ -1,24 +1,27 @@
-import {ServerEventListener} from "@/services/sse/ServerEventListener.interface";
-
 class ServerEventService {
-    private source: EventSource;
+    private source: EventSource = new EventSource('/api/sse');
 
-    private listeners: ServerEventListener[] = [];
+    private listeners: EventListener[] = [];
 
-    public registerListener(eventType: string, listener: ServerEventListener): void {
+    public registerListener(eventType: string, listener: EventListener): void {
         if (!this.source) {
             this.source = new EventSource('/api/sse');
-            this.source.addEventListener('open', event => console.debug('Connected to SSE.'))
+            this.source.addEventListener('open', () => console.debug('Connected to SSE.'))
         }
-        this.source.addEventListener(eventType, event => listener.onEvent(event));
+        this.source.addEventListener(eventType, listener);
     }
 
-    public unregister(eventType: string, listener: ServerEventListener): void {
-        this.source?.removeEventListener(eventType, listener)
+    public unregister(eventType: string, listener: EventListener): void {
+        this.source.removeEventListener(eventType, listener);
+        const idx = this.listeners.indexOf(listener);
+        this.listeners.splice(idx);
+        if (this.listeners.length <= 1) {
+            this.close();
+        }
     }
 
     public close(): void {
-        this.source?.close();
+        this.source.close();
     }
 }
 
