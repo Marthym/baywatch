@@ -2,7 +2,7 @@
   <header class="navbar min-h-0 bg-neutral text-neutral-content">
     <button @click="toggleSidenav" class="btn btn-square btn-sm btn-ghost -mr-2 lg:hidden">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
       </svg>
     </button>
     <div class="navbar-start border-b border-gray-600 ml-8 h-full">
@@ -26,6 +26,17 @@
       </router-link>
     </div>
     <div class="navbar-end border-b border-gray-600 pr-2 mr-2">
+      <div class="indicator">
+        <div v-if="statistics.updated > 0" class="indicator-item badge badge-xs badge-primary text-2xs">
+          {{ statistics.updated }}
+        </div>
+        <button class="btn btn-square btn-ghost btn-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </button>
+      </div>
       <input type="text" placeholder="Search" class="input input-ghost input-sm">
       <button class="btn btn-square btn-ghost btn-sm">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -41,12 +52,16 @@
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
-import {SIDENAV_MUTATION_TOGGLE} from "@/store/sidenav/sidenav";
+import {SidenavMutation} from "@/store/sidenav/SidenavMutation.enum";
+import {StatisticsState} from "@/store/statistics/statistics";
 
 @Component
 export default class ContentTopNav extends Vue {
+
+  private statistics: StatisticsState = this.$store.state.statistics;
+
   private toggleSidenav(): void {
-    this.$store.commit(SIDENAV_MUTATION_TOGGLE);
+    this.$store.commit(SidenavMutation.TOGGLE);
   }
 }
 </script>
