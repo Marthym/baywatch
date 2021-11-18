@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.actions;
 
 import fr.ght1pc9kc.baywatch.api.StatService;
+import fr.ght1pc9kc.baywatch.api.notify.EventType;
 import fr.ght1pc9kc.baywatch.api.notify.NotifyService;
 import fr.ght1pc9kc.baywatch.api.scrapper.ScrappingHandler;
 import fr.ght1pc9kc.baywatch.infra.model.Statistics;
@@ -28,7 +29,7 @@ public class NewsUpdateNotificationHandler implements ScrappingHandler {
                 .news(t.getT2())
                 .unread(t.getT3())
                 .build()).map(s -> {
-            notifyService.send(s);
+            notifyService.send(EventType.NEWS, s);
             log.debug("Sending news update notification.");
             return s;
         }).then();
