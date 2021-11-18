@@ -5,9 +5,13 @@ import {catchError, map, shareReplay, switchMap, take, tap} from "rxjs/operators
 import {Session} from "@/services/model/Session";
 import rest from '@/services/http/RestWrapper';
 
+export interface UserListener {
+    onUserChange(data: User): void;
+}
+
 export class UserService {
 
-    private userListeners: { (data: User): void; } [] = [];
+    private userListeners: UserListener[] = [];
     private readonly cache$: Observable<Session>;
 
     constructor() {
@@ -16,8 +20,13 @@ export class UserService {
         );
     }
 
-    listenUser(consumer: { (data: User): void; }): void {
+    registerUserListener(consumer: UserListener): void {
         this.userListeners.push(consumer);
+    }
+
+    unregisterUserListener(consumer: UserListener): void {
+        const idx = this.userListeners.indexOf(consumer);
+        this.userListeners.splice(idx);
     }
 
     login(username: string, password: string): Observable<User> {
@@ -43,9 +52,7 @@ export class UserService {
                 if (!response.ok) {
                     throw new HttpStatusError(response.status, `Error while login out user !`);
                 }
-                return null;
             }),
-            map(() => localStorage.removeItem('user')),
             take(1)
         );
     }
@@ -61,7 +68,6 @@ export class UserService {
             }),
             tap(session => this.save(session.user)),
             catchError(err => {
-                localStorage.removeItem('user');
                 return throwError(err);
             }),
             take(1)
@@ -69,9 +75,7 @@ export class UserService {
     }
 
     private save(user: User): User {
-        const parsed = JSON.stringify(user);
-        localStorage.setItem('user', parsed);
-        this.userListeners.forEach(consumer => consumer(user))
+        this.userListeners.forEach(consumer => consumer.onUserChange(user))
         return user;
     }
 
