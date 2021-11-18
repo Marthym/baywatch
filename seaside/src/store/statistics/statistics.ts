@@ -1,16 +1,11 @@
 import {Statistics} from "@/services/model/Statistics";
 
-export const STATISTICS_MUTATION_DECREMENT_UNREAD = 'statistics/decrementUnread';
-export const STATISTICS_MUTATION_INCREMENT_UNREAD = 'statistics/incrementUnread';
-export const STATISTICS_MUTATION_UPDATE = 'statistics/update';
-
 export type StatisticsState = {
     news: number;
     unread: number;
     feeds: number;
     users: number;
 }
-
 
 const state = (): StatisticsState => ({
     news: 0,
