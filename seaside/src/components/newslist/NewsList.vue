@@ -94,6 +94,10 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
       this.news = [];
       this.loadNextPage().subscribe()
     });
+    userService.registerReloadFunction(() => {
+      this.news = [];
+      this.loadNextPage().subscribe()
+    });
   }
 
   loadNextPage(): Observable<Element> {

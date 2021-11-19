@@ -13,11 +13,28 @@ export class UserService {
 
     private userListeners: UserListener[] = [];
     private readonly cache$: Observable<Session>;
+    private reloadFunction: VoidFunction = () => {console.warn('no reload function!')};
 
     constructor() {
         this.cache$ = this.refresh().pipe(
             shareReplay(1),
         );
+    }
+
+    /**
+     * Register the function call on reload
+     * This allow others components to reload news list
+     *
+     * @param apply [VoidFunction] The call function
+     */
+    registerReloadFunction(apply: VoidFunction): void {
+        this.reloadFunction = apply;
+    }
+
+    reload(): void {
+        if (this.reloadFunction) {
+            this.reloadFunction();
+        }
     }
 
     registerUserListener(consumer: UserListener): void {
