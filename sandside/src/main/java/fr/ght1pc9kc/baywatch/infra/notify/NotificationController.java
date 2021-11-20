@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.notify;
 
 import com.github.f4b6a3.ulid.UlidCreator;
+import fr.ght1pc9kc.baywatch.api.StatService;
 import fr.ght1pc9kc.baywatch.api.notify.EventType;
 import fr.ght1pc9kc.baywatch.api.notify.NotifyService;
 import fr.ght1pc9kc.baywatch.infra.model.Statistics;
@@ -20,29 +21,33 @@ import reactor.core.publisher.Mono;
 @RequestMapping("${baywatch.base-route}/sse")
 public class NotificationController {
     private final NotifyService notifyService;
-
-    private int newsCount = 4000;
-    private int unreadCount = 2000;
+    private final StatService statService;
 
     @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<Object>> sse() {
-        return notifyService.getFlux().map(e -> ServerSentEvent.builder()
-                .id(UlidCreator.getMonotonicUlid().toString())
-                .event(e.getT1().getName()).data(e.getT2())
-                .build()).map(e -> {
-            log.debug("Event: {}", e);
-            return e;
-        });
+        return notifyService.getFlux()
+                .flatMap(e -> e.getT2().map(s -> ServerSentEvent.builder()
+                        .id(UlidCreator.getMonotonicUlid().toString())
+                        .event(e.getT1().getName()).data(s)
+                        .build())
+                ).map(e -> {
+                    log.debug("Event: {}", e);
+                    return e;
+                });
     }
 
     @GetMapping("/test")
     public Mono<Void> test() {
-        notifyService.send(EventType.NEWS, Statistics.builder()
-                .feeds(17)
-                .news(newsCount++)
-                .unread(unreadCount++)
-                .users(1).build()
-        );
+        Mono<Statistics> stats = Mono.zip(
+                statService.getFeedsCount(),
+                statService.getNewsCount(),
+                statService.getUnreadCount()
+        ).map(s -> Statistics.builder()
+                .feeds(s.getT1())
+                .news(s.getT2())
+                .unread(s.getT3())
+                .users(1).build());
+        notifyService.send(EventType.NEWS, stats);
         return Mono.empty().then();
     }
 }

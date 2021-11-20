@@ -20,18 +20,16 @@ public class NewsUpdateNotificationHandler implements ScrappingHandler {
         if (persisted <= 0) {
             return Mono.empty().then();
         }
-        return Mono.zip(
-                statService.getFeedsCount(),
-                statService.getNewsCount(),
-                statService.getUnreadCount()
-        ).map(t -> Statistics.builder()
-                .feeds(t.getT1())
-                .news(t.getT2())
-                .unread(t.getT3())
-                .build()).map(s -> {
-            notifyService.send(EventType.NEWS, s);
-            log.debug("Sending news update notification.");
-            return s;
-        }).then();
+        notifyService.send(EventType.NEWS, Mono.zip(
+                        statService.getFeedsCount(),
+                        statService.getNewsCount(),
+                        statService.getUnreadCount())
+                .map(t -> Statistics.builder()
+                        .feeds(t.getT1())
+                        .news(t.getT2())
+                        .unread(t.getT3())
+                        .build())
+        );
+        return Mono.empty().then();
     }
 }
