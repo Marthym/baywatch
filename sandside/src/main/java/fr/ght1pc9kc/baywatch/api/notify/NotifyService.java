@@ -8,4 +8,6 @@ public interface NotifyService {
     Flux<Tuple2<EventType, Mono<Object>>> getFlux();
 
     <T> void send(EventType type, Mono<T> data);
+
+    void close();
 }

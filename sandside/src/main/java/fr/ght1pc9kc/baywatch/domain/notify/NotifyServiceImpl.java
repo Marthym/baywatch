@@ -37,4 +37,9 @@ public class NotifyServiceImpl implements NotifyService {
             }
         }
     }
+
+    @Override
+    public void close() {
+        this.sink.tryEmitComplete();
+    }
 }
