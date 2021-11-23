@@ -53,7 +53,7 @@
 
     <button @click="toggleSidenav" class="btn btn-square btn-sm btn-ghost -mr-2 lg:hidden">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
       </svg>
     </button>
   </div>
@@ -61,14 +61,14 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import {SIDENAV_MUTATION_TOGGLE} from "@/store/sidenav/sidenav";
+import {SidenavMutation} from "@/store/sidenav/SidenavMutation.enum";
 
 @Component
 export default class SideNavHeader extends Vue {
   @Prop({default: 0}) unread?: number;
 
   private toggleSidenav(): void {
-    this.$store.commit(SIDENAV_MUTATION_TOGGLE);
+    this.$store.commit(SidenavMutation.TOGGLE);
   }
 }
 </script>

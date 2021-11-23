@@ -51,10 +51,7 @@ import userService from '@/services/UserService';
 import tagsService from '@/services/TagsService';
 
 import {ConstantFilters} from "@/constants";
-import {
-  STATISTICS_MUTATION_DECREMENT_UNREAD,
-  STATISTICS_MUTATION_INCREMENT_UNREAD
-} from "@/store/statistics/statistics";
+import {StatisticsMutation} from "@/store/statistics/StatisticsMutation.enum";
 
 @Component({
   components: {
@@ -82,21 +79,28 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
         }),
         switchMap(() => this.loadNextPage()),
         take(1),
-    ).subscribe(el => {
-      if (this.isAuthenticated) {
-        this.activateOnScroll.observe(el);
-        if (this.news.length > 3) {
-          this.infiniteScroll.observe(this.getRefElement(this.news[this.news.length - 3].data.id));
-        }
-      }
-    });
+    ).subscribe(el => this.observeFirst(el));
 
     window.addEventListener('keydown', this.onKeyDownListener, false);
     this.tagListenerIndex = tagsService.registerListener(tag => {
       this.tags = tag;
       this.news = [];
-      this.loadNextPage().subscribe()
+      this.loadNextPage().pipe(take(1)).subscribe(el => this.observeFirst(el))
     });
+    userService.registerReloadFunction(() => {
+      this.news = [];
+      this.activeNews = -1;
+      this.loadNextPage().pipe(take(1)).subscribe(el => this.observeFirst(el))
+    });
+  }
+
+  private observeFirst(el: Element): void {
+    if (this.isAuthenticated) {
+      this.activateOnScroll.observe(el);
+      if (this.news.length > 3) {
+        this.infiniteScroll.observe(this.getRefElement(this.news[this.news.length - 3].data.id));
+      }
+    }
   }
 
   loadNextPage(): Observable<Element> {
@@ -211,7 +215,12 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
 
   activateElement(incr: number): Element {
     this.activateNewsCard(this.activeNews + incr);
-    return this.getRefElement(this.news[this.activeNews].data.id);
+    const newsView = this.news[this.activeNews];
+    if (newsView) {
+      return this.getRefElement(newsView.data.id);
+    } else {
+      return {} as Element;
+    }
   }
 
   activateNewsCard(_idx: number): void {
@@ -250,9 +259,9 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
 
     iif(() => mark,
         newsService.mark(target.data.id, Mark.READ).pipe(
-            tap(() => this.$store.commit(STATISTICS_MUTATION_DECREMENT_UNREAD))),
+            tap(() => this.$store.commit(StatisticsMutation.DECREMENT_UNREAD))),
         newsService.unmark(target.data.id, Mark.READ).pipe(
-            tap(() => this.$store.commit(STATISTICS_MUTATION_INCREMENT_UNREAD))),
+            tap(() => this.$store.commit(StatisticsMutation.INCREMENT_UNREAD))),
     ).subscribe(news => {
       this.$set(this.news, idx, {...target, data: news});
     });

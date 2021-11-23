@@ -8,7 +8,7 @@ import fr.ght1pc9kc.baywatch.api.security.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
-import fr.ght1pc9kc.baywatch.infra.adapters.persistence.FeedRepository;
+import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.FEED_ID;
 @RequiredArgsConstructor
 public class FeedAdminServiceImpl implements FeedAdminService {
 
-    private final FeedRepository feedRepository;
+    private final FeedPersistencePort feedRepository;
     private final AuthenticationFacade authFacade;
 
     @Override

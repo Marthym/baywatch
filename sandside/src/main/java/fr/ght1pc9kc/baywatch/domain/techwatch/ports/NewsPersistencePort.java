@@ -21,7 +21,7 @@ public interface NewsPersistencePort {
 
     Flux<News> list(QueryContext qCtx);
 
-    Mono<Void> persist(Collection<News> toCreate);
+    Mono<Integer> persist(Collection<News> toCreate);
 
     Flux<Entry<String, State>> listState(Criteria searchCriteria);
 

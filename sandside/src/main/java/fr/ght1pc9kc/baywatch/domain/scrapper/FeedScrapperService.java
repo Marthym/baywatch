@@ -122,6 +122,8 @@ public final class FeedScrapperService implements Runnable {
                 .sequential()
                 .buffer(100)
                 .flatMap(newsRepository::persist)
+                .reduce(Integer::sum)
+                .flatMap(count -> Flux.concat(scrappingHandlers.stream().map(h -> h.after(count)).collect(Collectors.toList())).then())
                 .doOnError(e -> {
                     log.error("{}: {}", e.getClass(), e.getLocalizedMessage());
                     log.debug("STACKTRACE", e);

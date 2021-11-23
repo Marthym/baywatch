@@ -19,7 +19,7 @@ export default class ScrollingActivationBehaviour {
                 const incr = (isAbove) ? +1 : -1;
                 component.activateElement(incr);
             }
-        }, {threshold: [1], rootMargin: "-50px 0px 0px 0px"});
+        }, {threshold: [0.75], rootMargin: "-60px 0px 0px 0px"});
     }
 
     public static apply(component: ScrollActivable & Vue): ScrollingActivationBehaviour {

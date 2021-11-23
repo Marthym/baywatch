@@ -1,22 +1,19 @@
 import {Statistics} from "@/services/model/Statistics";
 
-export const STATISTICS_MUTATION_DECREMENT_UNREAD = 'statistics/decrementUnread';
-export const STATISTICS_MUTATION_INCREMENT_UNREAD = 'statistics/incrementUnread';
-export const STATISTICS_MUTATION_UPDATE = 'statistics/update';
-
 export type StatisticsState = {
     news: number;
     unread: number;
     feeds: number;
     users: number;
+    updated: number;
 }
-
 
 const state = (): StatisticsState => ({
     news: 0,
     unread: 0,
     feeds: 0,
     users: 0,
+    updated: 0,
 });
 
 // getters
@@ -34,8 +31,15 @@ const mutations = {
         ++state.unread;
     },
     update(state: StatisticsState, payload: Statistics): void {
+        const unread = state.unread;
         Object.assign(state, payload);
-    }
+        if (unread != 0) {
+            state.updated += state.unread - unread;
+        }
+    },
+    resetUpdated(state: StatisticsState): void {
+        state.updated = 0;
+    },
 }
 
 export default {

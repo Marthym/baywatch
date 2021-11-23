@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.api.scrapper;
 import reactor.core.publisher.Mono;
 
 /**
- * The Scrapping Handlers allow to insert action before and after the News Scrapping
+ * The Scrapping Handlers allow inserting action before and after the News Scrapping
  */
 public interface ScrappingHandler {
     /**
@@ -20,7 +20,7 @@ public interface ScrappingHandler {
      *
      * @return nothing
      */
-    default Mono<Void> after() {
+    default Mono<Void> after(int persisted) {
         return Mono.empty().then();
     }
 }

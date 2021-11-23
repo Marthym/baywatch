@@ -18,6 +18,11 @@ import {Component, Vue} from 'vue-property-decorator';
 import ContentTopNav from "@/components/topnav/ContentTopNav.vue";
 import SideNav from '@/components/sidenav/SideNav.vue';
 import NotificationArea from "@/components/shared/notificationArea/NotificationArea.vue";
+import userService, {UserListener} from '@/services/UserService'
+import serverEventService from '@/services/sse/ServerEventService'
+import {User} from "@/services/model/User";
+import {EventType} from "@/services/sse/EventType.enum";
+import {StatisticsMutation} from "@/store/statistics/StatisticsMutation.enum";
 
 @Component({
   components: {
@@ -26,6 +31,28 @@ import NotificationArea from "@/components/shared/notificationArea/NotificationA
     SideNav,
   },
 })
-export default class App extends Vue {
+export default class App extends Vue implements UserListener {
+  mounted(): void {
+    userService.registerUserListener(this);
+  }
+
+  unmounted(): void {
+    userService.registerUserListener(this);
+    serverEventService.unregister(EventType.NEWS, this.onServerMessage);
+  }
+
+  onUserChange(user: User): void {
+    if (user) {
+      console.log("register listener sse", user);
+      serverEventService.registerListener(EventType.NEWS, this.onServerMessage);
+    } else {
+      serverEventService.unregister(EventType.NEWS, this.onServerMessage);
+    }
+  }
+
+  private onServerMessage(evt: Event): void {
+    const msg: MessageEvent = evt as MessageEvent;
+    this.$store.commit(StatisticsMutation.UPDATE, JSON.parse(msg.data));
+  }
 }
 </script>

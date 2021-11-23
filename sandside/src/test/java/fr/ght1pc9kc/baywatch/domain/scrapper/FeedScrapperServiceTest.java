@@ -126,7 +126,7 @@ class FeedScrapperServiceTest {
     @Test
     void should_fail_on_persistence() {
         reset(newsPersistenceMock);
-        when(newsPersistenceMock.persist(anyCollection())).thenReturn(Mono.error(new RuntimeException()).then());
+        when(newsPersistenceMock.persist(anyCollection())).thenReturn(Mono.error(new RuntimeException()).then(Mono.just(1)));
         when(newsPersistenceMock.list()).thenReturn(Flux.empty());
 
         tested.startScrapping();
@@ -150,7 +150,7 @@ class FeedScrapperServiceTest {
         ));
         //noinspection unchecked
         ArgumentCaptor<List<News>> captor = ArgumentCaptor.forClass(List.class);
-        when(newsPersistenceMock.persist(captor.capture())).thenReturn(Mono.just("").then());
+        when(newsPersistenceMock.persist(captor.capture())).thenReturn(Mono.just(1));
 
         tested.startScrapping();
         Awaitility.await("for scrapping begin").timeout(Duration.ofSeconds(5))
@@ -181,7 +181,7 @@ class FeedScrapperServiceTest {
         ));
         //noinspection unchecked
         ArgumentCaptor<List<News>> captor = ArgumentCaptor.forClass(List.class);
-        when(newsPersistenceMock.persist(captor.capture())).thenReturn(Mono.just("").then());
+        when(newsPersistenceMock.persist(captor.capture())).thenReturn(Mono.just(1));
 
         tested.startScrapping();
         Awaitility.await("for scrapping begin").timeout(Duration.ofSeconds(5))
@@ -207,7 +207,7 @@ class FeedScrapperServiceTest {
     void setUp() {
         newsPersistenceMock = mock(NewsPersistencePort.class);
         when(newsPersistenceMock.list()).thenReturn(Flux.empty());
-        when(newsPersistenceMock.persist(anyCollection())).thenReturn(Mono.just("").then());
+        when(newsPersistenceMock.persist(anyCollection())).thenReturn(Mono.just(1));
 
         //Mockito does not support Lambda
         //noinspection Convert2Lambda

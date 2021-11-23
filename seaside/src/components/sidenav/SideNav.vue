@@ -26,11 +26,12 @@ import SideNavImportantActions from "./SideNavImportantActions.vue";
 import SideNavFeeds from './SideNavFeeds.vue';
 import SideNavStatistics from "@/components/sidenav/SideNavStatistics.vue";
 
-import userService from "@/services/UserService";
+import userService, {UserListener} from "@/services/UserService";
 import statsService from "@/services/StatisticsService";
 import {User} from "@/services/model/User";
 import {SidenavState} from "@/store/sidenav/sidenav";
-import {STATISTICS_MUTATION_UPDATE, StatisticsState} from "@/store/statistics/statistics";
+import {StatisticsState} from "@/store/statistics/statistics";
+import {StatisticsMutation} from "@/store/statistics/StatisticsMutation.enum";
 
 const SideNavTags = () => import('./SideNavTags.vue').then(m => m.default);
 const SideNavUserInfo = () => import('./SideNavUserInfo.vue').then(m => m.default);
@@ -45,7 +46,7 @@ const SideNavUserInfo = () => import('./SideNavUserInfo.vue').then(m => m.defaul
     SideNavImportantActions,
   },
 })
-export default class SideNav extends Vue {
+export default class SideNav extends Vue implements UserListener {
   private state: SidenavState = this.$store.state.sidenav;
 
   private baywatchStats: StatisticsState = this.$store.state.statistics;
@@ -66,19 +67,25 @@ export default class SideNav extends Vue {
       }
     });
 
-    userService.listenUser(u => {
-      this.user = u;
-      this.updateStatistics();
-    });
+    userService.registerUserListener(this);
+  }
+
+  onUserChange(u: User): void {
+    this.user = u;
+    this.updateStatistics();
   }
 
   private updateStatistics(): void {
-    statsService.get().subscribe(s => this.$store.commit(STATISTICS_MUTATION_UPDATE, s));
+    statsService.get().subscribe(s => this.$store.commit(StatisticsMutation.UPDATE, s));
   }
 
   logoutUser(): void {
     userService.logout()
         .subscribe(() => this.$router.go(0));
+  }
+
+  unmounted(): void {
+    userService.unregisterUserListener(this);
   }
 }
 </script>
