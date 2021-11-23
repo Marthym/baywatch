@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.domain;
 import fr.ght1pc9kc.baywatch.api.FeedService;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
+import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.techwatch.FeedServiceImpl;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
@@ -18,6 +19,9 @@ import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -35,6 +39,9 @@ public class FeedServiceImplTest {
         Feed jediFeed = BAYWATCH_MAPPER.recordToFeed(FeedRecordSamples.JEDI);
         when(mockFeedRepository.get(any())).thenReturn(Mono.just(jediFeed));
         when(mockFeedRepository.list(any())).thenReturn(Flux.just(jediFeed));
+        when(mockFeedRepository.persist(any())).thenReturn(Flux.empty().then());
+        when(mockFeedRepository.persist(any(), any())).thenReturn(Flux.empty().then());
+        when(mockFeedRepository.count(any())).thenReturn(Mono.just(42));
         tested = new FeedServiceImpl(mockFeedRepository, mockAuthFacade);
     }
 
@@ -80,7 +87,24 @@ public class FeedServiceImplTest {
     }
 
     @Test
-    void should_persist_feeds() {
+    void should_persist_feeds_for_anonymous() {
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.empty());
+        StepVerifier.create(tested.persist(List.of())).verifyError(UnauthenticatedUser.class);
+    }
 
+    @Test
+    @SuppressWarnings("unchecked")
+    void should_persist_feeds_for_user() {
+        User okenobi = BAYWATCH_MAPPER.recordToUser(UsersRecordSamples.OKENOBI);
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(okenobi));
+        ArgumentCaptor<List<Feed>> captor = ArgumentCaptor.forClass(List.class);
+
+        Feed feed = BAYWATCH_MAPPER.recordToFeed(FeedRecordSamples.JEDI);
+        StepVerifier.create(tested.persist(List.of(feed)))
+                .verifyComplete();
+
+        verify(mockFeedRepository, times(1)).persist(captor.capture(),
+                eq(UsersRecordSamples.OKENOBI.getUserLogin()));
+        assertThat(captor.getValue()).containsExactly(feed);
     }
 }
