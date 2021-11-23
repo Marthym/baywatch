@@ -17,19 +17,20 @@ public class NewsUpdateNotificationHandler implements ScrappingHandler {
 
     @Override
     public Mono<Void> after(int persisted) {
-        if (persisted <= 0) {
-            return Mono.empty().then();
-        }
-        notifyService.send(EventType.NEWS, Mono.zip(
-                        statService.getFeedsCount(),
-                        statService.getNewsCount(),
-                        statService.getUnreadCount())
-                .map(t -> Statistics.builder()
-                        .feeds(t.getT1())
-                        .news(t.getT2())
-                        .unread(t.getT3())
-                        .build())
-        );
-        return Mono.empty().then();
+        return Mono.just(persisted)
+                .filter(p -> p > 0)
+                .map(p -> {
+                    Mono<Statistics> stats = Mono.zip(
+                                    statService.getFeedsCount(),
+                                    statService.getNewsCount(),
+                                    statService.getUnreadCount())
+                            .map(t -> Statistics.builder()
+                                    .feeds(t.getT1())
+                                    .news(t.getT2())
+                                    .unread(t.getT3())
+                                    .build());
+                    notifyService.send(EventType.NEWS, stats);
+                    return p;
+                }).then();
     }
 }
