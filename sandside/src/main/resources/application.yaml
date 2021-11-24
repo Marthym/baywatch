@@ -35,5 +35,5 @@ baywatch:
     jwt.validity: 1h
   scrapper:
     start: true
-    frequency: 40s
+    frequency: 1h
     conservation: 3m

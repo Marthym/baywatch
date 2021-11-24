@@ -33,7 +33,7 @@ const mutations = {
     update(state: StatisticsState, payload: Statistics): void {
         const unread = state.unread;
         Object.assign(state, payload);
-        if (unread != 0) {
+        if (state.unread > unread) {
             state.updated += state.unread - unread;
         }
     },
