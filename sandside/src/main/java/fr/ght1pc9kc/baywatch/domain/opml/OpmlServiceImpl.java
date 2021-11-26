@@ -4,6 +4,7 @@ import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.api.FeedService;
 import fr.ght1pc9kc.baywatch.api.opml.OpmlService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 import javax.xml.stream.XMLOutputFactory;
@@ -15,6 +16,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.nio.charset.StandardCharsets;
 
+@Slf4j
 @RequiredArgsConstructor
 public class OpmlServiceImpl implements OpmlService {
 
@@ -23,33 +25,37 @@ public class OpmlServiceImpl implements OpmlService {
     @Override
     public Mono<InputStream> export() {
         try {
-            PipedOutputStream pos = new PipedOutputStream();
-            PipedInputStream pis = new PipedInputStream(pos);
+            PipedInputStream pis = new PipedInputStream();
+            PipedOutputStream pos = new PipedOutputStream(pis);
             XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newFactory();
             XMLStreamWriter xmlStreamWriter = xmlOutputFactory.createXMLStreamWriter(pos, StandardCharsets.UTF_8.name());
 
             return feedService.list()
-                    .switchOnFirst(Exceptions.wrap().fromBiFunction((signal, feeds) -> {
+                    .doFirst(Exceptions.sneak().runnable(() -> {
                         xmlStreamWriter.writeStartDocument();
                         xmlStreamWriter.writeStartElement("opml");
                         xmlStreamWriter.writeAttribute("version", "2.0");
                         xmlStreamWriter.flush();
-                        return feeds;
                     }))
-                    .doOnComplete(Exceptions.wrap().runnable(() -> {
-//                        xmlStreamWriter.writeEndElement();
+                    .doOnComplete(Exceptions.sneak().runnable(() -> {
+                        xmlStreamWriter.writeEndElement();
                         xmlStreamWriter.writeEndDocument();
                         xmlStreamWriter.flush();
                         xmlStreamWriter.close();
                         pos.flush();
                         pos.close();
-                        pis.close();
+                        log.debug("Completed OPML");
                     }))
                     .map(feed -> {
                         return feed;
-                    }).then().map(_x -> pis);
+                    }).collectList()
+                    .map(_x -> pis);
         } catch (XMLStreamException | IOException e) {
             return Mono.error(e);
         }
+    }
+
+    private static void writeHead(XMLStreamWriter xmlWriter) {
+        xmlWriter.
     }
 }
