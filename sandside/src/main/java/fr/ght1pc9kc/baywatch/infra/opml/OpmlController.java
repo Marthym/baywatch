@@ -31,7 +31,7 @@ public class OpmlController {
     private final OpmlService opmlService;
 
     @ResponseBody
-//    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/export/baywatch.opml")
     public Mono<ResponseEntity<Resource>> downloadCsv() {
         String fileName = String.format("baywatch-%s.opml", LocalDateTime.now());
@@ -41,7 +41,7 @@ public class OpmlController {
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName)
                         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE)
                         .body((Resource) new InputStreamResource(is))
-                ).doFirst(() -> log.debug("Start OPML download")
+                ).doOnNext(_x -> log.debug("Start OPML download")
                 ).doOnTerminate(() -> log.debug("Terminate OPML download")
                 ).doOnError(e -> log.error("STACKTRACE", e));
     }
