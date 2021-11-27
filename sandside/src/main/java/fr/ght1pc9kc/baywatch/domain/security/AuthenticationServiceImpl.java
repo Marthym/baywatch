@@ -6,7 +6,6 @@ import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
-import reactor.util.context.Context;
 
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -24,10 +23,5 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                                 .map(user -> tokenProvider.createToken(user, auth.rememberMe, auth.getAuthorities()));
                     }
                 });
-    }
-
-    @Override
-    public Context withSystemAuthentication() {
-        return Context.empty();
     }
 }
