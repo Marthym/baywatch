@@ -40,7 +40,7 @@ public final class OpmlWriter {
         try {
             xmlWriter.writeStartDocument();
             xmlWriter.writeStartElement(OPMLTags.OMPL);
-            xmlWriter.writeAttribute("version", "2.0");
+            xmlWriter.writeAttribute(OPMLTags.ATTRIBUTE_VERSION, OPMLTags.VALUE_VERSION_2);
             writeHead(xmlWriter, owner);
             xmlWriter.flush();
             xmlWriter.writeStartElement(OPMLTags.BODY);
@@ -85,11 +85,11 @@ public final class OpmlWriter {
     public void writeOutline(Feed feed) {
         try {
             xmlWriter.writeStartElement(OPMLTags.OUTLINE);
-            xmlWriter.writeAttribute(OPMLTags.TEXT, feed.getId());
-            xmlWriter.writeAttribute(OPMLTags.TYPE, "rss");
-            xmlWriter.writeAttribute(OPMLTags.XML_URL, feed.getUrl().toString());
+            xmlWriter.writeAttribute(OPMLTags.ATTRIBUTE_TEXT, feed.getName());
+            xmlWriter.writeAttribute(OPMLTags.ATTRIBUTE_TYPE, OPMLTags.VALUE_TYPE_RSS);
+            xmlWriter.writeAttribute(OPMLTags.ATTRIBUTE_XML_URL, feed.getUrl().toString());
             xmlWriter.writeAttribute(OPMLTags.TITLE, feed.getName());
-            xmlWriter.writeAttribute(OPMLTags.CATEGORY, String.join(",", feed.getTags()));
+            xmlWriter.writeAttribute(OPMLTags.ATTRIBUTE_CATEGORY, String.join(",", feed.getTags()));
             xmlWriter.writeEndElement(); // outline
             xmlWriter.flush();
         } catch (XMLStreamException e) {
