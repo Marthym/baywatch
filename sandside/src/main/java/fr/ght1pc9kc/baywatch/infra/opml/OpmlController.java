@@ -9,7 +9,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -35,7 +33,7 @@ public class OpmlController {
     @GetMapping("/export/baywatch.opml")
     public Mono<ResponseEntity<Resource>> downloadCsv() {
         String fileName = String.format("baywatch-%s.opml", LocalDateTime.now());
-        return opmlService.export()
+        return opmlService.opmlExport()
                 .switchIfEmpty(Mono.just((InputStream) new ByteArrayInputStream("empty".getBytes(StandardCharsets.UTF_8))))
                 .map(is -> ResponseEntity.ok()
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName)

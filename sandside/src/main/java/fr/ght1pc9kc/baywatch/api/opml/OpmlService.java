@@ -5,5 +5,7 @@ import reactor.core.publisher.Mono;
 import java.io.InputStream;
 
 public interface OpmlService {
-    Mono<InputStream> export();
+    Mono<InputStream> opmlExport();
+
+    Mono<Void> opmlImport(InputStream is);
 }
