@@ -70,11 +70,6 @@
             <artifactId>jooq</artifactId>
         </dependency>
         <dependency>
-            <groupId>be.ceau</groupId>
-            <artifactId>opml-parser</artifactId>
-            <version>${opml.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
             <version>${findbugs.version}</version>
@@ -92,6 +87,7 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
+            <version>${nimbus-jose-jwt.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.validation</groupId>

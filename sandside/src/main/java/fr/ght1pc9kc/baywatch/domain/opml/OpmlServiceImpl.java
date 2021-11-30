@@ -1,12 +1,13 @@
 package fr.ght1pc9kc.baywatch.domain.opml;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.api.FeedService;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.opml.OpmlService;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
+import fr.ght1pc9kc.baywatch.infra.adapters.persistence.FeedRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -22,7 +23,7 @@ import java.io.PipedOutputStream;
 @Slf4j
 @RequiredArgsConstructor
 public class OpmlServiceImpl implements OpmlService {
-    private final FeedService feedService;
+    private final FeedRepository feedRepository;
     private final AuthenticationFacade authFacade;
     private final OpmlWriterFactory writerFactory;
     private final OpmlReaderFactory readerFactory;
@@ -60,15 +61,15 @@ public class OpmlServiceImpl implements OpmlService {
                                 pos.close();
                             }))
                             .then(Mono.empty());
-                    return Flux.merge(db, feeds);
-                }))
-                .flatMap(this::updateFeed)
-                .then();
+                    return Flux.merge(db, feeds)
+                            .buffer(100)
+                            .flatMap(f -> feedRepository.persist(f, owner.id));
+                })).then();
     }
 
     private Mono<Void> writeOpml(OutputStream out, User owner) {
         OpmlWriter opmlWriter = writerFactory.apply(out);
-        return feedService.list()
+        return feedRepository.list(QueryContext.id(owner.id))
                 .doFirst(() -> opmlWriter.startOpmlDocument(owner))
                 .doOnEach(signal -> {
                     Feed feed = signal.get();
@@ -88,10 +89,5 @@ public class OpmlServiceImpl implements OpmlService {
     private Flux<Feed> readOpml(InputStream is) {
         return Flux.create(sink ->
                 readerFactory.create(sink::next, sink::complete, sink::error).read(is));
-    }
-
-    private Mono<Feed> updateFeed(Feed feed) {
-        log.debug("read feed : {}", feed.getRaw().getName());
-        return Mono.empty();
     }
 }
