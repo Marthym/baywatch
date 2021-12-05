@@ -8,6 +8,13 @@
         </svg>
         Ajouter
       </button>
+      <button class="btn btn-primary" @click="importOpmlFile">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+        </svg>
+        Importer
+      </button>
     </div>
     <table class="table w-full">
       <thead>
@@ -56,6 +63,7 @@
       </tfoot>
     </table>
     <FeedEditor ref="feedEditor"/>
+    <div class="fileUpload" ref="fileUpload"></div>
   </div>
 </template>
 <script lang="ts">
@@ -70,6 +78,9 @@ import FeedEditor from "@/components/feedslist/FeedEditor.vue";
 import feedsService from "@/services/FeedService";
 import userService from "@/services/UserService";
 import {AlertResponse, AlertType} from "@/components/shared/AlertDialog.vue";
+
+// import FileUploadWindow from '@/components/shared/FileUploadWindow.vue';
+const FileUploadWindow = () => import('@/components/shared/FileUploadWindow.vue').then(m => m.default);
 
 @Component({
   components: {FeedEditor, FeedListItem, FeedListHeader},
@@ -148,6 +159,10 @@ export default class FeedsList extends Vue {
       next: (feed) => console.info(`Feed ${feed.id.substr(0, 10)} deleted successfully !`),
       error: (err) => console.error(err),
     });
+  }
+
+  private importOpmlFile(): void {
+    FileUploadWindow().then(c => c.open(this.$el));
   }
 }
 </script>
