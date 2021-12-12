@@ -2,19 +2,28 @@
   <div class="overflow-x-auto mt-5 pr-5">
     <div class="btn-group mb-2" v-if="isAuthenticated">
       <button class="btn btn-primary" @click="addNewFeed">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+             xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
         Ajouter
       </button>
       <button class="btn btn-primary" @click="importOpmlFile">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+             xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
         </svg>
         Importer
       </button>
+      <a class="btn btn-primary" :href="`${BASEURL}/opml/export/baywatch.opml`">
+        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+        </svg>
+        Exporter
+      </a>
     </div>
     <table class="table w-full">
       <thead>
@@ -86,6 +95,7 @@ const FileUploadWindow = () => import('@/components/shared/FileUploadWindow.vue'
   components: {FeedEditor, FeedListItem, FeedListHeader},
 })
 export default class FeedsList extends Vue {
+  private readonly BASEURL = process.env.VUE_APP_API_BASE_URL;
   private feedEditor!: FeedEditor;
 // noinspection JSMismatchedCollectionQueryUpdate
   private feeds: FeedView[] = new Array(0);
