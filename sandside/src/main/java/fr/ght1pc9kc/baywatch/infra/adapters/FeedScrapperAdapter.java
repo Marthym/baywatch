@@ -1,10 +1,9 @@
 package fr.ght1pc9kc.baywatch.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.api.AuthenticationService;
-import fr.ght1pc9kc.baywatch.api.scrapper.FeedParserPlugin;
 import fr.ght1pc9kc.baywatch.api.scrapper.FeedScrapperPlugin;
 import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.scrapper.ScrappingHandler;
+import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.scrapper.FeedScrapperService;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
@@ -32,14 +31,14 @@ public class FeedScrapperAdapter {
                                OpenGraphScrapper ogScrapper, RssAtomParser rssAtomParser,
                                Collection<ScrappingHandler> scrappingHandlers,
                                Collection<FeedScrapperPlugin> scrapperPlugins,
-                               AuthenticationService authService,
+                               AuthenticationFacade authFacade,
                                @Value("${baywatch.scrapper.start}") boolean startScrapper,
                                @Value("${baywatch.scrapper.frequency}") Duration scrapFrequency) {
         Map<String, FeedScrapperPlugin> plugins = scrapperPlugins.stream()
                 .collect(Collectors.toUnmodifiableMap(FeedScrapperPlugin::pluginForDomain, Function.identity()));
         this.startScrapper = startScrapper;
         this.scrapper = new FeedScrapperService(
-                scrapFrequency, feedPersistence, newsPersistence, authService,
+                scrapFrequency, feedPersistence, newsPersistence, authFacade,
                 rssAtomParser, ogScrapper, scrappingHandlers, plugins);
     }
 

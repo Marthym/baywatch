@@ -4,9 +4,9 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.api.AuthenticationService;
 import fr.ght1pc9kc.baywatch.api.model.*;
 import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
+import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OpenGraph;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
@@ -260,11 +260,11 @@ class FeedScrapperServiceTest {
                         .build()).build()
         ));
 
-        AuthenticationService authServiceMock = mock(AuthenticationService.class);
-        when(authServiceMock.withSystemAuthentication()).thenReturn(Context.empty());
+        AuthenticationFacade authFacadeMock = mock(AuthenticationFacade.class);
+        when(authFacadeMock.withSystemAuthentication()).thenReturn(Context.empty());
 
         tested = new FeedScrapperService(Duration.ofDays(1),
-                feedPersistenceMock, newsPersistenceMock, authServiceMock, rssAtomParserMock, openGraphScrapper,
+                feedPersistenceMock, newsPersistenceMock, authFacadeMock, rssAtomParserMock, openGraphScrapper,
                 Collections.emptyList(), Map.of());
     }
 }

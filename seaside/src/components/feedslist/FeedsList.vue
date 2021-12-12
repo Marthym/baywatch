@@ -2,12 +2,28 @@
   <div class="overflow-x-auto mt-5 pr-5">
     <div class="btn-group mb-2" v-if="isAuthenticated">
       <button class="btn btn-primary" @click="addNewFeed">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+             xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
         Ajouter
       </button>
+      <button class="btn btn-primary" @click="importOpmlFile">
+        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+             xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+        </svg>
+        Importer
+      </button>
+      <a class="btn btn-primary" :href="`${BASEURL}/opml/export/baywatch.opml`">
+        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+        </svg>
+        Exporter
+      </a>
     </div>
     <table class="table w-full">
       <thead>
@@ -64,17 +80,22 @@ import FeedListHeader from "@/components/feedslist/FeedListHeader.vue";
 import FeedListItem from "@/components/feedslist/FeedListItem.vue";
 import {FeedView} from "@/components/feedslist/model/FeedView";
 import {filter, map, switchMap, take, tap} from "rxjs/operators";
-import {Observable} from "rxjs";
+import {from, Observable} from "rxjs";
 import {Feed} from "@/services/model/Feed";
+import {AlertResponse, AlertType} from "@/components/shared/AlertDialog.vue";
 import FeedEditor from "@/components/feedslist/FeedEditor.vue";
 import feedsService from "@/services/FeedService";
 import userService from "@/services/UserService";
-import {AlertResponse, AlertType} from "@/components/shared/AlertDialog.vue";
+import opmlService from "@/services/opml/OpmlService";
+import notificationService from "@/services/notification/NotificationService";
+
+const FileUploadWindow = () => import('@/components/shared/FileUploadWindow.vue').then(m => m.default);
 
 @Component({
   components: {FeedEditor, FeedListItem, FeedListHeader},
 })
 export default class FeedsList extends Vue {
+  private readonly BASEURL = process.env.VUE_APP_API_BASE_URL;
   private feedEditor!: FeedEditor;
 // noinspection JSMismatchedCollectionQueryUpdate
   private feeds: FeedView[] = new Array(0);
@@ -117,9 +138,12 @@ export default class FeedsList extends Vue {
         take(1),
         switchMap(feed => feedsService.add(feed)),
         switchMap(() => this.loadFeedPage(this.activePage)),
-    ).subscribe(() => {
-      // TODO: Add notification
-      console.info('Feed added successfully !');
+    ).subscribe({
+      next: () => notificationService.pushSimpleOk('Fil ajouté avec succès'),
+      error: e => {
+        console.error(e);
+        notificationService.pushSimpleError('Impossible d’ajouter le fil !');
+      }
     });
   }
 
@@ -128,9 +152,12 @@ export default class FeedsList extends Vue {
         take(1),
         switchMap(feed => feedsService.update(feed)),
         switchMap(() => this.loadFeedPage(this.activePage)),
-    ).subscribe(() => {
-      // TODO: Add notification
-      console.info('Feed updated successfully !');
+    ).subscribe({
+      next: () => notificationService.pushSimpleOk('Mis à jour avec succès'),
+      error: e => {
+        console.error(e);
+        notificationService.pushSimpleError('Impossible de mettre à jour le fil');
+      }
     });
   }
 
@@ -145,8 +172,26 @@ export default class FeedsList extends Vue {
           this.feeds.splice(idx, 1);
         })
     ).subscribe({
-      next: (feed) => console.info(`Feed ${feed.id.substr(0, 10)} deleted successfully !`),
-      error: (err) => console.error(err),
+      next: feed => notificationService.pushSimpleOk(`Feed ${feed.id.substr(0, 10)} deleted successfully !`),
+      error: e => {
+        console.error(e);
+        notificationService.pushSimpleError('Impossible de mettre à jour le fil');
+      }
+    });
+  }
+
+  private importOpmlFile(): void {
+    from(FileUploadWindow()).pipe(
+        switchMap(c => c.open('Charger un OPML', this.$el)),
+        take(1),
+        switchMap(opml => opmlService.upload(opml)),
+        switchMap(() => this.loadFeedPage(this.activePage)),
+    ).subscribe({
+      next: () => notificationService.pushSimpleOk('OPML chargé avec succès'),
+      error: e => {
+        console.error(e);
+        notificationService.pushSimpleError('Impossible de charger le fichier');
+      }
     });
   }
 }

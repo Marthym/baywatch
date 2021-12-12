@@ -1,5 +1,7 @@
 import {Notification} from "@/services/notification/Notification.type";
 import NotificationListener from "@/services/notification/NotificationListener";
+import {NotificationCode} from "@/services/notification/NotificationCode.enum";
+import {Severity} from "@/services/notification/Severity.enum";
 
 const DELAY = 3000;
 
@@ -61,6 +63,22 @@ export class NotificationService {
             NotificationService.onNotificationExpiration(this);
         });
         this.listeners = [];
+    }
+
+    public pushSimpleOk(message: string): void {
+        this.pushNotification({
+            code: NotificationCode.OK,
+            severity: Severity.info,
+            message: message,
+        })
+    }
+
+    public pushSimpleError(message: string): void {
+        this.pushNotification({
+            code: NotificationCode.ERROR,
+            severity: Severity.error,
+            message: message,
+        })
     }
 }
 
