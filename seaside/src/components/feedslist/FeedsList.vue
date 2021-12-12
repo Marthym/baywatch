@@ -63,7 +63,6 @@
       </tfoot>
     </table>
     <FeedEditor ref="feedEditor"/>
-    <div class="fileUpload" ref="fileUpload"></div>
   </div>
 </template>
 <script lang="ts">
@@ -72,14 +71,15 @@ import FeedListHeader from "@/components/feedslist/FeedListHeader.vue";
 import FeedListItem from "@/components/feedslist/FeedListItem.vue";
 import {FeedView} from "@/components/feedslist/model/FeedView";
 import {filter, map, switchMap, take, tap} from "rxjs/operators";
-import {Observable} from "rxjs";
+import {from, Observable} from "rxjs";
 import {Feed} from "@/services/model/Feed";
+import {AlertResponse, AlertType} from "@/components/shared/AlertDialog.vue";
 import FeedEditor from "@/components/feedslist/FeedEditor.vue";
 import feedsService from "@/services/FeedService";
 import userService from "@/services/UserService";
-import {AlertResponse, AlertType} from "@/components/shared/AlertDialog.vue";
+import opmlService from "@/services/opml/OpmlService";
+import notificationService from "@/services/notification/NotificationService";
 
-// import FileUploadWindow from '@/components/shared/FileUploadWindow.vue';
 const FileUploadWindow = () => import('@/components/shared/FileUploadWindow.vue').then(m => m.default);
 
 @Component({
@@ -128,9 +128,12 @@ export default class FeedsList extends Vue {
         take(1),
         switchMap(feed => feedsService.add(feed)),
         switchMap(() => this.loadFeedPage(this.activePage)),
-    ).subscribe(() => {
-      // TODO: Add notification
-      console.info('Feed added successfully !');
+    ).subscribe({
+      next: () => notificationService.pushSimpleOk('Fil ajouté avec succès'),
+      error: e => {
+        console.error(e);
+        notificationService.pushSimpleError('Impossible d’ajouter le fil !');
+      }
     });
   }
 
@@ -139,9 +142,12 @@ export default class FeedsList extends Vue {
         take(1),
         switchMap(feed => feedsService.update(feed)),
         switchMap(() => this.loadFeedPage(this.activePage)),
-    ).subscribe(() => {
-      // TODO: Add notification
-      console.info('Feed updated successfully !');
+    ).subscribe({
+      next: () => notificationService.pushSimpleOk('Mis à jour avec succès'),
+      error: e => {
+        console.error(e);
+        notificationService.pushSimpleError('Impossible de mettre à jour le fil');
+      }
     });
   }
 
@@ -156,13 +162,27 @@ export default class FeedsList extends Vue {
           this.feeds.splice(idx, 1);
         })
     ).subscribe({
-      next: (feed) => console.info(`Feed ${feed.id.substr(0, 10)} deleted successfully !`),
-      error: (err) => console.error(err),
+      next: feed => notificationService.pushSimpleOk(`Feed ${feed.id.substr(0, 10)} deleted successfully !`),
+      error: e => {
+        console.error(e);
+        notificationService.pushSimpleError('Impossible de mettre à jour le fil');
+      }
     });
   }
 
   private importOpmlFile(): void {
-    FileUploadWindow().then(c => c.open(this.$el));
+    from(FileUploadWindow()).pipe(
+        switchMap(c => c.open('Charger un OPML', this.$el)),
+        take(1),
+        switchMap(opml => opmlService.upload(opml)),
+        switchMap(() => this.loadFeedPage(this.activePage)),
+    ).subscribe({
+      next: () => notificationService.pushSimpleOk('OPML chargé avec succès'),
+      error: e => {
+        console.error(e);
+        notificationService.pushSimpleError('Impossible de charger le fichier');
+      }
+    });
   }
 }
 </script>

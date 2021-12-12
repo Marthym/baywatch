@@ -1,18 +1,31 @@
 <template v-if="isOpened">
   <ModalWindow :title="modalTitle" :is-visible="isOpened">
-    <form class="form-control" @submit.prevent="onSaveFeed">
-
-      <button class="hidden" type="submit"/>
-    </form>
+    <label class="p-5 relative border-4 border-dotted rounded-lg flex flex-col items-center"
+           :class="{'border-accent-focus': isDragOver, 'border-neutral-content': !isDragOver}"
+           @dragover="isDragOver = true" @dragleave="isDragOver = false" @drop.stop.prevent="onDropFile">
+      <svg class="w-24 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+           :class="{'text-accent-focus': isDragOver, 'text-primary': !isDragOver}"
+           viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+      </svg>
+      <input class="w-full h-full opacity-0 overflow-hidden absolute -mt-5" type="file" multiple
+             @change="onChange"/>
+      <span class="btn btn-outline btn-wide"
+            :class="{'btn-accent': isDragOver, 'btn-primary': !isDragOver}">Sélectionner</span>
+      <span v-if="path === null" class="title text-neutral-content">ou déplacer un fichier ici</span>
+      <span v-else class="title text-neutral-content">{{ path.name }}</span>
+    </label>
     <template v-slot:actions>
       <button class="btn" @click.stop="resetAndCloseModal">Annuler</button>
+      <button class="btn btn-primary" @click.stop="onUploadFile">Téléverser</button>
     </template>
   </ModalWindow>
 </template>
 
 <script lang="ts">
 import {Component, Vue} from 'vue-property-decorator';
-import {Observable, of, Subject} from "rxjs";
+import {Observable, Subject} from "rxjs";
 import ModalWindow from "@/components/shared/ModalWindow.vue";
 
 @Component({
@@ -21,42 +34,59 @@ import ModalWindow from "@/components/shared/ModalWindow.vue";
   },
 })
 export default class FileUploadWindow extends Vue {
+  private static instance: FileUploadWindow;
   private isOpened = false;
-  private modalTitle = 'Ajouter un fil';
-  private subject?: Subject<string>;
-  private path = "";
+  private isDragOver = false;
+  private modalTitle = 'Baywatch';
+  private subject: Subject<File> | undefined = undefined;
+  private path: File | null = null;
 
-  public openEmpty(): Observable<string> {
-    return this.openFeed("" as string);
-  }
-
-  public openFeed(path: string): Observable<string> {
-    this.path = path;
+  public openEmpty(): Observable<File> {
     this.isOpened = true;
-    this.subject = new Subject<string>();
+    this.path = null;
+    this.subject = new Subject<File>();
     return this.subject.asObservable();
   }
 
-  private resetAndCloseModal(): void {
-    this.isOpened = false
-    this.path = {} as string;
-    this.subject?.complete();
-    this.subject = undefined;
+  private onDropFile(event: DragEvent): void {
+    this.isDragOver = false;
+    if (event.dataTransfer) {
+      this.path = event.dataTransfer.files[0];
+    }
+    return;
   }
 
-  private onSaveFeed() {
-    this.subject?.next(this.path);
+  private onChange(event: InputEvent): void {
+    const target = event.target as HTMLInputElement;
+    if (target?.files?.item(0)) {
+      this.path = target.files.item(0);
+    }
+  }
+
+  private onUploadFile(): void {
+    if (this.path && this.subject) {
+      this.subject.next(this.path);
+    }
     this.resetAndCloseModal();
   }
 
-  public static open(parent: Element): Observable<string> {
-    // const FileUploadComponent = Vue.extend(FileUploadWindow());
-    const fileUpload = new FileUploadWindow();
-    fileUpload.$mount();
-    parent.appendChild(fileUpload.$el);
-    fileUpload.openEmpty();
-    console.log(fileUpload.$el);
-    return of(fileUpload.path);
+  public resetAndCloseModal(): void {
+    this.isOpened = false
+    this.path = null;
+    if (this.subject) {
+      this.subject.complete();
+      this.subject = undefined;
+    }
+  }
+
+  public static open(title: string, parent: Element): Observable<File> {
+    if (!FileUploadWindow.instance) {
+      FileUploadWindow.instance = new FileUploadWindow();
+      FileUploadWindow.instance.modalTitle = title;
+      FileUploadWindow.instance.$mount();
+      parent.appendChild(FileUploadWindow.instance.$el);
+    }
+    return FileUploadWindow.instance.openEmpty();
   }
 }
 </script>
