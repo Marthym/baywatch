@@ -20,14 +20,15 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
+import {Options, Vue} from 'vue-property-decorator';
 import {Feed} from '@/services/model/Feed';
 import {Observable, Subject} from "rxjs";
 import ModalWindow from "@/components/shared/ModalWindow.vue";
 import TagInput from "@/components/shared/TagInput.vue";
 import tagsService from '@/services/TagsService';
 
-@Component({
+@Options({
+  name:'FeedEditor',
   components: {
     TagInput,
     ModalWindow,

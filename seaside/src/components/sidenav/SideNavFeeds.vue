@@ -73,9 +73,9 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
+import {Options, Vue} from 'vue-property-decorator';
 
-@Component
+@Options({name: 'SideNavFeeds'})
 export default class SideNavFeeds extends Vue {
 }
 </script>

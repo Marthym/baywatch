@@ -3,15 +3,17 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
+import {Options, Vue} from 'vue-property-decorator';
+import {defineAsyncComponent} from "vue";
 
-const NewsList = () => import('@/components/newslist/NewsList.vue');
+const NewsList = defineAsyncComponent(() => import('@/components/newslist/NewsList.vue'));
 
-@Component({
+@Options({
+  name: 'HomePage',
   components: {
     NewsList,
   },
 })
-export default class Home extends Vue {
+export default class HomePage extends Vue {
 }
 </script>

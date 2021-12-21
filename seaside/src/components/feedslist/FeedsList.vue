@@ -18,7 +18,8 @@
         Importer
       </button>
       <a class="btn btn-primary" :href="`${BASEURL}/opml/export/baywatch.opml`">
-        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+             xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
         </svg>
@@ -48,8 +49,8 @@
       </tr>
       </thead>
       <tbody>
-      <template v-for="vFeed in this.feeds">
-        <FeedListItem :ref="vFeed.data.id" :view="vFeed" v-bind:key="vFeed.data.id"
+      <template v-for="vFeed in this.feeds" v-bind:key="vFeed.data.id">
+        <FeedListItem :ref="vFeed.data.id" :view="vFeed"
                       :is-authenticated="isAuthenticated"
                       @item-update="itemUpdate" @item-delete="itemDelete"/>
       </template>
@@ -75,7 +76,7 @@
   </div>
 </template>
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
+import {Options, Vue} from 'vue-property-decorator';
 import FeedListHeader from "@/components/feedslist/FeedListHeader.vue";
 import FeedListItem from "@/components/feedslist/FeedListItem.vue";
 import {FeedView} from "@/components/feedslist/model/FeedView";
@@ -91,7 +92,8 @@ import notificationService from "@/services/notification/NotificationService";
 
 const FileUploadWindow = () => import('@/components/shared/FileUploadWindow.vue').then(m => m.default);
 
-@Component({
+@Options({
+  name: 'FeedsList',
   components: {FeedEditor, FeedListItem, FeedListHeader},
 })
 export default class FeedsList extends Vue {

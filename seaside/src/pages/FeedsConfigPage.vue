@@ -3,11 +3,12 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
+import {Options, Vue} from 'vue-property-decorator';
 
 const FeedsList = () => import('@/components/feedslist/FeedsList.vue');
 
-@Component({
+@Options({
+  name: 'FeedsConfigPage',
   components: {
     FeedsList,
   },

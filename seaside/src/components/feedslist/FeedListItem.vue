@@ -20,7 +20,7 @@
             {{ view.data.name }}
           </div>
           <div class="text-sm opacity-50">
-            {{ view.data.id.substr(0,10) }}
+            {{ view.data.id.substr(0, 10) }}
           </div>
         </div>
       </div>
@@ -29,7 +29,7 @@
       <a class="link">{{ view.data.url }}</a>
 
       <br>
-<!--      <span class="badge badge-outline badge-sm">Desktop Support Technician</span>-->
+      <!--      <span class="badge badge-outline badge-sm">Desktop Support Technician</span>-->
     </td>
     <th v-if="isAuthenticated">
       <div class="btn-group">
@@ -51,12 +51,10 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
+import {Options, Prop, Vue} from 'vue-property-decorator';
 import {FeedView} from "@/components/feedslist/model/FeedView";
 
-@Component({
-  components: {},
-})
+@Options({name: 'FeedsListItem'})
 export default class FeedsListItem extends Vue {
   @Prop() private view!: FeedView;
   @Prop() private isAuthenticated!: boolean;

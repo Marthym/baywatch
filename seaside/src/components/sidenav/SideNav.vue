@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
+import {Options, Vue} from 'vue-property-decorator';
 import SideNavHeader from "./SideNavHeader.vue";
 import SideNavImportantActions from "./SideNavImportantActions.vue";
 import SideNavFeeds from './SideNavFeeds.vue';
@@ -32,11 +32,17 @@ import {User} from "@/services/model/User";
 import {SidenavState} from "@/store/sidenav/sidenav";
 import {StatisticsState} from "@/store/statistics/statistics";
 import {StatisticsMutation} from "@/store/statistics/StatisticsMutation.enum";
+import {useStore} from "vuex";
+import {setup} from "vue-class-component";
+import {defineAsyncComponent} from "vue";
 
-const SideNavTags = () => import('./SideNavTags.vue').then(m => m.default);
-const SideNavUserInfo = () => import('./SideNavUserInfo.vue').then(m => m.default);
+const SideNavTags = defineAsyncComponent(() => import('./SideNavTags.vue').then(m => m.default))
+// const SideNavTags = () => import('./SideNavTags.vue').then(m => m.default);
+const SideNavUserInfo = defineAsyncComponent(() => import('./SideNavUserInfo.vue').then(m => m.default));
+// const SideNavUserInfo = () => import('./SideNavUserInfo.vue').then(m => m.default);
 
-@Component({
+@Options({
+  name: 'SideNav',
   components: {
     SideNavStatistics,
     SideNavHeader,
@@ -47,11 +53,18 @@ const SideNavUserInfo = () => import('./SideNavUserInfo.vue').then(m => m.defaul
   },
 })
 export default class SideNav extends Vue implements UserListener {
-  private state: SidenavState = this.$store.state.sidenav;
-
-  private baywatchStats: StatisticsState = this.$store.state.statistics;
+  private store = setup(() => useStore());
+  private state: SidenavState = setup(() => useStore().state.sidenav);
+  private baywatchStats: StatisticsState = setup(() => useStore().state.statistics);
 
   private user: User | null = null;
+
+  setup() {
+    const store = useStore();
+    return {
+      store: store,
+    }
+  }
 
   get isLoggedIn(): boolean {
     return !!this.user;
@@ -76,7 +89,7 @@ export default class SideNav extends Vue implements UserListener {
   }
 
   private updateStatistics(): void {
-    statsService.get().subscribe(s => this.$store.commit(StatisticsMutation.UPDATE, s));
+    statsService.get().subscribe(s => this.store.commit(StatisticsMutation.UPDATE, s));
   }
 
   logoutUser(): void {

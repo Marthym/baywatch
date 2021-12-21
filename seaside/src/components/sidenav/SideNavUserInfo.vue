@@ -16,11 +16,16 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
+import {Options, Prop, Vue} from 'vue-property-decorator';
 import md5 from "js-md5";
 import {User} from "@/services/model/User";
 
-@Component
+@Options({
+  name: 'SideNavUserInfo',
+  props: {
+    user: Object,
+  }
+})
 export default class SideNavUserInfo extends Vue {
   @Prop() private user?: User;
 

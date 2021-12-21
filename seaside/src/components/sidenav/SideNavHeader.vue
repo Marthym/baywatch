@@ -60,15 +60,18 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
+import {Options, Prop, Vue} from 'vue-property-decorator';
 import {SidenavMutation} from "@/store/sidenav/SidenavMutation.enum";
+import {useStore} from "vuex";
+import {setup} from "vue-class-component";
 
-@Component
+@Options({name: 'SideNavHeader'})
 export default class SideNavHeader extends Vue {
   @Prop({default: 0}) unread?: number;
+  private store = setup(() => useStore());
 
   private toggleSidenav(): void {
-    this.$store.commit(SidenavMutation.TOGGLE);
+    this.store.commit(SidenavMutation.TOGGLE);
   }
 }
 </script>

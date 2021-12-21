@@ -24,11 +24,12 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
+import {Options, Vue} from 'vue-property-decorator';
 import {Observable, Subject} from "rxjs";
 import ModalWindow from "@/components/shared/ModalWindow.vue";
 
-@Component({
+@Options({
+  name:'FileUploadWindow',
   components: {
     ModalWindow,
   },

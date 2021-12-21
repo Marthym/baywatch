@@ -24,11 +24,9 @@
 }
 </style>
 <script lang="ts">
-import {Component, Prop, Vue} from "vue-property-decorator";
+import {Options, Prop, Vue} from "vue-property-decorator";
 
-@Component({
-  components: {},
-})
+@Options({name: 'ModalWindow'})
 export default class ModalWindow extends Vue {
   @Prop() isVisible?: boolean;
   @Prop() title?: string;

@@ -1,8 +1,8 @@
 <template>
   <div class="xl:w-2/3">
 
-    <template v-for="(card, idx) in news">
-      <NewsCard :ref="card.data.id" :card="card" v-bind:key="card.data.id" @activate="activateNewsCard(idx)">
+    <template v-for="(card, idx) in news" v-bind:key="card.data.id">
+      <NewsCard :ref="card.data.id" :card="card" @activate="activateNewsCard(idx)">
         <template #actions v-if="isAuthenticated">
           <svg class="action-icon p-0.5" v-if="!card.data.read" @click.stop="markNewsRead(idx, true)"
                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -33,7 +33,7 @@
 }
 </style>
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
+import {Options, Vue} from 'vue-property-decorator';
 import NewsCard from "@/components/newslist/NewsCard.vue";
 import {iif, Observable, of, Subject} from "rxjs";
 import {catchError, map, switchMap, take, tap} from "rxjs/operators";
@@ -52,17 +52,25 @@ import tagsService from '@/services/TagsService';
 
 import {ConstantFilters} from "@/constants";
 import {StatisticsMutation} from "@/store/statistics/StatisticsMutation.enum";
+import {setup} from "vue-class-component";
+import {useStore} from "vuex";
 
-@Component({
+@Options({
+  name: 'NewsList',
   components: {
     NewsCard,
   }
 })
-export default class MainContent extends Vue implements ScrollActivable, InfiniteScrollable {
+export default class NewsList extends Vue implements ScrollActivable, InfiniteScrollable {
+
+  private store = setup(() => {
+    console.log("test")
+    return useStore();
+  });
 
   private readonly activateOnScroll = ScrollingActivationBehaviour.apply(this);
   private readonly infiniteScroll = InfiniteScrollBehaviour.apply(this);
-  private news: NewsView[] = new Array(0);
+  private news: NewsView[] = [];
   private feeds = new Map<string, Feed>();
 
   private activeNews = -1;
@@ -259,11 +267,12 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
 
     iif(() => mark,
         newsService.mark(target.data.id, Mark.READ).pipe(
-            tap(() => this.$store.commit(StatisticsMutation.DECREMENT_UNREAD))),
+            tap(() => this.store.commit(StatisticsMutation.DECREMENT_UNREAD))),
         newsService.unmark(target.data.id, Mark.READ).pipe(
-            tap(() => this.$store.commit(StatisticsMutation.INCREMENT_UNREAD))),
+            tap(() => this.store.commit(StatisticsMutation.INCREMENT_UNREAD))),
     ).subscribe(news => {
-      this.$set(this.news, idx, {...target, data: news});
+      this.news[idx].data = news;
+      // this.$set(this.news, idx, {...target, data: news});
     });
   }
 
@@ -277,7 +286,8 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
         : newsService.unmark(target.data.id, Mark.SHARED);
 
     markObs.subscribe(news => {
-      this.$set(this.news, idx, {...target, data: news});
+      this.news[idx].data = news;
+      // this.$set(this.news, idx, {...target, data: news});
     });
   }
 
@@ -310,10 +320,6 @@ export default class MainContent extends Vue implements ScrollActivable, Infinit
       throw new Error(`Element with ref ${ref} not found !`);
     }
     return (vueRef as Vue[])[0].$el
-  }
-
-  beforeDestroy(): void {
-    window.removeEventListener('keydown', this.onKeyDownListener, false);
   }
 
   unmounted(): void {

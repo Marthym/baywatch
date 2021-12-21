@@ -23,16 +23,14 @@
 </style>
 <script lang="ts">
 import _Vue from 'vue';
-import {Component, Vue} from "vue-property-decorator";
+import {Options, Vue} from "vue-property-decorator";
 import {Observable, Subject} from "rxjs";
 
 export enum AlertType {INFO, CONFIRM_DELETE}
 
 export enum AlertResponse {OK, CONFIRM, CANCEL}
 
-@Component({
-  components: {},
-})
+@Options({name: 'AlertDialog'})
 export default class AlertDialog extends Vue {
 
   private message!: string;

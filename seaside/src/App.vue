@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
+import {Options, Vue} from 'vue-property-decorator';
 import ContentTopNav from "@/components/topnav/ContentTopNav.vue";
 import SideNav from '@/components/sidenav/SideNav.vue';
 import NotificationArea from "@/components/shared/notificationArea/NotificationArea.vue";
@@ -24,7 +24,7 @@ import {User} from "@/services/model/User";
 import {EventType} from "@/services/sse/EventType.enum";
 import {StatisticsMutation} from "@/store/statistics/StatisticsMutation.enum";
 
-@Component({
+@Options({
   components: {
     NotificationArea,
     ContentTopNav,
@@ -56,3 +56,4 @@ export default class App extends Vue implements UserListener {
   }
 }
 </script>
+

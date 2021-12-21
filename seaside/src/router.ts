@@ -1,17 +1,18 @@
-import Vue from 'vue';
-import VueRouter from 'vue-router';
+import {createRouter, createWebHistory} from 'vue-router';
+import {defineAsyncComponent} from "vue";
 
-const HomePage = () => import('./pages/HomePage.vue');
-const LoginPage = () => import('./pages/LoginPage.vue');
+// const SideNavTags = defineAsyncComponent(() => import('./SideNavTags.vue').then(m => m.default))
+
+const HomePage = () => import('@/pages/HomePage.vue');
+const LoginPage = () => import('@/pages/LoginPage.vue');
 const FeedsConfigPage = () => import('@/pages/FeedsConfigPage.vue');
 
-Vue.use(VueRouter)
-
-export default new VueRouter({
+export default createRouter({
+    history: createWebHistory(),
     routes: [
-        {path: '/news', component: HomePage, name: 'news'},
-        {path: '/login', component: LoginPage, name: 'login'},
-        {path: '/feeds', component: FeedsConfigPage, name: 'feeds'},
-        {path: '*', redirect: '/news'},
+        {path: '/news', name: 'HomePage', component: HomePage},
+        {path: '/login', component: LoginPage, name: 'LoginPage'},
+        {path: '/feeds', component: FeedsConfigPage, name: 'FeedsConfigPage'},
+        {path: '/*', redirect: '/news'},
     ]
 })

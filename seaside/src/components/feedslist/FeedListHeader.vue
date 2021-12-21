@@ -11,11 +11,9 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
+import {Options, Vue} from 'vue-property-decorator';
 
-@Component({
-  components: {},
-})
+@Options({name: 'FeedsListHeader'})
 export default class FeedsListHeader extends Vue {
 }
 </script>

@@ -7,10 +7,10 @@
   </div>
 </template>
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
+import {Options, Prop, Vue} from 'vue-property-decorator';
 import {Statistics} from "@/services/model/Statistics";
 
-@Component
+@Options({name: 'SideNavStatistics'})
 export default class SideNavStatistics extends Vue {
   @Prop() private statistics!: Statistics;
   @Prop() private isLoggedIn!: boolean;

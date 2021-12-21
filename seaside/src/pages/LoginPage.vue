@@ -4,7 +4,7 @@
     <div class="card lg:card-side bordered flex rounded-lg shadow-lg overflow-hidden mt-8 mx-auto lg:max-w-4xl"
          @click.stop>
       <figure class="h-full">
-        <img class="object-cover" src="login.webp" alt="Baywatch">
+        <img class="object-cover" src="/login.webp" alt="Baywatch">
       </figure>
       <div class="card-body w-3/4">
         <form @submit.prevent="onLogin">
@@ -29,11 +29,11 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
+import {Options, Vue} from 'vue-property-decorator';
 import userService from "@/services/UserService";
 
-@Component
-export default class LoginWindow extends Vue {
+@Options({name: 'LoginPage'})
+export default class LoginPage extends Vue {
   public username = '';
   public password = '';
   private formValidation = false;

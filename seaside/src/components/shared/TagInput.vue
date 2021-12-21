@@ -30,12 +30,10 @@
 }
 </style>
 <script lang="ts">
-import {Component, Prop, Vue} from "vue-property-decorator";
+import {Options, Prop, Vue} from "vue-property-decorator";
 import {Observable, of} from "rxjs";
 
-@Component({
-  components: {},
-})
+@Options({name: 'TagInput'})
 export default class TagInput extends Vue {
   @Prop({default: () => []}) private value!: string[];
   @Prop({default: () => () => of([])}) private availableTagsHandler!: () => Observable<string[]>;
