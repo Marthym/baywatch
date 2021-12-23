@@ -1,5 +1,5 @@
 import ScrollActivable from "@/services/model/ScrollActivable";
-import Vue from "vue";
+import Vue, {onBeforeUnmount} from "vue";
 
 /**
  * Allow a List Vue Component to activate Element on scroll without scroll event.
@@ -8,13 +8,13 @@ import Vue from "vue";
  * visible.
  *
  */
-export default class ScrollingActivationBehaviour {
-    private readonly observer: IntersectionObserver;
+export class ScrollingActivationBehaviour {
+    private observer: IntersectionObserver;
 
-    constructor(component: ScrollActivable & Vue) {
+    public connect(component: ScrollActivable & Vue): void {
         this.observer = new IntersectionObserver((entries) => {
             const entry = entries[0];
-            if (!entry.isIntersecting && entry.rootBounds !== null) {
+            if (!entry.isIntersecting && entry.rootBounds !== undefined) {
                 const isAbove = entry.boundingClientRect.y < entry.rootBounds.y;
                 const incr = (isAbove) ? +1 : -1;
                 component.activateElement(incr);
@@ -22,16 +22,18 @@ export default class ScrollingActivationBehaviour {
         }, {threshold: [0.75], rootMargin: "-60px 0px 0px 0px"});
     }
 
-    public static apply(component: ScrollActivable & Vue): ScrollingActivationBehaviour {
-        const decorator = new ScrollingActivationBehaviour(component);
-        component.$once('hook:beforeDestroy', () => {
-            decorator.observer.disconnect();
-        });
-        return decorator;
+    public disconnect(): void {
+        if (this.observer) {
+            this.observer.disconnect();
+        }
     }
 
     public observe(el: Element): void {
         this.observer.disconnect();
         this.observer.observe(el);
     }
+}
+
+export function useScrollingActivation() {
+    return new ScrollingActivationBehaviour();
 }

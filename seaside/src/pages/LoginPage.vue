@@ -11,7 +11,7 @@
           <h2 class="card-title">Baywatch</h2>
           <div class="form-control">
             <label class="label"><span class="label-text">Email Address</span></label>
-            <input ref="username" v-model="username" class="input input-bordered" type="text" placeholder="Username"
+            <input ref="usrInput" v-model="username" class="input input-bordered" type="text" placeholder="Username"
                    tabindex="1"
                    :class="{'input-error': usernameError}">
           </div>
@@ -39,7 +39,7 @@ export default class LoginPage extends Vue {
   private formValidation = false;
 
   mounted(): void {
-    (this.$refs.username as HTMLElement).focus();
+    (this.$refs.usrInput as HTMLElement).focus();
   }
 
   onLogin(): void {
@@ -62,6 +62,5 @@ export default class LoginPage extends Vue {
   public closeLoginWindow(): void {
     this.$router.back();
   }
-
 }
 </script>

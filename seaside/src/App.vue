@@ -23,6 +23,8 @@ import serverEventService from '@/services/sse/ServerEventService'
 import {User} from "@/services/model/User";
 import {EventType} from "@/services/sse/EventType.enum";
 import {StatisticsMutation} from "@/store/statistics/StatisticsMutation.enum";
+import {setup} from "vue-class-component";
+import {useStore} from "vuex";
 
 @Options({
   components: {
@@ -32,6 +34,8 @@ import {StatisticsMutation} from "@/store/statistics/StatisticsMutation.enum";
   },
 })
 export default class App extends Vue implements UserListener {
+  private readonly store = setup(() => useStore());
+
   mounted(): void {
     userService.registerUserListener(this);
   }
@@ -43,7 +47,6 @@ export default class App extends Vue implements UserListener {
 
   onUserChange(user: User): void {
     if (user) {
-      console.log("register listener sse", user);
       serverEventService.registerListener(EventType.NEWS, this.onServerMessage);
     } else {
       serverEventService.unregister(EventType.NEWS, this.onServerMessage);
@@ -52,7 +55,7 @@ export default class App extends Vue implements UserListener {
 
   private onServerMessage(evt: Event): void {
     const msg: MessageEvent = evt as MessageEvent;
-    this.$store.commit(StatisticsMutation.UPDATE, JSON.parse(msg.data));
+    this.store.commit(StatisticsMutation.UPDATE, JSON.parse(msg.data));
   }
 }
 </script>

@@ -38,9 +38,9 @@ import NewsCard from "@/components/newslist/NewsCard.vue";
 import {iif, Observable, of, Subject} from "rxjs";
 import {catchError, map, switchMap, take, tap} from "rxjs/operators";
 import {NewsView} from "@/components/newslist/model/NewsView";
-import ScrollingActivationBehaviour from "@/services/ScrollingActivationBehaviour";
 import ScrollActivable from "@/services/model/ScrollActivable";
-import InfiniteScrollBehaviour from "@/services/InfiniteScrollBehaviour";
+import {useInfiniteScroll} from "@/services/InfiniteScrollBehaviour";
+import {useScrollingActivation} from "@/services/ScrollingActivationBehaviour";
 import InfiniteScrollable from "@/services/model/InfiniteScrollable";
 import {Mark} from "@/services/model/Mark.enum";
 import {Feed} from "@/services/model/Feed";
@@ -63,13 +63,10 @@ import {useStore} from "vuex";
 })
 export default class NewsList extends Vue implements ScrollActivable, InfiniteScrollable {
 
-  private store = setup(() => {
-    console.log("test")
-    return useStore();
-  });
+  private readonly store = setup(() => useStore());
+  private readonly activateOnScroll = setup(() => useScrollingActivation());
+  private readonly infiniteScroll = setup(() => useInfiniteScroll());
 
-  private readonly activateOnScroll = ScrollingActivationBehaviour.apply(this);
-  private readonly infiniteScroll = InfiniteScrollBehaviour.apply(this);
   private news: NewsView[] = [];
   private feeds = new Map<string, Feed>();
 
@@ -79,6 +76,8 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   private tagListenerIndex = -1;
 
   mounted(): void {
+    this.activateOnScroll.connect(this);
+    this.infiniteScroll.connect(this);
     userService.get().pipe(
         tap(() => this.isAuthenticated = true),
         catchError(() => {
@@ -323,6 +322,8 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   }
 
   unmounted(): void {
+    this.activateOnScroll.disconnect();
+    this.infiniteScroll.disconnect();
     tagsService.unregisterListener(this.tagListenerIndex);
   }
 
