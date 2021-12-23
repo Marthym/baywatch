@@ -97,7 +97,7 @@ const FileUploadWindow = () => import('@/components/shared/FileUploadWindow.vue'
   components: {FeedEditor, FeedListItem, FeedListHeader},
 })
 export default class FeedsList extends Vue {
-  private readonly BASEURL = process.env.VUE_APP_API_BASE_URL;
+  private readonly BASEURL = import.meta.env.VITE_API_BASE_URL;
   private feedEditor!: FeedEditor;
 // noinspection JSMismatchedCollectionQueryUpdate
   private feeds: FeedView[] = new Array(0);

@@ -4,8 +4,7 @@
 
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
-
-const FeedsList = () => import('@/components/feedslist/FeedsList.vue');
+import FeedsList from '@/components/feedslist/FeedsList.vue';
 
 @Options({
   name: 'FeedsConfigPage',
