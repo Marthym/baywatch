@@ -37,9 +37,7 @@ import {setup} from "vue-class-component";
 import {defineAsyncComponent} from "vue";
 
 const SideNavTags = defineAsyncComponent(() => import('./SideNavTags.vue').then(m => m.default))
-// const SideNavTags = () => import('./SideNavTags.vue').then(m => m.default);
 const SideNavUserInfo = defineAsyncComponent(() => import('./SideNavUserInfo.vue').then(m => m.default));
-// const SideNavUserInfo = () => import('./SideNavUserInfo.vue').then(m => m.default);
 
 @Options({
   name: 'SideNav',

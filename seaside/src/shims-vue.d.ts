@@ -5,8 +5,8 @@ declare module '*.vue' {
     export default Vue
 }
 
-declare module 'vue/types/vue' {
-    interface Vue {
+declare module '@vue/runtime-core' {
+    export interface ComponentCustomProperties {
         $alert: AlertDialog;
     }
 }

@@ -29,16 +29,15 @@ import {Observable, Subject} from "rxjs";
 import ModalWindow from "@/components/shared/ModalWindow.vue";
 
 @Options({
-  name:'FileUploadWindow',
+  name: 'FileUploadWindow',
   components: {
     ModalWindow,
   },
 })
 export default class FileUploadWindow extends Vue {
-  private static instance: FileUploadWindow;
   private isOpened = false;
-  private isDragOver = false;
   private modalTitle = 'Baywatch';
+  private isDragOver = false;
   private subject: Subject<File> | undefined = undefined;
   private path: File | null = null;
 
@@ -78,16 +77,6 @@ export default class FileUploadWindow extends Vue {
       this.subject.complete();
       this.subject = undefined;
     }
-  }
-
-  public static open(title: string, parent: Element): Observable<File> {
-    if (!FileUploadWindow.instance) {
-      FileUploadWindow.instance = new FileUploadWindow();
-      FileUploadWindow.instance.modalTitle = title;
-      FileUploadWindow.instance.$mount();
-      parent.appendChild(FileUploadWindow.instance.$el);
-    }
-    return FileUploadWindow.instance.openEmpty();
   }
 }
 </script>

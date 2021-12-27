@@ -73,6 +73,7 @@
       </tfoot>
     </table>
     <FeedEditor ref="feedEditor"/>
+    <FileUploadWindow v-if="isFileUploadVisible" ref="opmlUpload"/>
   </div>
 </template>
 <script lang="ts">
@@ -81,7 +82,7 @@ import FeedListHeader from "@/components/feedslist/FeedListHeader.vue";
 import FeedListItem from "@/components/feedslist/FeedListItem.vue";
 import {FeedView} from "@/components/feedslist/model/FeedView";
 import {filter, map, switchMap, take, tap} from "rxjs/operators";
-import {from, Observable} from "rxjs";
+import {Observable} from "rxjs";
 import {Feed} from "@/services/model/Feed";
 import {AlertResponse, AlertType} from "@/components/shared/AlertDialog.vue";
 import FeedEditor from "@/components/feedslist/FeedEditor.vue";
@@ -89,21 +90,25 @@ import feedsService from "@/services/FeedService";
 import userService from "@/services/UserService";
 import opmlService from "@/services/opml/OpmlService";
 import notificationService from "@/services/notification/NotificationService";
+import {defineAsyncComponent, ref} from "vue";
+import {setup} from "vue-class-component";
 
-const FileUploadWindow = () => import('@/components/shared/FileUploadWindow.vue').then(m => m.default);
+const FileUploadWindow = defineAsyncComponent(() => import('@/components/shared/FileUploadWindow.vue'));
 
 @Options({
   name: 'FeedsList',
-  components: {FeedEditor, FeedListItem, FeedListHeader},
+  components: {FeedEditor, FeedListItem, FeedListHeader, FileUploadWindow},
 })
 export default class FeedsList extends Vue {
   private readonly BASEURL = import.meta.env.VITE_API_BASE_URL;
   private feedEditor!: FeedEditor;
+  private opmlUpload = setup(() => ({opmlUpload: ref(null)}));
 // noinspection JSMismatchedCollectionQueryUpdate
   private feeds: FeedView[] = new Array(0);
   private pagesNumber = 0;
   private activePage = 0;
   private isAuthenticated = false;
+  private isFileUploadVisible = false;
 
   mounted(): void {
     userService.get().subscribe({
@@ -112,6 +117,7 @@ export default class FeedsList extends Vue {
     })
     this.loadFeedPage(0).subscribe();
     this.feedEditor = this.$refs.feedEditor as FeedEditor;
+    console.log(this.$refs.opmlUpload)
   }
 
   loadFeedPage(page: number): Observable<FeedView[]> {
@@ -183,10 +189,10 @@ export default class FeedsList extends Vue {
   }
 
   private importOpmlFile(): void {
-    from(FileUploadWindow()).pipe(
-        switchMap(c => c.open('Charger un OPML', this.$el)),
+    this.isFileUploadVisible = true;
+    (this.opmlUpload as any).openEmpty().pipe(
         take(1),
-        switchMap(opml => opmlService.upload(opml)),
+        switchMap((opml: File) => opmlService.upload(opml)),
         switchMap(() => this.loadFeedPage(this.activePage)),
     ).subscribe({
       next: () => notificationService.pushSimpleOk('OPML chargé avec succès'),

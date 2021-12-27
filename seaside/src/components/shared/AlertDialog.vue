@@ -22,7 +22,6 @@
 }
 </style>
 <script lang="ts">
-import _Vue from 'vue';
 import {Options, Vue} from "vue-property-decorator";
 import {Observable, Subject} from "rxjs";
 
@@ -46,13 +45,9 @@ export default class AlertDialog extends Vue {
     return this.alertType === AlertType.CONFIRM_DELETE;
   }
 
-  static install(Vue: typeof _Vue): void {
-    Vue.component('alert-dialog', AlertDialog);
-  }
-
-  // noinspection JSUnusedGlobalSymbols
-  public beforeCreate(): void {
-    Vue.prototype.$alert = this;
+  public static instance(): AlertDialog {
+    const props = {};
+    return new AlertDialog(props);
   }
 
   public fire(message: string, alertType: AlertType = AlertType.INFO): Observable<AlertResponse> {
@@ -92,4 +87,13 @@ export default class AlertDialog extends Vue {
     this.close(AlertResponse.CANCEL);
   }
 }
+
+export const plugin = {
+  install(app, options): void {
+    app.component('AlertDialog', AlertDialog);
+    console.log("AlertDialog", AlertDialog);
+    // app.config.globalProperties.$alert = new AlertDialog();
+  }
+}
+
 </script>
