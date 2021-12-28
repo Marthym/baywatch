@@ -271,7 +271,6 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
             tap(() => this.store.commit(StatisticsMutation.INCREMENT_UNREAD))),
     ).subscribe(news => {
       this.news[idx].data = news;
-      // this.$set(this.news, idx, {...target, data: news});
     });
   }
 
@@ -324,6 +323,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   unmounted(): void {
     this.activateOnScroll.disconnect();
     this.infiniteScroll.disconnect();
+    window.removeEventListener('keydown', this.onKeyDownListener, false);
     tagsService.unregisterListener(this.tagListenerIndex);
   }
 
