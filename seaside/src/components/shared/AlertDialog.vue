@@ -45,11 +45,6 @@ export default class AlertDialog extends Vue {
     return this.alertType === AlertType.CONFIRM_DELETE;
   }
 
-  public static instance(): AlertDialog {
-    const props = {};
-    return new AlertDialog(props);
-  }
-
   public fire(message: string, alertType: AlertType = AlertType.INFO): Observable<AlertResponse> {
     if (this.isOpened) {
       if (this.response) {
@@ -89,10 +84,8 @@ export default class AlertDialog extends Vue {
 }
 
 export const plugin = {
-  install(app, options): void {
+  install(app): void {
     app.component('AlertDialog', AlertDialog);
-    console.log("AlertDialog", AlertDialog);
-    // app.config.globalProperties.$alert = new AlertDialog();
   }
 }
 

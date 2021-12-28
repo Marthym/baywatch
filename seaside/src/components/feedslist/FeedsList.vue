@@ -9,7 +9,7 @@
         </svg>
         Ajouter
       </button>
-      <button class="btn btn-primary" @click="importOpmlFile">
+      <button class="btn btn-primary" @click="this.isFileUploadVisible = true">
         <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
              xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -73,7 +73,7 @@
       </tfoot>
     </table>
     <FeedEditor ref="feedEditor"/>
-    <FileUploadWindow v-if="isFileUploadVisible" ref="opmlUpload"/>
+    <FileUploadWindow v-if="isFileUploadVisible" @upload="onOPMLUpload"/>
   </div>
 </template>
 <script lang="ts">
@@ -90,8 +90,7 @@ import feedsService from "@/services/FeedService";
 import userService from "@/services/UserService";
 import opmlService from "@/services/opml/OpmlService";
 import notificationService from "@/services/notification/NotificationService";
-import {defineAsyncComponent, ref} from "vue";
-import {setup} from "vue-class-component";
+import {defineAsyncComponent} from "vue";
 
 const FileUploadWindow = defineAsyncComponent(() => import('@/components/shared/FileUploadWindow.vue'));
 
@@ -102,7 +101,6 @@ const FileUploadWindow = defineAsyncComponent(() => import('@/components/shared/
 export default class FeedsList extends Vue {
   private readonly BASEURL = import.meta.env.VITE_API_BASE_URL;
   private feedEditor!: FeedEditor;
-  private opmlUpload = setup(() => ({opmlUpload: ref(null)}));
 // noinspection JSMismatchedCollectionQueryUpdate
   private feeds: FeedView[] = new Array(0);
   private pagesNumber = 0;
@@ -117,7 +115,6 @@ export default class FeedsList extends Vue {
     })
     this.loadFeedPage(0).subscribe();
     this.feedEditor = this.$refs.feedEditor as FeedEditor;
-    console.log(this.$refs.opmlUpload)
   }
 
   loadFeedPage(page: number): Observable<FeedView[]> {
@@ -188,18 +185,19 @@ export default class FeedsList extends Vue {
     });
   }
 
-  private importOpmlFile(): void {
-    this.isFileUploadVisible = true;
-    (this.opmlUpload as any).openEmpty().pipe(
-        take(1),
-        switchMap((opml: File) => opmlService.upload(opml)),
+  private onOPMLUpload(path: File | undefined): void {
+    this.isFileUploadVisible = false;
+    if (path === undefined) {
+      return;
+    }
+    opmlService.upload(path).pipe(
         switchMap(() => this.loadFeedPage(this.activePage)),
     ).subscribe({
       next: () => notificationService.pushSimpleOk('OPML chargé avec succès'),
       error: e => {
         console.error(e);
         notificationService.pushSimpleError('Impossible de charger le fichier');
-      }
+      },
     });
   }
 }
