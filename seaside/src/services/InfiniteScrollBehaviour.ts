@@ -1,4 +1,4 @@
-import Vue, {onBeforeUnmount} from "vue";
+import Vue from "vue";
 import InfiniteScrollable from "@/services/model/InfiniteScrollable";
 import {take, takeLast} from "rxjs/operators";
 

@@ -1,5 +1,5 @@
 import ScrollActivable from "@/services/model/ScrollActivable";
-import Vue, {onBeforeUnmount} from "vue";
+import Vue from "vue";
 
 /**
  * Allow a List Vue Component to activate Element on scroll without scroll event.

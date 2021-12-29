@@ -33,9 +33,12 @@
 import {Options, Prop, Vue} from "vue-property-decorator";
 import {Observable, of} from "rxjs";
 
-@Options({name: 'TagInput'})
+@Options({
+  name: 'TagInput',
+  emits: ['update:modelValue', 'submit'],
+})
 export default class TagInput extends Vue {
-  @Prop({default: () => []}) private value!: string[];
+  @Prop({default: () => []}) private modelValue!: string[];
   @Prop({default: () => () => of([])}) private availableTagsHandler!: () => Observable<string[]>;
 
   private availableTags: string[] = [];
@@ -52,7 +55,7 @@ export default class TagInput extends Vue {
     this.availableTagsHandler().subscribe({
       next: (tags) => this.availableTags = tags,
     });
-    this.tags = this.value.map(v => ({name: v, status: TagStatus.PRIMARY}));
+    this.tags = this.modelValue.map(v => ({name: v, status: TagStatus.PRIMARY}));
   }
 
   private onRemoveTag(tv: TagView) {
@@ -148,7 +151,7 @@ export default class TagInput extends Vue {
   }
 
   private emitInputEvent(): void {
-    this.$emit('input', this.tags.map(tv => tv.name));
+    this.$emit('update:modelValue', this.tags.map(tv => tv.name));
   }
 
   private emitSubmitEvent(): void {
