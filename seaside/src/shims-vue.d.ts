@@ -1,4 +1,4 @@
-import AlertDialog from '@/components/shared/AlertDialog.vue';
+import {IAlertDialog} from "@/components/shared/alertdialog/AlertDialog.types";
 
 declare module '*.vue' {
     import Vue from 'vue'
@@ -7,6 +7,6 @@ declare module '*.vue' {
 
 declare module '@vue/runtime-core' {
     export interface ComponentCustomProperties {
-        $alert: AlertDialog;
+        $alert: IAlertDialog;
     }
 }

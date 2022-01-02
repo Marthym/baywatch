@@ -17,6 +17,7 @@ export default defineConfig({
       '^/api': {
         target: 'http://localhost:8081',
         toProxy: true,
+        timeout: 0,
       },
     },
   }

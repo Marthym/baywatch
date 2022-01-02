@@ -84,13 +84,13 @@ import {FeedView} from "@/components/feedslist/model/FeedView";
 import {filter, map, switchMap, take, tap} from "rxjs/operators";
 import {Observable} from "rxjs";
 import {Feed} from "@/services/model/Feed";
-import {AlertResponse, AlertType} from "@/components/shared/AlertDialog.vue";
 import FeedEditor from "@/components/feedslist/FeedEditor.vue";
 import feedsService from "@/services/FeedService";
 import userService from "@/services/UserService";
 import opmlService from "@/services/opml/OpmlService";
 import notificationService from "@/services/notification/NotificationService";
 import {defineAsyncComponent} from "vue";
+import {AlertResponse, AlertType} from "@/components/shared/alertdialog/AlertDialog.types";
 
 const FileUploadWindow = defineAsyncComponent(() => import('@/components/shared/FileUploadWindow.vue'));
 
