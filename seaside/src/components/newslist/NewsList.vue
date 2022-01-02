@@ -25,13 +25,6 @@
     </template>
   </div>
 </template>
-<style>
-@layer components {
-  .action-icon {
-    @apply h-5 w-5 cursor-pointer hover:text-green-500 dark:hover:text-green-200;
-  }
-}
-</style>
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
 import NewsCard from "@/components/newslist/NewsCard.vue";

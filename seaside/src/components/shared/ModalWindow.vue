@@ -1,5 +1,5 @@
 <template>
-  <div class="modal compact flex-col space-x-0" :class="{'modal-active': isOpened}" v-if="isOpened">
+  <div class="modal compact flex-col space-x-0" :class="{'opacity-100 pointer-events-auto visible': isOpened}" v-if="isOpened">
     <div v-if="title !== undefined" class="modal-box translate-y-0 rounded-none
       text-lg bg-base-200 text-base-content uppercase font-bold p-4">
       {{ title }}
@@ -14,15 +14,6 @@
     </div>
   </div>
 </template>
-<style>
-@layer components {
-  .modal-active {
-    opacity: 1;
-    pointer-events: auto;
-    visibility: visible;
-  }
-}
-</style>
 <script lang="ts">
 import {Options, Prop, Vue} from "vue-property-decorator";
 

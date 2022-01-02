@@ -1,7 +1,7 @@
 import store from './store'
 import router from "./router";
 import App from './App.vue';
-import './assets/styles/index.css';
+import '@/assets/styles/index.css';
 import {createApp} from "vue";
 import {plugin as alertDialogPlugin} from "@/components/shared/AlertDialog.vue";
 

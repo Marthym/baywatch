@@ -22,13 +22,6 @@
     </div>
   </div>
 </template>
-<style>
-@layer components {
-  .proposal-selected {
-    @apply bg-base-content bg-opacity-20;
-  }
-}
-</style>
 <script lang="ts">
 import {Options, Prop, Vue} from "vue-property-decorator";
 import {Observable, of} from "rxjs";

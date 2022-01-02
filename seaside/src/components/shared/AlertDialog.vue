@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isOpened" :class="{'modal-active': isOpened}" class="modal compact flex-col space-x-0">
+  <div v-if="isOpened" :class="{'opacity-100 pointer-events-auto visible': isOpened}" class="modal compact flex-col space-x-0">
     <div class="modal-box translate-y-0 rounded-none">
       <p v-html="message"></p>
       <div v-if="isInfoDialog" class="modal-action">
@@ -12,15 +12,6 @@
     </div>
   </div>
 </template>
-<style>
-@layer components {
-  .modal-active {
-    opacity: 1;
-    pointer-events: auto;
-    visibility: visible;
-  }
-}
-</style>
 <script lang="ts">
 import {Options, Vue} from "vue-property-decorator";
 import {Observable, Subject} from "rxjs";
