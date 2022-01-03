@@ -1,7 +1,6 @@
 <template>
-  <div class="xl:w-2/3">
-
-    <template v-for="(card, idx) in news" v-bind:key="card.data.id">
+  <div class="max-w-5xl">
+    <template v-for="(card, idx) in news" :key="card.data.id">
       <NewsCard :ref="card.data.id" :card="card" @activate="activateNewsCard(idx)">
         <template #actions v-if="isAuthenticated">
           <svg class="action-icon p-0.5" v-if="!card.data.read" @click.stop="markNewsRead(idx, true)"

@@ -1,22 +1,26 @@
 <template>
-  <div class="flex flex-row bg-white dark:bg-gray-600 shadow rounded-lg"
-       v-bind:class="{ 'shadow-lg h-60 my-8 border border-gray-400': card.isActive, 'h-56 m-5': !card.isActive}"
-       @click="$emit('activate')">
-    <!-- Card -->
-    <div class="flex-none"><!-- Left side -->
-      <img v-if="card.data.image" class="h-full w-60 object-cover rounded-l-lg "
+  <div class="flex flex-col lg:flex-row bg-white dark:bg-gray-600 shadow rounded-lg"
+       :class="{
+        'shadow-lg lg:h-60 my-8 border border-gray-400': card.isActive,
+        'lg:h-56 m-5': !card.isActive
+       }" @click="$emit('activate')">
+
+    <figure class="flex-none">
+      <img v-if="card.data.image"
            :src="card.data.image"
-           v-bind:class="{ 'opacity-30': card.data.read }"
+           class="w-full h-24 lg:h-full lg:w-60 object-cover rounded-t-lg lg:rounded-none lg:rounded-l-lg"
+           :class="{ 'opacity-30': card.data.read }"
            alt="og:image"/>
-      <img v-else class="h-full w-60 object-contain rounded-l-lg"
-           v-bind:class="{ 'opacity-30': card.data.read }"
+      <img v-else
+           class="w-full h-24 lg:h-full lg:w-60 object-cover rounded-t-lg lg:rounded-none lg:rounded-l-lg"
+           :class="{ 'opacity-30': card.data.read }"
            src="/placeholder.png"
            alt="no-og-image"/>
-    </div>
+    </figure>
 
-    <div v-bind:class="{ 'm-6': card.isActive, 'm-4': !card.isActive}" class="flex-grow"><!-- Middle -->
+    <div :class="{ 'm-6': card.isActive, 'm-4': !card.isActive}" class="flex-grow">
       <div class="flex flex-col h-full"
-           v-bind:class="{
+           :class="{
               'text-black': !card.data.read || card.isActive,
               'text-gray-400': card.data.read && !card.isActive,
               'dark:text-gray-200': !card.data.read || card.isActive,
