@@ -25,9 +25,9 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
+import {Options, Prop, Vue} from 'vue-property-decorator';
 
-@Component
+@Options({name: 'SideNavImportantActions'})
 export default class SideNavImportantActions extends Vue {
   @Prop({default: false}) private isLoggedIn?: boolean;
 }

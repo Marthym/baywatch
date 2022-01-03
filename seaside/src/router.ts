@@ -1,17 +1,15 @@
-import Vue from 'vue';
-import VueRouter from 'vue-router';
+import {createRouter, createWebHashHistory, RouterOptions} from 'vue-router';
 
-const HomePage = () => import('./pages/HomePage.vue');
-const LoginPage = () => import('./pages/LoginPage.vue');
+const HomePage = () => import('@/pages/HomePage.vue');
+const LoginPage = () => import('@/pages/LoginPage.vue');
 const FeedsConfigPage = () => import('@/pages/FeedsConfigPage.vue');
 
-Vue.use(VueRouter)
-
-export default new VueRouter({
+export default createRouter({
+    history: createWebHashHistory(),
     routes: [
-        {path: '/news', component: HomePage, name: 'news'},
-        {path: '/login', component: LoginPage, name: 'login'},
-        {path: '/feeds', component: FeedsConfigPage, name: 'feeds'},
-        {path: '*', redirect: '/news'},
+        {path: '/news', component: HomePage, name: 'HomePage'},
+        {path: '/login', component: LoginPage, name: 'LoginPage'},
+        {path: '/feeds', component: FeedsConfigPage, name: 'FeedsConfigPage'},
+        {path: '/:catchAll(.*)*', redirect: '/news'},
     ]
-})
+} as RouterOptions)

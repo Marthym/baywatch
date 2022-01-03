@@ -9,7 +9,7 @@
         </svg>
         Ajouter
       </button>
-      <button class="btn btn-primary" @click="importOpmlFile">
+      <button class="btn btn-primary" @click="this.isFileUploadVisible = true">
         <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
              xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -18,7 +18,8 @@
         Importer
       </button>
       <a class="btn btn-primary" :href="`${BASEURL}/opml/export/baywatch.opml`">
-        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+             xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
         </svg>
@@ -48,8 +49,8 @@
       </tr>
       </thead>
       <tbody>
-      <template v-for="vFeed in this.feeds">
-        <FeedListItem :ref="vFeed.data.id" :view="vFeed" v-bind:key="vFeed.data.id"
+      <template v-for="vFeed in this.feeds" v-bind:key="vFeed.data.id">
+        <FeedListItem :ref="vFeed.data.id" :view="vFeed"
                       :is-authenticated="isAuthenticated"
                       @item-update="itemUpdate" @item-delete="itemDelete"/>
       </template>
@@ -72,36 +73,40 @@
       </tfoot>
     </table>
     <FeedEditor ref="feedEditor"/>
+    <FileUploadWindow v-if="isFileUploadVisible" @upload="onOPMLUpload"/>
   </div>
 </template>
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
+import {Options, Vue} from 'vue-property-decorator';
 import FeedListHeader from "@/components/feedslist/FeedListHeader.vue";
 import FeedListItem from "@/components/feedslist/FeedListItem.vue";
 import {FeedView} from "@/components/feedslist/model/FeedView";
 import {filter, map, switchMap, take, tap} from "rxjs/operators";
-import {from, Observable} from "rxjs";
+import {Observable} from "rxjs";
 import {Feed} from "@/services/model/Feed";
-import {AlertResponse, AlertType} from "@/components/shared/AlertDialog.vue";
 import FeedEditor from "@/components/feedslist/FeedEditor.vue";
 import feedsService from "@/services/FeedService";
 import userService from "@/services/UserService";
 import opmlService from "@/services/opml/OpmlService";
 import notificationService from "@/services/notification/NotificationService";
+import {defineAsyncComponent} from "vue";
+import {AlertResponse, AlertType} from "@/components/shared/alertdialog/AlertDialog.types";
 
-const FileUploadWindow = () => import('@/components/shared/FileUploadWindow.vue').then(m => m.default);
+const FileUploadWindow = defineAsyncComponent(() => import('@/components/shared/FileUploadWindow.vue'));
 
-@Component({
-  components: {FeedEditor, FeedListItem, FeedListHeader},
+@Options({
+  name: 'FeedsList',
+  components: {FeedEditor, FeedListItem, FeedListHeader, FileUploadWindow},
 })
 export default class FeedsList extends Vue {
-  private readonly BASEURL = process.env.VUE_APP_API_BASE_URL;
+  private readonly BASEURL = import.meta.env.VITE_API_BASE_URL;
   private feedEditor!: FeedEditor;
 // noinspection JSMismatchedCollectionQueryUpdate
   private feeds: FeedView[] = new Array(0);
   private pagesNumber = 0;
   private activePage = 0;
   private isAuthenticated = false;
+  private isFileUploadVisible = false;
 
   mounted(): void {
     userService.get().subscribe({
@@ -180,18 +185,19 @@ export default class FeedsList extends Vue {
     });
   }
 
-  private importOpmlFile(): void {
-    from(FileUploadWindow()).pipe(
-        switchMap(c => c.open('Charger un OPML', this.$el)),
-        take(1),
-        switchMap(opml => opmlService.upload(opml)),
+  private onOPMLUpload(path: File | undefined): void {
+    this.isFileUploadVisible = false;
+    if (path === undefined) {
+      return;
+    }
+    opmlService.upload(path).pipe(
         switchMap(() => this.loadFeedPage(this.activePage)),
     ).subscribe({
       next: () => notificationService.pushSimpleOk('OPML chargé avec succès'),
       error: e => {
         console.error(e);
         notificationService.pushSimpleError('Impossible de charger le fichier');
-      }
+      },
     });
   }
 }

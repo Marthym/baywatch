@@ -3,7 +3,7 @@
     <package-json value="$PROJECT_DIR$/seaside/package.json" />
     <command value="run" />
     <scripts>
-      <script value="serve" />
+      <script value="dev" />
     </scripts>
     <node-interpreter value="$USER_HOME$/.nvm/versions/node/v16.13.1/bin/node" />
     <package-manager value="yarn" />

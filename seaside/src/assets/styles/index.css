@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    .action-icon {
+        @apply h-5 w-5 cursor-pointer hover:text-green-500 dark:hover:text-green-200;
+    }
+
+    .proposal-selected {
+        @apply bg-base-content bg-opacity-20;
+    }
+}

@@ -4,11 +4,11 @@
       <label class="label">
         <span class="label-text">Nom</span>
       </label>
-      <input v-model="feed.name" type="text" placeholder="username" class="input input-bordered">
+      <input v-model="feed.name" type="text" placeholder="nom" class="input input-bordered">
       <label class="label">
         <span class="label-text">URL</span>
       </label>
-      <input v-model="feed.url" type="text" placeholder="username" class="input input-bordered">
+      <input v-model="feed.url" type="text" placeholder="https://..." class="input input-bordered">
       <TagInput v-model="feed.tags" :available-tags-handler="() => listAvailableTags()"/>
       <button class="hidden" type="submit"/>
     </form>
@@ -20,14 +20,15 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
+import {Options, Vue} from 'vue-property-decorator';
 import {Feed} from '@/services/model/Feed';
 import {Observable, Subject} from "rxjs";
 import ModalWindow from "@/components/shared/ModalWindow.vue";
 import TagInput from "@/components/shared/TagInput.vue";
 import tagsService from '@/services/TagsService';
 
-@Component({
+@Options({
+  name:'FeedEditor',
   components: {
     TagInput,
     ModalWindow,

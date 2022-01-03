@@ -40,14 +40,15 @@
 </style>
 
 <script lang="ts">
-import {Component, Vue} from "vue-property-decorator";
+import {Options, Vue} from "vue-property-decorator";
 import {NotificationView} from "@/components/shared/notificationArea/NotificationView";
 import {Notification} from "@/services/notification/Notification.type";
 import NotificationListener from "@/services/notification/NotificationListener";
 import notificationService from '@/services/notification/NotificationService';
 import {Severity} from "@/services/notification/Severity.enum";
 
-@Component({
+@Options({
+  name: 'NotificationArea',
   components: {},
 })
 export default class NotificationArea extends Vue implements NotificationListener {

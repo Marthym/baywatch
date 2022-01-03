@@ -21,10 +21,10 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
+import {Options, Vue} from 'vue-property-decorator';
 import tagsService from "@/services/TagsService";
 
-@Component
+@Options({name: 'SideNavTags'})
 export default class SideNavTags extends Vue {
   private tags: string[] = [];
   private selected = '';

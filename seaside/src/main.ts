@@ -1,17 +1,12 @@
-import Vue from 'vue';
 import store from './store'
 import router from "./router";
 import App from './App.vue';
-import VueRx from 'vue-rx';
-import './assets/styles/index.css';
-import AlertDialog from "@/components/shared/AlertDialog.vue";
+import '@/assets/styles/index.css';
+import {createApp} from "vue";
+import {plugin as alertDialogPlugin} from "@/components/shared/alertdialog/plugin";
 
-Vue.config.productionTip = false
-Vue.use(VueRx);
-Vue.use(AlertDialog);
-
-new Vue({
-    render: h => h(App),
-    router: router,
-    store: store,
-}).$mount('#app')
+createApp(App)
+    .use(alertDialogPlugin)
+    .use(router)
+    .use(store)
+    .mount('#app');

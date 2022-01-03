@@ -51,24 +51,27 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
+import {Options, Vue} from 'vue-property-decorator';
 import {SidenavMutation} from "@/store/sidenav/SidenavMutation.enum";
 import {StatisticsState} from "@/store/statistics/statistics";
 import userService from '@/services/UserService';
 import {StatisticsMutation} from "@/store/statistics/StatisticsMutation.enum";
+import {setup} from "vue-class-component";
+import {useStore} from "vuex";
 
-@Component
+@Options({name: 'ContentTopNav'})
 export default class ContentTopNav extends Vue {
 
-  private statistics: StatisticsState = this.$store.state.statistics;
+  private statistics: StatisticsState = setup(() => useStore().state.statistics);
+  private store = setup(() => useStore());
 
   private toggleSidenav(): void {
-    this.$store.commit(SidenavMutation.TOGGLE);
+    this.store.commit(SidenavMutation.TOGGLE);
   }
 
   // noinspection JSMethodCanBeStatic
   private reload(): void {
-    this.$store.commit(StatisticsMutation.RESET_UPDATED);
+    this.store.commit(StatisticsMutation.RESET_UPDATED);
     userService.reload();
   }
 }

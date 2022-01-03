@@ -46,10 +46,10 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
+import {Options, Prop, Vue} from 'vue-property-decorator';
 import {NewsView} from "@/components/newslist/model/NewsView";
 
-@Component
+@Options({name: 'NewsCard'})
 export default class NewsCard extends Vue {
   @Prop() card?: NewsView;
 }

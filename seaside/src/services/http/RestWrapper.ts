@@ -98,4 +98,4 @@ export class RestWrapper {
     }
 }
 
-export default new RestWrapper(process.env.VUE_APP_API_BASE_URL as string);
+export default new RestWrapper(import.meta.env.VITE_API_BASE_URL as string);
