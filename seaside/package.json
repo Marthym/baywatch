@@ -4,10 +4,6 @@
   "private": true,
   "scripts": {
     "test": "jest",
-    "serve": "vue-cli-service serve --mode development",
-    "serve:prod": "vue-cli-service serve --mode production",
-    "build:old": "vue-cli-service build",
-    "watch": "vue-cli-service build --watch",
     "lint": "eslint --fix --ext .js,.vue --ignore-path .gitignore src",
     "dev": "vite",
     "build": "vite build",
@@ -16,15 +12,13 @@
   "dependencies": {
     "@types/js-md5": "^0.4.2",
     "core-js": "^3.14.0",
-    "daisyui": "^1.14.5",
+    "daisyui": "^1.21.0",
     "js-md5": "^0.7.3",
     "rxjs": "^7.4.0",
-    "rxjs-compat": "^6.6.7",
     "vue": "^3.2.25",
     "vue-class-component": "^8.0.0-rc.1",
     "vue-property-decorator": "^10.0.0-rc.3",
     "vue-router": "^4.0.12",
-    "vue-rx": "^6.2.0",
     "vuex": "^4.0.2"
   },
   "devDependencies": {
