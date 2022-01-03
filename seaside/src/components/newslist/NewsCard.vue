@@ -12,7 +12,7 @@
            :class="{ 'opacity-30': card.data.read }"
            alt="og:image"/>
       <img v-else
-           class="w-full h-24 lg:h-full lg:w-60 object-cover rounded-t-lg lg:rounded-none lg:rounded-l-lg"
+           class="w-full h-24 lg:w-60 lg:h-full object-contain rounded-t-lg lg:rounded-none lg:rounded-l-lg"
            :class="{ 'opacity-30': card.data.read }"
            src="/placeholder.png"
            alt="no-og-image"/>
