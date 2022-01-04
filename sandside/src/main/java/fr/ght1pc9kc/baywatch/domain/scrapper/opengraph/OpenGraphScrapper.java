@@ -116,6 +116,16 @@ public final class OpenGraphScrapper {
                 .filter(not(List::isEmpty))
                 .map(metas -> ogReader.read(metas, location))
 
+                .flatMap(og -> {
+                    Mono<OpenGraph> resultOg = Mono.just(og);
+                    for (OpenGraphPlugin scrapperPlugin : scrapperPlugins) {
+                        if (scrapperPlugin.isApplicable(location)) {
+                            resultOg = resultOg.flatMap(scrapperPlugin::postTreatment);
+                        }
+                    }
+                    return resultOg;
+                })
+
                 .onErrorResume(e -> {
                     log.warn("{}", e.getLocalizedMessage());
                     log.debug("STACKTRACE", e);
@@ -123,5 +133,4 @@ public final class OpenGraphScrapper {
                 });
 
     }
-
 }

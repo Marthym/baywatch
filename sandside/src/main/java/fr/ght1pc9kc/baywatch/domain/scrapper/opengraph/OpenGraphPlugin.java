@@ -1,11 +1,14 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.opengraph;
 
+import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OpenGraph;
+import reactor.core.publisher.Mono;
+
 import java.net.URI;
 import java.util.Map;
 
 /**
  * Interface to implement in order to add a OG scrapper plugin.
- *
+ * <p>
  * A OG Scrapper Plugin allow to include additional Cookie or Headers into scrapping http request before send it.
  */
 public interface OpenGraphPlugin {
@@ -37,5 +40,9 @@ public interface OpenGraphPlugin {
      */
     default Map<String, String> additionalHeaders() {
         return Map.of();
+    }
+
+    default Mono<OpenGraph> postTreatment(OpenGraph openGraph) {
+        return Mono.just(openGraph);
     }
 }

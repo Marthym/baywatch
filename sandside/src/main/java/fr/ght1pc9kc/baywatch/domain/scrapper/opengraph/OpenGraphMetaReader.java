@@ -10,7 +10,6 @@ import fr.ght1pc9kc.juery.basic.common.lang3.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Locale;
@@ -70,6 +69,7 @@ public final class OpenGraphMetaReader {
 
     private Optional<URL> readMetaUrl(String link, URI location) {
         return readMetaUri(link, location)
+                .flatMap(Exceptions.silence().function(URITools::removeQueryString))
                 .flatMap(Exceptions.log(log).function(Exceptions.wrap().function(URI::toURL)));
     }
 
@@ -77,17 +77,8 @@ public final class OpenGraphMetaReader {
         if (StringUtils.isBlank(link)) {
             return Optional.empty();
         }
-        Optional<URI> uri = Optional.of(link)
-                .flatMap(Exceptions.silence().function(URI::create))
-                .flatMap(u -> {
-                    try {
-                        return Optional.of(new URI(u.getScheme(), u.getHost(), u.getPath(), null));
-                    } catch (URISyntaxException e) {
-                        log.info("{}: {} -> {}", e.getClass(), e.getLocalizedMessage(), u);
-                        log.debug("STACKTRACE", e);
-                        return Optional.empty();
-                    }
-                });
+
+        Optional<URI> uri = Optional.of(link).flatMap(Exceptions.silence().function(URI::create));
 
         if (location != null) {
             return uri.map(location::resolve);

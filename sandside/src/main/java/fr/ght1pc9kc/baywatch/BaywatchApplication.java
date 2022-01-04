@@ -44,9 +44,4 @@ public class BaywatchApplication {
                                 .compress(true)
                 )).build();
     }
-
-    @Bean
-    OpenGraphScrapper getOpenGraphScrapper(WebClient webClient, List<OpenGraphPlugin> plugins) {
-        return new OpenGraphScrapper(webClient, new OpenGraphMetaReader(), plugins);
-    }
 }
