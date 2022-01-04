@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col lg:flex-row bg-white dark:bg-gray-600 shadow rounded-lg"
+  <div class="flex flex-col lg:flex-row bg-gray-600 shadow rounded-lg"
        :class="{
         'shadow-lg lg:h-60 my-8 border border-gray-400': card.isActive,
         'lg:h-56 m-5': !card.isActive,

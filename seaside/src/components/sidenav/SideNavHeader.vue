@@ -27,11 +27,11 @@
         </g>
       </g>
     </svg>
-    <span class="text-lg font-semibold capitalize dark:text-gray-300">
+    <span class="text-lg font-semibold capitalize text-gray-300">
 				Baywatch
     </span>
     <div class="relative hidden lg:block">
-      <router-link to="/" class="hover:text-green-500 dark-hover:text-green-300 text-gray-600 dark:text-gray-300">
+      <router-link to="/" class="hover:text-green-300 text-gray-300">
         <svg
             width="24"
             height="24"
@@ -47,7 +47,7 @@
       </router-link>
       <div v-if="unread > 0" class="
           absolute w-2 h-2 text-center rounded-full text-xs text-white font-semibold
-          bg-green-500 dark-hover:bg-green-300 right-0 mb-5 bottom-0">
+          bg-green-500 hover:bg-green-300 right-0 mb-5 bottom-0">
       </div>
     </div>
 

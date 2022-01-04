@@ -1,4 +1,4 @@
-<template><!-- User info -->
+<template>
   <div class="flex mt-5" v-if="user">
     <img class="h-12 w-12 mr-2 rounded-full object-cover"
          :src="avatar"
