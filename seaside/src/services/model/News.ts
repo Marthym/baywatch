@@ -2,7 +2,7 @@ export type News = {
     id: string;
     title: string;
     description: string;
-    publication: Date;
+    publication: string;
     image: string;
     link: string;
     feeds: string[];

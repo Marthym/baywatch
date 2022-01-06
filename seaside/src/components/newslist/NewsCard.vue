@@ -22,9 +22,6 @@
         <a class="font-semibold text-xl" :href="card.data.link" :title="card.data.link" v-html="card.data.title"></a>
         <span v-html="card.data.description" class="mt-2 text-base flex-grow overflow-hidden"></span>
 
-        <div class="flex flex-row-reverse text-sm italic mt-1">
-          <span>{{ card.data.publication }}</span>
-        </div>
         <div class="flex flex-row-reverse italic">
           <div class="badge badge-xs p-2"
                v-for="f in card.feeds">{{ f }}
@@ -32,7 +29,9 @@
           <span class="flex-grow"></span>
           <slot name="actions"></slot>
         </div>
-
+        <div class="flex flex-row-reverse text-xs italic mt-1">
+          <span>{{ publication }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -45,5 +44,16 @@ import {NewsView} from "@/components/newslist/model/NewsView";
 @Options({name: 'NewsCard'})
 export default class NewsCard extends Vue {
   @Prop() card?: NewsView;
+
+  get publication(): string | undefined {
+    if (this.card) {
+      return new Date(this.card.data.publication).toLocaleDateString(navigator.languages, {
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        year: 'numeric', month: 'short', day: '2-digit', hour: "2-digit", minute: "2-digit"
+      });
+    } else {
+      return undefined;
+    }
+  }
 }
 </script>
