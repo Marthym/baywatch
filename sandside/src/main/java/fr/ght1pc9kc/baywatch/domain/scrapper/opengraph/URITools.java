@@ -6,12 +6,16 @@ import java.net.URI;
 
 @UtilityClass
 public class URITools {
-    public URI removeQueryString(String uri) {
+    public String removeQueryString(String uri) {
         int idx = uri.indexOf('?');
-        return (idx < 0) ? URI.create(uri) : URI.create(uri.substring(0, idx));
+        return (idx < 0) ? uri : uri.substring(0, idx);
     }
 
     public URI removeQueryString(URI uri) {
-        return removeQueryString(uri.toString());
+        if (uri.getQuery() == null) {
+            return uri;
+        } else {
+            return URI.create(removeQueryString(uri.toString()));
+        }
     }
 }

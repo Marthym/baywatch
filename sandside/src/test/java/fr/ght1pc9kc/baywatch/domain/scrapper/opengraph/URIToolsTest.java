@@ -26,7 +26,7 @@ class URIToolsTest {
             "www.jedi.com/?obiwan/?q=jedi, www.jedi.com/",
     })
     void should_remove_querystring_from_string(String uri, String expected) {
-        URI actual = URITools.removeQueryString(uri);
-        Assertions.assertThat(actual.toString()).isEqualTo(expected);
+        String actual = URITools.removeQueryString(uri);
+        Assertions.assertThat(actual).isEqualTo(expected);
     }
 }
