@@ -66,7 +66,7 @@ class OpenGraphScrapperTest {
         Assertions.assertThat(actual).isEqualTo(OpenGraph.builder()
                 .title("Les Critères de recherche avec Juery")
                 .type(OGType.ARTICLE)
-                .url(new URL("https://blog.ght1pc9kc.fr/2021/les-critères-de-recherche-avec-juery.html"))
+                .url(new URL("https://blog.ght1pc9kc.fr/2021/les-crit%C3%A8res-de-recherche-avec-juery.html"))
                 .build());
     }
 

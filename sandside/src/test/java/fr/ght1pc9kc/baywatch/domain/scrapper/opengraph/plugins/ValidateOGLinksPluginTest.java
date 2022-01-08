@@ -52,7 +52,7 @@ class ValidateOGLinksPluginTest {
         Mono<OpenGraph> actual = tested.postTreatment(openGraph);
 
         StepVerifier.create(actual)
-                .expectNext(openGraph.withImage(URI.create("https://padawan.jedi.com/")))
+                .expectNext(openGraph.withImage(URI.create("https://padawan.jedi.com/?from=master")))
                 .verifyComplete();
     }
 
