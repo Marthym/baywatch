@@ -84,6 +84,7 @@ public final class OpenGraphScrapper {
 
                     CharsetDecoder charsetDecoder = responseCharset.newDecoder();
                     return response.bodyToFlux(DataBuffer.class)
+                            .doOnTerminate(response::releaseBody)
 
                             .switchOnFirst((signal, fBuff) -> {
                                 if (signal.hasValue()) {
