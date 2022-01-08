@@ -22,15 +22,15 @@
         <a class="font-semibold text-xl" :href="card.data.link" :title="card.data.link" v-html="card.data.title"></a>
         <span v-html="card.data.description" class="mt-2 text-base flex-grow overflow-hidden"></span>
 
-        <div class="flex flex-row-reverse italic">
-          <div class="badge badge-xs p-2"
-               v-for="f in card.feeds">{{ f }}
-          </div>
-          <span class="flex-grow"></span>
+        <div class="flex flex-row justify-end items-end text-xs">
           <slot name="actions"></slot>
-        </div>
-        <div class="flex flex-row-reverse text-xs italic mt-1">
-          <span>{{ publication }}</span>
+          <span class="grow"></span>
+          <div class="italic text-right">
+            <div class="badge badge-xs p-2 rounded"
+                 v-for="f in card.feeds">{{ f }}
+            </div>
+            <div class="self-end">{{ publication }}</div>
+          </div>
         </div>
       </div>
     </div>
