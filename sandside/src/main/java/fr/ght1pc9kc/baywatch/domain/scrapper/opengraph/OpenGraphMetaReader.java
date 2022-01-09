@@ -58,7 +58,7 @@ public final class OpenGraphMetaReader {
                     break;
                 case Tags.OG_LOCALE:
                     if (m.content != null) {
-                        builder.locale(Locale.forLanguageTag(m.content));
+                        builder.locale(Locale.forLanguageTag(m.content.replaceAll("_", "-")));
                     }
                     break;
                 default:
@@ -69,7 +69,7 @@ public final class OpenGraphMetaReader {
 
     private Optional<URL> readMetaUrl(String link, URI location) {
         return readMetaUri(link, location)
-                .flatMap(Exceptions.silence().function(URITools::removeQueryString))
+                .flatMap(Exceptions.silence().function(OGScrapperUtils::removeQueryString))
                 .flatMap(Exceptions.log(log).function(Exceptions.wrap().function(URI::toURL)));
     }
 

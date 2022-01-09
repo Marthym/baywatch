@@ -26,8 +26,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 
@@ -68,6 +70,20 @@ class OpenGraphScrapperTest {
                 .type(OGType.ARTICLE)
                 .url(new URL("https://blog.ght1pc9kc.fr/2021/les-crit%C3%A8res-de-recherche-avec-juery.html"))
                 .build());
+    }
+
+    @Test
+    void should_parse_opengraph_with_apostrophe() {
+        URI page = URI.create("https://blog.ght1pc9kc.fr/apostrophe.html");
+        OpenGraph actual = tested.scrap(page).block();
+
+        Assertions.assertThat(actual).isNotNull();
+        assertAll(
+                () -> Assertions.assertThat(actual.title).isEqualTo("Économiseur d'écran personnalisé avec XSecureLock"),
+                () -> Assertions.assertThat(actual.type).isEqualTo(OGType.ARTICLE),
+                () -> Assertions.assertThat(actual.image).isEqualTo(URI.create("https://d1g3mdmxf8zbo9.cloudfront.net/images/i3/xsecurelock@2x.jpg")),
+                () -> Assertions.assertThat(actual.locale).isEqualTo(Locale.FRANCE)
+        );
     }
 
     @Test

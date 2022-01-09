@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.plugins;
 
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphPlugin;
-import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.URITools;
+import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OGScrapperUtils;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OpenGraph;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class ValidateOGLinksPlugin implements OpenGraphPlugin {
     public Mono<OpenGraph> postTreatment(OpenGraph openGraph) {
         if (Objects.nonNull(openGraph.image)) {
             URI tested = (openGraph.image.getQuery() == null) ? openGraph.image :
-                    URI.create(URITools.removeQueryString(openGraph.image.toString())
+                    URI.create(OGScrapperUtils.removeQueryString(openGraph.image.toString())
                             + "?" + HtmlEscape.unescapeHtml(openGraph.image.getQuery()));
             return http.get().uri(tested).exchangeToMono(ClientResponse::toBodilessEntity)
                     .map(response -> {
