@@ -16,6 +16,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.util.function.Predicate.not;
 
@@ -23,6 +26,7 @@ import static java.util.function.Predicate.not;
 @RequiredArgsConstructor
 public final class OpenGraphScrapper {
     private static final String HEAD_END_TAG = "</head>";
+    private static final Pattern CHARSET_EXTRACT = Pattern.compile("<meta.*?charset=[\"']?([^\"']+)");
 
     private final WebClient http;
 
@@ -41,11 +45,12 @@ public final class OpenGraphScrapper {
         return uri
                 .acceptCharset(StandardCharsets.UTF_8)
                 .exchangeToMono(response -> {
-                    Charset responseCharset = response.headers().contentType()
+                    AtomicReference<Charset> responseCharset = response.headers().contentType()
                             .map(MimeType::getCharset)
-                            .orElse(StandardCharsets.UTF_8);
+                            .map(AtomicReference::new)
+                            .orElseGet(() -> new AtomicReference<>(StandardCharsets.UTF_8));
 
-                    CharsetDecoder charsetDecoder = responseCharset.newDecoder();
+                    CharsetDecoder charsetDecoder = responseCharset.get().newDecoder();
                     return response.bodyToFlux(DataBuffer.class)
                             .doOnTerminate(response::releaseBody)
 
@@ -57,6 +62,16 @@ public final class OpenGraphScrapper {
                                         //noinspection BlockingMethodInNonBlockingContext
                                         charsetDecoder.decode(dataBuffer.asByteBuffer());
                                     } catch (CharacterCodingException e) {
+                                        try {
+                                            Matcher m = CHARSET_EXTRACT.matcher(dataBuffer.toString(responseCharset.get()));
+                                            if (m.find()) {
+                                                responseCharset.set(Charset.forName(m.group(1)));
+                                                return fBuff;
+                                            }
+                                        } catch (Exception ex) {
+                                            log.trace("Unable to parse charset encoding from {}", location);
+                                            log.trace("STACKTRACE", e);
+                                        }
                                         DataBufferUtils.release(dataBuffer);
                                         return Flux.empty();
                                     }
@@ -65,7 +80,7 @@ public final class OpenGraphScrapper {
                             })
 
                             .scan(new StringBuilder(), (sb, buff) -> {
-                                StringBuilder bldr = sb.append(buff.toString(responseCharset));
+                                StringBuilder bldr = sb.append(buff.toString(responseCharset.get()));
                                 DataBufferUtils.release(buff);
                                 return bldr;
                             })
