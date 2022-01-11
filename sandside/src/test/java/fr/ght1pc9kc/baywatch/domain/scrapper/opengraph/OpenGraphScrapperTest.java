@@ -87,18 +87,37 @@ class OpenGraphScrapperTest {
     }
 
     @Test
+    void should_parse_non_utf8_file() {
+        URI page = URI.create("https://blog.ght1pc9kc.fr/dev-empty-metas-error.html");
+        OpenGraph actual = tested.scrap(page).block();
+
+        Assertions.assertThat(actual).isNotNull();
+        assertAll(
+                () -> Assertions.assertThat(actual.title).isEqualTo("Panasonic proposera une semaine de travail de " +
+                        "quatre jours à ses employés au Japon, dans le but d'améliorer la productivité et d'attirer " +
+                        "les meilleurs talents"),
+                () -> Assertions.assertThat(actual.type).isEqualTo(OGType.ARTICLE),
+                () -> Assertions.assertThat(actual.image).isEqualTo(URI.create("https://www.developpez.com/images/logos/emploi.png")),
+                () -> Assertions.assertThat(actual.locale).isEqualTo(Locale.FRANCE)
+        );
+    }
+
+    @Test
+    void should_parse_no_encoding_file() {
+        URI page = URI.create("https://blog.ght1pc9kc.fr/no-encoding-file.html");
+        StepVerifier.create(tested.scrap(page)).verifyComplete();
+    }
+
+    @Test
     void should_scrap_not_found() {
         URI page = URI.create("https://blog.ght1pc9kc.fr/not-found.html");
-        OpenGraph actual = tested.scrap(page).block();
-        Assertions.assertThat(actual).isNull();
+        StepVerifier.create(tested.scrap(page)).verifyComplete();
     }
 
     @Test
     void should_scrap_not_html() {
         URI page = URI.create("https://blog.ght1pc9kc.fr/podcast.mp3");
-        Mono<OpenGraph> actual = tested.scrap(page);
-
-        StepVerifier.create(actual).verifyComplete();
+        StepVerifier.create(tested.scrap(page)).verifyComplete();
     }
 
     public static final class MockExchangeFunction implements ExchangeFunction {
