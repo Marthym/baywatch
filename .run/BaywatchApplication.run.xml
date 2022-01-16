@@ -8,8 +8,8 @@
       </pattern>
     </extension>
     <option name="SPRING_BOOT_MAIN_CLASS" value="fr.ght1pc9kc.baywatch.BaywatchApplication" />
+    <option name="VM_PARAMETERS" value="-Dio.netty.leakDetection.level=paranoid" />
     <option name="ALTERNATIVE_JRE_PATH" />
-    <option name="SHORTEN_COMMAND_LINE" value="NONE" />
     <envs>
       <env name="BAYWATCH_HOME" value="$USER_HOME$" />
       <env name="BAYWATCH_LOG_FILE" value="baywatch.log" />
