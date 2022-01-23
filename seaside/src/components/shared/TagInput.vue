@@ -15,7 +15,7 @@
       <input type="text" placeholder="Ajouter un tag..." class="input input-ghost input-xs w-32 flex-grow"
              v-model.trim="tag" @keydown="onKeydown">
       <ul tabindex="0" v-if="displayProposal && proposal.length > 0"
-          class="py-3 shadow menu bg-base-100 border-primary-content border border-opacity-20 dropdown-content w-60">
+          class="py-3 shadow menu bg-neutral border-primary-content border border-opacity-20 dropdown-content w-60">
         <li v-for="tag in proposal" v-bind:key="tag"><a :class="{'proposal-selected': proposal[proposalIndex] === tag}"
                                                         @click="selectProposal">{{ tag }}</a></li>
       </ul>

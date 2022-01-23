@@ -15,7 +15,7 @@ module.exports = {
       {
         'baywatch': {
           'primary': '#10b981',
-          'primary-focus': '#059669',
+          'primary-focus': '#bbf7d0',
           'primary-content': '#e5e7eb',
           'secondary': '#f000b8',
           'secondary-focus': '#bd0091',
@@ -26,7 +26,7 @@ module.exports = {
           'neutral': '#374151',
           'neutral-focus': '#27272a',
           'neutral-content': '#a1a1aa',
-          'base-100': '#374151',
+          'base-100': '#4B5563',
           'base-200': '#111827',
           'base-300': '#d1d5db',
           'base-content': '#d1d5db',
