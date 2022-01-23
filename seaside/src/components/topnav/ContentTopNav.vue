@@ -7,22 +7,27 @@
     </button>
     <div class="navbar-start border-b border-gray-600 ml-8 h-full">
       <router-link to="/news"
-                   active-class="border-b-2 text-green-500 border-green-500 dark:text-green-200 dark:border-green-200"
-                   class="py-2 block font-medium capitalize focus:outline-none
-                          transition duration-500 ease-in-out">
-        news
+                   active-class="border-b-2 text-green-200 border-green-200"
+                   class="py-2 font-medium capitalize focus:outline-none transition duration-500 ease-in-out">
+        <svg class="w-8 h-8 sm:w-6 sm:h-6 inline-block -mt-2" fill="currentColor" viewBox="0 0 20 20"
+             xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd"
+                d="M2 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 002 2H4a2 2 0 01-2-2V5zm3 1h6v4H5V6zm6 6H5v2h6v-2z"
+                clip-rule="evenodd"></path>
+          <path d="M15 7h1a2 2 0 012 2v5.5a1.5 1.5 0 01-3 0V7z"></path>
+        </svg>
+        <span class="hidden sm:inline-block">news</span>
       </router-link>
       <router-link to="/feeds"
-                   active-class="border-b-2 text-green-500 border-green-500 dark:text-green-200 dark:border-green-200"
-                   class="ml-6 py-2 block focus:outline-none font-medium capitalize text-center
-                          transition duration-500 ease-in-out">
-        feeds
-      </router-link>
-      <router-link to="/categories"
-                   active-class="border-b-2 text-green-500 border-green-500 dark:text-green-200 dark:border-green-200"
-                   class="ml-6 py-2 block focus:outline-none font-medium capitalize text-center
-                          transition duration-500 ease-in-out">
-        categories
+                   active-class="border-b-2 text-green-200 border-green-200"
+                   class="ml-6 py-2 block focus:outline-none font-medium capitalize text-center transition duration-500 ease-in-out">
+        <svg class="w-8 h-8 sm:w-6 sm:h-6 inline-block -mt-2" fill="currentColor" viewBox="0 0 20 20"
+             xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 3a1 1 0 000 2c5.523 0 10 4.477 10 10a1 1 0 102 0C17 8.373 11.627 3 5 3z"></path>
+          <path
+              d="M4 9a1 1 0 011-1 7 7 0 017 7 1 1 0 11-2 0 5 5 0 00-5-5 1 1 0 01-1-1zM3 15a2 2 0 114 0 2 2 0 01-4 0z"></path>
+        </svg>
+        <span class="hidden sm:inline-block">feeds</span>
       </router-link>
     </div>
     <div class="navbar-end border-b border-gray-600 pr-2 mr-2 h-full">
@@ -37,7 +42,7 @@
           </svg>
         </button>
       </div>
-      <input type="text" placeholder="Search" class="input input-ghost input-sm">
+      <input type="text" placeholder="Search" class="input input-ghost input-sm hidden lg:block">
       <button class="btn btn-square btn-ghost btn-sm">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
              class="inline-block w-6 h-6 stroke-current">
