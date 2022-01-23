@@ -30,7 +30,7 @@
         <span class="hidden sm:inline-block">feeds</span>
       </router-link>
     </div>
-    <div class="navbar-end border-b border-gray-600 pr-2 mr-2 h-full">
+    <div class="navbar-end w-full md:w-1/2 border-b border-gray-600 pr-2 mr-2 h-full">
       <div class="indicator">
         <div v-if="statistics.updated > 0" class="indicator-item badge badge-xs badge-primary text-2xs">
           {{ statistics.updated }}
@@ -42,14 +42,16 @@
           </svg>
         </button>
       </div>
-      <input type="text" placeholder="Search" class="input input-ghost input-sm hidden lg:block">
-      <button class="btn btn-square btn-ghost btn-sm">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-             class="inline-block w-6 h-6 stroke-current">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
-      </button>
+      <div class="relative">
+        <input type="text" placeholder="Search" class="w-full pr-16 input input-sm input-ghost input-bordered">
+        <button class="absolute top-0 right-0 rounded-l-none btn btn-ghost btn-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               class="inline-block w-6 h-6 stroke-current">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
+      </div>
     </div>
   </header>
 
