@@ -7,9 +7,12 @@ import fr.ght1pc9kc.baywatch.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.infra.http.pagination.Page;
 import fr.ght1pc9kc.baywatch.infra.model.FeedForm;
+import fr.ght1pc9kc.baywatch.infra.model.PatchOperation;
+import fr.ght1pc9kc.baywatch.infra.model.PatchPayload;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -23,7 +26,9 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("${baywatch.base-route}/feeds")
@@ -46,6 +51,16 @@ public class FeedController {
 
         return feedService.count(pageRequest)
                 .map(count -> Page.of(feeds, count));
+    }
+
+    @PatchMapping
+    public Mono<Integer> bulkUpdate(@RequestBody PatchPayload patchs) {
+        log.debug(patchs.toString());
+        Set<String> ids = patchs.getOperations().stream()
+                .filter(p -> p.op == PatchOperation.remove && p.path.getParent().toString().equals("/feeds"))
+                .map(p -> p.path.getFileName().toString())
+                .collect(Collectors.toUnmodifiableSet());
+        return feedService.delete(ids);
     }
 
     @PutMapping("/{id}")

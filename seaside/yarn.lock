@@ -631,6 +631,11 @@
   resolved "https://registry.yarnpkg.com/@types/js-md5/-/js-md5-0.4.3.tgz#c134cbb71c75018876181f886a12a2f9962a312a"
   integrity sha512-BIga/WEqTi35ccnGysOuO4RmwVnpajv9oDB/sDQSY2b7/Ac7RyYR30bv7otZwByMvOJV9Vqq6/O1DFAnOzE4Pg==
 
+"@types/json-patch@^0.0.30":
+  version "0.0.30"
+  resolved "https://registry.yarnpkg.com/@types/json-patch/-/json-patch-0.0.30.tgz#7c562173216c50529e70126ceb8e7a533f865e9b"
+  integrity sha512-MhCUjojzDhVLnZnxwPwa+rETFRDQ0ffjxYdrqOP6TBO2O0/Z64PV5tNeYApo4bc4y4frbWOrRwv/eEkXlI13Rw==
+
 "@types/json-schema@^7.0.9":
   version "7.0.9"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.9.tgz#97edc9037ea0c38585320b28964dde3b39e4660d"
@@ -1394,10 +1399,10 @@ csstype@^2.6.8:
   resolved "https://registry.yarnpkg.com/csstype/-/csstype-2.6.19.tgz#feeb5aae89020bb389e1f63669a5ed490e391caa"
   integrity sha512-ZVxXaNy28/k3kJg0Fou5MiYpp88j7H9hLZp8PDC3jV0WFjfH5E9xHb56L0W59cPbKbcHXeP4qyT8PrHp8t6LcQ==
 
-daisyui@^1.21.0:
-  version "1.21.0"
-  resolved "https://registry.yarnpkg.com/daisyui/-/daisyui-1.21.0.tgz#627239e076d05eddb164ef55823c35af15c878d9"
-  integrity sha512-sdqSI6v/Xc6OsBrZbBKqZKpOCuQyc1foq9s5ZqT8Qdp92kIbR/FBNfTethDjLpvYBPpsohHLCvC0ddWr2OotYA==
+daisyui@^1.25.3:
+  version "1.25.3"
+  resolved "https://registry.yarnpkg.com/daisyui/-/daisyui-1.25.3.tgz#73e1570dfd6c389e81e6901281e51c758a4f625b"
+  integrity sha512-eaEAXNyJKRGcvCOrpQxJxYf5fYtgjmMcfCcZIqvTBfykg51L1ZzIrmSIHQMWehk5GZ76KtP+a5Zqa4MHhq0z6g==
 
 data-urls@^2.0.0:
   version "2.0.0"

@@ -2,7 +2,7 @@
   <tr>
     <th v-if="isAuthenticated">
       <label>
-        <input type="checkbox" class="checkbox">
+        <input type="checkbox" class="checkbox" v-model="view.isSelected">
         <span class="checkbox-mark"></span>
       </label>
     </th>

@@ -5,11 +5,12 @@ import {Page} from "@/services/model/Page";
 import {from, Observable} from "rxjs";
 import {ConstantFilters, ConstantHttpHeaders} from "@/constants";
 import rest from '@/services/http/RestWrapper';
+import {OpPatch} from "json-patch";
 
 export class FeedService {
 
     public static readonly DEFAULT_PER_PAGE: number = 20;
-    public static readonly DEFAULT_QUERY: string = `?${ConstantFilters.PER_PAGE}=${FeedService.DEFAULT_PER_PAGE}`;
+    public static readonly DEFAULT_QUERY: string = `?${ConstantFilters.PER_PAGE}=${FeedService.DEFAULT_PER_PAGE}&_s=name`;
 
     /**
      * Get the {@link Feed} from backend
@@ -77,6 +78,21 @@ export class FeedService {
                     return from(response.json());
                 } else {
                     throw new HttpStatusError(response.status, `Error while unsubscribing feed ${id}`);
+                }
+            }),
+            take(1)
+        );
+    }
+
+    bulkRemove(ids: string[]): Observable<number> {
+        const jsonPatch: OpPatch[] = [];
+        ids.forEach(id => jsonPatch.push({op: 'remove', path: `/feeds/${id}`}))
+        return rest.patch(`/feeds`, jsonPatch).pipe(
+            switchMap(response => {
+                if (response.ok) {
+                    return from(response.json());
+                } else {
+                    throw new HttpStatusError(response.status, `Error while unsubscribing feeds ${ids}`);
                 }
             }),
             take(1)

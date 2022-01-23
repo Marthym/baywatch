@@ -1,37 +1,14 @@
 <template>
   <div class="overflow-x-auto mt-5 pr-5">
-    <div class="btn-group mb-2" v-if="isAuthenticated">
-      <button class="btn btn-primary" @click="addNewFeed">
-        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-             xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        Ajouter
-      </button>
-      <button class="btn btn-primary" @click="this.isFileUploadVisible = true">
-        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-             xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-        </svg>
-        Importer
-      </button>
-      <a class="btn btn-primary" :href="`${BASEURL}/opml/export/baywatch.opml`">
-        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-             xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-        </svg>
-        Exporter
-      </a>
-    </div>
+    <FeedActions v-if="isAuthenticated" :delete-enable="checkState"
+                 @clickAdd="addNewFeed" @clickImport="this.isFileUploadVisible = true" @clickDelete="bulkDelete()"/>
     <table class="table w-full">
       <thead>
       <tr>
         <th v-if="isAuthenticated">
           <label>
-            <input type="checkbox" class="checkbox">
+            <input type="checkbox" class="checkbox" ref="globalCheck"
+                   :checked="checkState" @change="onSelectAll()"/>
             <span class="checkbox-mark"></span>
           </label>
         </th>
@@ -91,15 +68,15 @@ import opmlService from "@/services/opml/OpmlService";
 import notificationService from "@/services/notification/NotificationService";
 import {defineAsyncComponent} from "vue";
 import {AlertResponse, AlertType} from "@/components/shared/alertdialog/AlertDialog.types";
+import FeedActions from "@/components/feedslist/FeedActions.vue";
 
 const FileUploadWindow = defineAsyncComponent(() => import('@/components/shared/FileUploadWindow.vue'));
 
 @Options({
   name: 'FeedsList',
-  components: {FeedEditor, FeedListItem, FeedListHeader, FileUploadWindow},
+  components: {FeedActions, FeedEditor, FeedListItem, FeedListHeader, FileUploadWindow},
 })
 export default class FeedsList extends Vue {
-  private readonly BASEURL = import.meta.env.VITE_API_BASE_URL;
   private feedEditor!: FeedEditor;
 // noinspection JSMismatchedCollectionQueryUpdate
   private feeds: FeedView[] = new Array(0);
@@ -107,6 +84,13 @@ export default class FeedsList extends Vue {
   private activePage = 0;
   private isAuthenticated = false;
   private isFileUploadVisible = false;
+
+  get checkState(): boolean {
+    const isOneSelected = this.feeds.find(f => f.isSelected) !== undefined;
+    if (this.$refs['globalCheck'])
+      this.$refs['globalCheck'].indeterminate = isOneSelected && this.feeds.find(f => !f.isSelected) !== undefined;
+    return isOneSelected;
+  }
 
   mounted(): void {
     userService.get().subscribe({
@@ -128,6 +112,11 @@ export default class FeedsList extends Vue {
         map(fs => fs.map(f => this.modelToView(f))),
         tap(fs => this.feeds = fs)
     )
+  }
+
+  private onSelectAll(): void {
+    const current = this.checkState;
+    this.feeds.forEach(f => f.isSelected = !current);
   }
 
   modelToView(feed: Feed): FeedView {
@@ -181,6 +170,33 @@ export default class FeedsList extends Vue {
       error: e => {
         console.error(e);
         notificationService.pushSimpleError('Impossible de mettre à jour le fil');
+      }
+    });
+  }
+
+  private bulkDelete(): void {
+    const ids = this.feeds.filter(f => f.isSelected).map(f => f.data.id);
+    if (ids.length == 0) {
+      return;
+    } else if (ids.length == 1) {
+      return this.itemDelete(ids[0]);
+    }
+    const message = `Supprimer les ${ids.length} abonnements sélectionnés ?`;
+    this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
+        filter(response => response === AlertResponse.CONFIRM),
+        switchMap(() => feedsService.bulkRemove(ids)),
+        tap(() => {
+          ids.forEach(id => {
+            const idx = this.feeds.findIndex(fv => fv.data.id === id);
+            this.feeds.splice(idx, 1);
+          })
+        })
+    ).subscribe({
+      next: () => notificationService.pushSimpleOk(`Désinscription réalisé avec succès !`),
+      error: e => {
+        console.error(e);
+        console.debug('feeds: ', ids);
+        notificationService.pushSimpleError('Impossible de se désinscrire des feeds sélectionnés !');
       }
     });
   }
