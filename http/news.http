@@ -1,0 +1,11 @@
+### /auth/login
+POST http://{{host}}/api/auth/login
+Content-Type: application/x-www-form-urlencoded
+
+username={{login}}&password={{password}}
+
+### /news
+GET http://{{host}}/api/news?_s=-publication&read=false&_pp=20&_p=1
+
+### /news/:newsId/unmark/shared
+PUT http://{{host}}/api/news/{{newId}}/unmark/shared

@@ -1,0 +1,16 @@
+### /auth/login
+POST http://{{host}}/api/auth/login
+Content-Type: application/x-www-form-urlencoded
+
+username={{login}}&password={{password}}
+
+### /auth/current
+GET http://{{host}}/api/auth/current
+
+### /api/stats
+GET http://{{host}}/api/stats
+
+### /auth/logout
+DELETE http://{{host}}/api/auth/logout
+
+###
