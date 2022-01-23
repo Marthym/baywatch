@@ -11,4 +11,5 @@ export const ConstantHttpHeaders = {
 
 export const ConstantMediaTypes = {
     JSON_UTF8: 'application/json; charset=utf-8',
+    JSON_PATCH_UTF8: 'application/json-patch+json; charset=utf-8',
 }

@@ -6,6 +6,7 @@ import notificationService from '@/services/notification/NotificationService';
 import {Severity} from "@/services/notification/Severity.enum";
 import {NotificationCode} from "@/services/notification/NotificationCode.enum";
 import {switchMap} from "rxjs/operators";
+import {OpPatch} from "json-patch";
 
 
 export class RestWrapper {
@@ -43,6 +44,17 @@ export class RestWrapper {
         );
     }
 
+    patch(uri: string, data: OpPatch[]): Observable<Response> {
+        const headers = new Headers();
+        headers.set(ConstantHttpHeaders.CONTENT_TYPE, ConstantMediaTypes.JSON_PATCH_UTF8);
+        return fromFetch(this.baseUrl + uri, {
+            method: 'PATCH',
+            ...RestWrapper.bodyHandler(data),
+        }).pipe(
+            switchMap(RestWrapper.handleAuthenticationErrors),
+        );
+    }
+
     delete(uri: string, data?: unknown): Observable<Response> {
         const headers = new Headers();
         headers.set(ConstantHttpHeaders.CONTENT_TYPE, ConstantMediaTypes.JSON_UTF8);
@@ -54,7 +66,7 @@ export class RestWrapper {
         );
     }
 
-    private static bodyHandler(data?: unknown): { body?: BodyInit, headers?: HeadersInit } {
+    private static bodyHandler(data?: unknown): { body?: BodyInit | null, headers?: HeadersInit } {
         if (data instanceof FormData) {
             return {
                 body: data,
