@@ -4,7 +4,7 @@
       text-lg bg-base-200 text-base-content uppercase font-bold p-4">
       {{ title }}
     </div>
-    <div class="modal-box translate-y-0 rounded-none" :class="{'pt-2': title !== undefined}">
+    <div class="modal-box translate-y-0 rounded-none overflow-visible" :class="{'pt-2': title !== undefined}">
       <slot></slot>
       <div class="modal-action">
         <slot name="actions">
