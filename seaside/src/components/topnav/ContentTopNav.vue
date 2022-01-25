@@ -7,7 +7,7 @@
     </button>
     <div class="navbar-start border-b border-base-100 ml-8 h-full">
       <router-link to="/news"
-                   active-class="border-b-2 text-primary-focus border-primary-focus"
+                   active-class="border-b-2 text-accent border-accent"
                    class="py-2 font-medium capitalize focus:outline-none transition duration-500 ease-in-out">
         <svg class="w-8 h-8 sm:w-6 sm:h-6 inline-block -mt-2" fill="currentColor" viewBox="0 0 20 20"
              xmlns="http://www.w3.org/2000/svg">
