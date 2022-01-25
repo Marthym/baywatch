@@ -5,9 +5,9 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
       </svg>
     </button>
-    <div class="navbar-start border-b border-gray-600 ml-8 h-full">
+    <div class="navbar-start border-b border-base-100 ml-8 h-full">
       <router-link to="/news"
-                   active-class="border-b-2 text-green-200 border-green-200"
+                   active-class="border-b-2 text-primary-focus border-primary-focus"
                    class="py-2 font-medium capitalize focus:outline-none transition duration-500 ease-in-out">
         <svg class="w-8 h-8 sm:w-6 sm:h-6 inline-block -mt-2" fill="currentColor" viewBox="0 0 20 20"
              xmlns="http://www.w3.org/2000/svg">
@@ -19,7 +19,7 @@
         <span class="hidden sm:inline-block">news</span>
       </router-link>
       <router-link to="/feeds"
-                   active-class="border-b-2 text-green-200 border-green-200"
+                   active-class="border-b-2 text-primary-focus border-primary-focus"
                    class="ml-6 py-2 block focus:outline-none font-medium capitalize text-center transition duration-500 ease-in-out">
         <svg class="w-8 h-8 sm:w-6 sm:h-6 inline-block -mt-2" fill="currentColor" viewBox="0 0 20 20"
              xmlns="http://www.w3.org/2000/svg">
@@ -30,8 +30,8 @@
         <span class="hidden sm:inline-block">feeds</span>
       </router-link>
     </div>
-    <div class="navbar-end border-b border-gray-600 pr-2 mr-2 h-full">
-      <div class="indicator">
+    <div class="navbar-end w-full md:w-1/2 border-b border-base-100 pr-2 mr-2 h-full">
+      <div class="indicator mr-2">
         <div v-if="statistics.updated > 0" class="indicator-item badge badge-xs badge-primary text-2xs">
           {{ statistics.updated }}
         </div>
@@ -42,14 +42,16 @@
           </svg>
         </button>
       </div>
-      <input type="text" placeholder="Search" class="input input-ghost input-sm hidden lg:block">
-      <button class="btn btn-square btn-ghost btn-sm">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-             class="inline-block w-6 h-6 stroke-current">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
-      </button>
+      <div class="relative">
+        <input type="text" placeholder="Search" class="w-full pr-16 input input-sm input-ghost input-bordered">
+        <button class="absolute top-0 right-0 rounded-l-none btn btn-ghost btn-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               class="inline-block w-6 h-6 stroke-current">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
+      </div>
     </div>
   </header>
 

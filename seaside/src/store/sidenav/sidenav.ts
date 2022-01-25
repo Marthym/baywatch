@@ -3,7 +3,7 @@ export type SidenavState = {
 }
 
 const state = (): SidenavState => ({
-    open: true
+    open: false
 });
 
 // getters

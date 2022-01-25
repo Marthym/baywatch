@@ -1,6 +1,6 @@
 <template>
-  <div class="flex items-center justify-between flex-shrink-0 pb-2 border-b">
-    <svg class="w-8 h-8" id="Layer_1" height="512" viewBox="0 0 512.001 512.001" width="512"
+  <div class="pb-2 border-b text-center text-primary-content text-lg font-semibold">
+    <svg class="w-8 h-8 inline-block -mt-2" id="Layer_1" height="512" viewBox="0 0 512.001 512.001" width="512"
          xmlns="http://www.w3.org/2000/svg">
       <g>
         <g>
@@ -27,31 +27,9 @@
         </g>
       </g>
     </svg>
-    <span class="text-lg font-semibold capitalize text-gray-300">
-				Baywatch
-    </span>
-    <div class="relative hidden lg:block">
-      <router-link to="/" class="hover:text-green-300 text-gray-300">
-        <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-        </svg>
-      </router-link>
-      <div v-if="unread > 0" class="
-          absolute w-2 h-2 text-center rounded-full text-xs text-white font-semibold
-          bg-green-500 hover:bg-green-300 right-0 mb-5 bottom-0">
-      </div>
-    </div>
+    <span class="capitalize ml-4">Baywatch</span>
 
-    <button @click="toggleSidenav" class="btn btn-square btn-sm btn-ghost -mr-2 lg:hidden">
+    <button @click="toggleSidenav" class="btn btn-square btn-sm btn-ghost lg:hidden absolute right-0 top-0 m-2">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
       </svg>
