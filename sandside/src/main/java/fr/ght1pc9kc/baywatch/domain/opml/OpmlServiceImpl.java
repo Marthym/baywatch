@@ -69,7 +69,7 @@ public class OpmlServiceImpl implements OpmlService {
 
     private Mono<Void> writeOpml(OutputStream out, User owner) {
         OpmlWriter opmlWriter = writerFactory.apply(out);
-        return feedRepository.list(QueryContext.id(owner.id))
+        return feedRepository.list(QueryContext.empty().withUserId(owner.id))
                 .doFirst(() -> opmlWriter.startOpmlDocument(owner))
                 .doOnEach(signal -> {
                     Feed feed = signal.get();
