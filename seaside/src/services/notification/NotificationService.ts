@@ -51,6 +51,7 @@ export class NotificationService {
             if (ns.notifs.length > 0) {
                 ns.timeout = window.setTimeout(NotificationService.onNotificationExpiration, ns.delay, ns);
             }
+            console.log('posp: ', notif);
             ns.listeners.forEach(listener => listener.onPopNotification(notif));
         }
     }
