@@ -15,12 +15,12 @@ module.exports = {
       {
         'baywatch': {
           'primary': '#10b981',
-          'primary-focus': '#bbf7d0',
+          'primary-focus': '#059669',
           'primary-content': '#e5e7eb',
           'secondary': '#f000b8',
           'secondary-focus': '#bd0091',
           'secondary-content': '#ffffff',
-          'accent': '#37cdbe',
+          'accent': '#bbf7d0',
           'accent-focus': '#2aa79b',
           'accent-content': '#ffffff',
           'neutral': '#374151',
