@@ -1,5 +1,5 @@
 <template>
-  <div class="overflow-x-auto mt-5 pr-5">
+  <div class="overflow-x-auto mt-5">
     <FeedActions v-if="isAuthenticated" :delete-enable="checkState"
                  @clickAdd="addNewFeed" @clickImport="this.isFileUploadVisible = true" @clickDelete="bulkDelete()"/>
     <table class="table w-full">
@@ -12,9 +12,9 @@
             <span class="checkbox-mark"></span>
           </label>
         </th>
-        <th>Name</th>
-        <th>Link / Categories</th>
-        <th colspan="2" v-if="isAuthenticated">
+        <th class="grid grid-cols-1 md:grid-cols-12">
+          <div class="col-span-4">Name</div>
+          <div class="col-span-7">Link / Categories</div>
           <div class="btn-group justify-end" v-if="pagesNumber > 1">
             <button v-for="i in pagesNumber" :key="i"
                     :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
@@ -27,17 +27,27 @@
       </thead>
       <tbody>
       <template v-for="vFeed in this.feeds" v-bind:key="vFeed.data.id">
-        <FeedListItem :ref="vFeed.data.id" :view="vFeed"
-                      :is-authenticated="isAuthenticated"
-                      @item-update="itemUpdate" @item-delete="itemDelete"/>
+        <tr>
+          <th v-if="isAuthenticated">
+            <label>
+              <input type="checkbox" class="checkbox" v-model="vFeed.isSelected">
+              <span class="checkbox-mark"></span>
+            </label>
+          </th>
+          <td class="grid grid-cols-1 md:grid-cols-12 auto-cols-auto">
+            <FeedListItem :ref="vFeed.data.id" :view="vFeed"
+                          :is-authenticated="isAuthenticated"
+                          @item-update="itemUpdate" @item-delete="itemDelete"/>
+          </td>
+        </tr>
       </template>
       </tbody>
       <tfoot>
       <tr>
         <th v-if="isAuthenticated"></th>
-        <th>Name</th>
-        <th>Link / Categories</th>
-        <th colspan="2" v-if="isAuthenticated">
+        <th>
+          <div>Name</div>
+          <div>Link / Categories</div>
           <div class="btn-group justify-end" v-if="pagesNumber > 1">
             <button v-for="i in pagesNumber" :key="i"
                     :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
