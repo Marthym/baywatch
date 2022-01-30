@@ -1,0 +1,11 @@
+export const NAMESPACE = 'user';
+export const LOGOUT = 'logout';
+export const UPDATE = 'update';
+export const HAS_ROLE_USER = 'hasRoleUser';
+export const HAS_ROLE_MANAGER = 'hasRoleManager';
+export const HAS_ROLE_ADMIN = 'hasRoleAdmin';
+export const LOGOUT_MUTATION = `${NAMESPACE}/${LOGOUT}`;
+export const UPDATE_MUTATION = `${NAMESPACE}/${UPDATE}`;
+export const HAS_ROLE_USER_GETTER = `${NAMESPACE}/${HAS_ROLE_USER}`;
+export const HAS_ROLE_MANAGER_GETTER = `${NAMESPACE}/${HAS_ROLE_MANAGER}`;
+export const HAS_ROLE_ADMIN_GETTER = `${NAMESPACE}/${HAS_ROLE_ADMIN}`;
