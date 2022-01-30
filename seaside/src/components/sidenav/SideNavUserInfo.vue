@@ -1,40 +1,37 @@
 <template>
-  <div class="flex mt-5" v-if="user">
+  <div class="flex mt-5 text-primary-content" v-if="userState.isAuthenticated">
     <img class="h-12 w-12 mr-2 rounded-full object-cover"
          :src="avatar"
-         :alt="user.id"/>
+         :alt="userState.user.id"/>
     <div>
-      <h2 class="text-xl dark:text-gray-300 font-extrabold capitalize">
-        {{ user.name }}
+      <h2 class="text-xl font-extrabold capitalize">
+        {{ userState.user.name }}
       </h2>
-      <span class="text-sm dark:text-gray-300">
-				<span class="font-semibold text-green-600 dark:text-green-300">Admin</span>
-      {{ user.id }}
+      <span class="text-sm">
+				<span class="font-semibold text-accent capitalize">{{ userState.user.role.toLowerCase()}}</span>
+      {{ userState.user.id }}
     </span>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import {Options, Prop, Vue} from 'vue-property-decorator';
+import {Options, Vue} from 'vue-property-decorator';
 import md5 from "js-md5";
-import {User} from "@/services/model/User";
+import {setup} from "vue-class-component";
+import {useStore} from "vuex";
+import {UserState} from "@/store/user/user";
 
-@Options({
-  name: 'SideNavUserInfo',
-  props: {
-    user: Object,
-  }
-})
+@Options({name: 'SideNavUserInfo'})
 export default class SideNavUserInfo extends Vue {
-  @Prop() private user?: User;
+  private userState: UserState = setup(() => useStore().state.user);
 
   get avatar(): string {
     let hash = "0";
-    if (this.user?.mail !== undefined) {
-      hash = md5(this.user.mail);
+    if (this.userState.user.mail !== '') {
+      hash = md5(this.userState.user.mail);
     }
-    return `https://www.gravatar.com/avatar/${hash}?s=48`;
+    return `https://www.gravatar.com/avatar/${hash}?s=48&d=retro`;
   }
 }
 </script>

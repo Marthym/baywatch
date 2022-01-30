@@ -1,19 +1,16 @@
 import {Observable, throwError} from "rxjs";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 import {User} from "@/services/model/User";
-import {catchError, map, shareReplay, switchMap, take, tap} from "rxjs/operators";
+import {catchError, map, shareReplay, switchMap, take} from "rxjs/operators";
 import {Session} from "@/services/model/Session";
 import rest from '@/services/http/RestWrapper';
 
-export interface UserListener {
-    onUserChange(data: User): void;
-}
-
 export class UserService {
 
-    private userListeners: UserListener[] = [];
     private readonly cache$: Observable<Session>;
-    private reloadFunction: VoidFunction = () => {console.warn('no reload function!')};
+    private reloadFunction: VoidFunction = () => {
+        console.warn('no reload function!')
+    };
 
     constructor() {
         this.cache$ = this.refresh().pipe(
@@ -23,7 +20,7 @@ export class UserService {
 
     /**
      * Register the function call on reload
-     * This allow others components to reload news list
+     * This allows others components to reload news list
      *
      * @param apply [VoidFunction] The call function
      */
@@ -35,15 +32,6 @@ export class UserService {
         if (this.reloadFunction) {
             this.reloadFunction();
         }
-    }
-
-    registerUserListener(consumer: UserListener): void {
-        this.userListeners.push(consumer);
-    }
-
-    unregisterUserListener(consumer: UserListener): void {
-        const idx = this.userListeners.indexOf(consumer);
-        this.userListeners.splice(idx);
     }
 
     login(username: string, password: string): Observable<User> {
@@ -58,7 +46,6 @@ export class UserService {
                     throw new HttpStatusError(response.status, `Error while getting news.`);
                 }
             }),
-            map(user => this.save(user)),
             take(1)
         );
     }
@@ -83,17 +70,11 @@ export class UserService {
                     throw new HttpStatusError(response.status, `Error while refreshing token.`);
                 }
             }),
-            tap(session => this.save(session.user)),
             catchError(err => {
                 return throwError(err);
             }),
             take(1)
         );
-    }
-
-    private save(user: User): User {
-        this.userListeners.forEach(consumer => consumer.onUserChange(user))
-        return user;
     }
 
     get(): Observable<User> {

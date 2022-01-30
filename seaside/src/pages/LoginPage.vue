@@ -32,9 +32,15 @@
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
 import userService from "@/services/UserService";
+import {setup} from "vue-class-component";
+import {useStore} from "vuex";
+import {UPDATE_MUTATION} from "@/store/user/UserConstants";
+import {RELOAD_ACTION} from "@/store/statistics/StatisticsConstants";
 
 @Options({name: 'LoginPage'})
 export default class LoginPage extends Vue {
+  private store = setup(() => useStore());
+
   public username = '';
   public password = '';
   private formValidation = false;
@@ -45,8 +51,11 @@ export default class LoginPage extends Vue {
 
   onLogin(): void {
     if (this.username !== '' && this.password !== '') {
-      userService.login(this.username, this.password)
-          .subscribe(() => this.$router.back());
+      userService.login(this.username, this.password).subscribe(user => {
+        this.store.commit(UPDATE_MUTATION, user);
+        this.store.dispatch(RELOAD_ACTION);
+        this.$router.back();
+      });
     } else {
       this.formValidation = true;
     }
