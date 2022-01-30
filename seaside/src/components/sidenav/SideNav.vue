@@ -4,13 +4,13 @@
          :class="{'-translate-x-full lg:translate-x-0': !state.open}">
     <SideNavHeader :unread="baywatchStats.unread"/>
 
-    <SideNavUserInfo :user="user"/>
-    <SideNavStatistics :statistics="baywatchStats" :isLoggedIn="isLoggedIn"/>
+    <SideNavUserInfo/>
+    <SideNavStatistics :statistics="baywatchStats" :isLoggedIn="user.isAuthenticated"/>
 
-    <SideNavTags v-if="isLoggedIn"/>
-    <SideNavFeeds v-if="isLoggedIn"/>
+    <SideNavTags v-if="user.isAuthenticated"/>
+    <SideNavFeeds v-if="user.isAuthenticated && store.getters['user/hasRoleAdmin']"/>
 
-    <SideNavImportantActions :isLoggedIn="isLoggedIn" @logout="logoutUser()"/>
+    <SideNavImportantActions :isLoggedIn="user.isAuthenticated" @logout="logoutUser()"/>
   </aside>
 </template>
 
@@ -21,15 +21,15 @@ import SideNavImportantActions from "./SideNavImportantActions.vue";
 import SideNavFeeds from './SideNavFeeds.vue';
 import SideNavStatistics from "@/components/sidenav/SideNavStatistics.vue";
 
-import userService, {UserListener} from "@/services/UserService";
-import statsService from "@/services/StatisticsService";
-import {User} from "@/services/model/User";
+import userService from "@/services/UserService";
 import {SidenavState} from "@/store/sidenav/sidenav";
 import {StatisticsState} from "@/store/statistics/statistics";
-import {StatisticsMutation} from "@/store/statistics/StatisticsMutation.enum";
+import {RELOAD_ACTION} from "@/store/statistics/StatisticsConstants";
 import {useStore} from "vuex";
 import {setup} from "vue-class-component";
 import {defineAsyncComponent} from "vue";
+import {UserState} from "@/store/user/user";
+import {LOGOUT_MUTATION} from "@/store/user/UserConstants";
 
 const SideNavTags = defineAsyncComponent(() => import('./SideNavTags.vue').then(m => m.default))
 const SideNavUserInfo = defineAsyncComponent(() => import('./SideNavUserInfo.vue').then(m => m.default));
@@ -45,53 +45,18 @@ const SideNavUserInfo = defineAsyncComponent(() => import('./SideNavUserInfo.vue
     SideNavImportantActions,
   },
 })
-export default class SideNav extends Vue implements UserListener {
+export default class SideNav extends Vue {
   private store = setup(() => useStore());
   private state: SidenavState = setup(() => useStore().state.sidenav);
   private baywatchStats: StatisticsState = setup(() => useStore().state.statistics);
-
-  private user: User | null = null;
-
-  setup() {
-    const store = useStore();
-    return {
-      store: store,
-    }
-  }
-
-  get isLoggedIn(): boolean {
-    return !!this.user;
-  }
-
-  mounted(): void {
-    this.updateStatistics();
-    userService.get().subscribe({
-      next: user => this.$nextTick(() => this.user = user),
-      error: () => {
-        this.$nextTick(() => this.user = null)
-        this.updateStatistics();
-      }
-    });
-
-    userService.registerUserListener(this);
-  }
-
-  onUserChange(u: User): void {
-    this.user = u;
-    this.updateStatistics();
-  }
-
-  private updateStatistics(): void {
-    statsService.get().subscribe(s => this.store.commit(StatisticsMutation.UPDATE, s));
-  }
+  private user: UserState = setup(() => useStore().state.user);
 
   logoutUser(): void {
-    userService.logout()
-        .subscribe(() => this.$router.go(0));
-  }
-
-  unmounted(): void {
-    userService.unregisterUserListener(this);
+    userService.logout().subscribe(() => {
+      this.store.commit(LOGOUT_MUTATION);
+      this.store.dispatch(RELOAD_ACTION);
+      this.$router.go(0);
+    });
   }
 }
 </script>

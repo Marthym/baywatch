@@ -1,4 +1,13 @@
 import {Statistics} from "@/services/model/Statistics";
+import statsService from "@/services/StatisticsService";
+import {
+    DECREMENT_UNREAD,
+    INCREMENT_UNREAD,
+    RELOAD,
+    RESET_UPDATED,
+    UPDATE
+} from "@/store/statistics/StatisticsConstants";
+import {ActionContext} from "vuex";
 
 export type StatisticsState = {
     news: number;
@@ -20,24 +29,28 @@ const state = (): StatisticsState => ({
 const getters = {}
 
 // actions
-const actions = {}
+const actions = {
+    [RELOAD]({commit}: ActionContext<StatisticsState, StatisticsState>) {
+        statsService.get().subscribe(s => commit(UPDATE, s));
+    }
+}
 
 // mutations
 const mutations = {
-    decrementUnread(state: StatisticsState): void {
+    [DECREMENT_UNREAD](state: StatisticsState): void {
         --state.unread;
     },
-    incrementUnread(state: StatisticsState): void {
+    [INCREMENT_UNREAD](state: StatisticsState): void {
         ++state.unread;
     },
-    update(state: StatisticsState, payload: Statistics): void {
+    [UPDATE](state: StatisticsState, payload: Statistics): void {
         const unread = state.unread;
         Object.assign(state, payload);
         if (unread != 0 && state.unread > unread) {
             state.updated += state.unread - unread;
         }
     },
-    resetUpdated(state: StatisticsState): void {
+    [RESET_UPDATED](state: StatisticsState): void {
         state.updated = 0;
     },
 }
