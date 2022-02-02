@@ -1,11 +1,11 @@
 <template>
   <div class="overflow-x-auto mt-5">
-    <FeedActions v-if="isAuthenticated" :delete-enable="checkState"
+    <FeedActions v-if="userState.isAuthenticated" :delete-enable="checkState"
                  @clickAdd="addNewFeed" @clickImport="this.isFileUploadVisible = true" @clickDelete="bulkDelete()"/>
     <table class="table w-full">
       <thead>
       <tr>
-        <th v-if="isAuthenticated">
+        <th v-if="userState.isAuthenticated">
           <label>
             <input type="checkbox" class="checkbox" ref="globalCheck"
                    :checked="checkState" @change="onSelectAll()"/>
@@ -28,7 +28,7 @@
       <tbody>
       <template v-for="vFeed in this.feeds" v-bind:key="vFeed.data.id">
         <tr>
-          <th v-if="isAuthenticated">
+          <th v-if="userState.isAuthenticated">
             <label>
               <input type="checkbox" class="checkbox" v-model="vFeed.isSelected">
               <span class="checkbox-mark"></span>
@@ -36,7 +36,6 @@
           </th>
           <td class="grid grid-cols-1 md:grid-cols-12 auto-cols-auto">
             <FeedListItem :ref="vFeed.data.id" :view="vFeed"
-                          :is-authenticated="isAuthenticated"
                           @item-update="itemUpdate" @item-delete="itemDelete"/>
           </td>
         </tr>
@@ -44,7 +43,7 @@
       </tbody>
       <tfoot>
       <tr>
-        <th v-if="isAuthenticated"></th>
+        <th v-if="userState.isAuthenticated"></th>
         <th>
           <div>Name</div>
           <div>Link / Categories</div>
@@ -73,12 +72,15 @@ import {Observable} from "rxjs";
 import {Feed} from "@/services/model/Feed";
 import FeedEditor from "@/components/feedslist/FeedEditor.vue";
 import feedsService from "@/services/FeedService";
-import userService from "@/services/UserService";
 import opmlService from "@/services/opml/OpmlService";
 import notificationService from "@/services/notification/NotificationService";
 import {defineAsyncComponent} from "vue";
 import {AlertResponse, AlertType} from "@/components/shared/alertdialog/AlertDialog.types";
 import FeedActions from "@/components/feedslist/FeedActions.vue";
+import {setup} from "vue-class-component";
+import {useStore} from "vuex";
+import {UserState} from "@/store/user/user";
+import {SandSideError} from "@/services/model/exceptions/SandSideError";
 
 const FileUploadWindow = defineAsyncComponent(() => import('@/components/shared/FileUploadWindow.vue'));
 
@@ -87,12 +89,12 @@ const FileUploadWindow = defineAsyncComponent(() => import('@/components/shared/
   components: {FeedActions, FeedEditor, FeedListItem, FeedListHeader, FileUploadWindow},
 })
 export default class FeedsList extends Vue {
+  private userState: UserState = setup(() => useStore().state.user);
   private feedEditor!: FeedEditor;
 // noinspection JSMismatchedCollectionQueryUpdate
   private feeds: FeedView[] = new Array(0);
   private pagesNumber = 0;
   private activePage = 0;
-  private isAuthenticated = false;
   private isFileUploadVisible = false;
 
   get checkState(): boolean {
@@ -103,10 +105,6 @@ export default class FeedsList extends Vue {
   }
 
   mounted(): void {
-    userService.get().subscribe({
-      next: () => this.isAuthenticated = true,
-      error: () => this.isAuthenticated = false,
-    })
     this.loadFeedPage(0).subscribe();
     this.feedEditor = this.$refs.feedEditor as FeedEditor;
   }
@@ -145,8 +143,7 @@ export default class FeedsList extends Vue {
     ).subscribe({
       next: () => notificationService.pushSimpleOk('Fil ajouté avec succès'),
       error: e => {
-        console.error(e);
-        notificationService.pushSimpleError('Impossible d’ajouter le fil !');
+        notificationService.pushSimpleError(e.message);
       }
     });
   }
@@ -205,7 +202,6 @@ export default class FeedsList extends Vue {
       next: () => notificationService.pushSimpleOk(`Désinscription réalisé avec succès !`),
       error: e => {
         console.error(e);
-        console.debug('feeds: ', ids);
         notificationService.pushSimpleError('Impossible de se désinscrire des feeds sélectionnés !');
       }
     });

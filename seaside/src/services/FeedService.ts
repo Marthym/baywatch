@@ -2,7 +2,7 @@ import {map, switchMap, take} from "rxjs/operators";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 import {Feed} from "@/services/model/Feed";
 import {Page} from "@/services/model/Page";
-import {from, Observable} from "rxjs";
+import {from, Observable, throwError} from "rxjs";
 import {ConstantFilters, ConstantHttpHeaders} from "@/constants";
 import rest from '@/services/http/RestWrapper';
 import {OpPatch} from "json-patch";
@@ -51,7 +51,8 @@ export class FeedService {
                 if (response.ok) {
                     return from(response.json());
                 } else {
-                    throw new HttpStatusError(response.status, 'Error while subscribing feed.');
+                    return from(response.json()).pipe(switchMap(j =>
+                        throwError(() => new HttpStatusError(response.status, j.message))));
                 }
             }),
             take(1)
@@ -64,7 +65,8 @@ export class FeedService {
                 if (response.ok) {
                     return from(response.json());
                 } else {
-                    throw new HttpStatusError(response.status, 'Error while updating feed.');
+                    return from(response.json()).pipe(switchMap(j =>
+                        throwError(() => new HttpStatusError(response.status, j.message))));
                 }
             }),
             take(1)

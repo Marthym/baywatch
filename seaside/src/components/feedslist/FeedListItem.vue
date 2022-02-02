@@ -18,7 +18,6 @@
   </div>
   <div class="col-span-7">
     <a class="link whitespace-normal">{{ view.data.url }}</a><br>
-    <!--      <span class="badge badge-outline badge-sm">Desktop Support Technician</span>-->
   </div>
   <div class="btn-group justify-self-end">
     <button class="btn btn-sm btn-square btn-ghost" @click="$emit('item-update', view.data)">
@@ -43,7 +42,6 @@ import {FeedView} from "@/components/feedslist/model/FeedView";
 @Options({name: 'FeedsListItem', emits: ['item-update', 'item-delete']})
 export default class FeedsListItem extends Vue {
   @Prop() private view!: FeedView;
-  @Prop() private isAuthenticated!: boolean;
 
   iconFallback(event: ErrorEvent): void {
     (event.target as HTMLImageElement).src = '/favicon.ico'

@@ -4,11 +4,13 @@
       <label class="label">
         <span class="label-text">Nom</span>
       </label>
-      <input v-model="feed.name" type="text" placeholder="nom" class="input input-bordered">
+      <input v-model="feed.name" type="text" placeholder="nom" class="input input-bordered"
+             :class="{'input-error': errors.indexOf('name') > -1}">
       <label class="label">
         <span class="label-text">URL</span>
       </label>
-      <input v-model="feed.url" type="text" placeholder="https://..." class="input input-bordered">
+      <input v-model="feed.url" type="url" placeholder="https://..." class="input input-bordered"
+             :class="{'input-error': errors.indexOf('url') > -1}">
       <TagInput v-model="feed.tags" :available-tags-handler="() => listAvailableTags()"/>
       <button class="hidden" type="submit"/>
     </form>
@@ -27,8 +29,15 @@ import ModalWindow from "@/components/shared/ModalWindow.vue";
 import TagInput from "@/components/shared/TagInput.vue";
 import tagsService from '@/services/TagsService';
 
+const URL_PATTERN = new RegExp('^(https?:\\/\\/)?' + // protocol
+    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+    '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+    '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+    '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+
 @Options({
-  name:'FeedEditor',
+  name: 'FeedEditor',
   components: {
     TagInput,
     ModalWindow,
@@ -39,6 +48,7 @@ export default class FeedEditor extends Vue {
   private isOpened = false;
   private modalTitle = 'Ajouter un fil';
   private subject?: Subject<Feed>;
+  private errors: string[] = [];
 
   public openEmpty(): Observable<Feed> {
     return this.openFeed({} as Feed);
@@ -59,8 +69,17 @@ export default class FeedEditor extends Vue {
   }
 
   private onSaveFeed() {
-    this.subject?.next(this.feed);
-    this.resetAndCloseModal();
+    this.errors.splice(0);
+    if (this.feed.name === undefined || this.feed.name.match(/^ *$/) !== null) {
+      this.errors.push('name');
+    }
+    if (!URL_PATTERN.test(this.feed.url)) {
+      this.errors.push('url');
+    }
+    if (this.errors.length === 0) {
+      this.subject?.next(this.feed);
+      this.resetAndCloseModal();
+    }
   }
 
   private listAvailableTags(): Observable<string[]> {

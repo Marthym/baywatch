@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -99,7 +100,11 @@ public class FeedController {
                             .build();
                 })
                 .flatMap(feed -> feedService.persist(Collections.singleton(feed)).thenReturn(feed))
-                .map(feed -> ResponseEntity.created(URI.create("/api/feeds/" + feed.getId())).body(feed));
+                .map(feed -> ResponseEntity.created(URI.create("/api/feeds/" + feed.getId())).body(feed))
+                .onErrorMap(WebExchangeBindException.class, e -> {
+                    String message = e.getFieldErrors().stream().map(err -> err.getField() + " " + err.getDefaultMessage()).collect(Collectors.joining("\n"));
+                    return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
+                });
 
     }
 
