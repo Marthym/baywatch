@@ -67,7 +67,6 @@ export default class NotificationArea extends Vue implements NotificationListene
   }
 
   onPopNotification(notif: Notification): void {
-    console.log('NotificationArea: ', this.notifications);
     const idx = this.notifications.findIndex(e => e.raw.message === notif.message);
     if (idx >= 0) {
       this.notifications.splice(idx, 1);
