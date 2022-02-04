@@ -2,7 +2,7 @@
   <div class="max-w-5xl">
     <template v-for="(card, idx) in news" :key="card.data.id">
       <NewsCard :ref="card.data.id" :card="card" @activate="activateNewsCard(idx)">
-        <template #actions v-if="isAuthenticated">
+        <template #actions v-if="userState.isAuthenticated">
           <div class="btn-group">
             <button v-if="!card.data.read" @click.stop="markNewsRead(idx, true)" class="btn btn-xs btn-ghost">
               <svg class="h-5 w-5 cursor-pointer" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -32,10 +32,10 @@
   </div>
 </template>
 <script lang="ts">
-import {Options, Vue} from 'vue-property-decorator';
+import {Options, Vue, Watch} from 'vue-property-decorator';
 import NewsCard from "@/components/newslist/NewsCard.vue";
-import {iif, Observable, of, Subject} from "rxjs";
-import {catchError, map, switchMap, take, tap} from "rxjs/operators";
+import {iif, Observable, Subject} from "rxjs";
+import {map, switchMap, take, tap} from "rxjs/operators";
 import {NewsView} from "@/components/newslist/model/NewsView";
 import ScrollActivable from "@/services/model/ScrollActivable";
 import {useInfiniteScroll} from "@/services/InfiniteScrollBehaviour";
@@ -43,16 +43,16 @@ import {useScrollingActivation} from "@/services/ScrollingActivationBehaviour";
 import InfiniteScrollable from "@/services/model/InfiniteScrollable";
 import {Mark} from "@/services/model/Mark.enum";
 import {Feed} from "@/services/model/Feed";
-
-import feedService, {FeedService} from "@/services/FeedService";
-import newsService, {NewsService} from "@/services/NewsService";
-import userService from '@/services/UserService';
-import tagsService from '@/services/TagsService';
-
 import {ConstantFilters} from "@/constants";
 import {setup} from "vue-class-component";
 import {useStore} from "vuex";
 import {DECREMENT_UNREAD_MUTATION, INCREMENT_UNREAD_MUTATION} from "@/store/statistics/StatisticsConstants";
+import {UserState} from "@/store/user/user";
+
+import feedService, {FeedService} from "@/services/FeedService";
+import newsService, {NewsService} from "@/services/NewsService";
+import tagsService from '@/services/TagsService';
+
 
 @Options({
   name: 'NewsList',
@@ -63,6 +63,7 @@ import {DECREMENT_UNREAD_MUTATION, INCREMENT_UNREAD_MUTATION} from "@/store/stat
 export default class NewsList extends Vue implements ScrollActivable, InfiniteScrollable {
 
   private readonly store = setup(() => useStore());
+  private readonly userState: UserState = setup(() => useStore().state.user);
   private readonly activateOnScroll = setup(() => useScrollingActivation());
   private readonly infiniteScroll = setup(() => useInfiniteScroll());
 
@@ -71,21 +72,24 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
 
   private activeNews = -1;
   private tags = '';
-  private isAuthenticated = false;
   private tagListenerIndex = -1;
+
+  get isAuthenticated(): boolean {
+    return this.userState.isAuthenticated || false;
+  }
+
+  @Watch('isAuthenticated')
+  onAuthenticationChange(): void {
+    this.loadNextPage().pipe(take(1)).subscribe({next: el => this.observeFirst(el)});
+  }
 
   mounted(): void {
     this.activateOnScroll.connect(this);
     this.infiniteScroll.connect(this);
-    userService.get().pipe(
-        tap(() => this.isAuthenticated = true),
-        catchError(() => {
-          this.isAuthenticated = false;
-          return of({});
-        }),
-        switchMap(() => this.loadNextPage()),
-        take(1),
-    ).subscribe(el => this.observeFirst(el));
+
+    if (this.userState.isAuthenticated !== undefined) {
+      this.onAuthenticationChange();
+    }
 
     window.addEventListener('keydown', this.onKeyDownListener, false);
     this.tagListenerIndex = tagsService.registerListener(tag => {
@@ -93,7 +97,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
       this.news = [];
       this.loadNextPage().pipe(take(1)).subscribe(el => this.observeFirst(el))
     });
-    userService.registerReloadFunction(() => {
+    newsService.registerReloadFunction(() => {
       this.news = [];
       this.activeNews = -1;
       this.loadNextPage().pipe(take(1)).subscribe(el => this.observeFirst(el))
@@ -181,11 +185,11 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     const feedIds = new Set<string>();
     for (let i = Math.max(fromIdx, 0); i < this.news.length; i++) {
       const news = this.news[i];
-      const receivedFeedIds = ids.get(news.data.id);
+      const receivedFeedIds: string[] | undefined = ids.get(news.data.id);
       if (receivedFeedIds === undefined) continue;
 
       receivedFeedIds.forEach(feedId => {
-        const feed = this.feeds.get(feedId);
+        const feed: Feed | undefined = this.feeds.get(feedId);
         if (feed === undefined) {
           feedIds.add(feedId);
         } else {
@@ -284,7 +288,6 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
 
     markObs.subscribe(news => {
       this.news[idx].data = news;
-      // this.$set(this.news, idx, {...target, data: news});
     });
   }
 

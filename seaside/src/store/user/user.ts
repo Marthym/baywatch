@@ -4,12 +4,12 @@ import {LOGOUT, UPDATE} from "@/store/user/UserConstants";
 
 export type UserState = {
     user: User;
-    isAuthenticated: boolean;
+    isAuthenticated: boolean | undefined;
 }
 
 const state = (): UserState => ({
     user: ANONYMOUS,
-    isAuthenticated: false,
+    isAuthenticated: undefined,
 });
 
 // getters

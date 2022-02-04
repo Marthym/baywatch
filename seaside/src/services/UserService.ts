@@ -8,30 +8,11 @@ import rest from '@/services/http/RestWrapper';
 export class UserService {
 
     private readonly cache$: Observable<Session>;
-    private reloadFunction: VoidFunction = () => {
-        console.warn('no reload function!')
-    };
 
     constructor() {
         this.cache$ = this.refresh().pipe(
             shareReplay(1),
         );
-    }
-
-    /**
-     * Register the function call on reload
-     * This allows others components to reload news list
-     *
-     * @param apply [VoidFunction] The call function
-     */
-    registerReloadFunction(apply: VoidFunction): void {
-        this.reloadFunction = apply;
-    }
-
-    reload(): void {
-        if (this.reloadFunction) {
-            this.reloadFunction();
-        }
     }
 
     login(username: string, password: string): Observable<User> {

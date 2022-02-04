@@ -61,7 +61,7 @@
 import {Options, Vue} from 'vue-property-decorator';
 import {SidenavMutation} from "@/store/sidenav/SidenavMutation.enum";
 import {StatisticsState} from "@/store/statistics/statistics";
-import userService from '@/services/UserService';
+import newsService from '@/services/NewsService';
 import {setup} from "vue-class-component";
 import {useStore} from "vuex";
 import {RESET_UPDATED_MUTATION} from "@/store/statistics/StatisticsConstants";
@@ -78,7 +78,7 @@ export default class ContentTopNav extends Vue {
 
   private reload(): void {
     this.store.commit(RESET_UPDATED_MUTATION);
-    userService.reload();
+    newsService.reload();
   }
 }
 </script>

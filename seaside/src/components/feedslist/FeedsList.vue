@@ -80,7 +80,6 @@ import FeedActions from "@/components/feedslist/FeedActions.vue";
 import {setup} from "vue-class-component";
 import {useStore} from "vuex";
 import {UserState} from "@/store/user/user";
-import {SandSideError} from "@/services/model/exceptions/SandSideError";
 
 const FileUploadWindow = defineAsyncComponent(() => import('@/components/shared/FileUploadWindow.vue'));
 

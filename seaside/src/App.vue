@@ -21,10 +21,10 @@ import NotificationArea from "@/components/shared/notificationArea/NotificationA
 import userService from '@/services/UserService'
 import serverEventService from '@/services/sse/ServerEventService'
 import {EventType} from "@/services/sse/EventType.enum";
-import {RELOAD_ACTION} from "@/store/statistics/StatisticsConstants";
+import {RELOAD_ACTION, UPDATE_MUTATION as STATS_UPDATE_MUTATION} from "@/store/statistics/StatisticsConstants";
 import {setup} from "vue-class-component";
 import {useStore} from "vuex";
-import {LOGOUT_MUTATION, UPDATE_MUTATION} from "@/store/user/UserConstants";
+import {LOGOUT_MUTATION, UPDATE_MUTATION as USER_UPDATE_MUTATION} from "@/store/user/UserConstants";
 
 @Options({
   components: {
@@ -39,7 +39,7 @@ export default class App extends Vue {
   mounted(): void {
     userService.get().subscribe({
       next: user => {
-        this.store.commit(UPDATE_MUTATION, user);
+        this.store.commit(USER_UPDATE_MUTATION, user);
         serverEventService.registerListener(EventType.NEWS, this.onServerMessage);
         this.store.dispatch(RELOAD_ACTION);
       },
@@ -57,7 +57,7 @@ export default class App extends Vue {
 
   private onServerMessage(evt: Event): void {
     const msg: MessageEvent = evt as MessageEvent;
-    this.store.commit(UPDATE_MUTATION, JSON.parse(msg.data));
+    this.store.commit(STATS_UPDATE_MUTATION, JSON.parse(msg.data));
   }
 }
 </script>
