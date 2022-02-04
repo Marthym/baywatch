@@ -27,7 +27,7 @@
       </button>
     </li><li v-if="store.getters['user/hasRoleAdmin']"><div class="divider mt-10">Admin</div> </li>
     <li v-if="store.getters['user/hasRoleAdmin']">
-      <button class="w-full btn btn-warning
+      <router-link to="/admin" tag="button" class="w-full btn btn-warning
           normal-case font-medium text-left justify-start min-h-fit h-fit py-2 text-base">
         <svg class="fill-current w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20"
              xmlns="http://www.w3.org/2000/svg">
@@ -39,7 +39,7 @@
               8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"></path>
         </svg>
         Administration
-      </button>
+      </router-link>
     </li>
   </ul>
 </template>
