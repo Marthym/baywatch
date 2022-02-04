@@ -8,7 +8,7 @@
     <SideNavStatistics :statistics="baywatchStats" :isLoggedIn="user.isAuthenticated"/>
 
     <SideNavTags v-if="user.isAuthenticated"/>
-    <SideNavFeeds v-if="user.isAuthenticated && store.getters['user/hasRoleAdmin']"/>
+    <SideNavManagement v-if="user.isAuthenticated && store.getters['user/hasRoleManager']"/>
 
     <SideNavImportantActions :isLoggedIn="user.isAuthenticated" @logout="logoutUser()"/>
   </aside>
@@ -18,7 +18,7 @@
 import {Options, Vue} from 'vue-property-decorator';
 import SideNavHeader from "./SideNavHeader.vue";
 import SideNavImportantActions from "./SideNavImportantActions.vue";
-import SideNavFeeds from './SideNavFeeds.vue';
+import SideNavManagement from './SideNavManagement.vue';
 import SideNavStatistics from "@/components/sidenav/SideNavStatistics.vue";
 
 import userService from "@/services/UserService";
@@ -41,7 +41,7 @@ const SideNavUserInfo = defineAsyncComponent(() => import('./SideNavUserInfo.vue
     SideNavHeader,
     SideNavUserInfo,
     SideNavTags,
-    SideNavFeeds,
+    SideNavManagement,
     SideNavImportantActions,
   },
 })
