@@ -1,8 +1,9 @@
-package fr.ght1pc9kc.baywatch.infra.adapters;
+package fr.ght1pc9kc.baywatch.infra.security.adapters;
 
-import fr.ght1pc9kc.baywatch.api.UserService;
-import fr.ght1pc9kc.baywatch.domain.UserServiceImpl;
+import fr.ght1pc9kc.baywatch.api.security.UserService;
+import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.ports.UserPersistencePort;
+import fr.ght1pc9kc.baywatch.domain.security.UserServiceImpl;
 import fr.ght1pc9kc.baywatch.infra.security.model.BaywatchUserDetails;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
@@ -21,8 +22,8 @@ public class UserServiceAdapter implements UserService, ReactiveUserDetailsServi
     private final UserService delegate;
 
     @Autowired
-    public UserServiceAdapter(UserPersistencePort userPersistencePort) {
-        this.delegate = new UserServiceImpl(userPersistencePort);
+    public UserServiceAdapter(UserPersistencePort userPersistencePort, AuthenticationFacade authFacade) {
+        this.delegate = new UserServiceImpl(userPersistencePort, authFacade);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.domain.security;
 
-import fr.ght1pc9kc.baywatch.api.UserService;
+import fr.ght1pc9kc.baywatch.api.security.UserService;
 import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.api.security.model.User;

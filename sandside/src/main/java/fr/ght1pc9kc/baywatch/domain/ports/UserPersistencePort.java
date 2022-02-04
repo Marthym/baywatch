@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.domain.ports;
 
 import fr.ght1pc9kc.baywatch.api.security.model.User;
+import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -13,6 +14,8 @@ public interface UserPersistencePort {
     Flux<User> list(PageRequest pageRequest);
 
     Flux<User> list();
+
+    Mono<Integer> count(QueryContext qCtx);
 
     Flux<User> persist(Collection<User> users);
 

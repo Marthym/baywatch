@@ -1,10 +1,11 @@
-package fr.ght1pc9kc.baywatch.infra.security;
+package fr.ght1pc9kc.baywatch.infra.security.controllers;
 
 import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.exceptions.SecurityException;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
+import fr.ght1pc9kc.baywatch.infra.security.TokenCookieManager;
 import fr.ght1pc9kc.baywatch.infra.security.adapters.AuthenticationManagerAdapter;
 import fr.ght1pc9kc.baywatch.infra.security.exceptions.BaywatchCredentialsException;
 import fr.ght1pc9kc.baywatch.infra.security.exceptions.NoSessionException;

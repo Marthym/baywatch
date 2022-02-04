@@ -1,11 +1,12 @@
-package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
+package fr.ght1pc9kc.baywatch.infra.security.persistence;
 
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.ports.UserPersistencePort;
+import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
+import fr.ght1pc9kc.baywatch.infra.http.filter.PredicateSearchVisitor;
 import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
-import fr.ght1pc9kc.baywatch.infra.http.filter.PredicateSearchVisitor;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
@@ -50,16 +51,16 @@ public class UserRepository implements UserPersistencePort {
         Condition conditions = pageRequest.filter().accept(JOOQ_CONDITION_VISITOR);
 
         return Flux.<UsersRecord>create(sink -> {
-            Cursor<UsersRecord> cursor = dsl.selectFrom(USERS).where(conditions).fetchLazy();
-            sink.onRequest(n -> {
-                int count = Long.valueOf(n).intValue();
-                Result<UsersRecord> rs = cursor.fetchNext(count);
-                rs.forEach(sink::next);
-                if (rs.size() < count) {
-                    sink.complete();
-                }
-            });
-        }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
+                    Cursor<UsersRecord> cursor = dsl.selectFrom(USERS).where(conditions).fetchLazy();
+                    sink.onRequest(n -> {
+                        int count = Long.valueOf(n).intValue();
+                        Result<UsersRecord> rs = cursor.fetchNext(count);
+                        rs.forEach(sink::next);
+                        if (rs.size() < count) {
+                            sink.complete();
+                        }
+                    });
+                }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(baywatchConverter::recordToUser)
                 .filter(pageRequest.filter().accept(USER_PREDICATE_VISITOR));
     }
@@ -70,19 +71,26 @@ public class UserRepository implements UserPersistencePort {
     }
 
     @Override
+    public Mono<Integer> count(QueryContext qCtx) {
+        Condition conditions = qCtx.getFilter().accept(JOOQ_CONDITION_VISITOR);
+        return Mono.fromCallable(() -> dsl.fetchCount(dsl.selectFrom(USERS).where(conditions)))
+                .subscribeOn(databaseScheduler);
+    }
+
+    @Override
     public Flux<User> persist(Collection<User> toPersist) {
         List<UsersRecord> records = toPersist.stream()
                 .map(baywatchConverter::userToRecord)
                 .collect(Collectors.toList());
 
         return Mono.fromCallable(() ->
-                dsl.loadInto(USERS)
-                        .batchAll()
-                        .onDuplicateKeyIgnore()
-                        .onErrorIgnore()
-                        .loadRecords(records)
-                        .fieldsCorresponding()
-                        .execute())
+                        dsl.loadInto(USERS)
+                                .batchAll()
+                                .onDuplicateKeyIgnore()
+                                .onErrorIgnore()
+                                .loadRecords(records)
+                                .fieldsCorresponding()
+                                .execute())
                 .subscribeOn(databaseScheduler)
                 .map(loader -> {
                     log.info("Load {} News with {} error(s) and {} ignored",
