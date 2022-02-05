@@ -21,7 +21,7 @@ import SideNavImportantActions from "./SideNavImportantActions.vue";
 import SideNavManagement from './SideNavManagement.vue';
 import SideNavStatistics from "@/components/sidenav/SideNavStatistics.vue";
 
-import userService from "@/services/UserService";
+import authenticationService from "@/services/AuthenticationService";
 import {SidenavState} from "@/store/sidenav/sidenav";
 import {StatisticsState} from "@/store/statistics/statistics";
 import {RELOAD_ACTION} from "@/store/statistics/StatisticsConstants";
@@ -52,7 +52,7 @@ export default class SideNav extends Vue {
   private user: UserState = setup(() => useStore().state.user);
 
   logoutUser(): void {
-    userService.logout().subscribe(() => {
+    authenticationService.logout().subscribe(() => {
       this.store.commit(LOGOUT_MUTATION);
       this.store.dispatch(RELOAD_ACTION);
       this.$router.go(0);

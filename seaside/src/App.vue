@@ -18,7 +18,7 @@ import {Options, Vue} from 'vue-property-decorator';
 import ContentTopNav from "@/components/topnav/ContentTopNav.vue";
 import SideNav from '@/components/sidenav/SideNav.vue';
 import NotificationArea from "@/components/shared/notificationArea/NotificationArea.vue";
-import userService from '@/services/UserService'
+import authenticationService from '@/services/AuthenticationService'
 import serverEventService from '@/services/sse/ServerEventService'
 import {EventType} from "@/services/sse/EventType.enum";
 import {RELOAD_ACTION, UPDATE_MUTATION as STATS_UPDATE_MUTATION} from "@/store/statistics/StatisticsConstants";
@@ -37,7 +37,7 @@ export default class App extends Vue {
   private readonly store = setup(() => useStore());
 
   mounted(): void {
-    userService.refresh().subscribe({
+    authenticationService.refresh().subscribe({
       next: session => {
         this.store.commit(USER_UPDATE_MUTATION, session.user);
         serverEventService.registerListener(EventType.NEWS, this.onServerMessage);

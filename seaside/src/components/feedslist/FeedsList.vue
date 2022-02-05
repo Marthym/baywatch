@@ -44,9 +44,9 @@
       <tfoot>
       <tr>
         <th v-if="userState.isAuthenticated"></th>
-        <th>
-          <div>Name</div>
-          <div>Link / Categories</div>
+        <th class="grid grid-cols-1 md:grid-cols-12">
+          <div class="col-span-4">Name</div>
+          <div class="col-span-7">Link / Categories</div>
           <div class="btn-group justify-end" v-if="pagesNumber > 1">
             <button v-for="i in pagesNumber" :key="i"
                     :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
