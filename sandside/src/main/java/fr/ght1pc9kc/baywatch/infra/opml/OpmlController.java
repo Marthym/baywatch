@@ -24,13 +24,13 @@ import java.time.LocalDateTime;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
 @RequestMapping("${baywatch.base-route}/opml")
 public class OpmlController {
 
     private final OpmlService opmlService;
 
     @ResponseBody
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/export/baywatch.opml")
     public Mono<ResponseEntity<Resource>> exportOpml() {
         String fileName = String.format("baywatch-%s.opml", LocalDateTime.now());
@@ -45,7 +45,6 @@ public class OpmlController {
                 .doOnError(e -> log.error("STACKTRACE", e));
     }
 
-    @PreAuthorize("isAuthenticated()")
     @PostMapping("/import")
     public Mono<Void> importOpml(@RequestPart("opml") Mono<FilePart> opmlFilePart) {
         Flux<DataBuffer> data = opmlFilePart.flatMapMany(Part::content);

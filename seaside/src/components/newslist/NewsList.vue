@@ -74,12 +74,13 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   private tags = '';
   private tagListenerIndex = -1;
 
-  get isAuthenticated(): boolean {
-    return this.userState.isAuthenticated || false;
+  get isAuthenticated(): boolean | undefined {
+    return this.userState.isAuthenticated;
   }
 
   @Watch('isAuthenticated')
   onAuthenticationChange(): void {
+    console.log("watcher")
     this.loadNextPage().pipe(take(1)).subscribe({next: el => this.observeFirst(el)});
   }
 

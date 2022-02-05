@@ -1,19 +1,11 @@
 import {Observable, throwError} from "rxjs";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 import {User} from "@/services/model/User";
-import {catchError, map, shareReplay, switchMap, take} from "rxjs/operators";
+import {catchError, map, switchMap, take} from "rxjs/operators";
 import {Session} from "@/services/model/Session";
 import rest from '@/services/http/RestWrapper';
 
 export class UserService {
-
-    private readonly cache$: Observable<Session>;
-
-    constructor() {
-        this.cache$ = this.refresh().pipe(
-            shareReplay(1),
-        );
-    }
 
     login(username: string, password: string): Observable<User> {
         const data = new FormData();
@@ -42,7 +34,7 @@ export class UserService {
         );
     }
 
-    private refresh(): Observable<Session> {
+    refresh(): Observable<Session> {
         return rest.put('/auth/refresh').pipe(
             switchMap(response => {
                 if (response.ok) {
@@ -55,12 +47,6 @@ export class UserService {
                 return throwError(err);
             }),
             take(1)
-        );
-    }
-
-    get(): Observable<User> {
-        return this.cache$.pipe(
-            map(s => s.user),
         );
     }
 }

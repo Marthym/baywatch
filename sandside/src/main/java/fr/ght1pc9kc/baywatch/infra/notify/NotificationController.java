@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +19,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
 @RequestMapping("${baywatch.base-route}/sse")
 public class NotificationController {
     private final NotifyService notifyService;

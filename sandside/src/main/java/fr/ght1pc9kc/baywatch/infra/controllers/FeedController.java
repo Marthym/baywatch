@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ResponseStatusException;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
 @RequestMapping("${baywatch.base-route}/feeds")
 public class FeedController {
 
@@ -45,6 +47,7 @@ public class FeedController {
     }
 
     @GetMapping
+    @PreAuthorize("permitAll()")
     public Mono<Page<Feed>> list(ServerHttpRequest request) {
         PageRequest pageRequest = qsParser.parse(request.getQueryParams());
         Flux<Feed> feeds = feedService.list(pageRequest)

@@ -42,11 +42,15 @@ public class SecurityConfiguration {
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange()
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
-                .pathMatchers(HttpMethod.GET).permitAll()
+                .pathMatchers(HttpMethod.GET, baseRoute + "/stats").permitAll()
+                .pathMatchers(HttpMethod.GET, baseRoute + "/news").permitAll()
+                .pathMatchers(HttpMethod.GET, baseRoute + "/feeds").permitAll()
                 .pathMatchers(HttpMethod.POST, baseRoute + "/auth/login").permitAll()
                 .pathMatchers(HttpMethod.PUT, baseRoute + "/auth/refresh").permitAll()
                 .pathMatchers(HttpMethod.DELETE, baseRoute + "/auth/logout").authenticated()
-                .anyExchange().hasAnyRole(Role.ADMIN.name(), Role.MANAGER.name(), Role.USER.name())
+                .pathMatchers(baseRoute + "/**").hasAnyRole(
+                        Role.USER.name(), Role.MANAGER.name(), Role.ADMIN.name())
+                .anyExchange().denyAll()
 
                 .and()
 

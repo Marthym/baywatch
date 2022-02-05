@@ -37,9 +37,9 @@ export default class App extends Vue {
   private readonly store = setup(() => useStore());
 
   mounted(): void {
-    userService.get().subscribe({
-      next: user => {
-        this.store.commit(USER_UPDATE_MUTATION, user);
+    userService.refresh().subscribe({
+      next: session => {
+        this.store.commit(USER_UPDATE_MUTATION, session.user);
         serverEventService.registerListener(EventType.NEWS, this.onServerMessage);
         this.store.dispatch(RELOAD_ACTION);
       },

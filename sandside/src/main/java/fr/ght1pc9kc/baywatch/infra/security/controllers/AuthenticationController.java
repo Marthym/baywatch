@@ -30,8 +30,9 @@ import java.util.Set;
 
 @Slf4j
 @RestController
-@RequestMapping("${baywatch.base-route}/auth")
 @RequiredArgsConstructor
+@PreAuthorize("isAuthenticated()")
+@RequestMapping("${baywatch.base-route}/auth")
 public class AuthenticationController {
 
     private final JwtTokenProvider tokenProvider;
@@ -40,6 +41,7 @@ public class AuthenticationController {
     private final TokenCookieManager cookieManager;
 
     @PostMapping("/login")
+    @PreAuthorize("permitAll()")
     public Mono<User> login(@Valid Mono<AuthenticationRequest> authRequest, ServerWebExchange exchange) {
         return authRequest
                 .flatMap(login -> authenticationManager.authenticate(
@@ -74,6 +76,7 @@ public class AuthenticationController {
     }
 
     @PutMapping("/refresh")
+    @PreAuthorize("permitAll()")
     public Mono<Session> refresh(ServerWebExchange exchange) {
         String token = cookieManager.getTokenCookie(exchange.getRequest())
                 .map(HttpCookie::getValue)
@@ -92,7 +95,6 @@ public class AuthenticationController {
     }
 
     @GetMapping("/current")
-    @PreAuthorize("isAuthenticated()")
     public Mono<User> currentUser() {
         return authFacade.getConnectedUser();
     }
