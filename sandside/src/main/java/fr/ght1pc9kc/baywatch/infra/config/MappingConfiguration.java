@@ -6,8 +6,10 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.infra.config.jackson.FeedMixin;
 import fr.ght1pc9kc.baywatch.infra.config.jackson.NewsMixin;
+import fr.ght1pc9kc.baywatch.infra.security.config.UserMixin;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +30,7 @@ public class MappingConfiguration {
             builder.serializationInclusion(JsonInclude.Include.NON_NULL);
             builder.mixIn(News.class, NewsMixin.class);
             builder.mixIn(Feed.class, FeedMixin.class);
+            builder.mixIn(User.class, UserMixin.class);
         };
     }
 }

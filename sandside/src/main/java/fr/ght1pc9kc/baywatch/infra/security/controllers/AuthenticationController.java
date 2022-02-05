@@ -53,7 +53,7 @@ public class AuthenticationController {
                     ResponseCookie authCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), bwAuth);
                     exchange.getResponse().addCookie(authCookie);
                     log.debug("Login to {}.", user.getUsername());
-                    return user.getEntity().withPassword(null);
+                    return user.getEntity();
                 })
 
                 .onErrorMap(BadCredentialsException.class, BaywatchCredentialsException::new);
@@ -84,7 +84,7 @@ public class AuthenticationController {
                     ResponseCookie tokenCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), auth);
                     exchange.getResponse().addCookie(tokenCookie);
                     return Session.builder()
-                            .user(auth.user.withPassword(null))
+                            .user(auth.user)
                             .maxAge(-1)
                             .build();
                 })
