@@ -1,7 +1,8 @@
 import {UserRole} from "@/services/model/UserRole.enum";
 
 export type User = {
-    id: string;
+    _id: string;
+    _createdAt: string;
     login: string;
     name: string;
     mail: string;
@@ -9,7 +10,8 @@ export type User = {
 }
 
 export const ANONYMOUS: User = {
-    id: '',
+    _id: '',
+    _createdAt: '',
     login: '',
     name: 'Anonymous',
     mail: '',

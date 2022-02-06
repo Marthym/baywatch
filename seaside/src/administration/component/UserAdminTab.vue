@@ -17,7 +17,7 @@
         </svg>
         Importer
       </button>
-      <a class="btn btn-sm btn-primary mb-2 mr-2 md:m-0" >
+      <a class="btn btn-sm btn-primary mb-2 mr-2 md:m-0">
         <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
              xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -73,7 +73,7 @@
         <td>{{ vUser.data.name }}</td>
         <td>{{ vUser.data.mail }}</td>
         <td>{{ vUser.data.role }}</td>
-        <td>12/16/2020</td>
+        <td>{{ dateToString(vUser.data._createdAt) }}</td>
       </tr>
       </tbody>
       <tfoot>
@@ -139,6 +139,13 @@ export default class UserAdminTab extends Vue {
         map(fs => fs.map(f => ({isSelected: false, data: f}))),
         tap(fs => this.users = fs)
     )
+  }
+
+  dateToString(date: string): string {
+    return new Date(date).toLocaleDateString(navigator.languages, {
+      timeZone: 'UTC',
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: "2-digit", minute: "2-digit"
+    });
   }
 }
 </script>
