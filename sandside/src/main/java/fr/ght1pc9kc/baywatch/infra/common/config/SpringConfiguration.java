@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.infra.config;
+package fr.ght1pc9kc.baywatch.infra.common.config;
 
 import fr.ght1pc9kc.juery.api.filter.CriteriaVisitor;
 import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;

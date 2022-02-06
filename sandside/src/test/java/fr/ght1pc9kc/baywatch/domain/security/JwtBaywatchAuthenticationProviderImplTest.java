@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.domain.security;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
@@ -21,9 +22,9 @@ import java.util.Collections;
 class JwtBaywatchAuthenticationProviderImplTest {
 
     private static final String GOOD_TOKEN = "eyJhbGciOiJIUzI1NiJ9." +
-            "eyJzdWIiOiI0MiIsInJvbGVzIjoiUk9MRV9VU0VSIiwiaXNzIjoiYmF5d2F0Y2hcL3NhbmRzaWRlIiwiZXhwIjoxNjE2MzU0OTMy" +
-            "LCJsb2dpbiI6Im9rZW5vYmkiLCJpYXQiOjE2MTYzNTQ5MjJ9" +
-            ".qj0Gfpk39DtV0YpYD7XpNk0abN5Fy27_SR3PRr555EY";
+            "eyJyZW1lbWJlciI6ZmFsc2UsInN1YiI6IjQyIiwiY3JlYXRlZEF0IjowLCJyb2xlcyI6IlJPTEVfVVNFUiIsImlzcyI6ImJheXdhd" +
+            "GNoXC9zYW5kc2lkZSIsImV4cCI6MTYxNjM1NDkzMiwibG9naW4iOiJva2Vub2JpIiwiaWF0IjoxNjE2MzU0OTIyfQ" +
+            ".6dFZCpf1hPpwuzW-l7pikgFQCXvNielj62r3L_jmVug";
     private static final String BAD_TOKEN = "eyJhbGciOiJIUzI1NiJ9." +
             "eyJzdWIiOiI0MiIsInJvbGVzIjoiIiwiaXNzIjoiYmF5d2F0Y2gvc2FuZHNpZGUiLCJleHAiOjE2MTYzNTU5MzIsImxvZ2luIjoi" +
             "b2tlbm9iaSIsImlhdCI6MTYxNjM1NDkyMn0=" +
@@ -36,7 +37,7 @@ class JwtBaywatchAuthenticationProviderImplTest {
 
     @Test
     void should_create_token() throws IOException {
-        User user = User.builder().id("42").login("okenobi").role(Role.USER).build();
+        Entity<User> user = new Entity<>("42", Instant.EPOCH, User.builder().login("okenobi").role(Role.USER).build());
         String actual = tested.createToken(user, false, Collections.emptyList()).getToken();
 
         Assertions.assertThat(actual).isNotBlank();
@@ -53,7 +54,8 @@ class JwtBaywatchAuthenticationProviderImplTest {
         BaywatchAuthentication actual = tested.getAuthentication(GOOD_TOKEN);
 
         Assertions.assertThat(actual.token).isEqualTo(GOOD_TOKEN);
-        Assertions.assertThat(actual.user).isEqualTo(User.builder().id("42").login("okenobi").role(Role.USER).build());
+        Assertions.assertThat(actual.user).isEqualTo(
+                new Entity<>("42", Instant.EPOCH, User.builder().login("okenobi").role(Role.USER).build()));
     }
 
     @Test

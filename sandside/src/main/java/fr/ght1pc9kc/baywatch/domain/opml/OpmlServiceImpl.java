@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.domain.opml;
 
 import com.machinezoo.noexception.Exceptions;
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.opml.OpmlService;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
@@ -67,10 +68,10 @@ public class OpmlServiceImpl implements OpmlService {
                 })).then();
     }
 
-    private Mono<Void> writeOpml(OutputStream out, User owner) {
+    private Mono<Void> writeOpml(OutputStream out, Entity<User> owner) {
         OpmlWriter opmlWriter = writerFactory.apply(out);
         return feedRepository.list(QueryContext.empty().withUserId(owner.id))
-                .doFirst(() -> opmlWriter.startOpmlDocument(owner))
+                .doFirst(() -> opmlWriter.startOpmlDocument(owner.entity))
                 .doOnEach(signal -> {
                     Feed feed = signal.get();
                     if (feed != null) {

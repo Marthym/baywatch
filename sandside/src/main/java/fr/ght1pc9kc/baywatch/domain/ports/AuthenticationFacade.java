@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.domain.ports;
 
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
@@ -14,7 +15,7 @@ public interface AuthenticationFacade {
      *
      * @return The connected user.
      */
-    Mono<User> getConnectedUser();
+    Mono<Entity<User>> getConnectedUser();
 
     /**
      * Update the {@link org.reactivestreams.Publisher} context with a specific authentication
@@ -22,7 +23,7 @@ public interface AuthenticationFacade {
      * @param user The {@link User} as Principal of the Authentication
      * @return The authenticated Context
      */
-    Context withAuthentication(User user);
+    Context withAuthentication(Entity<User> user);
 
     Context withSystemAuthentication();
 }

@@ -6,7 +6,7 @@ import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.infra.http.filter.PredicateSearchVisitor;
-import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
+import fr.ght1pc9kc.baywatch.infra.common.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
-import static fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers.FEEDS_PROPERTIES_MAPPING;
+import static fr.ght1pc9kc.baywatch.infra.common.mappers.PropertiesMappers.FEEDS_PROPERTIES_MAPPING;
 
 @Slf4j
 @Repository

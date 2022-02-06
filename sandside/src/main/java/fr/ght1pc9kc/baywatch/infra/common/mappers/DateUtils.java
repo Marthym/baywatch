@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.infra.mappers;
+package fr.ght1pc9kc.baywatch.infra.common.mappers;
 
 import lombok.experimental.UtilityClass;
 

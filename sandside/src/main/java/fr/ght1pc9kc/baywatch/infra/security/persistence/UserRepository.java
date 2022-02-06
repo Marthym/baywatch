@@ -1,12 +1,13 @@
 package fr.ght1pc9kc.baywatch.infra.security.persistence;
 
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
+import fr.ght1pc9kc.baywatch.infra.common.mappers.BaywatchMapper;
+import fr.ght1pc9kc.baywatch.infra.common.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.infra.http.filter.PredicateSearchVisitor;
-import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
-import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
@@ -35,19 +36,19 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.Users.USERS;
 public class UserRepository implements UserPersistencePort {
     private static final JooqConditionVisitor JOOQ_CONDITION_VISITOR =
             new JooqConditionVisitor(PropertiesMappers.USER_PROPERTIES_MAPPING::get);
-    private static final PredicateSearchVisitor<User> USER_PREDICATE_VISITOR = new PredicateSearchVisitor<>();
+    private static final PredicateSearchVisitor<Entity<User>> USER_PREDICATE_VISITOR = new PredicateSearchVisitor<>();
 
     private final Scheduler databaseScheduler;
     private final DSLContext dsl;
     private final BaywatchMapper baywatchConverter;
 
     @Override
-    public Mono<User> get(String id) {
+    public Mono<Entity<User>> get(String id) {
         return list(PageRequest.one(Criteria.property("id").eq(id))).next();
     }
 
     @Override
-    public Flux<User> list(PageRequest pageRequest) {
+    public Flux<Entity<User>> list(PageRequest pageRequest) {
         Condition conditions = pageRequest.filter().accept(JOOQ_CONDITION_VISITOR);
 
         return Flux.<UsersRecord>create(sink -> {
@@ -61,12 +62,12 @@ public class UserRepository implements UserPersistencePort {
                         }
                     });
                 }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
-                .map(baywatchConverter::recordToUser)
+                .map(baywatchConverter::recordToUserEntity)
                 .filter(pageRequest.filter().accept(USER_PREDICATE_VISITOR));
     }
 
     @Override
-    public Flux<User> list() {
+    public Flux<Entity<User>> list() {
         return list(PageRequest.all());
     }
 
@@ -78,9 +79,9 @@ public class UserRepository implements UserPersistencePort {
     }
 
     @Override
-    public Flux<User> persist(Collection<User> toPersist) {
+    public Flux<Entity<User>> persist(Collection<Entity<User>> toPersist) {
         List<UsersRecord> records = toPersist.stream()
-                .map(baywatchConverter::userToRecord)
+                .map(baywatchConverter::entityUserToRecord)
                 .collect(Collectors.toList());
 
         return Mono.fromCallable(() ->

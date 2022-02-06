@@ -6,7 +6,7 @@ import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.infra.config.ScrapperProperties;
-import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
+import fr.ght1pc9kc.baywatch.infra.common.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.security.controllers;
 
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.exceptions.SecurityException;
@@ -42,7 +43,7 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     @PreAuthorize("permitAll()")
-    public Mono<User> login(@Valid Mono<AuthenticationRequest> authRequest, ServerWebExchange exchange) {
+    public Mono<Entity<User>> login(@Valid Mono<AuthenticationRequest> authRequest, ServerWebExchange exchange) {
         return authRequest
                 .flatMap(login -> authenticationManager.authenticate(
                                 new UsernamePasswordAuthenticationToken(login.getUsername(), login.getPassword()))
@@ -67,7 +68,7 @@ public class AuthenticationController {
             String user = cookieManager.getTokenCookie(exchange.getRequest())
                     .map(HttpCookie::getValue)
                     .map(tokenProvider::getAuthentication)
-                    .map(a -> String.format("%s (%s)", a.user.login, a.user.id))
+                    .map(a -> String.format("%s (%s)", a.user.entity.login, a.user.id))
                     .orElse("Unknown User");
             log.debug("Logout for {}.", user);
         }
@@ -87,7 +88,7 @@ public class AuthenticationController {
                     ResponseCookie tokenCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), auth);
                     exchange.getResponse().addCookie(tokenCookie);
                     return Session.builder()
-                            .user(auth.user)
+                            .user(auth.user.entity)
                             .maxAge(-1)
                             .build();
                 })
@@ -95,7 +96,7 @@ public class AuthenticationController {
     }
 
     @GetMapping("/current")
-    public Mono<User> currentUser() {
+    public Mono<Entity<User>> currentUser() {
         return authFacade.getConnectedUser();
     }
 }

@@ -1,10 +1,11 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.Users;
-import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
+import fr.ght1pc9kc.baywatch.infra.common.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.samples.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.FeedsUsersRecordSample;
 import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;
@@ -24,7 +25,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mapstruct.factory.Mappers;
 import reactor.core.scheduler.Schedulers;
+import reactor.test.StepVerifier;
 
+import java.time.Instant;
 import java.util.List;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
@@ -68,34 +71,34 @@ class UserRepositoryTest {
     void should_get_user(WithSampleDataLoaded.Tracker dbTracker) {
         dbTracker.skipNextSampleLoad();
 
-        User actual = tested.get(UsersRecordSamples.OKENOBI.getUserId()).block();
-
-        assertThat(actual).isEqualTo(User.builder()
-                .id("okenobi")
-                .name("Obiwan Kenobi")
-                .login("okenobi")
-                .mail("obiwan.kenobi@jedi.fr")
-                .password(UsersRecordSamples.OKENOBI.getUserPassword())
-                .role(Role.MANAGER)
-                .build());
+        StepVerifier.create(tested.get(UsersRecordSamples.OKENOBI.getUserId()))
+                .assertNext(actual -> Assertions.assertAll(
+                        () -> assertThat(actual.id).isEqualTo("okenobi"),
+                        () -> assertThat(actual.createdAt).isEqualTo(Instant.parse("2022-02-06T14:23:00Z")),
+                        () -> assertThat(actual.entity.name).isEqualTo("Obiwan Kenobi"),
+                        () -> assertThat(actual.entity.login).isEqualTo("okenobi"),
+                        () -> assertThat(actual.entity.mail).isEqualTo("obiwan.kenobi@jedi.fr"),
+                        () -> assertThat(actual.entity.password).isEqualTo(UsersRecordSamples.OKENOBI.getUserPassword()),
+                        () -> assertThat(actual.entity.role).isEqualTo(Role.MANAGER)
+                )).verifyComplete();
     }
 
     @Test
     void should_list_all_users(WithSampleDataLoaded.Tracker dbTracker) {
         dbTracker.skipNextSampleLoad();
-        List<User> actuals = tested.list().collectList().block();
 
-        assertThat(actuals).hasSize(2);
+        StepVerifier.create(tested.list())
+                .expectNextCount(2)
+                .verifyComplete();
     }
 
     @Test
     void should_list_user_with_criteria(WithSampleDataLoaded.Tracker dbTracker) {
         dbTracker.skipNextSampleLoad();
-        List<User> actuals = tested.list(PageRequest.all(Criteria.property("name").eq("Obiwan Kenobi"))).collectList().block();
 
-        assertThat(actuals).isNotNull();
-        assertThat(actuals).hasSize(1);
-        assertThat(actuals.get(0).id).isEqualTo("okenobi");
+        StepVerifier.create(tested.list(PageRequest.all(Criteria.property("name").eq("Obiwan Kenobi"))))
+                .expectNextMatches(actual -> "okenobi".equals(actual.id))
+                .verifyComplete();
     }
 
     @Test
@@ -105,12 +108,15 @@ class UserRepositoryTest {
             assertThat(actual).isEqualTo(2);
         }
 
-        tested.persist(List.of(
-                User.builder().id(Hasher.sha3("dvader")).login("dvader").name("Darth Vader").mail("darth.vader@sith.fr")
-                        .password("obscur").role(Role.USER).build(),
-                User.builder().id(Hasher.sha3("dsidious")).login("dsidious").name("Darth Sidious").mail("darth.sidious@sith.fr")
-                        .password("obscur").role(Role.MANAGER).build()
-        )).collectList().block();
+        Entity<User> dvader = new Entity<>((Hasher.sha3("darth.vader@sith.fr")), Instant.EPOCH,
+                User.builder().login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur").role(Role.USER).build());
+        Entity<User> dsidious = new Entity<>((Hasher.sha3("darth.sidious@sith.fr")), Instant.EPOCH,
+                User.builder().login("dsidious").name("Darth Sidious").mail("darth.sidious@sith.fr").password("obscur").role(Role.MANAGER).build());
+
+        StepVerifier.create(
+                        tested.persist(List.of(dvader, dsidious)))
+                .expectNextCount(2)
+                .verifyComplete();
 
         {
             int actual = dsl.fetchCount(Users.USERS);

@@ -4,7 +4,7 @@ import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.filter.ContainsOperation;
 import fr.ght1pc9kc.juery.basic.filter.DefaultCriteriaVisitor;
 
-import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.TAGS_SEPARATOR;
+import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.TAGS_SEPARATOR;
 
 public class CriteriaModifierVisitor extends DefaultCriteriaVisitor {
     @Override

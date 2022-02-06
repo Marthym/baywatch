@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.api.model;
+package fr.ght1pc9kc.baywatch.api.common.model;
 
 import lombok.experimental.UtilityClass;
 

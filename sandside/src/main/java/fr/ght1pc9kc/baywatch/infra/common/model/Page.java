@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.infra.http.pagination;
+package fr.ght1pc9kc.baywatch.infra.common.model;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

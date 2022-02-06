@@ -1,12 +1,14 @@
-package fr.ght1pc9kc.baywatch.infra.config;
+package fr.ght1pc9kc.baywatch.infra.common.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
+import fr.ght1pc9kc.baywatch.infra.common.mappers.EntityJacksonMixin;
 import fr.ght1pc9kc.baywatch.infra.config.jackson.FeedMixin;
 import fr.ght1pc9kc.baywatch.infra.config.jackson.NewsMixin;
 import fr.ght1pc9kc.baywatch.infra.security.config.UserMixin;
@@ -17,12 +19,11 @@ import org.springframework.context.annotation.Configuration;
 
 @Slf4j
 @Configuration
-public class MappingConfiguration {
-
+public class JacksonMappingConfiguration {
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jacksonMapperCustomizer() {
         return builder -> {
-            log.debug("Configure Jackson");
+            log.debug("Configure Jackson Mapper");
             builder.findModulesViaServiceLoader(true);
             builder.featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
             builder.featuresToDisable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
@@ -31,6 +32,7 @@ public class MappingConfiguration {
             builder.mixIn(News.class, NewsMixin.class);
             builder.mixIn(Feed.class, FeedMixin.class);
             builder.mixIn(User.class, UserMixin.class);
+            builder.mixIn(Entity.class, EntityJacksonMixin.class);
         };
     }
 }

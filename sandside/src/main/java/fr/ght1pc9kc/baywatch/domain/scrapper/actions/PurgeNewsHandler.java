@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
-import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.*;
+import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.*;
 
 @Slf4j
 @RequiredArgsConstructor

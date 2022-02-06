@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.api.security.model;
 
-import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
+import fr.ght1pc9kc.baywatch.infra.common.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.samples.UsersRecordSamples;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
@@ -12,12 +13,12 @@ class RoleUtilsTest {
 
     @Test
     void should_check_user_has_role() {
-        User okenobi = MAPPER.recordToUser(UsersRecordSamples.OKENOBI);
+        Entity<User> okenobi = MAPPER.recordToUserEntity(UsersRecordSamples.OKENOBI);
 
-        assertThat(RoleUtils.hasRole(okenobi.withRole(Role.ANONYMOUS), Role.MANAGER)).isFalse();
-        assertThat(RoleUtils.hasRole(okenobi.withRole(Role.USER), Role.MANAGER)).isFalse();
-        assertThat(RoleUtils.hasRole(okenobi.withRole(Role.MANAGER), Role.MANAGER)).isTrue();
-        assertThat(RoleUtils.hasRole(okenobi.withRole(Role.ADMIN), Role.MANAGER)).isTrue();
-        assertThat(RoleUtils.hasRole(okenobi.withRole(Role.SYSTEM), Role.MANAGER)).isTrue();
+        assertThat(RoleUtils.hasRole(okenobi.entity.withRole(Role.ANONYMOUS), Role.MANAGER)).isFalse();
+        assertThat(RoleUtils.hasRole(okenobi.entity.withRole(Role.USER), Role.MANAGER)).isFalse();
+        assertThat(RoleUtils.hasRole(okenobi.entity.withRole(Role.MANAGER), Role.MANAGER)).isTrue();
+        assertThat(RoleUtils.hasRole(okenobi.entity.withRole(Role.ADMIN), Role.MANAGER)).isTrue();
+        assertThat(RoleUtils.hasRole(okenobi.entity.withRole(Role.SYSTEM), Role.MANAGER)).isTrue();
     }
 }

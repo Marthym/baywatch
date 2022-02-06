@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.domain.security;
 
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.UserService;
 import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -23,14 +25,10 @@ class AuthenticationServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        User user = User.builder()
-                .id("42")
-                .login("okenobi")
-                .role(Role.USER)
-                .build();
+        Entity<User> user = new Entity<>("42", Instant.EPOCH, User.builder().login("okenobi").role(Role.USER).build());
         tokenProviderMock = spy(new JwtTokenProvider() {
             @Override
-            public BaywatchAuthentication createToken(User userId, boolean rememberMe, Collection<String> authorities) {
+            public BaywatchAuthentication createToken(Entity<User> userId, boolean rememberMe, Collection<String> authorities) {
                 return new BaywatchAuthentication(user, "FAKE_TOKEN", rememberMe, Collections.emptyList());
             }
 

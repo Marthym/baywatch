@@ -10,7 +10,7 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
-import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
+import fr.ght1pc9kc.baywatch.infra.common.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.samples.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.UsersRecordSamples;
@@ -36,7 +36,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.*;
 
-import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.TAGS_SEPARATOR;
+import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.TAGS_SEPARATOR;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;

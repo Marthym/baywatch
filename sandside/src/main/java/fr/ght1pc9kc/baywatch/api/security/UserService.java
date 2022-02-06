@@ -1,14 +1,15 @@
 package fr.ght1pc9kc.baywatch.api.security;
 
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface UserService {
-    Mono<User> get(String userId);
+    Mono<Entity<User>> get(String userId);
 
-    Flux<User> list(PageRequest pageRequest);
+    Flux<Entity<User>> list(PageRequest pageRequest);
 
     /**
      * Count the total number of elements returned by the {@link PageRequest}
@@ -18,4 +19,6 @@ public interface UserService {
      * @return The total elements count
      */
     Mono<Integer> count(PageRequest pageRequest);
+
+    Mono<Entity<User>> create(User user);
 }

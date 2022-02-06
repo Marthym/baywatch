@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.domain;
 
 import fr.ght1pc9kc.baywatch.api.NewsService;
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.api.model.News;
 import fr.ght1pc9kc.baywatch.api.model.RawNews;
@@ -11,6 +12,7 @@ import fr.ght1pc9kc.baywatch.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.techwatch.NewsServiceImpl;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;
+import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
@@ -51,13 +53,14 @@ class NewsServiceImplTest {
             .state(State.of(Flags.SHARED | Flags.READ))
             .feeds(Set.of("1000000000000000000000000000000000000000000000000000000000000000"))
             .build();
-    private static final User SAMPLE_USER_01 = User.builder()
-            .id("6400659ef2153aa3dacdf921fd9490f39cc681317431d22db274bff220df9eed")
-            .login("okenobi")
-            .name("Obiwan Kenobi")
-            .mail("okenobi@jedi.light")
-            .role(Role.USER)
-            .build();
+    private static final Entity<User> SAMPLE_USER_01 = Entity.identify(
+            Hasher.sha3("okenobi@jedi.light"),
+            User.builder()
+                    .login("okenobi")
+                    .name("Obiwan Kenobi")
+                    .mail("okenobi@jedi.light")
+                    .role(Role.USER)
+                    .build());
 
     private NewsService tested;
 
@@ -88,9 +91,9 @@ class NewsServiceImplTest {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.empty());
 
         Assertions.assertThatThrownBy(() -> tested.list(PageRequest.all(
-                Criteria.property("title").eq("May the Force")
-                        .and(Criteria.property("read").eq(true))
-        )).next().block())
+                        Criteria.property("title").eq("May the Force")
+                                .and(Criteria.property("read").eq(true))
+                )).next().block())
                 .isInstanceOf(BadRequestCriteria.class)
                 .hasMessageNotContaining("title")
                 .hasMessageContaining("read");
@@ -101,9 +104,9 @@ class NewsServiceImplTest {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(SAMPLE_USER_01));
 
         Assertions.assertThatThrownBy(() -> tested.list(PageRequest.all(
-                Criteria.property("illegal").eq("May the Force")
-                        .and(Criteria.property("read").eq(true))
-        )).next().block())
+                        Criteria.property("illegal").eq("May the Force")
+                                .and(Criteria.property("read").eq(true))
+                )).next().block())
                 .isInstanceOf(BadRequestCriteria.class)
                 .hasMessageNotContaining("read")
                 .hasMessageContaining("illegal");

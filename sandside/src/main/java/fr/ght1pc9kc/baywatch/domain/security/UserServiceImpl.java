@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.domain.security;
 
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.UserService;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthenticatedUser;
@@ -17,12 +18,12 @@ public final class UserServiceImpl implements UserService {
     private final AuthenticationFacade authFacade;
 
     @Override
-    public Mono<User> get(String userId) {
+    public Mono<Entity<User>> get(String userId) {
         return userRepository.get(userId);
     }
 
     @Override
-    public Flux<User> list(PageRequest pageRequest) {
+    public Flux<Entity<User>> list(PageRequest pageRequest) {
         return userRepository.list(pageRequest);
     }
 
@@ -33,5 +34,10 @@ public final class UserServiceImpl implements UserService {
                 .map(u -> QueryContext.all(pageRequest.filter()).withUserId(u.id))
                 .onErrorResume(UnauthenticatedUser.class, (e) -> Mono.just(QueryContext.all(pageRequest.filter())))
                 .flatMap(userRepository::count);
+    }
+
+    @Override
+    public Mono<Entity<User>> create(User user) {
+        return null;
     }
 }

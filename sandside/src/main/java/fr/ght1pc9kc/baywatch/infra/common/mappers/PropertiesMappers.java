@@ -1,6 +1,6 @@
-package fr.ght1pc9kc.baywatch.infra.mappers;
+package fr.ght1pc9kc.baywatch.infra.common.mappers;
 
-import fr.ght1pc9kc.baywatch.api.model.EntitiesProperties;
+import fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.api.model.Flags;
 import lombok.experimental.UtilityClass;
 import org.jooq.Field;
@@ -8,7 +8,7 @@ import org.jooq.impl.DSL;
 
 import java.util.Map;
 
-import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.TAGS_SEPARATOR;
+import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.TAGS_SEPARATOR;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;

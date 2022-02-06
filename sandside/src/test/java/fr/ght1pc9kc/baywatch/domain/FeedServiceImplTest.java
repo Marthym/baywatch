@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.domain;
 
 import fr.ght1pc9kc.baywatch.api.FeedService;
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthenticatedUser;
@@ -8,7 +9,7 @@ import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.techwatch.FeedServiceImpl;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
-import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
+import fr.ght1pc9kc.baywatch.infra.common.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.samples.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.UsersRecordSamples;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -65,7 +66,7 @@ public class FeedServiceImplTest {
 
     @Test
     void should_list_feed_for_user() {
-        User okenobi = BAYWATCH_MAPPER.recordToUser(UsersRecordSamples.OKENOBI);
+        Entity<User> okenobi = BAYWATCH_MAPPER.recordToUserEntity(UsersRecordSamples.OKENOBI);
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(okenobi));
         ArgumentCaptor<QueryContext> captor = ArgumentCaptor.forClass(QueryContext.class);
 
@@ -95,7 +96,7 @@ public class FeedServiceImplTest {
     @Test
     @SuppressWarnings("unchecked")
     void should_persist_feeds_for_user() {
-        User okenobi = BAYWATCH_MAPPER.recordToUser(UsersRecordSamples.OKENOBI);
+        Entity<User> okenobi = BAYWATCH_MAPPER.recordToUserEntity(UsersRecordSamples.OKENOBI);
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(okenobi));
         ArgumentCaptor<List<Feed>> captor = ArgumentCaptor.forClass(List.class);
 

@@ -1,7 +1,9 @@
 package fr.ght1pc9kc.baywatch.infra.security;
 
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
+import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams;
 import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams.CookieParams;
 import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams.JwtParams;
@@ -15,6 +17,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -56,7 +59,9 @@ class TokenCookieManagerTest {
             "http, true, X-TOKEN=FAKE_TOKEN; Path=/api; HttpOnly; SameSite=Strict",
     })
     void should_build_token_cookie(String scheme, boolean rememberMe, String expected) {
-        BaywatchAuthentication mockAuth = new BaywatchAuthentication(User.ANONYMOUS, "FAKE_TOKEN", rememberMe, Collections.emptyList());
+        BaywatchAuthentication mockAuth = new BaywatchAuthentication(
+                new Entity<>(Hasher.sha3(User.ANONYMOUS.mail), Instant.EPOCH, User.ANONYMOUS),
+                "FAKE_TOKEN", rememberMe, Collections.emptyList());
         ResponseCookie actual = tested.buildTokenCookie(scheme, mockAuth);
         Assertions.assertThat(actual.toString()).containsPattern(expected);
     }
