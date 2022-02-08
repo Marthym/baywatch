@@ -8,7 +8,7 @@ import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.api.scrapper.FeedParserPlugin;
 import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
 import fr.ght1pc9kc.baywatch.infra.config.ScrapperProperties;
-import fr.ght1pc9kc.baywatch.infra.common.mappers.DateUtils;
+import fr.ght1pc9kc.baywatch.domain.utils.DateUtils;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.owasp.html.PolicyFactory;

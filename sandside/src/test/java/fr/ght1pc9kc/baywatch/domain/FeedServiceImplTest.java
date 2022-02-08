@@ -105,7 +105,7 @@ public class FeedServiceImplTest {
                 .verifyComplete();
 
         verify(mockFeedRepository, times(1)).persist(captor.capture(),
-                eq(UsersRecordSamples.OKENOBI.getUserLogin()));
+                eq(UsersRecordSamples.OKENOBI.getUserId()));
         assertThat(captor.getValue()).containsExactly(feed);
     }
 }

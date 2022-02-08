@@ -6,7 +6,7 @@ import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.infra.common.mappers.BaywatchMapper;
-import fr.ght1pc9kc.baywatch.infra.common.mappers.DateUtils;
+import fr.ght1pc9kc.baywatch.domain.utils.DateUtils;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 

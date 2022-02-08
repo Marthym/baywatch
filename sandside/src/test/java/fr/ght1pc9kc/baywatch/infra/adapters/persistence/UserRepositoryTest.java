@@ -3,6 +3,8 @@ package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
+import fr.ght1pc9kc.baywatch.domain.security.samples.UserSamples;
+import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.Users;
 import fr.ght1pc9kc.baywatch.infra.common.mappers.BaywatchMapper;
@@ -12,13 +14,13 @@ import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.UsersRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.security.persistence.UserRepository;
 import fr.ght1pc9kc.juery.api.Criteria;
-import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.irun.testy.core.extensions.ChainedExtension;
 import fr.irun.testy.jooq.WithDatabaseLoaded;
 import fr.irun.testy.jooq.WithDslContext;
 import fr.irun.testy.jooq.WithInMemoryDatasource;
 import fr.irun.testy.jooq.WithSampleDataLoaded;
 import org.jooq.DSLContext;
+import org.jooq.exception.DataAccessException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -73,12 +75,12 @@ class UserRepositoryTest {
 
         StepVerifier.create(tested.get(UsersRecordSamples.OKENOBI.getUserId()))
                 .assertNext(actual -> Assertions.assertAll(
-                        () -> assertThat(actual.id).isEqualTo("okenobi"),
-                        () -> assertThat(actual.createdAt).isEqualTo(Instant.parse("2022-02-06T14:23:00Z")),
+                        () -> assertThat(actual.id).isEqualTo(UserSamples.OBIWAN.id),
+                        () -> assertThat(actual.createdAt).isEqualTo(Instant.parse("1970-01-01T00:00:00Z")),
                         () -> assertThat(actual.entity.name).isEqualTo("Obiwan Kenobi"),
                         () -> assertThat(actual.entity.login).isEqualTo("okenobi"),
-                        () -> assertThat(actual.entity.mail).isEqualTo("obiwan.kenobi@jedi.fr"),
-                        () -> assertThat(actual.entity.password).isEqualTo(UsersRecordSamples.OKENOBI.getUserPassword()),
+                        () -> assertThat(actual.entity.mail).isEqualTo("obiwan.kenobi@jedi.com"),
+                        () -> assertThat(actual.entity.password).isEqualTo(UserSamples.OBIWAN.entity.password),
                         () -> assertThat(actual.entity.role).isEqualTo(Role.MANAGER)
                 )).verifyComplete();
     }
@@ -96,8 +98,8 @@ class UserRepositoryTest {
     void should_list_user_with_criteria(WithSampleDataLoaded.Tracker dbTracker) {
         dbTracker.skipNextSampleLoad();
 
-        StepVerifier.create(tested.list(PageRequest.all(Criteria.property("name").eq("Obiwan Kenobi"))))
-                .expectNextMatches(actual -> "okenobi".equals(actual.id))
+        StepVerifier.create(tested.list(QueryContext.all(Criteria.property("name").eq("Obiwan Kenobi"))))
+                .expectNextMatches(actual -> UserSamples.OBIWAN.id.equals(actual.id))
                 .verifyComplete();
     }
 
@@ -123,6 +125,26 @@ class UserRepositoryTest {
             assertThat(actual).isEqualTo(4);
         }
     }
+
+    @Test
+    void should_persist_users_with_errors(DSLContext dsl) {
+        {
+            int actual = dsl.fetchCount(Users.USERS);
+            assertThat(actual).isEqualTo(2);
+        }
+
+        Entity<User> dvader = new Entity<>((Hasher.sha3("darth.vader@sith.fr")), Instant.EPOCH,
+                User.builder().login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur").role(Role.USER).build());
+        StepVerifier.create(
+                        tested.persist(List.of(dvader, UserSamples.LUKE, UserSamples.OBIWAN, UserSamples.YODA)))
+                .verifyError(DataAccessException.class);
+
+        {
+            int actual = dsl.fetchCount(Users.USERS);
+            assertThat(actual).isEqualTo(2);
+        }
+    }
+
 
     @Test
     void should_delete_users(DSLContext dsl) {

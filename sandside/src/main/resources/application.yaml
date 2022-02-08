@@ -11,13 +11,15 @@ server:
   error:
     include-message: ALWAYS
 
-# Avoid infinite stacktrace due to reactor
 logging:
+  # Avoid infinite stacktrace due to reactor
   exception-conversion-word: "%wEx{full, reactor.core.publisher}"
   level:
     root: INFO
     org.jooq: WARN
     fr.ght1pc9kc.baywatch: ${BAYWATCH_LOG_LEVEL:DEBUG}
+    # Avoid unwanted log error ...
+    org.springframework.boot.autoconfigure.jooq.JooqExceptionTranslator: OFF
   file:
     name: ${BAYWATCH_LOG_FILE:}
   logback:

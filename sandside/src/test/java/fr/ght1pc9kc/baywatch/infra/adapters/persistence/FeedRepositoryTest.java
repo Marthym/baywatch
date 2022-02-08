@@ -7,7 +7,7 @@ import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.infra.common.mappers.BaywatchMapper;
-import fr.ght1pc9kc.baywatch.infra.common.mappers.DateUtils;
+import fr.ght1pc9kc.baywatch.domain.utils.DateUtils;
 import fr.ght1pc9kc.baywatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.baywatch.infra.samples.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.infra.samples.NewsRecordSamples;

@@ -15,6 +15,7 @@ public final class UserSamples {
                     .name("Yoda Master")
                     .mail("yoda@jedi.com")
                     .role(Role.ADMIN)
+                    .password("adoy")
                     .build());
 
     public static final Entity<User> OBIWAN = Entity.identify(
@@ -23,6 +24,7 @@ public final class UserSamples {
                     .name("Obiwan Kenobi")
                     .mail("obiwan.kenobi@jedi.com")
                     .role(Role.MANAGER)
+                    .password("nawibo")
                     .build());
 
     public static final Entity<User> LUKE = Entity.identify(
@@ -32,6 +34,7 @@ public final class UserSamples {
                     .name("Luke Skywalker")
                     .mail("luke.skywalker@jedi.com")
                     .role(Role.USER)
+                    .password("ekul")
                     .build());
 
     public static final List<Entity<User>> SAMPLES = List.of(OBIWAN, LUKE);

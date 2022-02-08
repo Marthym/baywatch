@@ -8,8 +8,6 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
 import fr.ght1pc9kc.baywatch.infra.common.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.common.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.infra.http.filter.PredicateSearchVisitor;
-import fr.ght1pc9kc.juery.api.Criteria;
-import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +20,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,12 +43,12 @@ public class UserRepository implements UserPersistencePort {
 
     @Override
     public Mono<Entity<User>> get(String id) {
-        return list(PageRequest.one(Criteria.property("id").eq(id))).next();
+        return list(QueryContext.id(id)).next();
     }
 
     @Override
-    public Flux<Entity<User>> list(PageRequest pageRequest) {
-        Condition conditions = pageRequest.filter().accept(JOOQ_CONDITION_VISITOR);
+    public Flux<Entity<User>> list(QueryContext qCtx) {
+        Condition conditions = qCtx.filter.accept(JOOQ_CONDITION_VISITOR);
 
         return Flux.<UsersRecord>create(sink -> {
                     Cursor<UsersRecord> cursor = dsl.selectFrom(USERS).where(conditions).fetchLazy();
@@ -63,12 +62,12 @@ public class UserRepository implements UserPersistencePort {
                     });
                 }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(baywatchConverter::recordToUserEntity)
-                .filter(pageRequest.filter().accept(USER_PREDICATE_VISITOR));
+                .filter(qCtx.filter.accept(USER_PREDICATE_VISITOR));
     }
 
     @Override
     public Flux<Entity<User>> list() {
-        return list(PageRequest.all());
+        return list(QueryContext.empty());
     }
 
     @Override
@@ -80,24 +79,18 @@ public class UserRepository implements UserPersistencePort {
 
     @Override
     public Flux<Entity<User>> persist(Collection<Entity<User>> toPersist) {
-        List<UsersRecord> records = toPersist.stream()
-                .map(baywatchConverter::entityUserToRecord)
-                .collect(Collectors.toList());
+        return Mono.fromCallable(() -> {
+                    List<UsersRecord> records = toPersist.stream()
+                            .map(baywatchConverter::entityUserToRecord)
+                            .collect(Collectors.toList());
+                    return dsl.transactionResult(tx ->
+                            tx.dsl().batchInsert(records).execute());
+                }).subscribeOn(databaseScheduler)
 
-        return Mono.fromCallable(() ->
-                        dsl.loadInto(USERS)
-                                .batchAll()
-                                .onDuplicateKeyIgnore()
-                                .onErrorIgnore()
-                                .loadRecords(records)
-                                .fieldsCorresponding()
-                                .execute())
-                .subscribeOn(databaseScheduler)
-                .map(loader -> {
-                    log.info("Load {} News with {} error(s) and {} ignored",
-                            loader.processed(), loader.errors().size(), loader.ignored());
-                    return loader;
-                }).flatMapMany(loader -> Flux.fromIterable(toPersist));
+                .flatMapMany(insertedCount -> {
+                    log.debug("{} user(s) inserted successfully.", Arrays.stream(insertedCount).sum());
+                    return Flux.fromIterable(toPersist);
+                });
     }
 
     @Override

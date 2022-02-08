@@ -36,9 +36,7 @@ class EntityJacksonMixinTest {
                 "    \"login\": \"okenobi\"," +
                 "    \"name\": \"Obiwan Kenobi\"," +
                 "    \"mail\": \"obiwan.kenobi@jedi.com\"," +
-                "    \"role\": \"MANAGER\"," +
-                "    \"loginAt\": null," +
-                "    \"loginIP\": null" +
+                "    \"role\": \"MANAGER\"" +
                 "  }," +
                 "  {" +
                 "    \"_id\": \"b816278d7776e1449c537592f2f8911bc8760f78b3980db24d41dc7e9a551453\"," +
@@ -46,9 +44,7 @@ class EntityJacksonMixinTest {
                 "    \"login\": \"lskywalker\"," +
                 "    \"name\": \"Luke Skywalker\"," +
                 "    \"mail\": \"luke.skywalker@jedi.com\"," +
-                "    \"role\": \"USER\"," +
-                "    \"loginAt\": null," +
-                "    \"loginIP\": null" +
+                "    \"role\": \"USER\"" +
                 "  }," +
                 "  {" +
                 "    \"_id\": \"3eff78846d4ae8d9987c975e9529775ceac8d92c840f3be2e0a89e1ecfd212c7\"," +
@@ -56,9 +52,7 @@ class EntityJacksonMixinTest {
                 "    \"login\": \"yoda\"," +
                 "    \"name\": \"Yoda Master\"," +
                 "    \"mail\": \"yoda@jedi.com\"," +
-                "    \"role\": \"ADMIN\"," +
-                "    \"loginAt\": null," +
-                "    \"loginIP\": null" +
+                "    \"role\": \"ADMIN\"" +
                 "  }" +
                 "]", actual, true);
     }

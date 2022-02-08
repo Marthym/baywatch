@@ -15,6 +15,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.Clock;
+
 @Service
 @Qualifier("Baywatch")
 public class UserServiceAdapter implements UserService, ReactiveUserDetailsService {
@@ -23,7 +25,7 @@ public class UserServiceAdapter implements UserService, ReactiveUserDetailsServi
 
     @Autowired
     public UserServiceAdapter(UserPersistencePort userPersistencePort, AuthenticationFacade authFacade) {
-        this.delegate = new UserServiceImpl(userPersistencePort, authFacade);
+        this.delegate = new UserServiceImpl(userPersistencePort, authFacade, Clock.systemUTC());
     }
 
     @Override
