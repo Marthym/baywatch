@@ -53,6 +53,27 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <configuration>
+                    <to>
+                        <image>baywatch:${project.version}</image>
+                    </to>
+                    <container>
+                        <mainClass>fr.ght1pc9kc.baywatch.BaywatchApplication</mainClass>
+                        <environment>
+                            <BAYWATCH_HOME>/var/baywatch</BAYWATCH_HOME>
+                        </environment>
+                        <volumes>/var/baywatch</volumes>
+                        <jvmFlags>
+                            <jvmFlag>-server</jvmFlag>
+                            <jvmFlag>-Xms256m</jvmFlag>
+                            <jvmFlag>-Xmx512m</jvmFlag>
+                        </jvmFlags>
+                    </container>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
