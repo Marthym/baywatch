@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.With;
 
-import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.ID;
+import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.ID;
 
 @Value
 @Builder

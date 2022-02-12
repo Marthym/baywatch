@@ -1,6 +1,5 @@
 <template>
-  <div class="mt-auto flex items-center text-red-400">
-    <!-- important action -->
+  <div class="mt-auto flex flex-col items-center text-red-400">
     <a class="flex items-center cursor-pointer" v-if="isLoggedIn" @click.stop="$emit('logout')">
       <svg class="fill-current h-5 w-5" viewBox="0 0 24 24">
         <path
@@ -20,7 +19,6 @@
       </svg>
       <span class="ml-2 capitalize font-medium">log in</span>
     </router-link>
-
   </div>
 </template>
 

@@ -1,4 +1,4 @@
-import {EMPTY, Observable, of} from "rxjs";
+import {Observable, of, throwError} from "rxjs";
 import {fromFetch} from "rxjs/fetch";
 import {ConstantHttpHeaders, ConstantMediaTypes} from "@/constants";
 
@@ -7,6 +7,8 @@ import {Severity} from "@/services/notification/Severity.enum";
 import {NotificationCode} from "@/services/notification/NotificationCode.enum";
 import {switchMap} from "rxjs/operators";
 import {OpPatch} from "json-patch";
+import {UnauthorizedError} from "@/services/model/exceptions/UnauthorizedError";
+import {ForbiddenError} from "@/services/model/exceptions/ForbiddenError";
 
 
 export class RestWrapper {
@@ -95,7 +97,7 @@ export class RestWrapper {
                 severity: Severity.error,
                 message: 'You are not login on !'
             });
-            return EMPTY;
+            return throwError(() => new UnauthorizedError('You are not login on !'));
 
         } else if (response.status === 403) {
             notificationService.pushNotification({
@@ -103,7 +105,7 @@ export class RestWrapper {
                 severity: Severity.error,
                 message: 'You are not login on !'
             });
-            return EMPTY;
+            return throwError(() => new ForbiddenError('You are not allowed for that !'));
         }
 
         return of(response);

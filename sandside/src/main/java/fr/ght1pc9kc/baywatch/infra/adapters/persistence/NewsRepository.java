@@ -10,8 +10,8 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
 import fr.ght1pc9kc.baywatch.infra.http.filter.PredicateSearchVisitor;
-import fr.ght1pc9kc.baywatch.infra.mappers.BaywatchMapper;
-import fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers;
+import fr.ght1pc9kc.baywatch.infra.common.mappers.BaywatchMapper;
+import fr.ght1pc9kc.baywatch.infra.common.mappers.PropertiesMappers;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.basic.common.lang3.StringUtils;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
@@ -36,7 +36,7 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
-import static fr.ght1pc9kc.baywatch.infra.mappers.PropertiesMappers.NEWS_PROPERTIES_MAPPING;
+import static fr.ght1pc9kc.baywatch.infra.common.mappers.PropertiesMappers.NEWS_PROPERTIES_MAPPING;
 
 @Slf4j
 @Repository

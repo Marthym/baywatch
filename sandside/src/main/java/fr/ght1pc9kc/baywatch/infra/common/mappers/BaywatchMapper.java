@@ -1,7 +1,9 @@
-package fr.ght1pc9kc.baywatch.infra.mappers;
+package fr.ght1pc9kc.baywatch.infra.common.mappers;
 
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.model.*;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
+import fr.ght1pc9kc.baywatch.domain.utils.DateUtils;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
@@ -34,15 +36,16 @@ import static java.util.function.Predicate.not;
 public interface BaywatchMapper {
 
     @Mapping(source = "id", target = "userId")
-    @Mapping(source = "login", target = "userLogin")
-    @Mapping(source = "name", target = "userName")
-    @Mapping(source = "mail", target = "userEmail")
-    @Mapping(source = "password", target = "userPassword")
-    @Mapping(source = "role", target = "userRole")
-    UsersRecord userToRecord(User user);
+    @Mapping(source = "createdAt", target = "userCreatedAt")
+    @Mapping(source = "entity.login", target = "userLogin")
+    @Mapping(source = "entity.name", target = "userName")
+    @Mapping(source = "entity.mail", target = "userEmail")
+    @Mapping(source = "entity.password", target = "userPassword")
+    @Mapping(source = "entity.role", target = "userRole")
+    UsersRecord entityUserToRecord(Entity<User> user);
 
     @InheritInverseConfiguration
-    User recordToUser(UsersRecord record);
+    Entity<User> recordToUserEntity(UsersRecord record);
 
     default LocalDateTime map(Instant value) {
         return DateUtils.toLocalDateTime(value);
@@ -94,8 +97,6 @@ public interface BaywatchMapper {
                 .build();
     }
 
-    User principalToUser(Object principal);
-
     default RawFeed recordToRawFeed(Record record) {
         return RawFeed.builder()
                 .id(record.get(FEEDS.FEED_ID))
@@ -132,4 +133,8 @@ public interface BaywatchMapper {
     @Mapping(target = "feusTags",
             expression = "java( (feed.getTags() != null && !feed.getTags().isEmpty())?String.join(\",\", feed.getTags()):null )")
     FeedsUsersRecord feedToFeedsUsersRecord(Feed feed);
+
+    default Instant fromLocalDateTime(LocalDateTime date) {
+        return DateUtils.toInstant(date);
+    }
 }

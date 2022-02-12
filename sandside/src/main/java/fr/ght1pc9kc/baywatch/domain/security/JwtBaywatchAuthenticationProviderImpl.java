@@ -5,6 +5,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
@@ -36,9 +37,9 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
     }
 
     @Override
-    public BaywatchAuthentication createToken(User user, boolean remember, Collection<String> authorities) {
+    public BaywatchAuthentication createToken(Entity<User> user, boolean remember, Collection<String> authorities) {
         List<String> auth = new ArrayList<>(authorities);
-        auth.add(user.role.authority());
+        auth.add(user.entity.role.authority());
         String auths = String.join(",", auth);
 
         try {
@@ -50,9 +51,10 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
                     .issuer("baywatch/sandside")
                     .issueTime(Date.from(now))
                     .expirationTime(Date.from(now.plus(validity)))
-                    .claim("login", user.login)
-                    .claim("name", user.name)
-                    .claim("mail", user.mail)
+                    .claim("login", user.entity.login)
+                    .claim("name", user.entity.name)
+                    .claim("mail", user.entity.mail)
+                    .claim("createdAt", Date.from(user.createdAt))
                     .claim("remember", remember)
                     .claim(AUTHORITIES_KEY, auths)
                     .build();
@@ -86,13 +88,16 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
                     .filter(r -> authorities.contains(r.authority()))
                     .findAny().orElse(Role.ANONYMOUS);
 
-            User user = User.builder()
-                    .id(claims.getSubject())
+            Instant createdAt = Optional.ofNullable(claims.getDateClaim("createdAt"))
+                    .map(Date::toInstant)
+                    .orElse(Instant.EPOCH);
+
+            Entity<User> user = new Entity<>(claims.getSubject(), createdAt, User.builder()
                     .login(claims.getStringClaim("login"))
                     .name(claims.getStringClaim("name"))
                     .mail(claims.getStringClaim("mail"))
                     .role(role)
-                    .build();
+                    .build());
 
             boolean rememberMe = Optional.ofNullable(claims.getBooleanClaim("remember")).orElse(false);
             return new BaywatchAuthentication(user, token, rememberMe, authorities);

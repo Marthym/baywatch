@@ -26,7 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.*;
+import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.*;
 import static java.util.function.Predicate.not;
 
 @Service
@@ -77,7 +77,7 @@ public class NewsServiceImpl implements NewsService {
     @Override
     public Mono<Integer> orphanize(Collection<String> toOrphanize) {
         return authFacade.getConnectedUser()
-                .filter(user -> Role.SYSTEM == user.role)
+                .filter(user -> Role.SYSTEM == user.entity.role)
                 .switchIfEmpty(Mono.error(new UnauthorizedOperation("Orphanize news not permitted for user !")))
                 .flatMap(user -> newsRepository.deleteFeedLink(toOrphanize));
     }
@@ -85,7 +85,7 @@ public class NewsServiceImpl implements NewsService {
     @Override
     public Mono<Integer> delete(Collection<String> toDelete) {
         return authFacade.getConnectedUser()
-                .filter(user -> Role.SYSTEM == user.role)
+                .filter(user -> Role.SYSTEM == user.entity.role)
                 .switchIfEmpty(Mono.error(new UnauthorizedOperation("Deleting news not permitted for user !")))
                 .flatMap(user -> newsRepository.delete(toDelete));
     }
@@ -99,7 +99,7 @@ public class NewsServiceImpl implements NewsService {
         String bads = authStream.collect(Collectors.joining(", "));
 
         Pagination pagination = request.pagination();
-        boolean isPaginationForAnonymous = ignore == null && ((pagination.offset() -1) + pagination.size() > MAX_ANONYMOUS_NEWS);
+        boolean isPaginationForAnonymous = ignore == null && ((pagination.offset() - 1) + pagination.size() > MAX_ANONYMOUS_NEWS);
         if (!bads.isBlank()) {
             throw new BadRequestCriteria(String.format("Filters not allowed [ %s ]", bads));
         }

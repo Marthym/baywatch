@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.adapters.persistence;
 
-import fr.ght1pc9kc.baywatch.api.model.EntitiesProperties;
+import fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.dsl.Tables;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import lombok.experimental.UtilityClass;

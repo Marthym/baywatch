@@ -4,7 +4,7 @@ import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams;
 import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams.CookieParams;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.web.reactive.WebFluxProperties.SameSite;
+import org.springframework.boot.web.server.Cookie;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -33,7 +33,7 @@ public final class TokenCookieManager {
         return ResponseCookie.from(params.name, bwAuth.getToken())
                 .httpOnly(true)
                 .secure("https".equals(scheme))
-                .sameSite(SameSite.STRICT.attribute())
+                .sameSite(Cookie.SameSite.STRICT.attributeValue())
                 .maxAge(maxAge)
                 .path(baseRoute)
                 .build();
@@ -43,7 +43,7 @@ public final class TokenCookieManager {
         return ResponseCookie.from(params.name, "")
                 .httpOnly(true)
                 .secure("https".equals(scheme))
-                .sameSite(SameSite.STRICT.attribute())
+                .sameSite(Cookie.SameSite.STRICT.attributeValue())
                 .path(baseRoute)
                 .maxAge(0)
                 .build();

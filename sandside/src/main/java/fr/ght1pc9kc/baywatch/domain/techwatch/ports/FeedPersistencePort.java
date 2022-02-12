@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.domain.techwatch.ports;
 
+import fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.infra.model.FeedDeletedResult;
@@ -39,8 +40,8 @@ public interface FeedPersistencePort {
      * {@link QueryContext}.
      * <p>Allowed properties was:</p>
      * <ul>
-     *    <li>{@link fr.ght1pc9kc.baywatch.api.model.EntitiesProperties#ID}: For the table `FEEDS`</li>
-     *    <li>{@link fr.ght1pc9kc.baywatch.api.model.EntitiesProperties#FEED_ID}: For the table `FEEDS_USERS`</li>
+     *    <li>{@link EntitiesProperties#ID}: For the table `FEEDS`</li>
+     *    <li>{@link EntitiesProperties#FEED_ID}: For the table `FEEDS_USERS`</li>
      * </ul>
      * <p>Deletion was apply only if a filter was present for a table.</p>
      * <p>If no other {@link fr.ght1pc9kc.baywatch.api.security.model.User} was subscribing this {@link Feed},

@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import fr.ght1pc9kc.baywatch.infra.common.model.PatchOperation;
 import lombok.Value;
 
 import java.nio.file.Path;

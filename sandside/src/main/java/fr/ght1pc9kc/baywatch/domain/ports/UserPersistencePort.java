@@ -1,20 +1,30 @@
 package fr.ght1pc9kc.baywatch.domain.ports;
 
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
-import fr.ght1pc9kc.juery.api.PageRequest;
+import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
 
 public interface UserPersistencePort {
-    Mono<User> get(String id);
+    Mono<Entity<User>> get(String id);
 
-    Flux<User> list(PageRequest pageRequest);
+    Flux<Entity<User>> list(QueryContext qCtx);
 
-    Flux<User> list();
+    Flux<Entity<User>> list();
 
-    Flux<User> persist(Collection<User> users);
+    Mono<Integer> count(QueryContext qCtx);
+
+    /**
+     * Persist all {@link Entity} given as argument.
+     * If error throw during insert, all the transaction was rollback and nothinh was persisted
+     *
+     * @param users A collection af {@link User} {@link Entity}
+     * @return the persisted {@link User} {@link Entity}
+     */
+    Flux<Entity<User>> persist(Collection<Entity<User>> users);
 
     Mono<Integer> delete(Collection<String> id);
 }

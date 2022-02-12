@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.security.model;
 
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import lombok.Value;
 import org.springframework.security.core.GrantedAuthority;
@@ -10,9 +11,9 @@ import java.util.Collections;
 
 @Value
 public class BaywatchUserDetails implements UserDetails {
-    User user;
+    Entity<User> user;
 
-    public User getEntity() {
+    public Entity<User> getEntity() {
         return user;
     }
 
@@ -23,12 +24,12 @@ public class BaywatchUserDetails implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.password;
+        return user.entity.password;
     }
 
     @Override
     public String getUsername() {
-        return user.login;
+        return user.entity.login;
     }
 
     @Override

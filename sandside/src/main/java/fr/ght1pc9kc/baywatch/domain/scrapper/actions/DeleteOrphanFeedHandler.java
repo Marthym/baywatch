@@ -12,8 +12,8 @@ import reactor.core.publisher.Sinks;
 
 import java.util.Collection;
 
-import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.COUNT;
-import static fr.ght1pc9kc.baywatch.api.model.EntitiesProperties.FEED_ID;
+import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.COUNT;
+import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.FEED_ID;
 
 /**
  * Delete the orphan {@link fr.ght1pc9kc.baywatch.api.model.Feed}. Orphan was the Feeds followed by nobody.

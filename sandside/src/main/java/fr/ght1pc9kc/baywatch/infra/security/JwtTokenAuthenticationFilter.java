@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.security;
 
-import fr.ght1pc9kc.baywatch.api.UserService;
+import fr.ght1pc9kc.baywatch.api.security.UserService;
 import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +43,7 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
                     .filter(Predicate.isEqual(true))
                     .flatMap(x -> userService.get(bwAuth.getUser().id))
                     .map(updated -> {
-                        log.debug("Refresh valid expired token for {}", bwAuth.getUser().login);
+                        log.debug("Refresh valid expired token for {}", bwAuth.getUser().entity.login);
                         BaywatchAuthentication freshBaywatchAuth = this.tokenProvider.createToken(bwAuth.getUser(), bwAuth.rememberMe, Collections.emptyList());
                         refreshCookieOrHeader(freshBaywatchAuth, exchange.getRequest(), exchange.getResponse());
                         return exchange;

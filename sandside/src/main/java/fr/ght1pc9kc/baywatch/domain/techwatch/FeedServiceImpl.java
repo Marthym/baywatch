@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.domain.techwatch;
 
 import fr.ght1pc9kc.baywatch.api.FeedService;
-import fr.ght1pc9kc.baywatch.api.model.EntitiesProperties;
+import fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthenticatedUser;

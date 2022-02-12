@@ -1,10 +1,12 @@
-package fr.ght1pc9kc.baywatch.infra.security;
+package fr.ght1pc9kc.baywatch.infra.security.controllers;
 
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.exceptions.SecurityException;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
+import fr.ght1pc9kc.baywatch.infra.security.TokenCookieManager;
 import fr.ght1pc9kc.baywatch.infra.security.adapters.AuthenticationManagerAdapter;
 import fr.ght1pc9kc.baywatch.infra.security.exceptions.BaywatchCredentialsException;
 import fr.ght1pc9kc.baywatch.infra.security.exceptions.NoSessionException;
@@ -29,8 +31,9 @@ import java.util.Set;
 
 @Slf4j
 @RestController
-@RequestMapping("${baywatch.base-route}/auth")
 @RequiredArgsConstructor
+@PreAuthorize("isAuthenticated()")
+@RequestMapping("${baywatch.base-route}/auth")
 public class AuthenticationController {
 
     private final JwtTokenProvider tokenProvider;
@@ -39,7 +42,8 @@ public class AuthenticationController {
     private final TokenCookieManager cookieManager;
 
     @PostMapping("/login")
-    public Mono<User> login(@Valid Mono<AuthenticationRequest> authRequest, ServerWebExchange exchange) {
+    @PreAuthorize("permitAll()")
+    public Mono<Entity<User>> login(@Valid Mono<AuthenticationRequest> authRequest, ServerWebExchange exchange) {
         return authRequest
                 .flatMap(login -> authenticationManager.authenticate(
                                 new UsernamePasswordAuthenticationToken(login.getUsername(), login.getPassword()))
@@ -52,7 +56,7 @@ public class AuthenticationController {
                     ResponseCookie authCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), bwAuth);
                     exchange.getResponse().addCookie(authCookie);
                     log.debug("Login to {}.", user.getUsername());
-                    return user.getEntity().withPassword(null);
+                    return user.getEntity();
                 })
 
                 .onErrorMap(BadCredentialsException.class, BaywatchCredentialsException::new);
@@ -64,7 +68,7 @@ public class AuthenticationController {
             String user = cookieManager.getTokenCookie(exchange.getRequest())
                     .map(HttpCookie::getValue)
                     .map(tokenProvider::getAuthentication)
-                    .map(a -> String.format("%s (%s)", a.user.login, a.user.id))
+                    .map(a -> String.format("%s (%s)", a.user.entity.login, a.user.id))
                     .orElse("Unknown User");
             log.debug("Logout for {}.", user);
         }
@@ -73,6 +77,7 @@ public class AuthenticationController {
     }
 
     @PutMapping("/refresh")
+    @PreAuthorize("permitAll()")
     public Mono<Session> refresh(ServerWebExchange exchange) {
         String token = cookieManager.getTokenCookie(exchange.getRequest())
                 .map(HttpCookie::getValue)
@@ -83,7 +88,7 @@ public class AuthenticationController {
                     ResponseCookie tokenCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), auth);
                     exchange.getResponse().addCookie(tokenCookie);
                     return Session.builder()
-                            .user(auth.user.withPassword(null))
+                            .user(auth.user.entity)
                             .maxAge(-1)
                             .build();
                 })
@@ -91,8 +96,7 @@ public class AuthenticationController {
     }
 
     @GetMapping("/current")
-    @PreAuthorize("isAuthenticated()")
-    public Mono<User> currentUser() {
+    public Mono<Entity<User>> currentUser() {
         return authFacade.getConnectedUser();
     }
 }

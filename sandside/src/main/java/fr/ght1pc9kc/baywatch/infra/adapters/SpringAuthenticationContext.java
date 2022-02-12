@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.adapters;
 
+import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 
+import java.time.Instant;
+
 /**
  * Implementation of the {@link AuthenticationFacade} using Spring context.
  * It permits to other modules to obtain the current authenticated user.
@@ -21,26 +24,26 @@ import reactor.util.context.Context;
 @RequiredArgsConstructor
 public class SpringAuthenticationContext implements AuthenticationFacade {
     @Override
-    public Mono<User> getConnectedUser() {
+    @SuppressWarnings("unchecked")
+    public Mono<Entity<User>> getConnectedUser() {
         return ReactiveSecurityContextHolder.getContext()
                 .map(SecurityContext::getAuthentication)
-                .map(a -> (User) a.getPrincipal());
+                .map(a -> (Entity<User>) a.getPrincipal());
     }
 
     @Override
-    public Context withAuthentication(User user) {
+    public Context withAuthentication(Entity<User> user) {
         Authentication authentication = new PreAuthenticatedAuthenticationToken(user, null,
-                AuthorityUtils.createAuthorityList(user.role.name()));
+                AuthorityUtils.createAuthorityList(user.entity.role.name()));
         return ReactiveSecurityContextHolder.withAuthentication(authentication);
     }
 
     @Override
     public Context withSystemAuthentication() {
-        User principal = User.builder()
-                .id(Role.SYSTEM.name())
+        Entity<User> principal = new Entity<>(Role.SYSTEM.name(), Instant.EPOCH, User.builder()
                 .name(Role.SYSTEM.name())
                 .login(Role.SYSTEM.name().toLowerCase())
-                .role(Role.SYSTEM).build();
+                .role(Role.SYSTEM).build());
         Authentication authentication = new PreAuthenticatedAuthenticationToken(principal, null,
                 AuthorityUtils.createAuthorityList(Role.SYSTEM.name()));
         return ReactiveSecurityContextHolder.withAuthentication(authentication);

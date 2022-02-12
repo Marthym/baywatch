@@ -27,6 +27,7 @@ public class NotifyServiceImpl implements NotifyService {
 
     @Override
     public <T> void send(EventType type, Mono<T> data) {
+        log.debug("Emit event to {} subscribers currently connected", this.sink.currentSubscriberCount());
         Tuple2<EventType, Mono<Object>> t = Tuples.of(type, data.map(Function.identity()));
         EmitResult result = this.sink.tryEmitNext(t);
         if (result.isFailure()) {
