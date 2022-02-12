@@ -13,6 +13,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -41,7 +42,8 @@ class UserServiceImplTest {
         when(mockUserRepository.list(any())).thenReturn(Flux.just(UserSamples.LUKE, UserSamples.OBIWAN, UserSamples.YODA));
         when(mockUserRepository.persist(any())).thenReturn(Flux.just(UserSamples.LUKE, UserSamples.OBIWAN, UserSamples.YODA));
         when(mockUserRepository.count(any())).thenReturn(Mono.just(3));
-        tested = new UserServiceImpl(mockUserRepository, mockAuthFacade,
+        //noinspection deprecation
+        tested = new UserServiceImpl(mockUserRepository, mockAuthFacade, NoOpPasswordEncoder.getInstance(),
                 Clock.fixed(CURRENT, ZoneOffset.UTC));
     }
 

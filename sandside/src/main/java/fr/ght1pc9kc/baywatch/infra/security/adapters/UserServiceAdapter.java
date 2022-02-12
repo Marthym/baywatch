@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -27,8 +28,9 @@ public class UserServiceAdapter implements UserService, ReactiveUserDetailsServi
     private final AuthenticationFacade authFacade;
 
     @Autowired
-    public UserServiceAdapter(UserPersistencePort userPersistencePort, AuthenticationFacade authFacade) {
-        this.delegate = new UserServiceImpl(userPersistencePort, authFacade, Clock.systemUTC());
+    public UserServiceAdapter(UserPersistencePort userPersistencePort, AuthenticationFacade authFacade,
+                              PasswordEncoder passwordEncoder) {
+        this.delegate = new UserServiceImpl(userPersistencePort, authFacade, passwordEncoder, Clock.systemUTC());
         this.authFacade = authFacade;
     }
 
