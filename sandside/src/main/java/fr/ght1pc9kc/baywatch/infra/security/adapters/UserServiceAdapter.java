@@ -17,21 +17,26 @@ import reactor.core.publisher.Mono;
 
 import java.time.Clock;
 
+import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.LOGIN;
+
 @Service
 @Qualifier("Baywatch")
 public class UserServiceAdapter implements UserService, ReactiveUserDetailsService {
     @Delegate
     private final UserService delegate;
+    private final AuthenticationFacade authFacade;
 
     @Autowired
     public UserServiceAdapter(UserPersistencePort userPersistencePort, AuthenticationFacade authFacade) {
         this.delegate = new UserServiceImpl(userPersistencePort, authFacade, Clock.systemUTC());
+        this.authFacade = authFacade;
     }
 
     @Override
     public Mono<UserDetails> findByUsername(String username) {
-        return delegate.list(PageRequest.one(Criteria.property("login").eq(username)))
-                .next()
-                .map(BaywatchUserDetails::new);
+        return Mono.just(username).flatMapMany(u ->
+                        delegate.list(PageRequest.one(Criteria.property(LOGIN).eq(username)))
+                                .contextWrite(authFacade.withSystemAuthentication()))
+                .single().map(BaywatchUserDetails::new);
     }
 }
