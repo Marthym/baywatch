@@ -48,6 +48,8 @@ public class SecurityConfiguration {
                 .pathMatchers(HttpMethod.POST, baseRoute + "/auth/login").permitAll()
                 .pathMatchers(HttpMethod.PUT, baseRoute + "/auth/refresh").permitAll()
                 .pathMatchers(HttpMethod.DELETE, baseRoute + "/auth/logout").authenticated()
+                .pathMatchers("/*").permitAll()
+                .pathMatchers("/assets/*").permitAll()
                 .pathMatchers(baseRoute + "/**").hasAnyRole(
                         Role.USER.name(), Role.MANAGER.name(), Role.ADMIN.name())
                 .anyExchange().denyAll()
