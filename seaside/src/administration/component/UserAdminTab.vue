@@ -1,7 +1,7 @@
 <template>
   <div class="overflow-x-auto mt-4">
     <div class="md:btn-group mb-2">
-      <button class="btn btn-sm btn-primary mb-2 mr-2 md:m-0" @click="">
+      <button class="btn btn-sm btn-primary mb-2 mr-2 md:m-0" @click.prevent="editorOpened = true">
         <svg class="w-6 h-6 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
              xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -95,6 +95,10 @@
       </tr>
       </tfoot>
     </table>
+    <UserEditor v-if="editorOpened"
+                v-model="activeUser"
+                @submit="onUserSubmit"
+                @cancel="editorOpened = false"/>
   </div>
 </template>
 
@@ -105,16 +109,20 @@ import userService from "@/services/UserService";
 import {Observable} from "rxjs";
 import {map, switchMap, tap} from "rxjs/operators";
 import {UserView} from "@/administration/model/UserView";
+import UserEditor from "@/administration/component/UserEditor.vue";
+import {User} from "@/services/model/User";
 
 @Options({
   name: 'UserAdminTab',
-  components: {},
+  components: {UserEditor},
 })
 export default class UserAdminTab extends Vue {
   private users: UserView[] = [];
   private pagesNumber = 0;
   private activePage = 0;
   private deleteEnable: boolean = this.checkState;
+  private editorOpened: boolean = false;
+  private activeUser: User = {} as User;
 
   mounted(): void {
     this.loadUserPage(0).subscribe();
@@ -146,6 +154,11 @@ export default class UserAdminTab extends Vue {
       timeZone: 'UTC',
       year: 'numeric', month: '2-digit', day: '2-digit', hour: "2-digit", minute: "2-digit"
     });
+  }
+
+  private onUserSubmit(event: Event): void {
+    this.editorOpened = false;
+    console.log('onUserSubmit: ', event);
   }
 }
 </script>
