@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.infra.security;
 
-import fr.ght1pc9kc.baywatch.api.security.UserService;
 import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +13,7 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
@@ -28,7 +28,7 @@ import java.util.function.Predicate;
 public class JwtTokenAuthenticationFilter implements WebFilter {
     private final JwtTokenProvider tokenProvider;
     private final TokenCookieManager cookieManager;
-    private final UserService userService;
+    private final ReactiveUserDetailsService userService;
 
     @Override
     public @NotNull Mono<Void> filter(ServerWebExchange exchange, @NotNull WebFilterChain chain) {
@@ -41,7 +41,7 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
 
             return Mono.just(!this.tokenProvider.validateToken(token, true))
                     .filter(Predicate.isEqual(true))
-                    .flatMap(x -> userService.get(bwAuth.getUser().id))
+                    .flatMap(x -> userService.findByUsername(bwAuth.getUser().entity.login))
                     .map(updated -> {
                         log.debug("Refresh valid expired token for {}", bwAuth.getUser().entity.login);
                         BaywatchAuthentication freshBaywatchAuth = this.tokenProvider.createToken(bwAuth.getUser(), bwAuth.rememberMe, Collections.emptyList());
