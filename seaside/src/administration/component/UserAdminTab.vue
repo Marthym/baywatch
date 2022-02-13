@@ -42,7 +42,7 @@
         <th>
           <label>
             <input type="checkbox" class="checkbox" ref="globalCheck"
-                   :checked="checkState"/>
+                   :checked="checkState" @change="onSelectAll()"/>
             <span class="checkbox-mark"></span>
           </label>
         </th>
@@ -155,6 +155,11 @@ export default class UserAdminTab extends Vue {
       timeZone: 'UTC',
       year: 'numeric', month: '2-digit', day: '2-digit', hour: "2-digit", minute: "2-digit"
     });
+  }
+
+  private onSelectAll(): void {
+    const current = this.checkState;
+    this.users.forEach(f => f.isSelected = !current);
   }
 
   private onUserSubmit(event: Event): void {
