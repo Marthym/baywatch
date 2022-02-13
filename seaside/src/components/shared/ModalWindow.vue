@@ -1,5 +1,6 @@
 <template>
-  <div class="modal compact flex-col space-x-0" :class="{'opacity-100 pointer-events-auto visible': isOpened}" v-if="isOpened">
+  <div class="modal compact flex-col space-x-0" v-if="isOpened"
+       :class="{'opacity-100 pointer-events-auto visible': isOpened}">
     <div v-if="title !== undefined" class="modal-box translate-y-0 rounded-none
       text-lg bg-base-200 text-base-content uppercase font-bold p-4">
       {{ title }}
@@ -19,12 +20,12 @@ import {Options, Prop, Vue} from "vue-property-decorator";
 
 @Options({name: 'ModalWindow'})
 export default class ModalWindow extends Vue {
-  @Prop() isVisible?: boolean;
-  @Prop() title?: string;
+  @Prop({default: true}) isVisible!: boolean;
+  @Prop({default: 'Baywatch'}) title!: string;
   private internalVisible = true;
 
   get isOpened(): boolean {
-    return (this.isVisible == undefined) ? this.internalVisible : this.isVisible;
+    return (this.isVisible === undefined) ? this.internalVisible : this.isVisible;
   }
 }
 </script>
