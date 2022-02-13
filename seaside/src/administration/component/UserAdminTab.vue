@@ -105,6 +105,7 @@
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
 
+import notificationService from "@/services/notification/NotificationService";
 import userService from "@/services/UserService";
 import {Observable} from "rxjs";
 import {map, switchMap, tap} from "rxjs/operators";
@@ -157,8 +158,20 @@ export default class UserAdminTab extends Vue {
   }
 
   private onUserSubmit(event: Event): void {
-    this.editorOpened = false;
-    console.log('onUserSubmit: ', event);
+    const edit = '_id' in this.activeUser && this.activeUser._id !== undefined;
+    userService.add(this.activeUser).subscribe({
+      next: user => {
+        if (edit) {
+          const idx = this.users.findIndex(e => e.data._id);
+          this.users.splice(idx, 1, {isSelected: false, data: user});
+        } else {
+          this.users.push({isSelected: false, data: user});
+        }
+        notificationService.pushSimpleOk(`User ${user.login} created successfully !`);
+        this.editorOpened = false;
+      },
+      error: e => notificationService.pushSimpleError(e.message),
+    });
   }
 }
 </script>
