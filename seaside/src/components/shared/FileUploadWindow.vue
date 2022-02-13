@@ -1,5 +1,5 @@
 <template>
-  <ModalWindow :title="title" :is-visible="true">
+  <ModalWindow :title="title">
     <label class="p-5 relative border-4 border-dotted rounded-lg flex flex-col items-center"
            :class="{'border-accent-focus': isDragOver, 'border-neutral-content': !isDragOver}"
            @dragover="isDragOver = true" @dragleave="isDragOver = false" @drop.stop.prevent="onDropFile">

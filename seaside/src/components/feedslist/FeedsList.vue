@@ -13,8 +13,8 @@
           </label>
         </th>
         <th class="grid grid-cols-1 md:grid-cols-12">
-          <div class="col-span-4">Name</div>
-          <div class="col-span-7">Link / Categories</div>
+          <div class="col-span-4 my-auto">Name</div>
+          <div class="col-span-7 my-auto">Link / Categories</div>
           <div class="btn-group justify-end" v-if="pagesNumber > 1">
             <button v-for="i in pagesNumber" :key="i"
                     :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
@@ -26,7 +26,7 @@
       </tr>
       </thead>
       <tbody>
-      <template v-for="vFeed in this.feeds" v-bind:key="vFeed.data.id">
+      <template v-if="feeds.length > 0" v-for="vFeed in this.feeds" v-bind:key="vFeed.data.id">
         <tr>
           <th v-if="userState.isAuthenticated">
             <label>
@@ -37,6 +37,13 @@
           <td class="grid grid-cols-1 md:grid-cols-12 auto-cols-auto">
             <FeedListItem :ref="vFeed.data.id" :view="vFeed"
                           @item-update="itemUpdate" @item-delete="itemDelete"/>
+          </td>
+        </tr>
+      </template>
+      <template v-else>
+        <tr>
+          <td colspan="2" class="text-center">
+            No feed in the list
           </td>
         </tr>
       </template>

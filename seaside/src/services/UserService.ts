@@ -1,6 +1,6 @@
-import {from, Observable} from "rxjs";
+import {from, Observable, throwError} from "rxjs";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
-import {map, take} from "rxjs/operators";
+import {map, switchMap, take} from "rxjs/operators";
 import rest from '@/services/http/RestWrapper';
 import {Page} from "@/services/model/Page";
 import {ConstantFilters, ConstantHttpHeaders} from "@/constants";
@@ -32,6 +32,20 @@ export class UserService {
                     };
                 } else {
                     throw new HttpStatusError(response.status, `Error while getting news.`);
+                }
+            }),
+            take(1)
+        );
+    }
+
+    add(user: User): Observable<User> {
+        return rest.post('/users', user).pipe(
+            switchMap(response => {
+                if (response.ok) {
+                    return from(response.json());
+                } else {
+                    return from(response.json()).pipe(switchMap(j =>
+                        throwError(() => new HttpStatusError(response.status, j.message))));
                 }
             }),
             take(1)

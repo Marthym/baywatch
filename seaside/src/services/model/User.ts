@@ -1,17 +1,17 @@
 import {UserRole} from "@/services/model/UserRole.enum";
 
 export type User = {
-    _id: string;
-    _createdAt: string;
+    _id?: string;
+    _createdAt?: string;
     login: string;
     name: string;
     mail: string;
     role: UserRole;
+    password?: string;
+    confirm?: string;
 }
 
 export const ANONYMOUS: User = {
-    _id: '',
-    _createdAt: '',
     login: '',
     name: 'Anonymous',
     mail: '',
