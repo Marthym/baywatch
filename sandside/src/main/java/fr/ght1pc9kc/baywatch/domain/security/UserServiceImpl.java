@@ -64,6 +64,19 @@ public final class UserServiceImpl implements UserService {
                 .flatMap(u -> userRepository.persist(List.of(entity)).single());
     }
 
+    @Override
+    public Mono<Entity<User>> update(String id, User user) {
+        return authFacade.getConnectedUser()
+                .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
+                .map(u -> {
+                    if (hasRole(u.entity, Role.ADMIN) || u.id.equals(id)) {
+                        return u;
+                    }
+                    throw new UnauthorizedOperation("User unauthorized for the operation !");
+                })
+                .flatMap(u -> userRepository.update(id, user));
+    }
+
     private Mono<Entity<User>> handleAuthentication() {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))

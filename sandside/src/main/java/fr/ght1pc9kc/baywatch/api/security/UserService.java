@@ -21,4 +21,6 @@ public interface UserService {
     Mono<Integer> count(PageRequest pageRequest);
 
     Mono<Entity<User>> create(User user);
+
+    Mono<Entity<User>> update(String id, User user);
 }

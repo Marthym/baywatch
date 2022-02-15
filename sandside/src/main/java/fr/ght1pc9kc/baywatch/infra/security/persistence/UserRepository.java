@@ -79,18 +79,26 @@ public class UserRepository implements UserPersistencePort {
 
     @Override
     public Flux<Entity<User>> persist(Collection<Entity<User>> toPersist) {
-        return Mono.fromCallable(() -> {
-                    List<UsersRecord> records = toPersist.stream()
-                            .map(baywatchConverter::entityUserToRecord)
-                            .collect(Collectors.toList());
-                    return dsl.transactionResult(tx ->
-                            tx.dsl().batchInsert(records).execute());
-                }).subscribeOn(databaseScheduler)
+        List<UsersRecord> records = toPersist.stream()
+                .map(baywatchConverter::entityUserToRecord)
+                .collect(Collectors.toList());
+
+        return Mono.fromCallable(() ->
+                        dsl.transactionResult(tx -> tx.dsl().batchInsert(records).execute()))
+                .subscribeOn(databaseScheduler)
 
                 .flatMapMany(insertedCount -> {
                     log.debug("{} user(s) inserted successfully.", Arrays.stream(insertedCount).sum());
                     return Flux.fromIterable(toPersist);
                 });
+    }
+
+    @Override
+    public Mono<Entity<User>> update(String id, User user) {
+        UsersRecord usersRecord = baywatchConverter.entityUserToRecord(Entity.identify(id, user));
+        return Mono.fromCallable(() -> dsl.executeUpdate(usersRecord))
+                .subscribeOn(databaseScheduler)
+                .then(get(id).subscribeOn(databaseScheduler));
     }
 
     @Override
@@ -101,6 +109,6 @@ public class UserRepository implements UserPersistencePort {
                     txDsl.deleteFrom(FEEDS_USERS).where(FEEDS_USERS.FEUS_USER_ID.in(ids)).execute();
                     txDsl.deleteFrom(NEWS_USER_STATE).where(NEWS_USER_STATE.NURS_USER_ID.in(ids)).execute();
                     return txDsl.deleteFrom(USERS).where(USERS.USER_ID.in(ids)).execute();
-                }));
+                })).subscribeOn(databaseScheduler);
     }
 }

@@ -1,7 +1,11 @@
 package fr.ght1pc9kc.baywatch.infra.common.mappers;
 
 import fr.ght1pc9kc.baywatch.api.common.model.Entity;
-import fr.ght1pc9kc.baywatch.api.model.*;
+import fr.ght1pc9kc.baywatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.api.model.RawFeed;
+import fr.ght1pc9kc.baywatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.model.State;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.utils.DateUtils;
 import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
@@ -14,6 +18,8 @@ import org.jooq.tools.StringUtils;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.NullValueCheckStrategy;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.net.URI;
 import java.time.Instant;
@@ -40,7 +46,9 @@ public interface BaywatchMapper {
     @Mapping(source = "entity.login", target = "userLogin")
     @Mapping(source = "entity.name", target = "userName")
     @Mapping(source = "entity.mail", target = "userEmail")
-    @Mapping(source = "entity.password", target = "userPassword")
+    @Mapping(source = "entity.password", target = "userPassword",
+            nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
+            nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(source = "entity.role", target = "userRole")
     UsersRecord entityUserToRecord(Entity<User> user);
 
