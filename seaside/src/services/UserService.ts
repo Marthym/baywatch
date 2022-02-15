@@ -51,6 +51,20 @@ export class UserService {
             take(1)
         );
     }
+
+    update(user: User): Observable<User> {
+        return rest.put(`/users/${user._id}`, user).pipe(
+            switchMap(response => {
+                if (response.ok) {
+                    return from(response.json());
+                } else {
+                    return from(response.json()).pipe(switchMap(j =>
+                        throwError(() => new HttpStatusError(response.status, j.message))));
+                }
+            }),
+            take(1)
+        );
+    }
 }
 
 export default new UserService();
