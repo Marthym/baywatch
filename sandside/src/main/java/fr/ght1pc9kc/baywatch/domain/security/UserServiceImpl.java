@@ -73,8 +73,10 @@ public final class UserServiceImpl implements UserService {
                         return u;
                     }
                     throw new UnauthorizedOperation("User unauthorized for the operation !");
-                })
-                .flatMap(u -> userRepository.update(id, user));
+                }).flatMap(u -> {
+                    User withPassword = (user.password != null) ? user.withPassword(passwordEncoder.encode(user.password)) : user;
+                    return userRepository.update(id, withPassword);
+                });
     }
 
     private Mono<Entity<User>> handleAuthentication() {
