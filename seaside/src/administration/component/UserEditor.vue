@@ -26,7 +26,8 @@
         <span class="label-text">Mail</span>
       </label>
       <input v-model="modelValue.mail" type="email" placeholder="mail address" class="input input-bordered"
-             :class="{'input-error': errors.has('mail')}" @change="onFieldChange('mail')">
+             :class="{'input-error': errors.has('mail')}" @change="onFieldChange('mail')"
+             :disabled="isEditionMode">
       <label class="label -mt-1">
         <span class="label-text-alt">&nbsp;</span>
         <span v-if="errors.has('mail')" class="label-text-alt">{{ errors.get('mail') }}</span>
@@ -118,10 +119,12 @@ export default class UserEditor extends Vue {
     if (!this.modelValue.role) {
       this.errors.set('role', 'Role is mandatory !');
     }
-    if (!this.modelValue.password) {
-      this.errors.set('password', 'Password is mandatory !');
-    } else if (this.modelValue.password !== this.modelValue.confirm) {
-      this.errors.set('confirm', "Password confirmation doesn't match !");
+    if (!this.isEditionMode) {
+      if (!this.modelValue.password) {
+        this.errors.set('password', 'Password is mandatory !');
+      } else if (this.modelValue.password !== this.modelValue.confirm) {
+        this.errors.set('confirm', "Password confirmation doesn't match !");
+      }
     }
 
     if (this.errors.size == 0) {

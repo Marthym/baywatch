@@ -1,7 +1,7 @@
 <template>
   <div class="overflow-x-auto mt-4">
     <div class="md:btn-group mb-2">
-      <button class="btn btn-sm btn-primary mb-2 mr-2 md:m-0" @click.prevent="editorOpened = true">
+      <button class="btn btn-sm btn-primary mb-2 mr-2 md:m-0" @click.prevent="onUserAdd()">
         <svg class="w-6 h-6 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
              xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -25,7 +25,7 @@
         </svg>
         Exporter
       </a>
-      <button class="btn btn-sm btn-error mb-2 mr-2 md:m-0" :disabled="!deleteEnable" @click="">
+      <button class="btn btn-sm btn-error mb-2 mr-2 md:m-0" :disabled="!checkState" @click="onUserBulkDelete()">
         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
           <path fill-rule="evenodd"
                 d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0
@@ -50,7 +50,7 @@
         <th>Nom</th>
         <th>Mail</th>
         <th>Role</th>
-        <th>Last Login
+        <th>Created At
           <div class="btn-group justify-end" v-if="pagesNumber > 1">
             <button v-for="i in pagesNumber" :key="i"
                     :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
@@ -59,10 +59,11 @@
             </button>
           </div>
         </th>
+        <th>&nbsp;</th>
       </tr>
       </thead>
       <tbody>
-      <tr v-for="vUser in this.users" v-bind:key="vUser.data.id">
+      <tr v-for="vUser in this.users" v-bind:key="vUser.data._id">
         <th>
           <label>
             <input type="checkbox" class="checkbox" v-model="vUser.isSelected">
@@ -74,16 +75,34 @@
         <td>{{ vUser.data.mail }}</td>
         <td>{{ vUser.data.role }}</td>
         <td>{{ dateToString(vUser.data._createdAt) }}</td>
+        <td>
+          <div class="btn-group justify-end">
+            <button class="btn btn-sm btn-square btn-ghost" @click.prevent="onUserEdit(vUser.data)">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                   stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+              </svg>
+            </button>
+            <button class="btn btn-sm btn-square btn-ghost" @click.prevent="onUserDelete(vUser.data)">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                   stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </button>
+          </div>
+        </td>
       </tr>
       </tbody>
       <tfoot>
       <tr>
         <th></th>
-        <th>Name</th>
-        <th>Job</th>
-        <th>company</th>
-        <th>location</th>
-        <th>Last Login
+        <th>Pseudo</th>
+        <th>Nom</th>
+        <th>Mail</th>
+        <th>Role</th>
+        <th>Created At
           <div class="btn-group justify-end" v-if="pagesNumber > 1">
             <button v-for="i in pagesNumber" :key="i"
                     :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
@@ -92,6 +111,7 @@
             </button>
           </div>
         </th>
+        <th>&nbsp;</th>
       </tr>
       </tfoot>
     </table>
@@ -108,10 +128,11 @@ import {Options, Vue} from 'vue-property-decorator';
 import notificationService from "@/services/notification/NotificationService";
 import userService from "@/services/UserService";
 import {Observable} from "rxjs";
-import {map, switchMap, tap} from "rxjs/operators";
+import {filter, map, switchMap, tap} from "rxjs/operators";
 import {UserView} from "@/administration/model/UserView";
 import UserEditor from "@/administration/component/UserEditor.vue";
 import {User} from "@/services/model/User";
+import {AlertResponse, AlertType} from "@/components/shared/alertdialog/AlertDialog.types";
 
 @Options({
   name: 'UserAdminTab',
@@ -121,9 +142,8 @@ export default class UserAdminTab extends Vue {
   private users: UserView[] = [];
   private pagesNumber = 0;
   private activePage = 0;
-  private deleteEnable: boolean = this.checkState;
   private editorOpened: boolean = false;
-  private activeUser: User = {} as User;
+  private activeUser: User;
 
   mounted(): void {
     this.loadUserPage(0).subscribe();
@@ -162,20 +182,79 @@ export default class UserAdminTab extends Vue {
     this.users.forEach(f => f.isSelected = !current);
   }
 
-  private onUserSubmit(event: Event): void {
+  private onUserSubmit(): void {
     const edit = '_id' in this.activeUser && this.activeUser._id !== undefined;
-    userService.add(this.activeUser).subscribe({
-      next: user => {
-        if (edit) {
-          const idx = this.users.findIndex(e => e.data._id);
-          this.users.splice(idx, 1, {isSelected: false, data: user});
-        } else {
+    if (edit) {
+      userService.update(this.activeUser).subscribe({
+        next: user => {
+          notificationService.pushSimpleOk(`User ${user.login} updated successfully !`);
+          this.editorOpened = false;
+        },
+        error: e => notificationService.pushSimpleError(e.message),
+      });
+    } else {
+      userService.add(this.activeUser).subscribe({
+        next: user => {
           this.users.push({isSelected: false, data: user});
-        }
-        notificationService.pushSimpleOk(`User ${user.login} created successfully !`);
-        this.editorOpened = false;
-      },
-      error: e => notificationService.pushSimpleError(e.message),
+          notificationService.pushSimpleOk(`User ${user.login} created successfully !`);
+          this.editorOpened = false;
+        },
+        error: e => notificationService.pushSimpleError(e.message),
+      });
+    }
+  }
+
+  private onUserAdd(): void {
+    this.activeUser = {} as User;
+    this.editorOpened = true;
+  }
+
+  private onUserEdit(user: User): void {
+    this.activeUser = user;
+    this.editorOpened = true;
+  }
+
+  private onUserDelete(user: User): void {
+    const message = `Supprimer l’utilisateur <br/> <b>${user.name}</b>`;
+    this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
+        filter(response => response === AlertResponse.CONFIRM),
+        switchMap(() => userService.remove(user._id as string)),
+        tap(() => {
+          const idx = this.users.findIndex(fv => fv.data._id === user._id);
+          this.users.splice(idx, 1);
+        })
+    ).subscribe({
+      next: user => notificationService.pushSimpleOk(`User ${user.name} deleted successfully !`),
+      error: e => {
+        console.error(e);
+        notificationService.pushSimpleError(`Unable to delete user ${user.name} !`);
+      }
+    });
+  }
+
+  private onUserBulkDelete(): void {
+    const ids = this.users.filter(f => f.isSelected);
+    if (ids.length == 0) {
+      return;
+    } else if (ids.length == 1) {
+      return this.onUserDelete(ids[0].data);
+    }
+    const message = `Delete all ${ids.length} selected users ?`;
+    this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
+        filter(response => response === AlertResponse.CONFIRM),
+        switchMap(() => userService.bulkRemove(ids.map(uv => uv.data._id) as string[])),
+        tap(() => {
+          ids.forEach(id => {
+            const idx = this.users.findIndex(uv => uv.data._id === id.data._id);
+            this.users.splice(idx, 1);
+          })
+        })
+    ).subscribe({
+      next: () => notificationService.pushSimpleOk('All users deleted successfully !'),
+      error: e => {
+        console.error(e);
+        notificationService.pushSimpleError('Unable to delete all selected users !');
+      }
     });
   }
 }

@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.domain.security;
 
+import fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.UserService;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
@@ -8,6 +9,8 @@ import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthorizedOperation;
 import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.security.samples.UserSamples;
+import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
+import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +27,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -101,5 +105,26 @@ class UserServiceImplTest {
 
         Entity<User> actual = users.getValue().get(0);
         Assertions.assertThat(actual).isEqualTo(Entity.identify(UserSamples.OBIWAN.id, CURRENT, UserSamples.OBIWAN.entity));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void should_delete_users_as_admin() {
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
+        when(mockUserRepository.list(any())).thenReturn(Flux.just(UserSamples.OBIWAN));
+        when(mockUserRepository.delete(anyCollection())).thenReturn(Mono.just(1));
+
+        StepVerifier.create(tested.delete(List.of(UserSamples.OBIWAN.id)))
+                .expectNext(UserSamples.OBIWAN)
+                .verifyComplete();
+
+        ArgumentCaptor<QueryContext> selected = ArgumentCaptor.forClass(QueryContext.class);
+        verify(mockUserRepository).list(selected.capture());
+        ArgumentCaptor<List<String>> deleted = ArgumentCaptor.forClass(List.class);
+        verify(mockUserRepository).delete(deleted.capture());
+
+        Assertions.assertThat(selected.getValue())
+                .isEqualTo(QueryContext.all(Criteria.property(EntitiesProperties.ID).in(UserSamples.OBIWAN.id)));
+        Assertions.assertThat(deleted.getValue()).isEqualTo(List.of(UserSamples.OBIWAN.id));
     }
 }

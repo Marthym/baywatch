@@ -26,5 +26,7 @@ public interface UserPersistencePort {
      */
     Flux<Entity<User>> persist(Collection<Entity<User>> users);
 
+    Mono<Entity<User>> update(String id, User user);
+
     Mono<Integer> delete(Collection<String> id);
 }

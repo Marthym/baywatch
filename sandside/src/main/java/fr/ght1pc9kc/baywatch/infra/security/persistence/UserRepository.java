@@ -9,12 +9,14 @@ import fr.ght1pc9kc.baywatch.infra.common.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.common.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.infra.http.filter.PredicateSearchVisitor;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
+import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.Condition;
 import org.jooq.Cursor;
 import org.jooq.DSLContext;
 import org.jooq.Result;
+import org.jooq.Select;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Users.USERS;
+import static fr.ght1pc9kc.baywatch.infra.common.mappers.PropertiesMappers.USER_PROPERTIES_MAPPING;
 
 @Slf4j
 @Repository
@@ -49,9 +52,12 @@ public class UserRepository implements UserPersistencePort {
     @Override
     public Flux<Entity<User>> list(QueryContext qCtx) {
         Condition conditions = qCtx.filter.accept(JOOQ_CONDITION_VISITOR);
+        final Select<UsersRecord> select = JooqPagination.apply(
+                qCtx.pagination, USER_PROPERTIES_MAPPING,
+                dsl.selectFrom(USERS).where(conditions));
 
         return Flux.<UsersRecord>create(sink -> {
-                    Cursor<UsersRecord> cursor = dsl.selectFrom(USERS).where(conditions).fetchLazy();
+                    Cursor<UsersRecord> cursor = select.fetchLazy();
                     sink.onRequest(n -> {
                         int count = Long.valueOf(n).intValue();
                         Result<UsersRecord> rs = cursor.fetchNext(count);
@@ -79,18 +85,26 @@ public class UserRepository implements UserPersistencePort {
 
     @Override
     public Flux<Entity<User>> persist(Collection<Entity<User>> toPersist) {
-        return Mono.fromCallable(() -> {
-                    List<UsersRecord> records = toPersist.stream()
-                            .map(baywatchConverter::entityUserToRecord)
-                            .collect(Collectors.toList());
-                    return dsl.transactionResult(tx ->
-                            tx.dsl().batchInsert(records).execute());
-                }).subscribeOn(databaseScheduler)
+        List<UsersRecord> records = toPersist.stream()
+                .map(baywatchConverter::entityUserToRecord)
+                .collect(Collectors.toList());
+
+        return Mono.fromCallable(() ->
+                        dsl.transactionResult(tx -> tx.dsl().batchInsert(records).execute()))
+                .subscribeOn(databaseScheduler)
 
                 .flatMapMany(insertedCount -> {
                     log.debug("{} user(s) inserted successfully.", Arrays.stream(insertedCount).sum());
                     return Flux.fromIterable(toPersist);
                 });
+    }
+
+    @Override
+    public Mono<Entity<User>> update(String id, User user) {
+        UsersRecord usersRecord = baywatchConverter.entityUserToRecord(Entity.identify(id, user));
+        return Mono.fromCallable(() -> dsl.executeUpdate(usersRecord))
+                .subscribeOn(databaseScheduler)
+                .then(get(id).subscribeOn(databaseScheduler));
     }
 
     @Override
@@ -101,6 +115,6 @@ public class UserRepository implements UserPersistencePort {
                     txDsl.deleteFrom(FEEDS_USERS).where(FEEDS_USERS.FEUS_USER_ID.in(ids)).execute();
                     txDsl.deleteFrom(NEWS_USER_STATE).where(NEWS_USER_STATE.NURS_USER_ID.in(ids)).execute();
                     return txDsl.deleteFrom(USERS).where(USERS.USER_ID.in(ids)).execute();
-                }));
+                })).subscribeOn(databaseScheduler);
     }
 }
