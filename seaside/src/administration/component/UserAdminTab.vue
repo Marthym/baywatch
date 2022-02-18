@@ -25,7 +25,7 @@
         </svg>
         Exporter
       </a>
-      <button class="btn btn-sm btn-error mb-2 mr-2 md:m-0" :disabled="!deleteEnable" @click="">
+      <button class="btn btn-sm btn-error mb-2 mr-2 md:m-0" :disabled="!checkState" @click="onUserBulkDelete()">
         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
           <path fill-rule="evenodd"
                 d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0
@@ -84,7 +84,7 @@
                       d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
               </svg>
             </button>
-            <button class="btn btn-sm btn-square btn-ghost">
+            <button class="btn btn-sm btn-square btn-ghost" @click.prevent="onUserDelete(vUser.data)">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                    stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -128,10 +128,11 @@ import {Options, Vue} from 'vue-property-decorator';
 import notificationService from "@/services/notification/NotificationService";
 import userService from "@/services/UserService";
 import {Observable} from "rxjs";
-import {map, switchMap, tap} from "rxjs/operators";
+import {filter, map, switchMap, tap} from "rxjs/operators";
 import {UserView} from "@/administration/model/UserView";
 import UserEditor from "@/administration/component/UserEditor.vue";
 import {User} from "@/services/model/User";
+import {AlertResponse, AlertType} from "@/components/shared/alertdialog/AlertDialog.types";
 
 @Options({
   name: 'UserAdminTab',
@@ -141,7 +142,6 @@ export default class UserAdminTab extends Vue {
   private users: UserView[] = [];
   private pagesNumber = 0;
   private activePage = 0;
-  private deleteEnable: boolean = this.checkState;
   private editorOpened: boolean = false;
   private activeUser: User;
 
@@ -212,6 +212,50 @@ export default class UserAdminTab extends Vue {
   private onUserEdit(user: User): void {
     this.activeUser = user;
     this.editorOpened = true;
+  }
+
+  private onUserDelete(user: User): void {
+    const message = `Supprimer l’utilisateur <br/> <b>${user.name}</b>`;
+    this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
+        filter(response => response === AlertResponse.CONFIRM),
+        switchMap(() => userService.remove(user._id as string)),
+        tap(() => {
+          const idx = this.users.findIndex(fv => fv.data._id === user._id);
+          this.users.splice(idx, 1);
+        })
+    ).subscribe({
+      next: user => notificationService.pushSimpleOk(`User ${user.name} deleted successfully !`),
+      error: e => {
+        console.error(e);
+        notificationService.pushSimpleError(`Unable to delete user ${user.name} !`);
+      }
+    });
+  }
+
+  private onUserBulkDelete(): void {
+    const ids = this.users.filter(f => f.isSelected);
+    if (ids.length == 0) {
+      return;
+    } else if (ids.length == 1) {
+      return this.onUserDelete(ids[0].data);
+    }
+    const message = `Delete all ${ids.length} selected users ?`;
+    this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
+        filter(response => response === AlertResponse.CONFIRM),
+        switchMap(() => userService.bulkRemove(ids.map(uv => uv.data._id) as string[])),
+        tap(() => {
+          ids.forEach(id => {
+            const idx = this.users.findIndex(uv => uv.data._id === id.data._id);
+            this.users.splice(idx, 1);
+          })
+        })
+    ).subscribe({
+      next: () => notificationService.pushSimpleOk('All users deleted successfully !'),
+      error: e => {
+        console.error(e);
+        notificationService.pushSimpleError('Unable to delete all selected users !');
+      }
+    });
   }
 }
 </script>
