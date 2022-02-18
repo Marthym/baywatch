@@ -42,8 +42,10 @@ public final class PropertiesMappers {
     );
     public static final Map<String, Field<?>> USER_PROPERTIES_MAPPING = Map.of(
             EntitiesProperties.ID, USERS.USER_ID,
+            EntitiesProperties.CREATED_AT, USERS.USER_CREATED_AT,
             EntitiesProperties.LOGIN, USERS.USER_LOGIN,
             EntitiesProperties.NAME, USERS.USER_NAME,
-            EntitiesProperties.MAIL, USERS.USER_EMAIL
+            EntitiesProperties.MAIL, USERS.USER_EMAIL,
+            EntitiesProperties.ROLE, USERS.USER_ROLE
     );
 }

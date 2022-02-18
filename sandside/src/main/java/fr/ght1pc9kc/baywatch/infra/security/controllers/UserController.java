@@ -6,6 +6,8 @@ import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.infra.common.model.CreateValidation;
 import fr.ght1pc9kc.baywatch.infra.common.model.Page;
+import fr.ght1pc9kc.baywatch.infra.common.model.PatchOperation;
+import fr.ght1pc9kc.baywatch.infra.common.model.PatchPayload;
 import fr.ght1pc9kc.baywatch.infra.security.config.SecurityMapper;
 import fr.ght1pc9kc.baywatch.infra.security.exceptions.AlreadyExistsException;
 import fr.ght1pc9kc.baywatch.infra.security.model.UserForm;
@@ -18,14 +20,24 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -78,5 +90,20 @@ public class UserController {
                     String message = e.getFieldErrors().stream().map(err -> err.getField() + " " + err.getDefaultMessage()).collect(Collectors.joining("\n"));
                     return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
                 });
+    }
+
+    @DeleteMapping("/{id}")
+    public Mono<Entity<User>> delete(@PathVariable("id") String id) {
+        return userService.delete(List.of(id)).single();
+    }
+
+    @PatchMapping
+    public Flux<Entity<User>> bulkUpdate(@RequestBody PatchPayload patchs) {
+        log.debug(patchs.toString());
+        Set<String> ids = patchs.getOperations().stream()
+                .filter(p -> p.op == PatchOperation.remove && p.path.getParent().toString().equals("/users"))
+                .map(p -> p.path.getFileName().toString())
+                .collect(Collectors.toUnmodifiableSet());
+        return userService.delete(ids);
     }
 }
