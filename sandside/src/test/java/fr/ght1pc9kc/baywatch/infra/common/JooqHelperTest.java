@@ -1,9 +1,8 @@
 package fr.ght1pc9kc.baywatch.infra.common;
 
-import fr.ght1pc9kc.baywatch.api.model.Flags;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Flags;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.RenderContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;

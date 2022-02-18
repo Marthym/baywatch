@@ -1,8 +1,8 @@
 package fr.ght1pc9kc.baywatch.domain.opml;
 
-import fr.ght1pc9kc.baywatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.api.model.RawFeed;
-import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Feed;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.RawFeed;
+import fr.ght1pc9kc.baywatch.domain.common.Hasher;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.xml.namespace.QName;

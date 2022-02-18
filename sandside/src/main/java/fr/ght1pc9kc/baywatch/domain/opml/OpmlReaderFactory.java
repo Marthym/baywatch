@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.domain.opml;
 
-import fr.ght1pc9kc.baywatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Feed;
 
 import java.util.function.Consumer;
 

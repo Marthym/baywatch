@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.samples;
 
 import com.google.common.base.Joiner;
-import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
+import fr.ght1pc9kc.baywatch.domain.common.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.irun.testy.jooq.model.RelationalDataSet;

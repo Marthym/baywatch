@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.domain.security.samples;
 import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
-import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
+import fr.ght1pc9kc.baywatch.domain.common.Hasher;
 
 import java.util.List;
 

@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.domain.opml;
 
-import fr.ght1pc9kc.baywatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Feed;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.VisibleForTesting;

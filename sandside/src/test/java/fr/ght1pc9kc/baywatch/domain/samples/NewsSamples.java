@@ -1,9 +1,9 @@
 package fr.ght1pc9kc.baywatch.domain.samples;
 
-import fr.ght1pc9kc.baywatch.api.model.Flags;
-import fr.ght1pc9kc.baywatch.api.model.News;
-import fr.ght1pc9kc.baywatch.api.model.RawNews;
-import fr.ght1pc9kc.baywatch.api.model.State;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Flags;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.News;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.State;
 
 import java.net.URI;
 import java.time.Instant;

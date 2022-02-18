@@ -4,14 +4,18 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.api.model.*;
 import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
-import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Feed;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.News;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.RawFeed;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.State;
+import fr.ght1pc9kc.baywatch.domain.common.Hasher;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.model.OpenGraph;
+import fr.ght1pc9kc.baywatch.domain.security.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;
-import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterAll;
@@ -37,7 +41,12 @@ import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class FeedScrapperServiceTest {
 

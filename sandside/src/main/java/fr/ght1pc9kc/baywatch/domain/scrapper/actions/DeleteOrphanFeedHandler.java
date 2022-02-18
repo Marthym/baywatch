@@ -1,8 +1,10 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.actions;
 
-import fr.ght1pc9kc.baywatch.api.NewsService;
+import fr.ght1pc9kc.baywatch.api.techwatch.NewsService;
 import fr.ght1pc9kc.baywatch.api.admin.FeedAdminService;
 import fr.ght1pc9kc.baywatch.api.scrapper.ScrappingHandler;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Feed;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.News;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.RequiredArgsConstructor;
@@ -16,9 +18,9 @@ import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.COUNT;
 import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.FEED_ID;
 
 /**
- * Delete the orphan {@link fr.ght1pc9kc.baywatch.api.model.Feed}. Orphan was the Feeds followed by nobody.
+ * Delete the orphan {@link Feed}. Orphan was the Feeds followed by nobody.
  * <p>
- * If the Feed to delete have {@link fr.ght1pc9kc.baywatch.api.model.News} the News are deleted or, if the News is
+ * If the Feed to delete have {@link News} the News are deleted or, if the News is
  * shared, it was {@link NewsService#orphanize(Collection)}.
  */
 @Slf4j

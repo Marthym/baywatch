@@ -1,8 +1,8 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.actions;
 
-import fr.ght1pc9kc.baywatch.api.NewsService;
+import fr.ght1pc9kc.baywatch.api.techwatch.NewsService;
 import fr.ght1pc9kc.baywatch.api.admin.FeedAdminService;
-import fr.ght1pc9kc.baywatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Feed;
 import fr.ght1pc9kc.baywatch.domain.samples.FeedSamples;
 import fr.ght1pc9kc.baywatch.domain.samples.NewsSamples;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,10 +1,10 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.plugins;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.scrapper.FeedParserPlugin;
 import fr.ght1pc9kc.baywatch.api.scrapper.FeedScrapperPlugin;
-import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
+import fr.ght1pc9kc.baywatch.domain.common.Hasher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.HtmlUtils;
 

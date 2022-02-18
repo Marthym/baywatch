@@ -1,9 +1,6 @@
 package fr.ght1pc9kc.baywatch;
 
-import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphMetaReader;
-import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphPlugin;
-import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
-import fr.ght1pc9kc.baywatch.infra.config.ScrapperProperties;
+import fr.ght1pc9kc.baywatch.infra.scrapper.config.ScrapperProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,7 +12,6 @@ import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import reactor.netty.http.client.HttpClient;
 
-import java.util.List;
 import java.util.Set;
 
 @Slf4j

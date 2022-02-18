@@ -3,7 +3,6 @@ package fr.ght1pc9kc.baywatch.infra.common.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import fr.ght1pc9kc.baywatch.infra.model.ResourcePatch;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 

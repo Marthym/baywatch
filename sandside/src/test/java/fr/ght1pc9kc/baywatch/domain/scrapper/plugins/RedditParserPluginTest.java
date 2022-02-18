@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.plugins;
 
-import fr.ght1pc9kc.baywatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.RawNews;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

@@ -1,11 +1,11 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper;
 
-import fr.ght1pc9kc.baywatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.api.model.News;
-import fr.ght1pc9kc.baywatch.api.model.RawFeed;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Feed;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.News;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.RawFeed;
 import fr.ght1pc9kc.baywatch.domain.scrapper.plugins.DefaultParserPlugin;
-import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
-import fr.ght1pc9kc.baywatch.infra.config.ScrapperProperties;
+import fr.ght1pc9kc.baywatch.domain.common.Hasher;
+import fr.ght1pc9kc.baywatch.infra.scrapper.config.ScrapperProperties;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 

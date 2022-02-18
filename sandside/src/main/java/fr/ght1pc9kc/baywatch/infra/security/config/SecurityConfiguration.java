@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.security.config;
 
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
-import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
+import fr.ght1pc9kc.baywatch.domain.security.ports.JwtTokenProvider;
 import fr.ght1pc9kc.baywatch.infra.security.JwtTokenAuthenticationFilter;
 import fr.ght1pc9kc.baywatch.infra.security.TokenCookieManager;
 import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams;

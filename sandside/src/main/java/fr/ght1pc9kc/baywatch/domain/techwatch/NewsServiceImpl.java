@@ -1,12 +1,12 @@
 package fr.ght1pc9kc.baywatch.domain.techwatch;
 
-import fr.ght1pc9kc.baywatch.api.NewsService;
-import fr.ght1pc9kc.baywatch.api.model.News;
+import fr.ght1pc9kc.baywatch.api.techwatch.NewsService;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.News;
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
-import fr.ght1pc9kc.baywatch.domain.exceptions.BadRequestCriteria;
-import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthenticatedUser;
-import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthorizedOperation;
-import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.domain.common.exceptions.BadRequestCriteria;
+import fr.ght1pc9kc.baywatch.domain.security.exceptions.UnauthenticatedUser;
+import fr.ght1pc9kc.baywatch.domain.security.exceptions.UnauthorizedOperation;
+import fr.ght1pc9kc.baywatch.domain.security.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.techwatch.filter.CriteriaModifierVisitor;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;

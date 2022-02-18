@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.infra.security;
 import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
-import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
+import fr.ght1pc9kc.baywatch.domain.common.Hasher;
 import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams;
 import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams.CookieParams;
 import fr.ght1pc9kc.baywatch.infra.security.model.SecurityParams.JwtParams;

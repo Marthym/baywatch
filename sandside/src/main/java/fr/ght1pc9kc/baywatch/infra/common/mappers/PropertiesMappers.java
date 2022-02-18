@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.common.mappers;
 
 import fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties;
-import fr.ght1pc9kc.baywatch.api.model.Flags;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Flags;
 import lombok.experimental.UtilityClass;
 import org.jooq.Field;
 import org.jooq.impl.DSL;

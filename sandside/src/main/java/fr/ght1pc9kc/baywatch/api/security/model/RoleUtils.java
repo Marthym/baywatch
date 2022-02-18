@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.api.security.model;
 
-import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthorizedOperation;
+import fr.ght1pc9kc.baywatch.domain.security.exceptions.UnauthorizedOperation;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 

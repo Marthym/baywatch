@@ -1,13 +1,13 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.api.model.News;
-import fr.ght1pc9kc.baywatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Feed;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.News;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.RawNews;
 import fr.ght1pc9kc.baywatch.api.scrapper.FeedScrapperPlugin;
 import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
 import fr.ght1pc9kc.baywatch.api.scrapper.ScrappingHandler;
-import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.domain.security.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.scrapper.opengraph.OpenGraphScrapper;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;

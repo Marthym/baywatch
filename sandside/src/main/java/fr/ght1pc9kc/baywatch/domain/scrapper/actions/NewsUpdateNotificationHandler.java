@@ -1,10 +1,10 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper.actions;
 
-import fr.ght1pc9kc.baywatch.api.StatService;
+import fr.ght1pc9kc.baywatch.api.techwatch.StatService;
 import fr.ght1pc9kc.baywatch.api.notify.EventType;
 import fr.ght1pc9kc.baywatch.api.notify.NotifyService;
 import fr.ght1pc9kc.baywatch.api.scrapper.ScrappingHandler;
-import fr.ght1pc9kc.baywatch.infra.model.Statistics;
+import fr.ght1pc9kc.baywatch.infra.techwatch.model.Statistics;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;

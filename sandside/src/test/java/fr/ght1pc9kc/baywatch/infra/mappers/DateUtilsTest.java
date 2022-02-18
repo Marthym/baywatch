@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.infra.mappers;
 
-import fr.ght1pc9kc.baywatch.domain.utils.DateUtils;
+import fr.ght1pc9kc.baywatch.domain.common.DateUtils;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;

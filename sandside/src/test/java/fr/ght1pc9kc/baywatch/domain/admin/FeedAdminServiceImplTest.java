@@ -1,14 +1,14 @@
 package fr.ght1pc9kc.baywatch.domain.admin;
 
 import fr.ght1pc9kc.baywatch.api.admin.FeedAdminService;
-import fr.ght1pc9kc.baywatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthenticatedUser;
-import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthorizedOperation;
-import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Feed;
+import fr.ght1pc9kc.baywatch.domain.security.exceptions.UnauthenticatedUser;
+import fr.ght1pc9kc.baywatch.domain.security.exceptions.UnauthorizedOperation;
+import fr.ght1pc9kc.baywatch.domain.security.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.security.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
-import fr.ght1pc9kc.baywatch.infra.model.FeedDeletedResult;
+import fr.ght1pc9kc.baywatch.infra.techwatch.model.FeedDeletedResult;
 import fr.ght1pc9kc.baywatch.infra.samples.FeedRecordSamples;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
@@ -21,7 +21,7 @@ import reactor.test.StepVerifier;
 
 import java.util.List;
 
-import static fr.ght1pc9kc.baywatch.domain.FeedServiceImplTest.BAYWATCH_MAPPER;
+import static fr.ght1pc9kc.baywatch.domain.techwatch.FeedServiceImplTest.BAYWATCH_MAPPER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;

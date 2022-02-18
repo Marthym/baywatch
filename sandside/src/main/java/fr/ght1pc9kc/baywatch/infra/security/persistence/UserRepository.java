@@ -2,12 +2,12 @@ package fr.ght1pc9kc.baywatch.infra.security.persistence;
 
 import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
-import fr.ght1pc9kc.baywatch.domain.ports.UserPersistencePort;
+import fr.ght1pc9kc.baywatch.domain.security.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
 import fr.ght1pc9kc.baywatch.infra.common.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.infra.common.mappers.PropertiesMappers;
-import fr.ght1pc9kc.baywatch.infra.http.filter.PredicateSearchVisitor;
+import fr.ght1pc9kc.baywatch.infra.common.PredicateSearchVisitor;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
 import lombok.RequiredArgsConstructor;

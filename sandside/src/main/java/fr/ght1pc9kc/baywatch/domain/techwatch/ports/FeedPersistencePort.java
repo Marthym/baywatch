@@ -1,9 +1,9 @@
 package fr.ght1pc9kc.baywatch.domain.techwatch.ports;
 
 import fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties;
-import fr.ght1pc9kc.baywatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Feed;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
-import fr.ght1pc9kc.baywatch.infra.model.FeedDeletedResult;
+import fr.ght1pc9kc.baywatch.infra.techwatch.model.FeedDeletedResult;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

@@ -1,14 +1,14 @@
 package fr.ght1pc9kc.baywatch.domain.scrapper;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.api.model.News;
-import fr.ght1pc9kc.baywatch.api.model.RawNews;
-import fr.ght1pc9kc.baywatch.api.model.State;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Feed;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.News;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.State;
 import fr.ght1pc9kc.baywatch.api.scrapper.FeedParserPlugin;
 import fr.ght1pc9kc.baywatch.api.scrapper.RssAtomParser;
-import fr.ght1pc9kc.baywatch.infra.config.ScrapperProperties;
-import fr.ght1pc9kc.baywatch.domain.utils.DateUtils;
+import fr.ght1pc9kc.baywatch.infra.scrapper.config.ScrapperProperties;
+import fr.ght1pc9kc.baywatch.domain.common.DateUtils;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.owasp.html.PolicyFactory;

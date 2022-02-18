@@ -4,8 +4,8 @@ import fr.ght1pc9kc.baywatch.api.opml.OpmlService;
 import fr.ght1pc9kc.baywatch.domain.opml.OpmlReader;
 import fr.ght1pc9kc.baywatch.domain.opml.OpmlServiceImpl;
 import fr.ght1pc9kc.baywatch.domain.opml.OpmlWriter;
-import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.infra.adapters.persistence.FeedRepository;
+import fr.ght1pc9kc.baywatch.domain.security.ports.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.infra.techwatch.persistence.FeedRepository;
 import lombok.experimental.Delegate;
 import org.springframework.stereotype.Service;
 

@@ -1,8 +1,8 @@
 package fr.ght1pc9kc.baywatch.domain.techwatch.ports;
 
-import fr.ght1pc9kc.baywatch.api.model.Flags;
-import fr.ght1pc9kc.baywatch.api.model.News;
-import fr.ght1pc9kc.baywatch.api.model.State;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Flags;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.News;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.State;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.juery.api.Criteria;
 import org.intellij.lang.annotations.MagicConstant;

@@ -1,9 +1,9 @@
 package fr.ght1pc9kc.baywatch.domain.techwatch;
 
-import fr.ght1pc9kc.baywatch.api.StatService;
+import fr.ght1pc9kc.baywatch.api.techwatch.StatService;
 import fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties;
-import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthenticatedUser;
-import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.domain.security.exceptions.UnauthenticatedUser;
+import fr.ght1pc9kc.baywatch.domain.security.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.NewsPersistencePort;

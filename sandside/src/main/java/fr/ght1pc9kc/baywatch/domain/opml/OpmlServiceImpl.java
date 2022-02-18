@@ -2,13 +2,13 @@ package fr.ght1pc9kc.baywatch.domain.opml;
 
 import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.api.common.model.Entity;
-import fr.ght1pc9kc.baywatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Feed;
 import fr.ght1pc9kc.baywatch.api.opml.OpmlService;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
-import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthenticatedUser;
-import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.domain.security.exceptions.UnauthenticatedUser;
+import fr.ght1pc9kc.baywatch.domain.security.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
-import fr.ght1pc9kc.baywatch.infra.adapters.persistence.FeedRepository;
+import fr.ght1pc9kc.baywatch.infra.techwatch.persistence.FeedRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;

@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.security.adapters;
 
-import fr.ght1pc9kc.baywatch.api.AuthenticationService;
-import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
+import fr.ght1pc9kc.baywatch.api.security.AuthenticationService;
+import fr.ght1pc9kc.baywatch.domain.security.ports.JwtTokenProvider;
 import fr.ght1pc9kc.baywatch.domain.security.AuthenticationServiceImpl;
 import lombok.experimental.Delegate;
 import org.springframework.beans.factory.annotation.Autowired;

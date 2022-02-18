@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.infra.security.controllers;
 import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.UserService;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
-import fr.ght1pc9kc.baywatch.domain.exceptions.BadRequestCriteria;
+import fr.ght1pc9kc.baywatch.domain.common.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.infra.common.model.CreateValidation;
 import fr.ght1pc9kc.baywatch.infra.common.model.Page;
 import fr.ght1pc9kc.baywatch.infra.common.model.PatchOperation;

@@ -1,12 +1,12 @@
 package fr.ght1pc9kc.baywatch.domain.admin;
 
 import fr.ght1pc9kc.baywatch.api.admin.FeedAdminService;
-import fr.ght1pc9kc.baywatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.api.model.RawFeed;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Feed;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.RawFeed;
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.api.security.model.RoleUtils;
-import fr.ght1pc9kc.baywatch.domain.exceptions.UnauthenticatedUser;
-import fr.ght1pc9kc.baywatch.domain.ports.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.domain.security.exceptions.UnauthenticatedUser;
+import fr.ght1pc9kc.baywatch.domain.security.ports.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.domain.techwatch.model.QueryContext;
 import fr.ght1pc9kc.baywatch.domain.techwatch.ports.FeedPersistencePort;
 import fr.ght1pc9kc.juery.api.Criteria;

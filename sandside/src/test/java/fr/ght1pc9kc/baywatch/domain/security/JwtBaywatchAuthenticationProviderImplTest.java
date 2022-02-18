@@ -6,8 +6,8 @@ import fr.ght1pc9kc.baywatch.api.common.model.Entity;
 import fr.ght1pc9kc.baywatch.api.security.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.api.security.model.User;
-import fr.ght1pc9kc.baywatch.domain.exceptions.SecurityException;
-import fr.ght1pc9kc.baywatch.domain.ports.JwtTokenProvider;
+import fr.ght1pc9kc.baywatch.domain.security.exceptions.SecurityException;
+import fr.ght1pc9kc.baywatch.domain.security.ports.JwtTokenProvider;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 

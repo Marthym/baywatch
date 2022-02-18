@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.infra.model;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.ght1pc9kc.baywatch.infra.common.model.PatchOperation;
 import fr.ght1pc9kc.baywatch.infra.common.model.PatchPayload;
+import fr.ght1pc9kc.baywatch.infra.common.model.ResourcePatch;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 

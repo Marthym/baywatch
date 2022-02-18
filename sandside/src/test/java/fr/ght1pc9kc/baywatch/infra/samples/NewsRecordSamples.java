@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.infra.samples;
 
-import fr.ght1pc9kc.baywatch.api.model.Flags;
-import fr.ght1pc9kc.baywatch.domain.utils.Hasher;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Flags;
+import fr.ght1pc9kc.baywatch.domain.common.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.News;
 import fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds;
 import fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState;

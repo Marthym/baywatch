@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.domain.samples;
 
-import fr.ght1pc9kc.baywatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.api.model.RawFeed;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.Feed;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.RawFeed;
 
 import java.net.URI;
 import java.util.List;
