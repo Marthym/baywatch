@@ -11,7 +11,7 @@
 
       <ul class="flex flex-wrap list-none mt-4">
         <li v-for="tag in tags" v-bind:key="tag">
-          <button class="badge m-1" :class="{'badge-primary': selected && tag === selected}" @click="selectTag">{{
+          <button class="badge m-1" :class="{'badge-accent': selected && tag === selected}" @click="selectTag">{{
               tag
             }}
           </button>

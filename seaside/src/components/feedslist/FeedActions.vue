@@ -1,6 +1,6 @@
 <template>
   <div class="md:btn-group mb-2">
-    <button class="btn btn-sm btn-primary mb-2 mr-2 md:m-0" @click="$emit('clickAdd')">
+    <button class="btn btn-sm btn-ghost mb-2 mr-2 md:m-0" @click="$emit('clickAdd')">
       <svg class="w-6 h-6 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
            xmlns="http://www.w3.org/2000/svg">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -8,7 +8,7 @@
       </svg>
       <span>Ajouter</span>
     </button>
-    <button class="btn btn-sm btn-primary mb-2 mr-2 md:m-0" @click="$emit('clickImport')">
+    <button class="btn btn-sm mb-2 mr-2 md:m-0" @click="$emit('clickImport')">
       <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
            xmlns="http://www.w3.org/2000/svg">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -16,7 +16,7 @@
       </svg>
       Importer
     </button>
-    <a class="btn btn-sm btn-primary mb-2 mr-2 md:m-0" :href="`${BASEURL}/opml/export/baywatch.opml`">
+    <a class="btn btn-sm mb-2 mr-2 md:m-0" :href="`${BASEURL}/opml/export/baywatch.opml`">
       <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
            xmlns="http://www.w3.org/2000/svg">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

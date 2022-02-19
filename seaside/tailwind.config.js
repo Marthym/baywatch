@@ -14,15 +14,15 @@ module.exports = {
     themes: [
       {
         'baywatch': {
-          'primary': '#10b981',
-          'primary-focus': '#059669',
-          'primary-content': '#e5e7eb',
+          'primary': '#ff5555',
+          'primary-focus': '#ff6363',
+          'primary-content': '#ffeee9',
           'secondary': '#e5e7eb',
           'secondary-focus': '#f9fafb',
           'secondary-content': '#4b5563',
-          'accent': '#86efac',
-          'accent-focus': '#2aa79b',
-          'accent-content': '#ffffff',
+          'accent': '#1ad5ff',
+          'accent-focus': '#00b4dc',
+          'accent-content': '#00313c',
           'neutral': '#374151',
           'neutral-focus': '#27272a',
           'neutral-content': '#a1a1aa',

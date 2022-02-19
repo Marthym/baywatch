@@ -8,7 +8,7 @@
         {{ userState.user.name }}
       </h2>
       <span class="text-sm">
-				<span class="font-semibold text-accent capitalize">{{ userState.user.role.toLowerCase()}}</span>
+				<span class="capitalize italic">{{ userState.user.role.toLowerCase()}}</span>
       {{ userState.user.id }}
     </span>
     </div>
