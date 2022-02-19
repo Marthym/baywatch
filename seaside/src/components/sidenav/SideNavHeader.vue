@@ -27,7 +27,7 @@
         </g>
       </g>
     </svg>
-    <span class="capitalize ml-4">Baywatch</span>
+    <span class="capitalize ml-4 text-primary">Baywatch</span>
 
     <button @click="toggleSidenav" class="btn btn-square btn-sm btn-ghost lg:hidden absolute right-0 top-0 m-2">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

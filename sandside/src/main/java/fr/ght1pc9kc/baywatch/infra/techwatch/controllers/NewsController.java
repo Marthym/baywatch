@@ -4,13 +4,20 @@ import fr.ght1pc9kc.baywatch.api.techwatch.NewsService;
 import fr.ght1pc9kc.baywatch.api.techwatch.model.Flags;
 import fr.ght1pc9kc.baywatch.api.techwatch.model.News;
 import fr.ght1pc9kc.baywatch.domain.common.exceptions.BadRequestCriteria;
+import fr.ght1pc9kc.baywatch.infra.common.model.Page;
+import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
 import lombok.AllArgsConstructor;
 import org.intellij.lang.annotations.MagicConstant;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -38,9 +45,13 @@ public class NewsController {
 
     @GetMapping
     @PreAuthorize("permitAll()")
-    public Flux<News> listNews(@RequestParam MultiValueMap<String, String> queryStringParams) {
-        return newsService.list(qsParser.parse(queryStringParams))
+    public Mono<Page<News>> listNews(@RequestParam MultiValueMap<String, String> queryStringParams) {
+        PageRequest pageRequest = qsParser.parse(queryStringParams);
+        Flux<News> news = newsService.list(pageRequest)
                 .onErrorMap(BadRequestCriteria.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
+
+        return newsService.count(pageRequest)
+                .map(count -> Page.of(news, count));
     }
 
     @PutMapping("/{newsId}/mark/{flag}")

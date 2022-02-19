@@ -46,7 +46,11 @@ import {Feed} from "@/services/model/Feed";
 import {ConstantFilters} from "@/constants";
 import {setup} from "vue-class-component";
 import {useStore} from "vuex";
-import {DECREMENT_UNREAD_MUTATION, INCREMENT_UNREAD_MUTATION} from "@/store/statistics/StatisticsConstants";
+import {
+  DECREMENT_UNREAD_MUTATION,
+  FILTER_MUTATION,
+  INCREMENT_UNREAD_MUTATION
+} from "@/store/statistics/StatisticsConstants";
 import {UserState} from "@/store/user/user";
 
 import feedService, {FeedService} from "@/services/FeedService";
@@ -141,6 +145,10 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     }
     const elements = new Subject<Element>();
     newsService.getNews(undefined, query).pipe(
+        switchMap(ns => {
+          this.store.commit(FILTER_MUTATION, ns.total);
+          return ns.data;
+        }),
         map(ns => ns.map(n => ({data: n, feeds: [], isActive: false, keepMark: false}) as NewsView)),
         tap(ns => this.news.push(...ns))
     ).subscribe({

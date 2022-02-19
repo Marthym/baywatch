@@ -1,17 +1,20 @@
-import {EMPTY, Observable} from 'rxjs';
-import {switchMap, take} from "rxjs/operators";
+import {EMPTY, from, Observable} from 'rxjs';
+import {map, switchMap, take} from "rxjs/operators";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 import {News} from "@/services/model/News";
 import {Mark} from "@/services/model/Mark.enum";
 import rest from '@/services/http/RestWrapper';
+import {ConstantHttpHeaders} from "@/constants";
+import {Infinite} from "@/services/model/Infinite";
 
 export class NewsService {
 
+    public static readonly DEFAULT_PER_PAGE: number = 20;
     /**
      * By default query the 10 latest published news
      * @private
      */
-    public static readonly DEFAULT_QUERY: string = '?_pp=20&_s=-publication';
+    public static readonly DEFAULT_QUERY: string = `?_pp=${NewsService.DEFAULT_PER_PAGE}&_s=-publication`;
 
     /**
      * Get the {@link News} from backend
@@ -19,14 +22,19 @@ export class NewsService {
      * @param page The to display
      * @param query The possible query parameters
      */
-    getNews(page = 0, query: URLSearchParams = new URLSearchParams(NewsService.DEFAULT_QUERY)): Observable<News[]> {
+    getNews(page = 0, query: URLSearchParams = new URLSearchParams(NewsService.DEFAULT_QUERY)): Observable<Infinite<News>> {
         if (page > 0) {
             query.append('_p', String(page));
         }
         return rest.get(`/news?${query.toString()}`).pipe(
-            switchMap(response => {
+            map(response => {
                 if (response.ok) {
-                    return response.json();
+                    const totalCount = parseInt(response.headers.get(ConstantHttpHeaders.X_TOTAL_COUNT) || "-1");
+                    const data: Observable<News[]> = from(response.json());
+                    return {
+                        total: totalCount,
+                        data: data
+                    };
                 } else {
                     throw new HttpStatusError(response.status, `Error while getting news.`);
                 }

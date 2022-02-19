@@ -1,11 +1,11 @@
 package fr.ght1pc9kc.baywatch.api.techwatch;
 
+import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.api.techwatch.model.Feed;
 import fr.ght1pc9kc.baywatch.api.techwatch.model.Flags;
 import fr.ght1pc9kc.baywatch.api.techwatch.model.News;
-import fr.ght1pc9kc.baywatch.api.techwatch.model.State;
-import fr.ght1pc9kc.baywatch.api.security.model.User;
 import fr.ght1pc9kc.baywatch.api.techwatch.model.RawNews;
+import fr.ght1pc9kc.baywatch.api.techwatch.model.State;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import org.intellij.lang.annotations.MagicConstant;
 import reactor.core.publisher.Flux;
@@ -23,6 +23,14 @@ public interface NewsService {
      * @return The {@link News} for connected user or {@link RawNews} for anonymous
      */
     Flux<News> list(PageRequest pageRequest);
+
+    /**
+     * Return the number of news available for the {@link PageRequest}
+     *
+     * @param pageRequest The request parameters
+     * @return The total number of returned element without pagination
+     */
+    Mono<Integer> count(PageRequest pageRequest);
 
     Mono<News> get(String id);
 

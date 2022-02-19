@@ -27,7 +27,7 @@
       </button>
     </li><li v-if="store.getters['user/hasRoleAdmin']"><div class="divider mt-10">Admin</div> </li>
     <li v-if="store.getters['user/hasRoleAdmin']">
-      <router-link to="/admin" tag="button" class="w-full btn btn-warning
+      <router-link to="/admin" tag="button" class="w-full btn
           normal-case font-medium text-left justify-start min-h-fit h-fit py-2 text-base">
         <svg class="fill-current w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20"
              xmlns="http://www.w3.org/2000/svg">
