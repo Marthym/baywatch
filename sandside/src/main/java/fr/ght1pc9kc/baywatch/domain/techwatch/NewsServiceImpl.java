@@ -1,8 +1,8 @@
 package fr.ght1pc9kc.baywatch.domain.techwatch;
 
+import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.api.techwatch.NewsService;
 import fr.ght1pc9kc.baywatch.api.techwatch.model.News;
-import fr.ght1pc9kc.baywatch.api.security.model.Role;
 import fr.ght1pc9kc.baywatch.domain.common.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.domain.security.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.domain.security.exceptions.UnauthorizedOperation;
@@ -26,7 +26,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.*;
+import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.FEED_ID;
+import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.ID;
+import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.PUBLICATION;
+import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.READ;
+import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.SHARED;
+import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.STATE;
+import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.TAGS;
+import static fr.ght1pc9kc.baywatch.api.common.model.EntitiesProperties.TITLE;
 import static java.util.function.Predicate.not;
 
 @Service
@@ -51,6 +58,17 @@ public class NewsServiceImpl implements NewsService {
                         Mono.fromCallable(() -> throwOnInvalidRequest(validRequest, null))
                                 .thenReturn(QueryContext.from(validRequest)))
                 .flatMapMany(newsRepository::list);
+    }
+
+    @Override
+    public Mono<Integer> count(PageRequest pageRequest) {
+        PageRequest validRequest = pageRequest.withFilter(pageRequest.filter().accept(new CriteriaModifierVisitor()));
+        return authFacade.getConnectedUser()
+                .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
+                .map(user -> throwOnInvalidRequest(validRequest, user))
+                .map(u -> QueryContext.all(validRequest.filter()).withUserId(u.id))
+                .flatMap(newsRepository::count)
+                .onErrorResume(UnauthenticatedUser.class, e -> Mono.just(pageRequest.pagination().size()));
     }
 
     @Override
