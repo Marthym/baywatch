@@ -1,34 +1,8 @@
 <template>
-  <ul class="mt-8 -ml-4 h-full" v-if="user.isAuthenticated">
-    <li v-if="store.getters['user/hasRoleManager']">
-      <button class="w-full mt-4 btn btn-secondary
-          normal-case font-medium text-left justify-start min-h-fit h-fit py-2 text-base">
-        <svg class="fill-current w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20"
-             xmlns="http://www.w3.org/2000/svg">
-          <path
-              d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6
-              8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75
-              12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path>
-        </svg>
-        Gestion d’équipe
-      </button>
-    </li>
-    <li>
-      <button class="w-full mt-4 btn btn-secondary
-          normal-case font-medium text-left justify-start min-h-fit h-fit py-2 text-base">
-        <svg class="fill-current w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20"
-             xmlns="http://www.w3.org/2000/svg">
-          <path
-              d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2
-              0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010
-              3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z"></path>
-        </svg>
-        Configuration
-      </button>
-    </li><li v-if="store.getters['user/hasRoleAdmin']"><div class="divider mt-10">Admin</div> </li>
-    <li v-if="store.getters['user/hasRoleAdmin']">
-      <router-link to="/admin" tag="button" class="w-full btn
-          normal-case font-medium text-left justify-start min-h-fit h-fit py-2 text-base">
+  <span class="mt-auto"></span>
+  <ul class="menu -mx-4">
+    <li v-if="user.isAuthenticated && store.getters['user/hasRoleAdmin']">
+      <router-link to="/admin">
         <svg class="fill-current w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20"
              xmlns="http://www.w3.org/2000/svg">
           <path
@@ -39,6 +13,50 @@
               8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"></path>
         </svg>
         Administration
+      </router-link>
+    </li>
+    <li v-if="user.isAuthenticated && store.getters['user/hasRoleManager']">
+      <a>
+        <svg class="fill-current w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20"
+             xmlns="http://www.w3.org/2000/svg">
+          <path
+              d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6
+              8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75
+              12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path>
+        </svg>
+        Gestion d’équipe
+      </a>
+    </li>
+    <li v-if="user.isAuthenticated && store.getters['user/hasRoleUser']">
+      <a>
+        <svg class="fill-current w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20"
+             xmlns="http://www.w3.org/2000/svg">
+          <path
+              d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2
+              0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010
+              3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z"></path>
+        </svg>
+        Configuration
+      </a>
+    </li>
+    <li class="text-primary">
+      <a v-if="user.isAuthenticated" @click.stop="$emit('logout')">
+        <svg class="fill-current h-5 w-5" viewBox="0 0 24 24">
+          <path
+              d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 012
+						2v2h-2V4H5v16h9v-2h2v2a2 2 0 01-2 2H5a2 2 0 01-2-2V4a2 2
+						0 012-2h9z"></path>
+        </svg>
+        <span class="ml-2 capitalize font-medium">log out</span>
+      </a>
+      <router-link to="/login" v-else>
+        <svg class="fill-current h-5 w-5" viewBox="0 0 24 24">
+          <path
+              d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 012
+						2v2h-2V4H5v16h9v-2h2v2a2 2 0 01-2 2H5a2 2 0 01-2-2V4a2 2
+						0 012-2h9z"></path>
+        </svg>
+        <span class="ml-2 capitalize font-medium">log in</span>
       </router-link>
     </li>
   </ul>

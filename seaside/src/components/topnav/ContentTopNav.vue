@@ -31,8 +31,8 @@
       </router-link>
     </div>
     <div class="navbar-end w-full md:w-1/2 border-b border-base-100 pr-2 mr-2 h-full">
-      <div class="indicator mr-2">
-        <div v-if="statistics.updated > 0" class="indicator-item badge badge-xs badge-primary text-2xs">
+      <div class="indicator mr-3">
+        <div v-if="statistics.updated > 0" class="indicator-item badge badge-xs badge-accent text-2xs">
           {{ statistics.updated }}
         </div>
         <button class="btn btn-square btn-ghost btn-sm" @click="reload()">

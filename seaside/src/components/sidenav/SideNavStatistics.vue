@@ -1,5 +1,5 @@
 <template>
-  <div class="h-24 text-center">
+  <div class="h-9 text-center">
     <div class="mt-2 flex justify-center text-sm text-primary-content">
       <span><span class="text-accent">{{ statistics.feeds }}</span> feeds •&nbsp;</span>
       <span v-if="isLoggedIn">

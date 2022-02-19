@@ -1,5 +1,5 @@
 <template>
-  <div class="pb-2 border-b text-center text-primary-content text-lg font-semibold">
+  <div class="pb-2 border-b border-primary text-center text-primary-content text-lg font-semibold">
     <svg class="w-8 h-8 inline-block -mt-2" id="Layer_1" height="512" viewBox="0 0 512.001 512.001" width="512"
          xmlns="http://www.w3.org/2000/svg">
       <g>
