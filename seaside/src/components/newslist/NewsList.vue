@@ -84,7 +84,6 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
 
   @Watch('isAuthenticated')
   onAuthenticationChange(): void {
-    console.log("watcher")
     this.loadNextPage().pipe(take(1)).subscribe({next: el => this.observeFirst(el)});
   }
 
