@@ -51,10 +51,6 @@ export default class App extends Vue {
     });
   }
 
-  unmounted(): void {
-    serverEventService.unregister(EventType.NEWS, this.onServerMessage);
-  }
-
   private onServerMessage(evt: Event): void {
     const msg: MessageEvent = evt as MessageEvent;
     this.store.commit(STATS_UPDATE_MUTATION, JSON.parse(msg.data));
