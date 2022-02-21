@@ -1,9 +1,11 @@
 package fr.ght1pc9kc.baywatch.notify.infra;
 
-import com.github.f4b6a3.ulid.UlidCreator;
+import fr.ght1pc9kc.baywatch.notify.api.BasicEvent;
 import fr.ght1pc9kc.baywatch.notify.api.EventType;
+import fr.ght1pc9kc.baywatch.notify.api.NotifyManager;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
-import fr.ght1pc9kc.baywatch.security.domain.ports.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.notify.api.ReactiveEvent;
+import fr.ght1pc9kc.baywatch.notify.api.ServerEventVisitor;
 import fr.ght1pc9kc.baywatch.techwatch.api.StatService;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.Statistics;
 import lombok.RequiredArgsConstructor;
@@ -19,48 +21,41 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
 @RequestMapping("${baywatch.base-route}/sse")
 public class NotificationController {
+    private final NotifyManager notifyManager;
     private final NotifyService notifyService;
     private final StatService statService;
-    private final AuthenticationFacade authenticationFacade;
 
     private int userBidon = 0;
 
-    private final Map<String, Flux<ServerSentEvent<Object>>> subscriptions = new ConcurrentHashMap<>();
-
     @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<Object>> sse() {
-        return authenticationFacade.getConnectedUser()
-                .flatMapMany(u -> subscriptions.computeIfAbsent(u.id, id ->
-                        notifyService.getFlux()
-                                .takeWhile(e -> subscriptions.containsKey(id))
-                                .flatMap(e -> e.getT2().map(s -> ServerSentEvent.builder()
-                                        .id(UlidCreator.getMonotonicUlid().toString())
-                                        .event(e.getT1().getName()).data(s)
-                                        .build())
-                                ).map(e -> {
-                                    log.debug("Event: {}", e);
-                                    return e;
-                                }).cache(0)
-                ));
+        return notifyManager.subscribe().flatMap(evt ->
+                evt.accept(new ServerEventVisitor<Mono<?>>() {
+                            @Override
+                            public <T> Mono<T> visit(BasicEvent<T> event) {
+                                return Mono.just(event.message());
+                            }
+
+                            @Override
+                            public <T> Mono<T> visit(ReactiveEvent<T> event) {
+                                return event.message();
+                            }
+                        })
+                        .map(msg -> ServerSentEvent.builder()
+                                .id(evt.id())
+                                .event(evt.type().getName()).data(msg)
+                                .build()));
     }
 
     @DeleteMapping
     public Mono<ResponseEntity<Object>> disposeSse() {
-        return authenticationFacade.getConnectedUser()
-                .filter(u -> subscriptions.containsKey(u.id))
-                .map(u -> {
-                    log.debug("Dispose SSE Subscription for {}", u.id);
-                    return subscriptions.remove(u.id);
-                })
+        return notifyManager.unsubscribe()
                 .map(_x -> ResponseEntity.noContent().build())
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
 
