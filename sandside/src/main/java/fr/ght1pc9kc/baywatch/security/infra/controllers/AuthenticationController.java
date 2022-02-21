@@ -4,7 +4,7 @@ import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.SecurityException;
-import fr.ght1pc9kc.baywatch.security.domain.ports.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.domain.ports.JwtTokenProvider;
 import fr.ght1pc9kc.baywatch.security.infra.TokenCookieManager;
 import fr.ght1pc9kc.baywatch.security.infra.adapters.AuthenticationManagerAdapter;

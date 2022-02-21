@@ -1,23 +1,32 @@
 package fr.ght1pc9kc.baywatch.notify.domain;
 
 import fr.ght1pc9kc.baywatch.notify.api.EventType;
-import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
-import fr.ght1pc9kc.baywatch.notify.domain.NotifyServiceImpl;
+import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.mockito.Mockito.mock;
+
 class NotifyServiceImplTest {
 
-    private final NotifyService tested = new NotifyServiceImpl();
+    private NotifyServiceImpl tested;
+    private AuthenticationFacade authFacadeMock;
+
+    @BeforeEach
+    void setUp() {
+        authFacadeMock = mock(AuthenticationFacade.class);
+        tested = new NotifyServiceImpl(authFacadeMock);
+    }
 
     @Test
     void should_send_notification() {
         AtomicReference<EventType> actual = new AtomicReference<>();
-        tested.getFlux().subscribe(t -> actual.set(t.getT1()));
+        tested.subscribe().subscribe(t -> actual.set(t.type()));
         tested.send(EventType.NEWS, Mono.just(42));
         tested.close();
 
@@ -29,6 +38,6 @@ class NotifyServiceImplTest {
         tested.send(EventType.NEWS, Mono.just(42));
         tested.close();
 
-        StepVerifier.create(tested.getFlux()).verifyComplete();
+        StepVerifier.create(tested.subscribe()).verifyComplete();
     }
 }

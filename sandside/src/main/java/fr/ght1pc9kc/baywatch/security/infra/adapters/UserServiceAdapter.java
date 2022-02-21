@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.security.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.security.api.UserService;
-import fr.ght1pc9kc.baywatch.security.domain.ports.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.security.domain.UserServiceImpl;
 import fr.ght1pc9kc.baywatch.security.infra.model.BaywatchUserDetails;
