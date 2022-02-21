@@ -1,24 +1,31 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
 import com.machinezoo.noexception.Exceptions;
+import fr.ght1pc9kc.baywatch.common.infra.PredicateSearchVisitor;
+import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
+import fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
-import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
-import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
-import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
-import fr.ght1pc9kc.baywatch.common.infra.PredicateSearchVisitor;
-import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
-import fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.basic.common.lang3.StringUtils;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jooq.*;
+import org.jooq.Condition;
+import org.jooq.Cursor;
+import org.jooq.DSLContext;
+import org.jooq.JoinType;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.Select;
+import org.jooq.SelectQuery;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -32,11 +39,11 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers.NEWS_PROPERTIES_MAPPING;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
-import static fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers.NEWS_PROPERTIES_MAPPING;
 
 @Slf4j
 @Repository
