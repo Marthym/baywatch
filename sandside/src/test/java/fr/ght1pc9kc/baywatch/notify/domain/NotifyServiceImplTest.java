@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.notify.domain;
 
-import fr.ght1pc9kc.baywatch.notify.api.EventType;
+import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

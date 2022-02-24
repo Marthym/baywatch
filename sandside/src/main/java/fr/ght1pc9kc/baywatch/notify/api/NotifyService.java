@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.notify.api;
 
+import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import reactor.core.publisher.Mono;
 
 public interface NotifyService {

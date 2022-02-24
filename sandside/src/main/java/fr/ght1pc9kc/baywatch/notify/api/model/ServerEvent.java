@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.notify.api;
+package fr.ght1pc9kc.baywatch.notify.api.model;
 
 public sealed interface ServerEvent<T> permits BasicEvent, ReactiveEvent {
     String id();

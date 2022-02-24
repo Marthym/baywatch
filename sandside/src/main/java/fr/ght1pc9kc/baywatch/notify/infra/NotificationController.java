@@ -1,11 +1,11 @@
 package fr.ght1pc9kc.baywatch.notify.infra;
 
-import fr.ght1pc9kc.baywatch.notify.api.BasicEvent;
-import fr.ght1pc9kc.baywatch.notify.api.EventType;
+import fr.ght1pc9kc.baywatch.notify.api.model.BasicEvent;
+import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyManager;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
-import fr.ght1pc9kc.baywatch.notify.api.ReactiveEvent;
-import fr.ght1pc9kc.baywatch.notify.api.ServerEventVisitor;
+import fr.ght1pc9kc.baywatch.notify.api.model.ReactiveEvent;
+import fr.ght1pc9kc.baywatch.notify.api.model.ServerEventVisitor;
 import fr.ght1pc9kc.baywatch.techwatch.api.StatService;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.Statistics;
 import lombok.RequiredArgsConstructor;
