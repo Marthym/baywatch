@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.notify.domain;
 
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.security.domain.samples.UserSamples;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import reactor.test.StepVerifier;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class NotifyServiceImplTest {
 
@@ -20,6 +22,7 @@ class NotifyServiceImplTest {
     @BeforeEach
     void setUp() {
         authFacadeMock = mock(AuthenticationFacade.class);
+        when(authFacadeMock.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
         tested = new NotifyServiceImpl(authFacadeMock);
     }
 

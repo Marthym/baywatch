@@ -3,10 +3,10 @@ package fr.ght1pc9kc.baywatch.notify.domain;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.f4b6a3.ulid.UlidCreator;
-import fr.ght1pc9kc.baywatch.notify.api.model.BasicEvent;
-import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyManager;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
+import fr.ght1pc9kc.baywatch.notify.api.model.BasicEvent;
+import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.model.ReactiveEvent;
 import fr.ght1pc9kc.baywatch.notify.api.model.ServerEvent;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
@@ -60,7 +60,9 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
 
     @Override
     public void close() {
+        this.cache.invalidateAll();
         this.sink.tryEmitComplete();
+        this.cache.cleanUp();
     }
 
     @Override
