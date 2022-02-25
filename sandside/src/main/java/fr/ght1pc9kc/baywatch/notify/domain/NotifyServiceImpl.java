@@ -66,21 +66,22 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
     }
 
     @Override
-    public <T> void send(EventType type, T data) {
-        ServerEvent<Object> event = new BasicEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
-        EmitResult result = this.sink.tryEmitNext(event);
-        if (result.isFailure()) {
-            if (result == EmitResult.FAIL_ZERO_SUBSCRIBER) {
-                log.debug("No subscriber listening the SSE entry point.");
-            } else {
-                log.warn("{} on emit notification", result);
-            }
-        }
+    @SuppressWarnings("unchecked")
+    public <T> BasicEvent<T> send(EventType type, T data) {
+        BasicEvent<T> event = new BasicEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
+        send((ServerEvent<Object>) event);
+        return event;
     }
 
     @Override
-    public <T> void send(EventType type, Mono<T> data) {
-        ServerEvent<Object> event = new ReactiveEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data.map(Object.class::cast));
+    @SuppressWarnings("unchecked")
+    public <T> ReactiveEvent<T> send(EventType type, Mono<T> data) {
+        ReactiveEvent<T> event = new ReactiveEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
+        send((ServerEvent<Object>) event);
+        return event;
+    }
+
+    private void send(ServerEvent<Object> event) {
         EmitResult result = this.sink.tryEmitNext(event);
         if (result.isFailure()) {
             if (result == EmitResult.FAIL_ZERO_SUBSCRIBER) {
