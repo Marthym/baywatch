@@ -23,7 +23,7 @@
     </modules>
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
 
         <db.driver>org.h2.Driver</db.driver>
         <db.url>jdbc:h2:file:${project.basedir}/target/jooq_baywatch</db.url>

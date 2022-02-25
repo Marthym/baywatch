@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain.actions;
 
 import fr.ght1pc9kc.baywatch.techwatch.api.StatService;
-import fr.ght1pc9kc.baywatch.notify.api.EventType;
+import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

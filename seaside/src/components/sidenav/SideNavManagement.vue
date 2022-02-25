@@ -68,7 +68,7 @@ import {setup} from "vue-class-component";
 import {useStore} from "vuex";
 import {UserState} from "@/store/user/user";
 
-@Options({name: 'SideNavManagement'})
+@Options({name: 'SideNavManagement', emits: ['logout']})
 export default class SideNavManagement extends Vue {
   private store = setup(() => useStore());
   private user: UserState = setup(() => useStore().state.user);

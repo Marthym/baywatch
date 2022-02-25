@@ -19,6 +19,7 @@ import SideNavManagement from './SideNavManagement.vue';
 import SideNavStatistics from "@/components/sidenav/SideNavStatistics.vue";
 
 import authenticationService from "@/services/AuthenticationService";
+import serverEventService from '@/services/sse/ServerEventService'
 import {SidenavState} from "@/store/sidenav/sidenav";
 import {StatisticsState} from "@/store/statistics/statistics";
 import {RELOAD_ACTION} from "@/store/statistics/StatisticsConstants";
@@ -27,6 +28,7 @@ import {setup} from "vue-class-component";
 import {defineAsyncComponent} from "vue";
 import {UserState} from "@/store/user/user";
 import {LOGOUT_MUTATION} from "@/store/user/UserConstants";
+import {switchMap} from "rxjs/operators";
 
 const SideNavTags = defineAsyncComponent(() => import('./SideNavTags.vue').then(m => m.default))
 const SideNavUserInfo = defineAsyncComponent(() => import('./SideNavUserInfo.vue').then(m => m.default));
@@ -48,7 +50,9 @@ export default class SideNav extends Vue {
   private user: UserState = setup(() => useStore().state.user);
 
   logoutUser(): void {
-    authenticationService.logout().subscribe(() => {
+    serverEventService.close().pipe(
+        switchMap(() => authenticationService.logout())
+    ).subscribe(() => {
       this.store.commit(LOGOUT_MUTATION);
       this.store.dispatch(RELOAD_ACTION);
       this.$router.go(0);
