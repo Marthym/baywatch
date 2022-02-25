@@ -10,6 +10,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.StatService;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.Statistics;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
@@ -31,6 +32,7 @@ public class NotificationController {
     private final NotifyService notifyService;
     private final StatService statService;
 
+    @VisibleForTesting
     private int userBidon = 0;
 
     @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -61,6 +63,7 @@ public class NotificationController {
 
     }
 
+    @VisibleForTesting
     @GetMapping("/test")
     @PreAuthorize("hasRole('ADMIN')")
     public Mono<Void> test() {
