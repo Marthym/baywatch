@@ -143,9 +143,10 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
       }
     }
     const elements = new Subject<Element>();
+    let unreadCount = this.news.filter(n => !n.data.read).length;
     newsService.getNews(undefined, query).pipe(
         switchMap(ns => {
-          this.store.commit(FILTER_MUTATION, ns.total);
+          this.store.commit(FILTER_MUTATION, ns.total + unreadCount);
           return ns.data;
         }),
         map(ns => ns.map(n => ({data: n, feeds: [], isActive: false, keepMark: false}) as NewsView)),
