@@ -82,7 +82,7 @@
         <dependency>
             <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
             <artifactId>owasp-java-html-sanitizer</artifactId>
-            <version>${owasp.version}</version>
+            <version>${html-sanitizer.version}</version>
         </dependency>
         <dependency>
             <groupId>com.machinezoo.noexception</groupId>

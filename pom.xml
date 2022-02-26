@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.6.2</version>
+        <version>2.6.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -32,16 +32,15 @@
 
         <juery.version>1.2.1</juery.version>
         <html-sanitizer.version>20211018.2</html-sanitizer.version>
-        <noexception.version>1.6.2</noexception.version>
+        <noexception.version>1.7.1</noexception.version>
         <unbescape.version>1.1.6.RELEASE</unbescape.version>
         <ulid-creator.version>4.1.2</ulid-creator.version>
-        <owasp.version>20211018.2</owasp.version>
         <mapstruct.version>1.4.2.Final</mapstruct.version>
-        <nimbus-jose-jwt.version>9.15.2</nimbus-jose-jwt.version>
+        <nimbus-jose-jwt.version>9.20</nimbus-jose-jwt.version>
         <findbugs.version>3.0.2</findbugs.version>
-        <jetbrains.version>22.0.0</jetbrains.version>
+        <jetbrains.version>23.0.0</jetbrains.version>
         <wiremock.version>2.27.2</wiremock.version>
-        <testy-box.version>1.4.0</testy-box.version>
+        <testy-box.version>1.7.0</testy-box.version>
 
         <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
         <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
