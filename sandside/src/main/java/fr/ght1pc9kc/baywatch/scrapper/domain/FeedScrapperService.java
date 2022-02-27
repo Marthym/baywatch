@@ -1,16 +1,16 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.scrapper.api.FeedScrapperPlugin;
 import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scrapper.api.ScrappingHandler;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.OpenGraphScrapper;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
+import fr.ght1pc9kc.scraphead.core.HeadScrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -71,7 +71,7 @@ public final class FeedScrapperService implements Runnable {
     private final NewsPersistencePort newsRepository;
     private final AuthenticationFacade authFacade;
     private final RssAtomParser feedParser;
-    private final OpenGraphScrapper ogScrapper;
+    private final HeadScrapper ogScrapper;
     private final Collection<ScrappingHandler> scrappingHandlers;
     private final Map<String, FeedScrapperPlugin> plugins;
 

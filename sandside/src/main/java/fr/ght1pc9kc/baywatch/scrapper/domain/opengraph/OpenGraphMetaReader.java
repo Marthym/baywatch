@@ -27,9 +27,9 @@ public final class OpenGraphMetaReader {
 
     public OpenGraph read(Collection<Meta> metas) {
         URI location = metas.stream()
-                .filter(m -> Tags.OG_URL.equals(m.property))
+                .filter(m -> Tags.OG_URL.equals(m.property()))
                 .findAny()
-                .flatMap(Exceptions.silence().function(m -> URI.create(m.content)))
+                .flatMap(Exceptions.silence().function(m -> URI.create(m.content())))
                 .orElse(null);
         return read(metas, location);
     }
@@ -37,28 +37,28 @@ public final class OpenGraphMetaReader {
     public OpenGraph read(Collection<Meta> metas, URI location) {
         OpenGraph.OpenGraphBuilder builder = OpenGraph.builder();
         for (Meta m : metas) {
-            switch (m.property) {
+            switch (m.property()) {
                 case Tags.OG_TITLE:
-                    builder.title(m.content);
+                    builder.title(m.content());
                     break;
                 case Tags.OG_TYPE:
                     logException(() ->
-                            builder.type(OGType.from(m.content)));
+                            builder.type(OGType.from(m.content())));
                     break;
                 case Tags.OG_URL:
-                    readMetaUrl(m.content, location).ifPresent(builder::url);
+                    readMetaUrl(m.content(), location).ifPresent(builder::url);
                     break;
                 case Tags.OG_IMAGE:
-                    readMetaUri(m.content, location).ifPresent(builder::image);
+                    readMetaUri(m.content(), location).ifPresent(builder::image);
                     break;
                 case Tags.OG_DESCRIPTION:
-                    if (!StringUtils.isBlank(m.content)) {
-                        builder.description(m.content);
+                    if (!StringUtils.isBlank(m.content())) {
+                        builder.description(m.content());
                     }
                     break;
                 case Tags.OG_LOCALE:
-                    if (m.content != null) {
-                        builder.locale(Locale.forLanguageTag(m.content.replaceAll("_", "-")));
+                    if (m.content() != null) {
+                        builder.locale(Locale.forLanguageTag(m.content().replaceAll("_", "-")));
                     }
                     break;
                 default:

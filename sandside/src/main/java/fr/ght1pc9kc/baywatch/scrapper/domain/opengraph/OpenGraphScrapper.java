@@ -7,7 +7,6 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.util.MimeType;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
@@ -73,7 +72,7 @@ public final class OpenGraphScrapper {
                                             log.trace("STACKTRACE", e);
                                         }
                                         DataBufferUtils.release(dataBuffer);
-                                        return Flux.empty();
+                                        return response.releaseBody().then(Mono.empty());
                                     }
                                 }
                                 return fBuff;
