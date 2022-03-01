@@ -1,8 +1,8 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.plugins;
 
-import fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.OpenGraphPlugin;
-import fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.OGScrapperUtils;
-import fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.model.OpenGraph;
+import fr.ght1pc9kc.scraphead.core.OpenGraphPlugin;
+import fr.ght1pc9kc.scraphead.core.model.OpenGraph;
+import fr.ght1pc9kc.scraphead.core.scrap.OGScrapperUtils;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.plugins;
 
-import fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.OpenGraphPlugin;
+import fr.ght1pc9kc.scraphead.core.OpenGraphPlugin;
 
 import java.net.URI;
 import java.time.Instant;
@@ -21,11 +21,6 @@ public class YoutubeRequestPlugin implements OpenGraphPlugin {
     @Override
     public boolean isApplicable(URI location) {
         return YOUTUBE_URI_PATTERN.matcher(location.getHost()).find();
-    }
-
-    @Override
-    public Map<String, String> additionalCookies() {
-        return Map.of();
     }
 
     @Override

@@ -1,28 +1,31 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.plugins;
 
-import fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.OpenGraphMetaReader;
-import fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.OpenGraphPluginTest;
-import fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.OpenGraphScrapper;
-import fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.model.OGType;
-import fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.model.OpenGraph;
+import fr.ght1pc9kc.scraphead.core.http.WebClient;
+import fr.ght1pc9kc.scraphead.core.http.WebRequest;
+import fr.ght1pc9kc.scraphead.core.http.WebResponse;
+import fr.ght1pc9kc.scraphead.core.model.OGType;
+import fr.ght1pc9kc.scraphead.core.model.OpenGraph;
+import fr.ght1pc9kc.scraphead.core.scrap.OpenGraphMetaReader;
+import fr.ght1pc9kc.scraphead.core.scrap.OpenGraphScrapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.core.io.buffer.DefaultDataBufferFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.http.HttpHeaders;
+import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 class YoutubeRequestPluginTest {
     private final OpenGraphMetaReader ogReader = spy(new OpenGraphMetaReader());
@@ -30,21 +33,28 @@ class YoutubeRequestPluginTest {
     private OpenGraphScrapper tested;
 
     @BeforeEach
-    void setUp() {
-        InputStream is = OpenGraphPluginTest.class.getResourceAsStream("youtube.html");
-        Assertions.assertThat(is).describedAs("youtube.html file must exists !").isNotNull();
+    void setUp() throws IOException {
+        Flux<ByteBuffer> data;
+        try (InputStream is = YoutubeRequestPluginTest.class.getResourceAsStream("youtube.html")) {
+            Assertions.assertThat(is).describedAs("youtube.html file must exists !").isNotNull();
 
-        Flux<DataBuffer> data = DataBufferUtils.readInputStream(() -> is, new DefaultDataBufferFactory(), 1024);
-        WebClient webClient = WebClient.builder().exchangeFunction(request -> {
-            if (request.headers().containsKey("Cookie")) {
-                return Mono.just(ClientResponse.create(HttpStatus.OK)
-                        .header("content-type", "application/json")
-                        .body(data)
-                        .build());
-            } else {
-                return Mono.just(ClientResponse.create(HttpStatus.BAD_REQUEST).build());
-            }
-        }).build();
+            data = Flux.just(ByteBuffer.wrap(is.readAllBytes()));
+        }
+
+        WebClient webClient = mock(WebClient.class);
+        when(webClient.send(any(WebRequest.class)))
+                .thenAnswer(invocation -> {
+                    WebRequest request = invocation.getArgument(0, WebRequest.class);
+                    if (request.headers().firstValue("Cookie").isPresent()) {
+                        return Mono.just(new WebResponse(
+                                200,
+                                HttpHeaders.of(Map.of("content-type", List.of("application/json")), (l, r) -> true),
+                                data));
+                    } else {
+                        return Mono.just(new WebResponse(400, null, Flux.empty()));
+                    }
+                });
+
         this.tested = new OpenGraphScrapper(webClient, ogReader, List.of(new YoutubeRequestPlugin()));
     }
 
