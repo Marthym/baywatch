@@ -1,13 +1,13 @@
-package fr.ght1pc9kc.baywatch.techwatch.infra.adapters;
+package fr.ght1pc9kc.baywatch.scrapper.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.scrapper.api.FeedScrapperPlugin;
 import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scrapper.api.ScrappingHandler;
-import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.scrapper.domain.FeedScrapperService;
-import fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.OpenGraphScrapper;
+import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
+import fr.ght1pc9kc.scraphead.core.HeadScraper;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
@@ -28,7 +28,7 @@ public class FeedScrapperAdapter {
     private final boolean startScrapper;
 
     public FeedScrapperAdapter(FeedPersistencePort feedPersistence, NewsPersistencePort newsPersistence,
-                               OpenGraphScrapper ogScrapper, RssAtomParser rssAtomParser,
+                               HeadScraper ogScrapper, RssAtomParser rssAtomParser,
                                Collection<ScrappingHandler> scrappingHandlers,
                                Collection<FeedScrapperPlugin> scrapperPlugins,
                                AuthenticationFacade authFacade,

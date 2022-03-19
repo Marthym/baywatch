@@ -28,6 +28,11 @@
             <version>${juery.version}</version>
         </dependency>
         <dependency>
+            <groupId>fr.ght1pc9kc</groupId>
+            <artifactId>scraphead-netty</artifactId>
+            <version>${scraphead.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
         </dependency>

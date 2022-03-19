@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.plugins;
 
-import fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.model.OpenGraph;
+import fr.ght1pc9kc.scraphead.core.model.opengraph.OpenGraph;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;

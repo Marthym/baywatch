@@ -18,6 +18,7 @@ logging:
     root: INFO
     org.jooq: WARN
     fr.ght1pc9kc.baywatch: ${BAYWATCH_LOG_LEVEL:DEBUG}
+    fr.ght1pc9kc.scraphead: ${BAYWATCH_LOG_LEVEL:DEBUG}
     # Avoid unwanted log error ...
     org.springframework.boot.autoconfigure.jooq.JooqExceptionTranslator: OFF
   file:

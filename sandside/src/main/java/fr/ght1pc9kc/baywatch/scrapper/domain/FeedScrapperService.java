@@ -1,16 +1,18 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.scrapper.api.FeedScrapperPlugin;
 import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scrapper.api.ScrappingHandler;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.OpenGraphScrapper;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
+import fr.ght1pc9kc.scraphead.core.HeadScraper;
+import fr.ght1pc9kc.scraphead.core.model.links.Links;
+import fr.ght1pc9kc.scraphead.core.model.opengraph.OpenGraph;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -48,11 +50,16 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.nonNull;
+
 @Slf4j
 @RequiredArgsConstructor
 public final class FeedScrapperService implements Runnable {
 
     private static final Set<String> SUPPORTED_SCHEMES = Set.of("http", "https");
+    public static final String ERROR_CLASS_MESSAGE = "{}: {}";
+    public static final String ERROR_STACKTRACE_MESSAGE = "STACKTRACE";
+
     private final ScheduledExecutorService scheduleExecutor = Executors.newSingleThreadScheduledExecutor(
             new CustomizableThreadFactory("scrapSched-"));
     private final Scheduler scrapperScheduler =
@@ -71,7 +78,7 @@ public final class FeedScrapperService implements Runnable {
     private final NewsPersistencePort newsRepository;
     private final AuthenticationFacade authFacade;
     private final RssAtomParser feedParser;
-    private final OpenGraphScrapper ogScrapper;
+    private final HeadScraper headScrapper;
     private final Collection<ScrappingHandler> scrappingHandlers;
     private final Map<String, FeedScrapperPlugin> plugins;
 
@@ -111,7 +118,7 @@ public final class FeedScrapperService implements Runnable {
                 .collect(Collectors.toUnmodifiableSet())
                 .cache();
 
-        Flux.concat(scrappingHandlers.stream().map(ScrappingHandler::before).collect(Collectors.toList()))
+        Flux.concat(scrappingHandlers.stream().map(ScrappingHandler::before).toList())
                 .thenMany(feedRepository.list())
                 .parallel(4).runOn(scrapperScheduler)
                 .flatMap(this::wgetFeedNews)
@@ -123,10 +130,10 @@ public final class FeedScrapperService implements Runnable {
                 .buffer(100)
                 .flatMap(newsRepository::persist)
                 .reduce(Integer::sum)
-                .flatMap(count -> Flux.concat(scrappingHandlers.stream().map(h -> h.after(count)).collect(Collectors.toList())).then())
+                .flatMap(count -> Flux.concat(scrappingHandlers.stream().map(h -> h.after(count)).toList()).then())
                 .doOnError(e -> {
-                    log.error("{}: {}", e.getClass(), e.getLocalizedMessage());
-                    log.debug("STACKTRACE", e);
+                    log.error(ERROR_CLASS_MESSAGE, e.getClass(), e.getLocalizedMessage());
+                    log.debug(ERROR_STACKTRACE_MESSAGE, e);
                 })
                 .doFinally(signal -> {
                     lock.release();
@@ -136,6 +143,7 @@ public final class FeedScrapperService implements Runnable {
                 .subscribe();
     }
 
+    @SuppressWarnings("java:S2095")
     private Flux<News> wgetFeedNews(Feed feed) {
         try {
             String feedHost = feed.getUrl().getHost();
@@ -155,15 +163,15 @@ public final class FeedScrapperService implements Runnable {
                     .bodyToFlux(DataBuffer.class)
                     .doFirst(() -> log.trace("Receiving data from {}...", feedHost))
                     .onErrorResume(e -> {
-                        log.warn("{}: {}", feedHost, e.getLocalizedMessage());
-                        log.debug("STACKTRACE", e);
+                        log.warn(ERROR_CLASS_MESSAGE, feedHost, e.getLocalizedMessage());
+                        log.debug(ERROR_STACKTRACE_MESSAGE, e);
                         return Flux.empty();
                     });
 
             Disposable feedReadingSubscription = DataBufferUtils.write(buffers, osPipe)
                     .onErrorContinue((e, buffer) -> {
-                        log.warn("{}: {}", feedHost, e.getLocalizedMessage());
-                        log.debug("STACKTRACE", e);
+                        log.warn(ERROR_CLASS_MESSAGE, feedHost, e.getLocalizedMessage());
+                        log.debug(ERROR_STACKTRACE_MESSAGE, e);
                         DataBufferUtils.release((DataBuffer) buffer);
                     })
                     .doFinally(Exceptions.silence().consumer(Exceptions.wrap().consumer(signal -> {
@@ -179,26 +187,33 @@ public final class FeedScrapperService implements Runnable {
                         log.trace("Finish Parsing feed {}.", feedHost);
                     }));
         } catch (IOException e) {
-            log.error("{}: {}", e.getClass(), e.getLocalizedMessage());
-            log.debug("STACKTRACE", e);
+            log.error(ERROR_CLASS_MESSAGE, e.getClass(), e.getLocalizedMessage());
+            log.debug(ERROR_STACKTRACE_MESSAGE, e);
         }
         return Flux.empty();
     }
 
     private Mono<News> completeWithOpenGraph(News news) {
-        return ogScrapper.scrap(news.getLink())
-                .map(og -> {
+        return headScrapper.scrap(news.getLink())
+                .map(headMetas -> {
+                    RawNews raw = news.getRaw();
+
+                    Links links = headMetas.links();
+                    if (nonNull(links) && nonNull(links.canonical())) {
+                        raw = raw.withLink(links.canonical());
+                    }
+
+                    OpenGraph og = headMetas.og();
                     if (og.isEmpty()) {
                         log.debug("No OG meta found for {}", news.getLink());
-                        return news;
+                        return (news.getRaw() == raw) ? news : news.withRaw(raw);
                     }
-                    RawNews raw = news.getRaw();
                     raw = Optional.ofNullable(og.title).map(raw::withTitle).orElse(raw);
                     raw = Optional.ofNullable(og.description).map(raw::withDescription).orElse(raw);
                     raw = Optional.ofNullable(og.image)
                             .filter(i -> SUPPORTED_SCHEMES.contains(i.getScheme()))
                             .map(raw::withImage).orElse(raw);
-                    return news.withRaw(raw);
+                    return (news.getRaw() == raw) ? news : news.withRaw(raw);
                 }).switchIfEmpty(Mono.just(news));
     }
 
