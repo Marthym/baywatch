@@ -31,13 +31,13 @@
         <db.password>security</db.password>
 
         <juery.version>1.2.1</juery.version>
-        <scraphead.version>1.0-SNAPSHOT</scraphead.version>
+        <scraphead.version>1.0.0</scraphead.version>
         <html-sanitizer.version>20211018.2</html-sanitizer.version>
         <noexception.version>1.7.1</noexception.version>
         <unbescape.version>1.1.6.RELEASE</unbescape.version>
         <ulid-creator.version>4.1.2</ulid-creator.version>
         <mapstruct.version>1.4.2.Final</mapstruct.version>
-        <nimbus-jose-jwt.version>9.20</nimbus-jose-jwt.version>
+        <nimbus-jose-jwt.version>9.21</nimbus-jose-jwt.version>
         <findbugs.version>3.0.2</findbugs.version>
         <jetbrains.version>23.0.0</jetbrains.version>
         <wiremock.version>2.27.2</wiremock.version>
