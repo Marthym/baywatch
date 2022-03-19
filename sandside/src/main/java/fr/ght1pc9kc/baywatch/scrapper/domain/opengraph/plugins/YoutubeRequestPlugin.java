@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.plugins;
 
-import fr.ght1pc9kc.scraphead.core.OpenGraphPlugin;
+import fr.ght1pc9kc.scraphead.core.ScraperPlugin;
 
 import java.net.URI;
 import java.time.Instant;
@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public class YoutubeRequestPlugin implements OpenGraphPlugin {
+public class YoutubeRequestPlugin implements ScraperPlugin {
     private static final Pattern YOUTUBE_URI_PATTERN = Pattern.compile("(youtube|youtu\\.be|googlevideo|ytimg)");
 
     @Override

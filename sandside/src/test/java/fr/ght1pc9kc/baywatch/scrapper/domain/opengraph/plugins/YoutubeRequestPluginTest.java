@@ -1,12 +1,12 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.plugins;
 
+import fr.ght1pc9kc.scraphead.core.HeadScraper;
+import fr.ght1pc9kc.scraphead.core.HeadScrapers;
 import fr.ght1pc9kc.scraphead.core.http.WebClient;
 import fr.ght1pc9kc.scraphead.core.http.WebRequest;
 import fr.ght1pc9kc.scraphead.core.http.WebResponse;
-import fr.ght1pc9kc.scraphead.core.model.OGType;
-import fr.ght1pc9kc.scraphead.core.model.OpenGraph;
-import fr.ght1pc9kc.scraphead.core.scrap.OpenGraphMetaReader;
-import fr.ght1pc9kc.scraphead.core.scrap.OpenGraphScrapper;
+import fr.ght1pc9kc.scraphead.core.model.opengraph.OGType;
+import fr.ght1pc9kc.scraphead.core.model.opengraph.OpenGraph;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,13 +24,10 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 class YoutubeRequestPluginTest {
-    private final OpenGraphMetaReader ogReader = spy(new OpenGraphMetaReader());
-
-    private OpenGraphScrapper tested;
+    private HeadScraper tested;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -55,16 +52,16 @@ class YoutubeRequestPluginTest {
                     }
                 });
 
-        this.tested = new OpenGraphScrapper(webClient, ogReader, List.of(new YoutubeRequestPlugin()));
+        tested = HeadScrapers.builder(webClient).registerPlugin(new YoutubeRequestPlugin()).build();
     }
 
     @Test
     void should_use_plugin_for_scrapper() {
-        OpenGraph actual = tested.scrap(URI.create("https://www.youtube.com/watch?v=l9nh1l8ZIJQ")).block();
+        OpenGraph actual = tested.scrapOpenGraph(URI.create("https://www.youtube.com/watch?v=l9nh1l8ZIJQ")).block();
 
         Assertions.assertThat(actual).isNotNull();
         assertAll(
-                () -> Assertions.assertThat(actual.image.toString()).isEqualTo("https://i.ytimg.com/vi/l9nh1l8ZIJQ/maxresdefault.jpg"),
+                () -> Assertions.assertThat(actual.image).hasToString("https://i.ytimg.com/vi/l9nh1l8ZIJQ/maxresdefault.jpg"),
                 () -> Assertions.assertThat(actual.description).isEqualTo("Stay with Jim ^-^ " +
                         "Enjoy and do not forget to say thank you!Support on Patreon will motivate me more. " +
                         "I need to know that you guys need this stuff and you ape..."),

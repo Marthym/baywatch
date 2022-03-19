@@ -14,8 +14,9 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
-import fr.ght1pc9kc.scraphead.core.HeadScrapper;
-import fr.ght1pc9kc.scraphead.core.model.OpenGraph;
+import fr.ght1pc9kc.scraphead.core.HeadScraper;
+import fr.ght1pc9kc.scraphead.core.model.Metas;
+import fr.ght1pc9kc.scraphead.core.model.opengraph.OpenGraph;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterAll;
@@ -54,7 +55,7 @@ class FeedScrapperServiceTest {
 
     private FeedScrapperService tested;
 
-    private HeadScrapper openGraphScrapper;
+    private HeadScraper headScraperMock;
     private NewsPersistencePort newsPersistenceMock;
     private RssAtomParser rssAtomParserMock;
     private FeedPersistencePort feedPersistenceMock;
@@ -151,11 +152,12 @@ class FeedScrapperServiceTest {
 
     @Test
     void should_scrap_with_opengraph() {
-        when(openGraphScrapper.scrap(any(URI.class))).thenReturn(Mono.just(
-                OpenGraph.builder()
+        when(headScraperMock.scrap(any(URI.class))).thenReturn(Mono.just(Metas.builder()
+                .og(OpenGraph.builder()
                         .image(URI.create("http://www.ght1pc9kc.fr/featured.jpg"))
                         .title("OpenGraph Title")
-                        .build()
+                        .build())
+                .build()
         ));
         //noinspection unchecked
         ArgumentCaptor<List<News>> captor = ArgumentCaptor.forClass(List.class);
@@ -183,7 +185,7 @@ class FeedScrapperServiceTest {
 
     @Test
     void should_ignore_opengraph_image_as_data() {
-        when(openGraphScrapper.scrap(any(URI.class))).thenReturn(Mono.just(
+        when(headScraperMock.scrapOpenGraph(any(URI.class))).thenReturn(Mono.just(
                 OpenGraph.builder()
                         .image(URI.create("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABeAAAAQ4CA"))
                         .build()
@@ -252,8 +254,8 @@ class FeedScrapperServiceTest {
         String springSha3 = Hasher.identify(springUri);
         String jdhSha3 = Hasher.identify(jdhUri);
 
-        openGraphScrapper = mock(HeadScrapper.class);
-        when(openGraphScrapper.scrap(any(URI.class))).thenReturn(Mono.empty());
+        headScraperMock = mock(HeadScraper.class);
+        when(headScraperMock.scrap(any(URI.class))).thenReturn(Mono.empty());
 
         feedPersistenceMock = mock(FeedPersistencePort.class);
         when(feedPersistenceMock.list()).thenAnswer((Answer<Flux<Feed>>) invocationOnMock -> Flux.just(
@@ -273,7 +275,7 @@ class FeedScrapperServiceTest {
         when(authFacadeMock.withSystemAuthentication()).thenReturn(Context.empty());
 
         tested = new FeedScrapperService(Duration.ofDays(1),
-                feedPersistenceMock, newsPersistenceMock, authFacadeMock, rssAtomParserMock, openGraphScrapper,
+                feedPersistenceMock, newsPersistenceMock, authFacadeMock, rssAtomParserMock, headScraperMock,
                 Collections.emptyList(), Map.of());
     }
 }

@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain.opengraph.plugins;
 
-import fr.ght1pc9kc.scraphead.core.OpenGraphPlugin;
-import fr.ght1pc9kc.scraphead.core.model.OpenGraph;
+import fr.ght1pc9kc.scraphead.core.ScraperPlugin;
+import fr.ght1pc9kc.scraphead.core.model.opengraph.OpenGraph;
 import fr.ght1pc9kc.scraphead.core.scrap.OGScrapperUtils;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
-public class ValidateOGLinksPlugin implements OpenGraphPlugin {
+public class ValidateOGLinksPlugin implements ScraperPlugin {
 
     private final WebClient http;
 
