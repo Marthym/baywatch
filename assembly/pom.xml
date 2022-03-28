@@ -58,7 +58,7 @@
                 <artifactId>jib-maven-plugin</artifactId>
                 <configuration>
                     <to>
-                        <image>baywatch:${project.version}</image>
+                        <image>marthym/baywatch:${project.version}</image>
                     </to>
                     <container>
                         <mainClass>fr.ght1pc9kc.baywatch.BaywatchApplication</mainClass>
