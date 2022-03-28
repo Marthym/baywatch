@@ -34,9 +34,9 @@ baywatch:
   security:
     cookie:
       name: X-TOKEN
-      validity: 24h
-    jwt.validity: 1h
+      validity: ${BAYWATCH_COOKIE_VALIDITY:24h}
+    jwt.validity: ${BAYWATCH_TOKEN_VALIDITY:1h}
   scrapper:
     start: true
-    frequency: 1h
-    conservation: 3m
+    frequency: ${BAYWATCH_SCRAPPER_FREQUENCY:1h}
+    conservation: ${BAYWATCH_SCRAPPER_CONSERVATION:3m}
