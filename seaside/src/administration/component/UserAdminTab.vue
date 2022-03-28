@@ -1,7 +1,7 @@
 <template>
   <div class="overflow-x-auto mt-4">
     <div class="md:btn-group mb-2">
-      <button class="btn btn-sm btn-primary mb-2 mr-2 md:m-0" @click.prevent="onUserAdd()">
+      <button class="btn btn-sm btn-ghost mb-2 mr-2 md:m-0" @click.prevent="onUserAdd()">
         <svg class="w-6 h-6 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
              xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -9,7 +9,7 @@
         </svg>
         <span>Ajouter</span>
       </button>
-      <button class="btn btn-sm btn-primary mb-2 mr-2 md:m-0" @click="">
+      <button class="btn btn-sm mb-2 mr-2 md:m-0" @click="">
         <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
              xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -17,7 +17,7 @@
         </svg>
         Importer
       </button>
-      <a class="btn btn-sm btn-primary mb-2 mr-2 md:m-0">
+      <a class="btn btn-sm mb-2 mr-2 md:m-0">
         <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
              xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -36,21 +36,21 @@
         Suprimer
       </button>
     </div>
-    <table class="table w-full table-compact">
+    <table class="table w-full table-compact" aria-describedby="User List">
       <thead>
       <tr>
-        <th>
+        <th scope="col">
           <label>
             <input type="checkbox" class="checkbox" ref="globalCheck"
                    :checked="checkState" @change="onSelectAll()"/>
             <span class="checkbox-mark"></span>
           </label>
         </th>
-        <th>Pseudo</th>
-        <th>Nom</th>
-        <th>Mail</th>
-        <th>Role</th>
-        <th>Created At
+        <th scope="col">Pseudo</th>
+        <th scope="col">Nom</th>
+        <th scope="col">Mail</th>
+        <th scope="col">Role</th>
+        <th scope="col">Created At
           <div class="btn-group justify-end" v-if="pagesNumber > 1">
             <button v-for="i in pagesNumber" :key="i"
                     :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
@@ -59,12 +59,12 @@
             </button>
           </div>
         </th>
-        <th>&nbsp;</th>
+        <th scope="col">&nbsp;</th>
       </tr>
       </thead>
       <tbody>
       <tr v-for="vUser in this.users" v-bind:key="vUser.data._id">
-        <th>
+        <th scope="row">
           <label>
             <input type="checkbox" class="checkbox" v-model="vUser.isSelected">
             <span class="checkbox-mark"></span>
@@ -97,12 +97,12 @@
       </tbody>
       <tfoot>
       <tr>
-        <th></th>
-        <th>Pseudo</th>
-        <th>Nom</th>
-        <th>Mail</th>
-        <th>Role</th>
-        <th>Created At
+        <th scope="col"></th>
+        <th scope="col">Pseudo</th>
+        <th scope="col">Nom</th>
+        <th scope="col">Mail</th>
+        <th scope="col">Role</th>
+        <th scope="col">Created At
           <div class="btn-group justify-end" v-if="pagesNumber > 1">
             <button v-for="i in pagesNumber" :key="i"
                     :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
@@ -111,7 +111,7 @@
             </button>
           </div>
         </th>
-        <th>&nbsp;</th>
+        <th scope="col">&nbsp;</th>
       </tr>
       </tfoot>
     </table>
