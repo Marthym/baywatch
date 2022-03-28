@@ -2,25 +2,26 @@
   <div class="overflow-x-auto mt-5">
     <FeedActions v-if="userState.isAuthenticated" :delete-enable="checkState"
                  @clickAdd="addNewFeed" @clickImport="this.isFileUploadVisible = true" @clickDelete="bulkDelete()"/>
-    <table class="table w-full">
+    <table class="table w-full" aria-describedby="Feeds list">
       <thead>
       <tr>
-        <th v-if="userState.isAuthenticated">
+        <th scope="col" v-if="userState.isAuthenticated">
           <label>
             <input type="checkbox" class="checkbox" ref="globalCheck"
                    :checked="checkState" @change="onSelectAll()"/>
-            <span class="checkbox-mark"></span>
           </label>
         </th>
-        <th class="grid grid-cols-1 md:grid-cols-12">
-          <div class="col-span-4 my-auto">Name</div>
-          <div class="col-span-7 my-auto">Link / Categories</div>
-          <div class="btn-group justify-end" v-if="pagesNumber > 1">
-            <button v-for="i in pagesNumber" :key="i"
-                    :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
-                    v-on:click="loadFeedPage(i-1).subscribe()">
-              {{ i }}
-            </button>
+        <th scope="colgroup">
+          <div class="grid grid-cols-1 md:grid-cols-12">
+            <div class="md:col-span-3 my-auto">Name</div>
+            <div class="md:col-span-7 my-auto">Link / Categories</div>
+            <div class="md:col-span-2 btn-group justify-end" v-if="pagesNumber > 1">
+              <button v-for="i in pagesNumber" :key="i"
+                      :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
+                      v-on:click="loadFeedPage(i-1).subscribe()">
+                {{ i }}
+              </button>
+            </div>
           </div>
         </th>
       </tr>
@@ -28,7 +29,7 @@
       <tbody>
       <template v-if="feeds.length > 0" v-for="vFeed in this.feeds" v-bind:key="vFeed.data.id">
         <tr>
-          <th v-if="userState.isAuthenticated">
+          <th scope="row" v-if="userState.isAuthenticated">
             <label>
               <input type="checkbox" class="checkbox" v-model="vFeed.isSelected">
               <span class="checkbox-mark"></span>
@@ -50,16 +51,18 @@
       </tbody>
       <tfoot>
       <tr>
-        <th v-if="userState.isAuthenticated"></th>
-        <th class="grid grid-cols-1 md:grid-cols-12">
-          <div class="col-span-4">Name</div>
-          <div class="col-span-7">Link / Categories</div>
-          <div class="btn-group justify-end" v-if="pagesNumber > 1">
-            <button v-for="i in pagesNumber" :key="i"
-                    :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
-                    v-on:click="loadFeedPage(i-1).subscribe()">
-              {{ i }}
-            </button>
+        <th scope="col" v-if="userState.isAuthenticated"></th>
+        <th scope="colgroup">
+          <div class="grid grid-cols-1 md:grid-cols-12">
+            <div class="md:col-span-3 my-auto">Name</div>
+            <div class="md:col-span-7 my-auto">Link / Categories</div>
+            <div class="md:col-span-2 btn-group justify-end" v-if="pagesNumber > 1">
+              <button v-for="i in pagesNumber" :key="i"
+                      :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
+                      v-on:click="loadFeedPage(i-1).subscribe()">
+                {{ i }}
+              </button>
+            </div>
           </div>
         </th>
       </tr>

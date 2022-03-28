@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center space-x-3 col-span-4">
+  <div class="flex items-center space-x-3 md:col-span-3">
     <div class="avatar placeholder">
       <div class="w-8 h-8 mask mask-squircle">
         <img class="text-center"
@@ -16,10 +16,10 @@
       </div>
     </div>
   </div>
-  <div class="col-span-7">
+  <div class="md:col-span-7">
     <a class="link whitespace-normal">{{ view.data.url }}</a><br>
   </div>
-  <div class="btn-group justify-self-end">
+  <div class="md:col-span-2 btn-group justify-self-end">
     <button class="btn btn-sm btn-square btn-ghost" @click="$emit('item-update', view.data)">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
