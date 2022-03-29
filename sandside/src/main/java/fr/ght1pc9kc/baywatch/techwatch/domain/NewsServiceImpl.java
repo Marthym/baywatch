@@ -97,7 +97,7 @@ public class NewsServiceImpl implements NewsService {
         return authFacade.getConnectedUser()
                 .filter(user -> Role.SYSTEM == user.entity.role)
                 .switchIfEmpty(Mono.error(new UnauthorizedOperation("Orphanize news not permitted for user !")))
-                .flatMap(user -> newsRepository.deleteFeedLink(toOrphanize));
+                .flatMap(user -> newsRepository.unlink(toOrphanize));
     }
 
     @Override

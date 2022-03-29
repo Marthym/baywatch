@@ -1,16 +1,17 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.common.domain.Hasher;
+import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
-import fr.ght1pc9kc.baywatch.common.domain.Hasher;
-import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
-import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
-import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
-import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
-import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
@@ -34,7 +35,10 @@ import reactor.test.StepVerifier;
 
 import java.net.URI;
 import java.time.Instant;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.TAGS_SEPARATOR;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
@@ -78,10 +82,10 @@ class NewsRepositoryTest {
     void should_persist_news(DSLContext dsl) {
         {
             int actual = dsl.fetchCount(NEWS, NEWS.NEWS_ID.eq(NEWS_ID));
-            assertThat(actual).isEqualTo(0);
+            assertThat(actual).isZero();
             actual = dsl.fetchCount(NEWS_FEEDS, NEWS_FEEDS.NEFE_NEWS_ID.eq(NEWS_ID)
                     .and(NEWS_FEEDS.NEFE_FEED_ID.eq(FeedRecordSamples.JEDI.getFeedId())));
-            assertThat(actual).isEqualTo(0);
+            assertThat(actual).isZero();
         }
 
         News news = News.builder().raw(
@@ -153,8 +157,8 @@ class NewsRepositoryTest {
         QueryContext qCtx = QueryContext.all(Criteria.property("read").eq(true))
                 .withUserId(UsersRecordSamples.LSKYWALKER.getUserId());
         List<News> actual = tested.list(qCtx).collectList().block();
-        assertThat(actual).isNotEmpty();
-        assertThat(actual).allMatch(News::isRead);
+        assertThat(actual).isNotEmpty()
+                .allMatch(News::isRead);
     }
 
     @Test
@@ -163,8 +167,8 @@ class NewsRepositoryTest {
         QueryContext qCtx = QueryContext.all(Criteria.property("tags").contains(TAGS_SEPARATOR + "empire" + TAGS_SEPARATOR))
                 .withUserId(UsersRecordSamples.OKENOBI.getUserId());
         List<News> actual = tested.list(qCtx).collectList().block();
-        assertThat(actual).isNotEmpty();
-        assertThat(actual).allMatch(a -> a.getTags().contains("empire"));
+        assertThat(actual).isNotEmpty()
+                .allMatch(a -> a.getTags().contains("empire"));
     }
 
     @Test
@@ -188,7 +192,7 @@ class NewsRepositoryTest {
 
         assertThat(actual).isNotNull();
         Assertions.assertAll(
-                () -> assertThat(actual.getLink().toString()).isEqualTo(expected.getNewsLink()),
+                () -> assertThat(actual.getLink()).hasToString(expected.getNewsLink()),
                 () -> assertThat(actual.getTitle()).isEqualTo(expected.getNewsTitle()),
                 () -> assertThat(actual.getId()).isEqualTo(expected.getNewsId()),
                 () -> assertThat(actual.getFeeds()).isEqualTo(Set.of(expectedNefe.getNefeFeedId())),
@@ -205,14 +209,14 @@ class NewsRepositoryTest {
         String id21 = Hasher.identify(NewsRecordSamples.BASE_TEST_URI.resolve("021"));
         String id22 = Hasher.identify(NewsRecordSamples.BASE_TEST_URI.resolve("022"));
         String id23 = Hasher.identify(NewsRecordSamples.BASE_TEST_URI.resolve("023"));
-        List<Map.Entry<String, State>> actuals = tested.listState(Criteria.property("newsId")
+        List<Entity<State>> actuals = tested.listState(Criteria.property("newsId")
                         .in(id21, id22, id23))
                 .collectList().block();
 
         assertThat(actuals).containsOnly(
-                Map.entry(id21, State.of(0)),
-                Map.entry(id22, State.of(1)),
-                Map.entry(id23, State.of(2))
+                Entity.identify(id21, State.of(0)),
+                Entity.identify(id22, State.of(1)),
+                Entity.identify(id23, State.of(2))
         );
     }
 

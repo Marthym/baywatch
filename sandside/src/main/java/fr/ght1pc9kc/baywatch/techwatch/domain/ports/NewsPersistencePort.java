@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain.ports;
 
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
@@ -10,7 +11,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
-import java.util.Map.Entry;
 
 public interface NewsPersistencePort {
     Mono<News> get(QueryContext qCtx);
@@ -23,7 +23,7 @@ public interface NewsPersistencePort {
 
     Mono<Integer> persist(Collection<News> toCreate);
 
-    Flux<Entry<String, State>> listState(Criteria searchCriteria);
+    Flux<Entity<State>> listState(Criteria searchCriteria);
 
     Mono<Integer> addStateFlag(
             String newsId, String userId, @MagicConstant(flagsFromClass = Flags.class) int flag);
@@ -31,7 +31,7 @@ public interface NewsPersistencePort {
     Mono<Integer> removeStateFlag(
             String newsId, String userId, @MagicConstant(flagsFromClass = Flags.class) int flag);
 
-    Mono<Integer> deleteFeedLink(Collection<String> ids);
+    Mono<Integer> unlink(Collection<String> ids);
 
     Mono<Integer> delete(Collection<String> ids);
 

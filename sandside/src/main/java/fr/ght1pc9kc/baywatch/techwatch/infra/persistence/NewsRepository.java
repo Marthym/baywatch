@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
 import com.machinezoo.noexception.Exceptions;
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.infra.PredicateSearchVisitor;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers;
@@ -34,9 +35,6 @@ import reactor.core.scheduler.Scheduler;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers.NEWS_PROPERTIES_MAPPING;
@@ -72,7 +70,7 @@ public class NewsRepository implements NewsPersistencePort {
         return Flux.<Record>create(sink -> {
                     Cursor<Record> cursor = query.fetchLazy();
                     sink.onRequest(n -> {
-                        int count = Long.valueOf(n).intValue();
+                        int count = (int) n;
                         Result<Record> rs = cursor.fetchNext(count);
                         rs.forEach(sink::next);
                         if (rs.size() < count) {
@@ -88,11 +86,11 @@ public class NewsRepository implements NewsPersistencePort {
     public Mono<Integer> persist(Collection<News> toCreate) {
         List<NewsRecord> records = toCreate.stream()
                 .map(baywatchMapper::newsToNewsRecord)
-                .collect(Collectors.toList());
+                .toList();
 
         List<NewsFeedsRecord> newsFeedsRecords = toCreate.stream()
                 .flatMap(NewsRepository::toNewsFeedsRecords)
-                .collect(Collectors.toList());
+                .toList();
 
         return Mono.fromCallable(() ->
                         dsl.loadInto(NEWS).batchAll()
@@ -119,13 +117,13 @@ public class NewsRepository implements NewsPersistencePort {
     }
 
     @Override
-    public Flux<Entry<String, State>> listState(Criteria searchCriteria) {
+    public Flux<Entity<State>> listState(Criteria searchCriteria) {
         Condition conditions = searchCriteria.accept(STATE_CONDITION_VISITOR);
         PredicateSearchVisitor<State> predicateSearchVisitor = new PredicateSearchVisitor<>();
         return Flux.<NewsUserStateRecord>create(sink -> {
                     Cursor<NewsUserStateRecord> cursor = dsl.selectFrom(NEWS_USER_STATE).where(conditions).fetchLazy();
                     sink.onRequest(n -> {
-                        int count = Long.valueOf(n).intValue();
+                        int count = (int) n;
                         Result<NewsUserStateRecord> rs = cursor.fetchNext(count);
                         rs.forEach(sink::next);
                         if (rs.size() < count) {
@@ -133,8 +131,8 @@ public class NewsRepository implements NewsPersistencePort {
                         }
                     });
                 }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
-                .map(r -> Map.entry(r.getNursNewsId(), State.of(r.getNursState())))
-                .filter(s -> searchCriteria.accept(predicateSearchVisitor).test(s.getValue()));
+                .map(r -> Entity.identify(r.getNursNewsId(), State.of(r.getNursState())))
+                .filter(s -> searchCriteria.accept(predicateSearchVisitor).test(s.entity));
     }
 
     @Override
@@ -163,7 +161,7 @@ public class NewsRepository implements NewsPersistencePort {
     }
 
     @Override
-    public Mono<Integer> deleteFeedLink(Collection<String> ids) {
+    public Mono<Integer> unlink(Collection<String> ids) {
         return Mono.fromCallable(() ->
                         dsl.deleteFrom(NEWS_FEEDS).where(NEWS_FEEDS.NEFE_NEWS_ID.in(ids)).execute())
                 .subscribeOn(databaseScheduler);
@@ -171,7 +169,7 @@ public class NewsRepository implements NewsPersistencePort {
 
     @Override
     public Mono<Integer> delete(Collection<String> ids) {
-        return deleteFeedLink(ids)
+        return unlink(ids)
                 .then(Mono.fromCallable(() ->
                         dsl.transactionResult(tx -> {
                             DSLContext txDsl = tx.dsl();

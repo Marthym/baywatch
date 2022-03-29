@@ -1,10 +1,10 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain.actions;
 
-import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.scrapper.api.ScrappingHandler;
+import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScrapperProperties;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
-import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScrapperProperties;
 import fr.ght1pc9kc.juery.api.Criteria;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -17,9 +17,10 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 
-import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.*;
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.NEWS_ID;
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.PUBLICATION;
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.SHARED;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -52,7 +53,7 @@ public class PurgeNewsHandler implements ScrappingHandler {
         Criteria isStaredCriteria = Criteria.property(NEWS_ID).in(newsIds)
                 .and(Criteria.property(SHARED).eq(true));
         return newsPersistence.listState(isStaredCriteria)
-                .map(Map.Entry::getKey)
+                .map(e -> e.id)
                 .collectList()
                 .flatMapMany(stareds -> {
                     Collection<String> toBeDeleted = new ArrayList<>(newsIds);
