@@ -78,7 +78,7 @@ class UserServiceImplTest {
     void should_create_user_without_authentication() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.empty());
 
-        StepVerifier.create(tested.create(UserSamples.OBIWAN.entity))
+        StepVerifier.create(tested.create(UserSamples.OBIWAN.self))
                 .verifyError(UnauthenticatedUser.class);
     }
 
@@ -86,7 +86,7 @@ class UserServiceImplTest {
     void should_create_user_without_admin() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
 
-        StepVerifier.create(tested.create(UserSamples.OBIWAN.entity))
+        StepVerifier.create(tested.create(UserSamples.OBIWAN.self))
                 .verifyError(UnauthorizedOperation.class);
     }
 
@@ -96,7 +96,7 @@ class UserServiceImplTest {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
         when(mockUserRepository.persist(any())).thenReturn(Flux.just(UserSamples.OBIWAN));
 
-        StepVerifier.create(tested.create(UserSamples.OBIWAN.entity))
+        StepVerifier.create(tested.create(UserSamples.OBIWAN.self))
                 .expectNext(UserSamples.OBIWAN)
                 .verifyComplete();
 
@@ -104,7 +104,7 @@ class UserServiceImplTest {
         verify(mockUserRepository).persist(users.capture());
 
         Entity<User> actual = users.getValue().get(0);
-        Assertions.assertThat(actual).isEqualTo(Entity.identify(UserSamples.OBIWAN.id, CURRENT, UserSamples.OBIWAN.entity));
+        Assertions.assertThat(actual).isEqualTo(Entity.identify(UserSamples.OBIWAN.id, CURRENT, UserSamples.OBIWAN.self));
     }
 
     @Test

@@ -29,7 +29,7 @@ public class FeedAdminServiceImpl implements FeedAdminService {
     public Mono<RawFeed> get(String id) {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
-                .map(u -> RoleUtils.hasRoleOrThrow(u.entity, Role.ADMIN))
+                .map(u -> RoleUtils.hasRoleOrThrow(u.self, Role.ADMIN))
                 .flatMap(u -> feedRepository.get(QueryContext.id(id)))
                 .map(Feed::getRaw);
     }
@@ -43,7 +43,7 @@ public class FeedAdminServiceImpl implements FeedAdminService {
     public Flux<RawFeed> list(PageRequest pageRequest) {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
-                .map(u -> RoleUtils.hasRoleOrThrow(u.entity, Role.ADMIN))
+                .map(u -> RoleUtils.hasRoleOrThrow(u.self, Role.ADMIN))
                 .flatMapMany(u -> feedRepository.list(QueryContext.from(pageRequest)))
                 .map(Feed::getRaw);
     }
@@ -52,7 +52,7 @@ public class FeedAdminServiceImpl implements FeedAdminService {
     public Mono<Integer> delete(Collection<String> toDelete) {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
-                .map(u -> RoleUtils.hasRoleOrThrow(u.entity, Role.ADMIN))
+                .map(u -> RoleUtils.hasRoleOrThrow(u.self, Role.ADMIN))
                 .map(u -> QueryContext.all(Criteria.property(FEED_ID).in(toDelete)))
                 .flatMap(feedRepository::delete)
                 .map(r -> r.purged);

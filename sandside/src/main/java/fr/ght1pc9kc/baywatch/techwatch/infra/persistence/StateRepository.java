@@ -48,7 +48,7 @@ public class StateRepository implements StatePersistencePort {
                     });
                 }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(r -> Entity.identify(r.getNursNewsId(), State.of(r.getNursState())))
-                .filter(s -> queryContext.getFilter().accept(predicateSearchVisitor).test(s.entity));
+                .filter(s -> queryContext.getFilter().accept(predicateSearchVisitor).test(s.self));
     }
 
     @Override

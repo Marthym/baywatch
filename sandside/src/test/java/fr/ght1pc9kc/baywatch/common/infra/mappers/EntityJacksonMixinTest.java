@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.common.infra.config.jackson.mixins.EntityJacksonMixin;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.security.infra.config.UserMixin;

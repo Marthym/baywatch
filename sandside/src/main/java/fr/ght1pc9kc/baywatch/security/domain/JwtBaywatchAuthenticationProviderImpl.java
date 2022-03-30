@@ -1,6 +1,10 @@
 package fr.ght1pc9kc.baywatch.security.domain;
 
-import com.nimbusds.jose.*;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -17,8 +21,12 @@ import java.text.ParseException;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 import static java.util.function.Predicate.not;
 
@@ -39,7 +47,7 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
     @Override
     public BaywatchAuthentication createToken(Entity<User> user, boolean remember, Collection<String> authorities) {
         List<String> auth = new ArrayList<>(authorities);
-        auth.add(user.entity.role.authority());
+        auth.add(user.self.role.authority());
         String auths = String.join(",", auth);
 
         try {
@@ -51,9 +59,9 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
                     .issuer("baywatch/sandside")
                     .issueTime(Date.from(now))
                     .expirationTime(Date.from(now.plus(validity)))
-                    .claim("login", user.entity.login)
-                    .claim("name", user.entity.name)
-                    .claim("mail", user.entity.mail)
+                    .claim("login", user.self.login)
+                    .claim("name", user.self.name)
+                    .claim("mail", user.self.mail)
                     .claim("createdAt", Date.from(user.createdAt))
                     .claim("remember", remember)
                     .claim(AUTHORITIES_KEY, auths)
@@ -82,7 +90,7 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
             List<String> authorities = Arrays.stream(claims.getStringClaim(AUTHORITIES_KEY).split(","))
                     .map(String::trim)
                     .filter(not(String::isBlank))
-                    .collect(Collectors.toList());
+                    .toList();
 
             Role role = Arrays.stream(Role.values())
                     .filter(r -> authorities.contains(r.authority()))
@@ -92,7 +100,7 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
                     .map(Date::toInstant)
                     .orElse(Instant.EPOCH);
 
-            Entity<User> user = new Entity<>(claims.getSubject(), createdAt, User.builder()
+            Entity<User> user = new Entity<>(claims.getSubject(), Entity.NO_ONE, createdAt, User.builder()
                     .login(claims.getStringClaim("login"))
                     .name(claims.getStringClaim("name"))
                     .mail(claims.getStringClaim("mail"))

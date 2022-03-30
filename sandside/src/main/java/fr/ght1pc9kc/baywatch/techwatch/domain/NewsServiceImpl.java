@@ -98,7 +98,7 @@ public class NewsServiceImpl implements NewsService {
     @Override
     public Mono<Integer> orphanize(Collection<String> toOrphanize) {
         return authFacade.getConnectedUser()
-                .filter(user -> Role.SYSTEM == user.entity.role)
+                .filter(user -> Role.SYSTEM == user.self.role)
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedOperation("Orphanize news not permitted for user !")))
                 .flatMap(user -> newsRepository.unlink(toOrphanize));
     }
@@ -106,7 +106,7 @@ public class NewsServiceImpl implements NewsService {
     @Override
     public Mono<Integer> delete(Collection<String> toDelete) {
         return authFacade.getConnectedUser()
-                .filter(user -> Role.SYSTEM == user.entity.role)
+                .filter(user -> Role.SYSTEM == user.self.role)
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedOperation("Deleting news not permitted for user !")))
                 .flatMap(user -> newsRepository.delete(toDelete));
     }

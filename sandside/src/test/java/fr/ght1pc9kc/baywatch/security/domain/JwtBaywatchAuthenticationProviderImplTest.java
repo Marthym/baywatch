@@ -6,7 +6,6 @@ import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
-import fr.ght1pc9kc.baywatch.security.domain.JwtBaywatchAuthenticationProviderImpl;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.SecurityException;
 import fr.ght1pc9kc.baywatch.security.domain.ports.JwtTokenProvider;
 import org.assertj.core.api.Assertions;
@@ -38,7 +37,7 @@ class JwtBaywatchAuthenticationProviderImplTest {
 
     @Test
     void should_create_token() throws IOException {
-        Entity<User> user = new Entity<>("42", Instant.EPOCH, User.builder().login("okenobi").role(Role.USER).build());
+        Entity<User> user = new Entity<>("42", Entity.NO_ONE, Instant.EPOCH, User.builder().login("okenobi").role(Role.USER).build());
         String actual = tested.createToken(user, false, Collections.emptyList()).getToken();
 
         Assertions.assertThat(actual).isNotBlank();
@@ -56,7 +55,7 @@ class JwtBaywatchAuthenticationProviderImplTest {
 
         Assertions.assertThat(actual.token).isEqualTo(GOOD_TOKEN);
         Assertions.assertThat(actual.user).isEqualTo(
-                new Entity<>("42", Instant.EPOCH, User.builder().login("okenobi").role(Role.USER).build()));
+                new Entity<>("42", Entity.NO_ONE, Instant.EPOCH, User.builder().login("okenobi").role(Role.USER).build()));
     }
 
     @Test
@@ -67,15 +66,15 @@ class JwtBaywatchAuthenticationProviderImplTest {
 
     @Test
     void should_validate_token() {
-        Assertions.assertThat(tested.validateToken(GOOD_TOKEN)).isEqualTo(true);
-        Assertions.assertThat(tested.validateToken(BAD_TOKEN)).isEqualTo(false);
-        Assertions.assertThat(tested.validateToken(BAD_TOKEN)).isEqualTo(false);
+        Assertions.assertThat(tested.validateToken(GOOD_TOKEN)).isTrue();
+        Assertions.assertThat(tested.validateToken(BAD_TOKEN)).isFalse();
+        Assertions.assertThat(tested.validateToken(BAD_TOKEN)).isFalse();
 
         JwtTokenProvider testedFuture = new JwtBaywatchAuthenticationProviderImpl(
                 new byte[32],
                 Duration.ofSeconds(10), Clock.fixed(Instant.parse("2021-03-21T19:29:42Z"), ZoneOffset.UTC));
 
-        Assertions.assertThat(testedFuture.validateToken(GOOD_TOKEN)).isEqualTo(false);
-        Assertions.assertThat(testedFuture.validateToken(GOOD_TOKEN, false)).isEqualTo(true);
+        Assertions.assertThat(testedFuture.validateToken(GOOD_TOKEN)).isFalse();
+        Assertions.assertThat(testedFuture.validateToken(GOOD_TOKEN, false)).isTrue();
     }
 }

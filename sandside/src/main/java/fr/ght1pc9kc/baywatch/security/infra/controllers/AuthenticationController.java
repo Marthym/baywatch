@@ -68,7 +68,7 @@ public class AuthenticationController {
             String user = cookieManager.getTokenCookie(exchange.getRequest())
                     .map(HttpCookie::getValue)
                     .map(tokenProvider::getAuthentication)
-                    .map(a -> String.format("%s (%s)", a.user.entity.login, a.user.id))
+                    .map(a -> String.format("%s (%s)", a.user.self.login, a.user.id))
                     .orElse("Unknown User");
             log.debug("Logout for {}.", user);
         }
@@ -88,7 +88,7 @@ public class AuthenticationController {
                     ResponseCookie tokenCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), auth);
                     exchange.getResponse().addCookie(tokenCookie);
                     return Session.builder()
-                            .user(auth.user.entity)
+                            .user(auth.user.self)
                             .maxAge(-1)
                             .build();
                 })
