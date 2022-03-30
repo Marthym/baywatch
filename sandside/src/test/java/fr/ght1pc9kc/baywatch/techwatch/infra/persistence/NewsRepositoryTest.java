@@ -202,23 +202,6 @@ class NewsRepositoryTest {
         );
     }
 
-    @Test
-    void should_list_state(WithSampleDataLoaded.Tracker tracker) {
-        tracker.skipNextSampleLoad();
-
-        String id21 = Hasher.identify(NewsRecordSamples.BASE_TEST_URI.resolve("021"));
-        String id22 = Hasher.identify(NewsRecordSamples.BASE_TEST_URI.resolve("022"));
-        String id23 = Hasher.identify(NewsRecordSamples.BASE_TEST_URI.resolve("023"));
-        List<Entity<State>> actuals = tested.listState(Criteria.property("newsId")
-                        .in(id21, id22, id23))
-                .collectList().block();
-
-        assertThat(actuals).containsOnly(
-                Entity.identify(id21, State.of(0)),
-                Entity.identify(id22, State.of(1)),
-                Entity.identify(id23, State.of(2))
-        );
-    }
 
     @Test
     void should_delete_news(DSLContext dsl) {
@@ -246,63 +229,4 @@ class NewsRepositoryTest {
         }
     }
 
-    @ParameterizedTest
-    @CsvSource({
-            Flags.NONE + ", " + Flags.SHARED + ", false, true",
-            Flags.ALL + ", " + Flags.SHARED + ", true, true",
-            Flags.SHARED + ", " + Flags.SHARED + ", false, true",
-            Flags.READ + ", " + Flags.SHARED + ", true, true",
-            Flags.NONE + ", " + Flags.READ + ", true, false",
-            Flags.ALL + ", " + Flags.READ + ", true, true",
-            Flags.SHARED + ", " + Flags.READ + ", true, true",
-            Flags.READ + ", " + Flags.READ + ", true, false",
-    })
-    void should_add_state_flag(int startState, int removeFlag, boolean expectedRead, boolean expectedShared, DSLContext dsl) {
-        final String newsId = "37c8fbce87cae77f34aac2a2a52511f60b1369317dec57f38df3f3ae30c42840";
-        dsl.update(NEWS_USER_STATE)
-                .set(NEWS_USER_STATE.NURS_STATE, startState)
-                .where(NEWS_USER_STATE.NURS_NEWS_ID.eq(newsId))
-                .execute();
-
-        tested.addStateFlag(newsId,
-                UsersRecordSamples.OKENOBI.getUserId(), removeFlag).block();
-
-        Integer actual = dsl.select(NEWS_USER_STATE.NURS_STATE)
-                .from(NEWS_USER_STATE)
-                .where(NEWS_USER_STATE.NURS_NEWS_ID.eq(newsId))
-                .fetchOne(NEWS_USER_STATE.NURS_STATE);
-
-        assertThat(State.of(actual).isRead()).isEqualTo(expectedRead);
-        assertThat(State.of(actual).isShared()).isEqualTo(expectedShared);
-    }
-
-    @ParameterizedTest
-    @CsvSource({
-            Flags.NONE + ", " + Flags.SHARED + ", false, false",
-            Flags.ALL + ", " + Flags.SHARED + ", true, false",
-            Flags.SHARED + ", " + Flags.SHARED + ", false, false",
-            Flags.READ + ", " + Flags.SHARED + ", true, false",
-            Flags.NONE + ", " + Flags.READ + ", false, false",
-            Flags.ALL + ", " + Flags.READ + ", false, true",
-            Flags.SHARED + ", " + Flags.READ + ", false, true",
-            Flags.READ + ", " + Flags.READ + ", false, false",
-    })
-    void should_remove_state_flag(int startState, int removeFlag, boolean expectedRead, boolean expectedShared, DSLContext dsl) {
-        final String newsId = "900cf7d10afd3c1584d6d3122743a86c0315fde7d8acbe3a585a2cb7c301807c";
-        dsl.update(NEWS_USER_STATE)
-                .set(NEWS_USER_STATE.NURS_STATE, startState)
-                .where(NEWS_USER_STATE.NURS_NEWS_ID.eq(newsId))
-                .execute();
-
-        tested.removeStateFlag(newsId,
-                UsersRecordSamples.LSKYWALKER.getUserId(), removeFlag).block();
-
-        Integer actual = dsl.select(NEWS_USER_STATE.NURS_STATE)
-                .from(NEWS_USER_STATE)
-                .where(NEWS_USER_STATE.NURS_NEWS_ID.eq(newsId))
-                .fetchOne(NEWS_USER_STATE.NURS_STATE);
-
-        assertThat(State.of(actual).isRead()).isEqualTo(expectedRead);
-        assertThat(State.of(actual).isShared()).isEqualTo(expectedShared);
-    }
 }

@@ -8,6 +8,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
+import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,15 +35,16 @@ class PurgeNewsActionTest {
     private PurgeNewsHandler tested;
     private NewsPersistencePort newsPersistenceMock;
 
-
     @BeforeEach
     void setUp() {
         newsPersistenceMock = mock(NewsPersistencePort.class);
-        tested = new PurgeNewsHandler(newsPersistenceMock, new ScrapperProperties(true, Duration.ofHours(1), Period.ofMonths(5)))
+        StatePersistencePort statePersistenceMock = mock(StatePersistencePort.class);
+        tested = new PurgeNewsHandler(newsPersistenceMock, statePersistenceMock,
+                new ScrapperProperties(true, Duration.ofHours(1), Period.ofMonths(5)))
                 .clock(Clock.fixed(Instant.parse("2020-12-18T22:42:42Z"), ZoneOffset.UTC));
 
         when(newsPersistenceMock.list(any())).thenReturn(testDataForPersistenceList());
-        when(newsPersistenceMock.listState(any())).thenReturn(testDataForPersistenceListState());
+        when(statePersistenceMock.list(any())).thenReturn(testDataForPersistenceListState());
         when(newsPersistenceMock.delete(any())).thenReturn(Mono.just(4));
     }
 

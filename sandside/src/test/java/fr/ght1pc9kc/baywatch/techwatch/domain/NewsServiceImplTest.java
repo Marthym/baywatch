@@ -1,17 +1,18 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
-import fr.ght1pc9kc.baywatch.techwatch.api.NewsService;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.common.domain.Hasher;
+import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
+import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.security.api.model.Role;
+import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.baywatch.techwatch.api.NewsService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
-import fr.ght1pc9kc.baywatch.security.api.model.Role;
-import fr.ght1pc9kc.baywatch.security.api.model.User;
-import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
-import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
-import fr.ght1pc9kc.baywatch.common.domain.Hasher;
+import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.net.URI;
 import java.time.Instant;
@@ -71,8 +73,10 @@ class NewsServiceImplTest {
         when(mockNewsPersistence.list(any())).thenReturn(Flux.just(
                 SAMPLE_NEWS_01, SAMPLE_NEWS_02));
         mockAuthFacade = mock(AuthenticationFacade.class);
+        StatePersistencePort mockStateRepository = mock(StatePersistencePort.class);
 
-        tested = new NewsServiceImpl(new ListPropertiesCriteriaVisitor(), mockNewsPersistence, mockAuthFacade);
+        tested = new NewsServiceImpl(
+                new ListPropertiesCriteriaVisitor(), mockNewsPersistence, mockStateRepository, mockAuthFacade);
     }
 
     @Test
@@ -88,27 +92,27 @@ class NewsServiceImplTest {
     @Test
     void should_list_with_illegal_filters_for_anonymous() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.empty());
+        PageRequest pageRequest = PageRequest.all(
+                Criteria.property("title").eq("May the Force")
+                        .and(Criteria.property("read").eq(true)));
 
-        Assertions.assertThatThrownBy(() -> tested.list(PageRequest.all(
-                        Criteria.property("title").eq("May the Force")
-                                .and(Criteria.property("read").eq(true))
-                )).next().block())
-                .isInstanceOf(BadRequestCriteria.class)
-                .hasMessageNotContaining("title")
-                .hasMessageContaining("read");
+        StepVerifier.create(tested.list(pageRequest))
+                .verifyErrorMatches(t -> t instanceof BadRequestCriteria
+                        && t.getMessage().contains("read")
+                        && !t.getMessage().contains("title"));
     }
 
     @Test
     void should_list_with_illegal_filters_for_user() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(SAMPLE_USER_01));
+        PageRequest pageRequest = PageRequest.all(
+                Criteria.property("illegal").eq("May the Force")
+                        .and(Criteria.property("read").eq(true)));
 
-        Assertions.assertThatThrownBy(() -> tested.list(PageRequest.all(
-                        Criteria.property("illegal").eq("May the Force")
-                                .and(Criteria.property("read").eq(true))
-                )).next().block())
-                .isInstanceOf(BadRequestCriteria.class)
-                .hasMessageNotContaining("read")
-                .hasMessageContaining("illegal");
+        StepVerifier.create(tested.list(pageRequest))
+                .verifyErrorMatches(t -> t instanceof BadRequestCriteria
+                        && t.getMessage().contains("illegal")
+                        && !t.getMessage().contains("read"));
     }
 
     @Test

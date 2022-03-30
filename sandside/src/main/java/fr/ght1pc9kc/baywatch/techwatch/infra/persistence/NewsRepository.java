@@ -1,19 +1,13 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.infra.PredicateSearchVisitor;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
-import fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
-import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
-import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.basic.common.lang3.StringUtils;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
@@ -49,8 +43,6 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 public class NewsRepository implements NewsPersistencePort {
     public static final JooqConditionVisitor NEWS_CONDITION_VISITOR =
             new JooqConditionVisitor(NEWS_PROPERTIES_MAPPING);
-    public static final JooqConditionVisitor STATE_CONDITION_VISITOR =
-            new JooqConditionVisitor(PropertiesMappers.STATE_PROPERTIES_MAPPING);
 
     private final Scheduler databaseScheduler;
     private final DSLContext dsl;
@@ -114,50 +106,6 @@ public class NewsRepository implements NewsPersistencePort {
                     log.info("Load {} News with {} error(s).", loader.processed(), loader.errors().size());
                     return loader.processed();
                 });
-    }
-
-    @Override
-    public Flux<Entity<State>> listState(Criteria searchCriteria) {
-        Condition conditions = searchCriteria.accept(STATE_CONDITION_VISITOR);
-        PredicateSearchVisitor<State> predicateSearchVisitor = new PredicateSearchVisitor<>();
-        return Flux.<NewsUserStateRecord>create(sink -> {
-                    Cursor<NewsUserStateRecord> cursor = dsl.selectFrom(NEWS_USER_STATE).where(conditions).fetchLazy();
-                    sink.onRequest(n -> {
-                        int count = (int) n;
-                        Result<NewsUserStateRecord> rs = cursor.fetchNext(count);
-                        rs.forEach(sink::next);
-                        if (rs.size() < count) {
-                            sink.complete();
-                        }
-                    });
-                }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
-                .map(r -> Entity.identify(r.getNursNewsId(), State.of(r.getNursState())))
-                .filter(s -> searchCriteria.accept(predicateSearchVisitor).test(s.entity));
-    }
-
-    @Override
-    public Mono<Integer> addStateFlag(String newsId, String userId, int flag) {
-        return Mono.fromCallable(() -> dsl.insertInto(NEWS_USER_STATE)
-                        .columns(NEWS_USER_STATE.NURS_NEWS_ID, NEWS_USER_STATE.NURS_USER_ID, NEWS_USER_STATE.NURS_STATE)
-                        .values(newsId, userId, Flags.NONE | flag)
-                        .onDuplicateKeyUpdate()
-                        .set(NEWS_USER_STATE.NURS_STATE, NEWS_USER_STATE.NURS_STATE.bitOr(flag))
-                        .returning()
-                        .execute())
-                .subscribeOn(databaseScheduler);
-    }
-
-    @Override
-    public Mono<Integer> removeStateFlag(String newsId, String userId, int flag) {
-        final int mask = ~(1 << (flag - 1));
-        return Mono.fromCallable(() -> dsl.insertInto(NEWS_USER_STATE)
-                        .columns(NEWS_USER_STATE.NURS_NEWS_ID, NEWS_USER_STATE.NURS_USER_ID, NEWS_USER_STATE.NURS_STATE)
-                        .values(newsId, userId, Flags.NONE)
-                        .onDuplicateKeyUpdate()
-                        .set(NEWS_USER_STATE.NURS_STATE, NEWS_USER_STATE.NURS_STATE.bitAnd(mask))
-                        .returning()
-                        .execute())
-                .subscribeOn(databaseScheduler);
     }
 
     @Override
