@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.techwatch.api;
 
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
@@ -39,18 +40,18 @@ public interface NewsService {
      *
      * @param id   The ID of the News
      * @param flag The flag to set
-     * @return The News updated
+     * @return The updated {@link Entity<State>}
      */
-    Mono<News> mark(String id, @MagicConstant(flagsFromClass = Flags.class) int flag);
+    Mono<Entity<State>> mark(String id, @MagicConstant(flagsFromClass = Flags.class) int flag);
 
     /**
      * Unset flag to a {@link News} for a {@link User}
      *
      * @param id   The ID of the News
      * @param flag The flag to unset
-     * @return The News updated
+     * @return The updated {@link Entity<State>}
      */
-    Mono<News> unmark(String id, @MagicConstant(flagsFromClass = Flags.class) int flag);
+    Mono<Entity<State>> unmark(String id, @MagicConstant(flagsFromClass = Flags.class) int flag);
 
     /**
      * Delete all links between {@link News} and {@link Feed}

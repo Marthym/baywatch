@@ -11,6 +11,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
+import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -74,9 +75,10 @@ class NewsServiceImplTest {
                 SAMPLE_NEWS_01, SAMPLE_NEWS_02));
         mockAuthFacade = mock(AuthenticationFacade.class);
         StatePersistencePort mockStateRepository = mock(StatePersistencePort.class);
+        FeedPersistencePort mockFeedRepository = mock(FeedPersistencePort.class);
 
         tested = new NewsServiceImpl(
-                new ListPropertiesCriteriaVisitor(), mockNewsPersistence, mockStateRepository, mockAuthFacade);
+                new ListPropertiesCriteriaVisitor(), mockNewsPersistence, mockFeedRepository, mockStateRepository, mockAuthFacade);
     }
 
     @Test

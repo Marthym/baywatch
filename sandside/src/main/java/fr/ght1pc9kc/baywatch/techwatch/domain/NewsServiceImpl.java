@@ -1,25 +1,35 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
 import fr.ght1pc9kc.baywatch.techwatch.api.NewsService;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.domain.filter.CriteriaModifierVisitor;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
+import fr.ght1pc9kc.baywatch.techwatch.domain.model.StateQueryContext;
+import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.api.Pagination;
 import fr.ght1pc9kc.juery.api.filter.CriteriaVisitor;
+import fr.ght1pc9kc.juery.api.pagination.Order;
+import fr.ght1pc9kc.juery.api.pagination.Sort;
+import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 import java.util.Collection;
 import java.util.List;
@@ -29,12 +39,14 @@ import java.util.stream.Stream;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.FEED_ID;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.NEWS_ID;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.PUBLICATION;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.READ;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.SHARED;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.STATE;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.TAGS;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.TITLE;
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.USER_ID;
 import static java.util.function.Predicate.not;
 
 @Service
@@ -47,6 +59,7 @@ public class NewsServiceImpl implements NewsService {
 
     private final CriteriaVisitor<List<String>> propertiesExtractor;
     private final NewsPersistencePort newsRepository;
+    private final FeedPersistencePort feedRepository;
     private final StatePersistencePort stateRepository;
     private final AuthenticationFacade authFacade;
 
@@ -57,10 +70,81 @@ public class NewsServiceImpl implements NewsService {
                 .switchIfEmpty(Mono.error(() -> new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
                 .map(user -> throwOnInvalidRequest(validRequest, user))
                 .map(user -> QueryContext.from(validRequest).withUserId(user.id))
+                .flatMap(this::forgeAggregateQueryContext)
                 .onErrorResume(UnauthenticatedUser.class, e ->
                         Mono.fromCallable(() -> throwOnInvalidRequest(validRequest, null))
                                 .thenReturn(QueryContext.from(validRequest)))
                 .flatMapMany(newsRepository::list);
+    }
+
+    public Mono<QueryContext> forgeAggregateQueryContext(QueryContext qCtx) {
+        List<String> props = qCtx.filter.accept(new ListPropertiesCriteriaVisitor());
+        if (props.size() == 1 && ID.equals(props.get(0))) {
+            // Shortcut for get one News from id
+            return Mono.just(qCtx);
+        }
+        Mono<StateQueryContext> state = getStateQueryContext(qCtx);
+        Mono<List<String>> feeds = getFeedFor(qCtx);
+
+        return Mono.zip(state, feeds).map(contexts -> {
+            Criteria filters = Criteria.property(FEED_ID).in(contexts.getT2());
+            if (!contexts.getT1().shared().isEmpty()) {
+                filters = Criteria.or(filters, Criteria.property(NEWS_ID).in(contexts.getT1().shared()));
+            }
+            if (!contexts.getT1().read().isEmpty()) {
+                filters = Criteria.and(filters, Criteria.not(Criteria.property(NEWS_ID).in(contexts.getT1().read())));
+            }
+            filters = Criteria.and(filters, qCtx.getFilter());
+
+            return QueryContext.builder()
+                    .pagination(qCtx.getPagination())
+                    .userId(qCtx.getUserId())
+                    .filter(filters)
+                    .build();
+        });
+    }
+
+    public Mono<List<String>> getFeedFor(QueryContext qCtx) {
+        return feedRepository.list(qCtx)
+                .map(Feed::getId)
+                .collectList();
+    }
+
+    public Mono<StateQueryContext> getStateQueryContext(QueryContext qCtx) {
+        Criteria sharedCriteria = Criteria.not(Criteria.property(USER_ID).eq(qCtx.userId))
+                .and(Criteria.property(SHARED).eq(true));
+        Criteria readCriteria = Criteria.property(USER_ID).eq(qCtx.userId)
+                .and(qCtx.getFilter());
+        QueryContext stateQueryContext = QueryContext.builder()
+                .filter(Criteria.or(sharedCriteria, readCriteria))
+                .pagination(Pagination.of(-1, -1, Sort.of(Order.desc(USER_ID))))
+                .build();
+
+        return stateRepository.list(stateQueryContext)
+                .groupBy(s -> qCtx.userId.equals(s.createdBy))
+                .flatMap(grouped -> {
+                    if (grouped.key()) {
+                        return grouped.filter(s -> s.self.isRead())
+                                .map(s -> s.id)
+                                .distinct()
+                                .collectList()
+                                .map(l -> Tuples.of(grouped.key(), l));
+                    } else {
+                        return grouped.map(s -> s.id).distinct().collectList()
+                                .map(l -> Tuples.of(grouped.key(), l));
+                    }
+                }).collectList()
+                .map(l -> {
+                    var stateContextBuilder = StateQueryContext.builder();
+                    for (Tuple2<Boolean, List<String>> nids : l) {
+                        if (Boolean.TRUE.equals(nids.getT1())) {
+                            stateContextBuilder.read(nids.getT2());
+                        } else {
+                            stateContextBuilder.shared(nids.getT2());
+                        }
+                    }
+                    return stateContextBuilder.build();
+                });
     }
 
     @Override
@@ -69,30 +153,28 @@ public class NewsServiceImpl implements NewsService {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(() -> new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
                 .map(user -> throwOnInvalidRequest(validRequest, user))
-                .map(u -> QueryContext.all(validRequest.filter()).withUserId(u.id))
+                .map(user -> QueryContext.all(validRequest.filter()).withUserId(user.id))
                 .flatMap(newsRepository::count)
                 .onErrorResume(UnauthenticatedUser.class, e -> Mono.just(pageRequest.pagination().size()));
     }
 
     @Override
     public Mono<News> get(String id) {
-        return list(PageRequest.one(Criteria.property("id").eq(id))).next();
+        return list(PageRequest.one(Criteria.property(ID).eq(id))).next();
     }
 
     @Override
-    public Mono<News> mark(String id, int flag) {
+    public Mono<Entity<State>> mark(String id, int flag) {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(() -> new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .flatMap(user -> stateRepository.flag(id, user.id, flag))
-                .flatMap(state -> get(id));
+                .flatMap(user -> stateRepository.flag(id, user.id, flag));
     }
 
     @Override
-    public Mono<News> unmark(String id, int flag) {
+    public Mono<Entity<State>> unmark(String id, int flag) {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(() -> new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .flatMap(user -> stateRepository.unflag(id, user.id, flag))
-                .flatMap(state -> get(id));
+                .flatMap(user -> stateRepository.unflag(id, user.id, flag));
     }
 
     @Override

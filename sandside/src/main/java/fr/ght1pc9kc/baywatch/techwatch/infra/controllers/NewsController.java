@@ -1,10 +1,12 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.controllers;
 
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.techwatch.api.NewsService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.common.infra.model.Page;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
 import lombok.AllArgsConstructor;
@@ -55,7 +57,7 @@ public class NewsController {
     }
 
     @PutMapping("/{newsId}/mark/{flag}")
-    public Mono<News> markAs(@PathVariable("newsId") String newsId, @PathVariable("flag") String flag) {
+    public Mono<Entity<State>> markAs(@PathVariable("newsId") String newsId, @PathVariable("flag") String flag) {
         int iFlag = stringToFlag(flag);
         if (iFlag <= 0) {
             return Mono.error(new ResponseStatusException(
@@ -66,7 +68,7 @@ public class NewsController {
     }
 
     @PutMapping("/{newsId}/unmark/{flag}")
-    public Mono<News> unmarkAs(@PathVariable("newsId") String newsId, @PathVariable("flag") String flag) {
+    public Mono<Entity<State>> unmarkAs(@PathVariable("newsId") String newsId, @PathVariable("flag") String flag) {
         int iFlag = stringToFlag(flag);
         if (iFlag < 0) {
             return Mono.error(new ResponseStatusException(
