@@ -6,6 +6,7 @@ import {Mark} from "@/services/model/Mark.enum";
 import rest from '@/services/http/RestWrapper';
 import {ConstantHttpHeaders} from "@/constants";
 import {Infinite} from "@/services/model/Infinite";
+import {NewsState} from "@/services/model/NewsState";
 
 export class NewsService {
 
@@ -43,7 +44,7 @@ export class NewsService {
         );
     }
 
-    mark(id: string, mark: Mark): Observable<News> {
+    mark(id: string, mark: Mark): Observable<NewsState> {
         return rest.put(`/news/${id}/mark/${mark}`).pipe(
             switchMap(response => {
                 if (response.ok) {
@@ -56,7 +57,7 @@ export class NewsService {
         );
     }
 
-    unmark(id: string, mark: Mark): Observable<News> {
+    unmark(id: string, mark: Mark): Observable<NewsState> {
         return rest.put(`/news/${id}/unmark/${mark}`).pipe(
             switchMap(response => {
                 if (response.ok) {

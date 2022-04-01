@@ -34,9 +34,6 @@ public final class PropertiesMappers {
             EntitiesProperties.LINK, NEWS.NEWS_LINK,
             EntitiesProperties.PUBLICATION, NEWS.NEWS_PUBLICATION,
             EntitiesProperties.FEED_ID, NEWS_FEEDS.NEFE_FEED_ID,
-//            EntitiesProperties.READ, DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.READ),       // FIXME: Deprecated
-//            EntitiesProperties.SHARED, DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.SHARED),   // FIXME: Deprecated
-//            EntitiesProperties.TAGS, DSL.concat(DSL.value(TAGS_SEPARATOR), FEEDS_USERS.FEUS_TAGS, DSL.value(TAGS_SEPARATOR)),
             EntitiesProperties.TITLE, NEWS.NEWS_TITLE
     );
 
@@ -50,7 +47,7 @@ public final class PropertiesMappers {
             EntitiesProperties.USER_ID, NEWS_USER_STATE.NURS_USER_ID,
             EntitiesProperties.STATE, NEWS_USER_STATE.NURS_STATE,
             EntitiesProperties.READ, DSL.field(DSL.not(DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.READ).eq(Flags.READ))),
-            EntitiesProperties.SHARED, DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.SHARED)
+            EntitiesProperties.SHARED, DSL.field(DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.SHARED).eq(Flags.SHARED))
     );
     public static final Map<String, Field<?>> USER_PROPERTIES_MAPPING = Map.of(
             EntitiesProperties.ID, USERS.USER_ID,
