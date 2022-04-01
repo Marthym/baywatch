@@ -1,18 +1,18 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.common.domain.Hasher;
+import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
+import fr.ght1pc9kc.baywatch.dsl.tables.Users;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
-import fr.ght1pc9kc.baywatch.security.domain.samples.UserSamples;
+import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
+import fr.ght1pc9kc.baywatch.security.infra.persistence.UserRepository;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
-import fr.ght1pc9kc.baywatch.common.domain.Hasher;
-import fr.ght1pc9kc.baywatch.dsl.tables.Users;
-import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsUsersRecordSample;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
-import fr.ght1pc9kc.baywatch.security.infra.persistence.UserRepository;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.irun.testy.core.extensions.ChainedExtension;
 import fr.irun.testy.jooq.WithDatabaseLoaded;
@@ -77,11 +77,11 @@ class UserRepositoryTest {
                 .assertNext(actual -> Assertions.assertAll(
                         () -> assertThat(actual.id).isEqualTo(UserSamples.OBIWAN.id),
                         () -> assertThat(actual.createdAt).isEqualTo(Instant.parse("1970-01-01T00:00:00Z")),
-                        () -> assertThat(actual.entity.name).isEqualTo("Obiwan Kenobi"),
-                        () -> assertThat(actual.entity.login).isEqualTo("okenobi"),
-                        () -> assertThat(actual.entity.mail).isEqualTo("obiwan.kenobi@jedi.com"),
-                        () -> assertThat(actual.entity.password).isEqualTo(UserSamples.OBIWAN.entity.password),
-                        () -> assertThat(actual.entity.role).isEqualTo(Role.MANAGER)
+                        () -> assertThat(actual.self.name).isEqualTo("Obiwan Kenobi"),
+                        () -> assertThat(actual.self.login).isEqualTo("okenobi"),
+                        () -> assertThat(actual.self.mail).isEqualTo("obiwan.kenobi@jedi.com"),
+                        () -> assertThat(actual.self.password).isEqualTo(UserSamples.OBIWAN.self.password),
+                        () -> assertThat(actual.self.role).isEqualTo(Role.MANAGER)
                 )).verifyComplete();
     }
 
@@ -110,9 +110,9 @@ class UserRepositoryTest {
             assertThat(actual).isEqualTo(2);
         }
 
-        Entity<User> dvader = new Entity<>((Hasher.sha3("darth.vader@sith.fr")), Instant.EPOCH,
+        Entity<User> dvader = new Entity<>((Hasher.sha3("darth.vader@sith.fr")), Entity.NO_ONE, Instant.EPOCH,
                 User.builder().login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur").role(Role.USER).build());
-        Entity<User> dsidious = new Entity<>((Hasher.sha3("darth.sidious@sith.fr")), Instant.EPOCH,
+        Entity<User> dsidious = new Entity<>((Hasher.sha3("darth.sidious@sith.fr")), Entity.NO_ONE, Instant.EPOCH,
                 User.builder().login("dsidious").name("Darth Sidious").mail("darth.sidious@sith.fr").password("obscur").role(Role.MANAGER).build());
 
         StepVerifier.create(
@@ -133,7 +133,7 @@ class UserRepositoryTest {
             assertThat(actual).isEqualTo(2);
         }
 
-        Entity<User> dvader = new Entity<>((Hasher.sha3("darth.vader@sith.fr")), Instant.EPOCH,
+        Entity<User> dvader = new Entity<>((Hasher.sha3("darth.vader@sith.fr")), Entity.NO_ONE, Instant.EPOCH,
                 User.builder().login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur").role(Role.USER).build());
         StepVerifier.create(
                         tested.persist(List.of(dvader, UserSamples.LUKE, UserSamples.OBIWAN, UserSamples.YODA)))

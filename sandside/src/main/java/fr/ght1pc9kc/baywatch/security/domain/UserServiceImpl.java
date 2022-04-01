@@ -91,9 +91,9 @@ public final class UserServiceImpl implements UserService {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
                 .map(u -> {
-                    if (hasRole(u.entity, Role.ADMIN)) {
+                    if (hasRole(u.self, Role.ADMIN)) {
                         return u;
-                    } else if (hasRole(u.entity, Role.USER) && ids.size() == 1 && ids.contains(u.id)) {
+                    } else if (hasRole(u.self, Role.USER) && ids.size() == 1 && ids.contains(u.id)) {
                         return u;
                     }
                     throw new UnauthorizedOperation("User unauthorized for the operation !");
@@ -104,7 +104,7 @@ public final class UserServiceImpl implements UserService {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
                 .map(u -> {
-                    if (hasRole(u.entity, Role.ADMIN)) {
+                    if (hasRole(u.self, Role.ADMIN)) {
                         return u;
                     }
                     throw new UnauthorizedOperation("User unauthorized for the operation !");

@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.tests.samples;
 
+import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
@@ -8,6 +9,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 
 public final class NewsSamples {
     public static final News MAY_THE_FORCE = News.builder()
@@ -28,6 +30,17 @@ public final class NewsSamples {
                     .publication(Instant.parse("2021-04-12T22:00:42Z"))
                     .build())
             .state(State.of(Flags.NONE))
+            .build();
+
+    public static final News A_NEW_HOPE = News.builder()
+            .raw(RawNews.builder()
+                    .id(Hasher.sha3("A_NEW_HOPE"))
+                    .link(URI.create("https://www.force.com/a_new_hope"))
+                    .description("A New Hope")
+                    .publication(Instant.parse("2022-04-01T22:00:42Z"))
+                    .build())
+            .state(State.of(Flags.READ))
+            .feeds(Set.of(FeedSamples.JEDI.getId()))
             .build();
 
     public static final List<News> SAMPLES = List.of(MAY_THE_FORCE, ORDER_66);

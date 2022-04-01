@@ -10,6 +10,7 @@ import org.intellij.lang.annotations.MagicConstant;
 public class State {
     public static final State NONE = new State(Flags.NONE);
 
+    //FIXME: Add JsonIgnore in Mixin to avoid sending flags to front
     @MagicConstant(flagsFromClass = Flags.class)
     public int flags;
 
@@ -18,10 +19,10 @@ public class State {
     }
 
     public boolean isRead() {
-        return (flags & Flags.READ) != 0;
+        return (flags & Flags.READ) == Flags.READ;
     }
 
     public boolean isShared() {
-        return (flags & Flags.SHARED) != 0;
+        return (flags & Flags.SHARED) == Flags.SHARED;
     }
 }

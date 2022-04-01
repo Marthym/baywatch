@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
-import fr.ght1pc9kc.baywatch.common.infra.PredicateSearchVisitor;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
@@ -31,7 +30,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers.FEEDS_PROPERTIES_MAPPING;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
@@ -44,7 +42,6 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 public class FeedRepository implements FeedPersistencePort {
     private static final JooqConditionVisitor JOOQ_CONDITION_VISITOR =
             new JooqConditionVisitor(FEEDS_PROPERTIES_MAPPING::get);
-    private static final PredicateSearchVisitor<Feed> FEEDS_PREDICATE_VISITOR = new PredicateSearchVisitor<>();
 
     private final Scheduler databaseScheduler;
     private final DSLContext dsl;
@@ -62,15 +59,14 @@ public class FeedRepository implements FeedPersistencePort {
         return Flux.<Record>create(sink -> {
                     Cursor<Record> cursor = select.fetchLazy();
                     sink.onRequest(n -> {
-                        Result<Record> rs = cursor.fetchNext(Long.valueOf(n).intValue());
+                        Result<Record> rs = cursor.fetchNext((int) n);
                         rs.forEach(sink::next);
                         if (rs.size() < n) {
                             sink.complete();
                         }
                     });
                 }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
-                .map(baywatchMapper::recordToFeed)
-                .filter(qCtx.filter.accept(FEEDS_PREDICATE_VISITOR));
+                .map(baywatchMapper::recordToFeed);
     }
 
     @Override
@@ -82,11 +78,11 @@ public class FeedRepository implements FeedPersistencePort {
 
     @Override
     public Mono<Feed> update(Feed toUpdate, String userId) {
-        FeedsUsersRecord record = baywatchMapper.feedToFeedsUsersRecord(toUpdate);
-        record.setFeusUserId(userId);
-        return Mono.fromCallable(() -> dsl.executeUpdate(record))
+        FeedsUsersRecord feedsUsersRecord = baywatchMapper.feedToFeedsUsersRecord(toUpdate);
+        feedsUsersRecord.setFeusUserId(userId);
+        return Mono.fromCallable(() -> dsl.executeUpdate(feedsUsersRecord))
                 .subscribeOn(databaseScheduler)
-                .flatMap((i) -> get(QueryContext.id(toUpdate.getId()).withUserId(userId)));
+                .flatMap(i -> get(QueryContext.id(toUpdate.getId()).withUserId(userId)));
     }
 
     @Override
@@ -94,7 +90,7 @@ public class FeedRepository implements FeedPersistencePort {
 
         List<FeedsRecord> records = toPersist.stream()
                 .map(baywatchMapper::feedToFeedsRecord)
-                .collect(Collectors.toList());
+                .toList();
 
         return Mono.fromCallable(() ->
                         dsl.loadInto(FEEDS)
@@ -120,7 +116,7 @@ public class FeedRepository implements FeedPersistencePort {
                 .map(baywatchMapper::feedToFeedsUsersRecord)
                 .filter(Objects::nonNull)
                 .map(r -> r.setFeusUserId(userId))
-                .collect(Collectors.toList());
+                .toList();
 
         return persist(toPersist)
                 .then(Mono.fromCallable(() ->
@@ -174,7 +170,7 @@ public class FeedRepository implements FeedPersistencePort {
         return Mono.fromCallable(() ->
                 dsl.transactionResult(tx -> {
                     int unsubscribed = deleteUserLinkQuery.map(q -> tx.dsl().execute(q)).orElse(0);
-                    deleteNewsFeedQuery.map(q -> tx.dsl().execute(q));
+                    deleteNewsFeedQuery.ifPresent(q -> tx.dsl().execute(q));
                     int purged = deleteFeedQuery.map(q -> tx.dsl().execute(q)).orElse(0);
                     return new FeedDeletedResult(unsubscribed, purged);
                 }));

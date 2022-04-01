@@ -10,7 +10,7 @@ import fr.ght1pc9kc.baywatch.common.infra.config.jackson.mixins.NewsMixin;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
-import fr.ght1pc9kc.baywatch.common.infra.mappers.EntityJacksonMixin;
+import fr.ght1pc9kc.baywatch.common.infra.config.jackson.mixins.EntityJacksonMixin;
 import fr.ght1pc9kc.baywatch.security.infra.config.UserMixin;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;

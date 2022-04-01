@@ -64,6 +64,6 @@ public class EntityDeserializer extends JsonDeserializer<Entity<?>> implements C
         Object wrapped = wrappedDeserializer.deserialize(subParser, ctxt);
         entityNode.set("entity", wrappedNode);
 
-        return new Entity<>(id, createdAt, wrapped);
+        return new Entity<>(id, Entity.NO_ONE, createdAt, wrapped);
     }
 }

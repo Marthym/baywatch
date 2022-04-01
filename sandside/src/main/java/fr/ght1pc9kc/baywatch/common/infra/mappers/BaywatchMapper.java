@@ -1,18 +1,18 @@
 package fr.ght1pc9kc.baywatch.common.infra.mappers;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
-import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
+import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import org.jooq.Record;
 import org.jooq.tools.StringUtils;
 import org.mapstruct.InheritInverseConfiguration;
@@ -43,17 +43,18 @@ public interface BaywatchMapper {
 
     @Mapping(source = "id", target = "userId")
     @Mapping(source = "createdAt", target = "userCreatedAt")
-    @Mapping(source = "entity.login", target = "userLogin")
-    @Mapping(source = "entity.name", target = "userName")
-    @Mapping(source = "entity.mail", target = "userEmail")
-    @Mapping(source = "entity.password", target = "userPassword",
+    @Mapping(source = "self.login", target = "userLogin")
+    @Mapping(source = "self.name", target = "userName")
+    @Mapping(source = "self.mail", target = "userEmail")
+    @Mapping(source = "self.password", target = "userPassword",
             nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
             nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(source = "entity.role", target = "userRole")
+    @Mapping(source = "self.role", target = "userRole")
     UsersRecord entityUserToRecord(Entity<User> user);
 
     @InheritInverseConfiguration
-    Entity<User> recordToUserEntity(UsersRecord record);
+    @Mapping(constant = Entity.NO_ONE, target = "createdBy")
+    Entity<User> recordToUserEntity(UsersRecord usersRecord);
 
     default LocalDateTime map(Instant value) {
         return DateUtils.toLocalDateTime(value);
@@ -72,28 +73,28 @@ public interface BaywatchMapper {
     @Mapping(target = "newsPublication", source = "raw.publication")
     NewsRecord newsToNewsRecord(News news);
 
-    default RawNews recordToRawNews(Record record) {
+    default RawNews recordToRawNews(Record r) {
         return RawNews.builder()
-                .id(record.get(NEWS.NEWS_ID))
-                .title(record.get(NEWS.NEWS_TITLE))
-                .image(Optional.ofNullable(record.get(NEWS.NEWS_IMG_LINK)).map(URI::create).orElse(null))
-                .description(record.get(NEWS.NEWS_DESCRIPTION))
-                .link(URI.create(record.get(NEWS.NEWS_LINK)))
-                .publication(DateUtils.toInstant(record.get(NEWS.NEWS_PUBLICATION)))
+                .id(r.get(NEWS.NEWS_ID))
+                .title(r.get(NEWS.NEWS_TITLE))
+                .image(Optional.ofNullable(r.get(NEWS.NEWS_IMG_LINK)).map(URI::create).orElse(null))
+                .description(r.get(NEWS.NEWS_DESCRIPTION))
+                .link(URI.create(r.get(NEWS.NEWS_LINK)))
+                .publication(DateUtils.toInstant(r.get(NEWS.NEWS_PUBLICATION)))
                 .build();
     }
 
-    default News recordToNews(Record record) {
-        RawNews raw = recordToRawNews(record);
-        State state = (record.indexOf(NEWS_USER_STATE.NURS_STATE) >= 0)
-                ? State.of(record.get(NEWS_USER_STATE.NURS_STATE))
+    default News recordToNews(Record r) {
+        RawNews raw = recordToRawNews(r);
+        State state = (r.indexOf(NEWS_USER_STATE.NURS_STATE) >= 0)
+                ? State.of(r.get(NEWS_USER_STATE.NURS_STATE))
                 : State.NONE;
-        Set<String> feeds = (record.indexOf(NEWS_FEEDS.NEFE_FEED_ID.getName()) >= 0)
-                ? Optional.ofNullable(record.get(NEWS_FEEDS.NEFE_FEED_ID.getName(), String[].class))
+        Set<String> feeds = (r.indexOf(NEWS_FEEDS.NEFE_FEED_ID.getName()) >= 0)
+                ? Optional.ofNullable(r.get(NEWS_FEEDS.NEFE_FEED_ID.getName(), String[].class))
                 .map(Set::of).orElse(Set.of())
                 : Set.of();
-        Set<String> tags = (record.indexOf(FEEDS_USERS.FEUS_TAGS.getName()) >= 0)
-                ? Optional.ofNullable(record.get(FEEDS_USERS.FEUS_TAGS.getName(), String.class))
+        Set<String> tags = (r.indexOf(FEEDS_USERS.FEUS_TAGS.getName()) >= 0)
+                ? Optional.ofNullable(r.get(FEEDS_USERS.FEUS_TAGS.getName(), String.class))
                 .map(s -> Pattern.compile(",").splitAsStream(s).filter(not(String::isBlank))
                         .collect(Collectors.toUnmodifiableSet())).orElse(null)
                 : null;
@@ -105,24 +106,24 @@ public interface BaywatchMapper {
                 .build();
     }
 
-    default RawFeed recordToRawFeed(Record record) {
+    default RawFeed recordToRawFeed(Record r) {
         return RawFeed.builder()
-                .id(record.get(FEEDS.FEED_ID))
-                .url(URI.create(record.get(FEEDS.FEED_URL)))
-                .name(record.get(FEEDS.FEED_NAME))
-                .lastWatch(DateUtils.toInstant(record.get(FEEDS.FEED_LAST_WATCH)))
+                .id(r.get(FEEDS.FEED_ID))
+                .url(URI.create(r.get(FEEDS.FEED_URL)))
+                .name(r.get(FEEDS.FEED_NAME))
+                .lastWatch(DateUtils.toInstant(r.get(FEEDS.FEED_LAST_WATCH)))
                 .build();
     }
 
-    default Feed recordToFeed(Record record) {
-        RawFeed raw = recordToRawFeed(record);
-        Set<String> tags = (record.indexOf(FEEDS_USERS.FEUS_TAGS) < 0)
+    default Feed recordToFeed(Record r) {
+        RawFeed raw = recordToRawFeed(r);
+        Set<String> tags = (r.indexOf(FEEDS_USERS.FEUS_TAGS) < 0)
                 ? Set.of()
-                : Optional.ofNullable(record.get(FEEDS_USERS.FEUS_TAGS))
+                : Optional.ofNullable(r.get(FEEDS_USERS.FEUS_TAGS))
                 .map(t -> Set.of(t.split(",")))
                 .orElse(Set.of());
-        String name = (record.indexOf(FEEDS_USERS.FEUS_FEED_NAME) >= 0 && record.get(FEEDS_USERS.FEUS_FEED_NAME) != null)
-                ? record.get(FEEDS_USERS.FEUS_FEED_NAME) : raw.getName();
+        String name = (r.indexOf(FEEDS_USERS.FEUS_FEED_NAME) >= 0 && r.get(FEEDS_USERS.FEUS_FEED_NAME) != null)
+                ? r.get(FEEDS_USERS.FEUS_FEED_NAME) : raw.getName();
         return Feed.builder()
                 .raw(raw)
                 .name(name)
@@ -142,6 +143,7 @@ public interface BaywatchMapper {
             expression = "java( (feed.getTags() != null && !feed.getTags().isEmpty())?String.join(\",\", feed.getTags()):null )")
     FeedsUsersRecord feedToFeedsUsersRecord(Feed feed);
 
+    @SuppressWarnings("unused")
     default Instant fromLocalDateTime(LocalDateTime date) {
         return DateUtils.toInstant(date);
     }

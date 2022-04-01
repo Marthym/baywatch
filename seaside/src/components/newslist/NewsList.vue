@@ -281,8 +281,8 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
             tap(() => this.store.commit(DECREMENT_UNREAD_MUTATION))),
         newsService.unmark(target.data.id, Mark.READ).pipe(
             tap(() => this.store.commit(INCREMENT_UNREAD_MUTATION))),
-    ).subscribe(news => {
-      this.news[idx].data = news;
+    ).subscribe(state => {
+      this.news[idx].data.read = state.read;
     });
   }
 
@@ -295,8 +295,8 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
         ? newsService.mark(target.data.id, Mark.SHARED)
         : newsService.unmark(target.data.id, Mark.SHARED);
 
-    markObs.subscribe(news => {
-      this.news[idx].data = news;
+    markObs.subscribe(state => {
+      this.news[idx].data.shared = state.shared;
     });
   }
 

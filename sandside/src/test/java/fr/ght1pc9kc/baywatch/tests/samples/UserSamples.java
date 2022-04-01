@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.security.domain.samples;
+package fr.ght1pc9kc.baywatch.tests.samples;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;

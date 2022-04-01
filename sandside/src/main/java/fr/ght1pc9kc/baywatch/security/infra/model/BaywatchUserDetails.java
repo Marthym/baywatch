@@ -24,12 +24,12 @@ public class BaywatchUserDetails implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.entity.password;
+        return user.self.password;
     }
 
     @Override
     public String getUsername() {
-        return user.entity.login;
+        return user.self.login;
     }
 
     @Override
