@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers.NEWS_PROPERTIES_MAPPING;
-import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;

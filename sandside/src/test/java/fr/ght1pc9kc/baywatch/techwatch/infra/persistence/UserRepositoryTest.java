@@ -6,7 +6,7 @@ import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.Users;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
-import fr.ght1pc9kc.baywatch.security.domain.samples.UserSamples;
+import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.security.infra.persistence.UserRepository;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;

@@ -25,6 +25,8 @@ import reactor.core.scheduler.Schedulers;
 import java.util.List;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
+import static fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples.LSKYWALKER;
+import static fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples.OKENOBI;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class StateRepositoryTest {
@@ -71,9 +73,9 @@ class StateRepositoryTest {
         ).collectList().block();
 
         assertThat(actuals).containsOnly(
-                Entity.identify(id21, State.of(0)),
-                Entity.identify(id22, State.of(1)),
-                Entity.identify(id23, State.of(2))
+                Entity.identify(id21, OKENOBI.getUserId(), State.of(Flags.NONE)),
+                Entity.identify(id22, LSKYWALKER.getUserId(), State.of(Flags.READ)),
+                Entity.identify(id23, OKENOBI.getUserId(), State.of(Flags.SHARED))
         );
     }
 
@@ -96,7 +98,7 @@ class StateRepositoryTest {
                 .execute();
 
         tested.flag(newsId,
-                UsersRecordSamples.OKENOBI.getUserId(), removeFlag).block();
+                OKENOBI.getUserId(), removeFlag).block();
 
         Integer actual = dsl.select(NEWS_USER_STATE.NURS_STATE)
                 .from(NEWS_USER_STATE)

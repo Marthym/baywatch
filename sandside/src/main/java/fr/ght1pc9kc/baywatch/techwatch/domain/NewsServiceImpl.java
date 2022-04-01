@@ -77,6 +77,18 @@ public class NewsServiceImpl implements NewsService {
                 .flatMapMany(newsRepository::list);
     }
 
+    @Override
+    public Mono<Integer> count(PageRequest pageRequest) {
+        PageRequest validRequest = pageRequest.withFilter(pageRequest.filter().accept(new CriteriaModifierVisitor()));
+        return authFacade.getConnectedUser()
+                .switchIfEmpty(Mono.error(() -> new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
+                .map(user -> throwOnInvalidRequest(validRequest, user))
+                .map(user -> QueryContext.all(validRequest.filter()).withUserId(user.id))
+                .flatMap(this::forgeAggregateQueryContext)
+                .flatMap(newsRepository::count)
+                .onErrorResume(UnauthenticatedUser.class, e -> Mono.just(pageRequest.pagination().size()));
+    }
+
     public Mono<QueryContext> forgeAggregateQueryContext(QueryContext qCtx) {
         List<String> props = qCtx.filter.accept(new ListPropertiesCriteriaVisitor());
         if (props.size() == 1 && ID.equals(props.get(0))) {
@@ -145,17 +157,6 @@ public class NewsServiceImpl implements NewsService {
                     }
                     return stateContextBuilder.build();
                 });
-    }
-
-    @Override
-    public Mono<Integer> count(PageRequest pageRequest) {
-        PageRequest validRequest = pageRequest.withFilter(pageRequest.filter().accept(new CriteriaModifierVisitor()));
-        return authFacade.getConnectedUser()
-                .switchIfEmpty(Mono.error(() -> new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .map(user -> throwOnInvalidRequest(validRequest, user))
-                .map(user -> QueryContext.all(validRequest.filter()).withUserId(user.id))
-                .flatMap(newsRepository::count)
-                .onErrorResume(UnauthenticatedUser.class, e -> Mono.just(pageRequest.pagination().size()));
     }
 
     @Override

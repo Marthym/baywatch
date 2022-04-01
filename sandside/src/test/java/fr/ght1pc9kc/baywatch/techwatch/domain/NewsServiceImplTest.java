@@ -1,81 +1,62 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
-import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.security.api.model.Role;
-import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.techwatch.api.NewsService;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
+import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
+import fr.ght1pc9kc.baywatch.tests.samples.FeedSamples;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.net.URI;
-import java.time.Instant;
-import java.util.Set;
-
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.FEED_ID;
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.NEWS_ID;
+import static fr.ght1pc9kc.baywatch.tests.samples.FeedSamples.JEDI;
+import static fr.ght1pc9kc.baywatch.tests.samples.FeedSamples.SITH;
+import static fr.ght1pc9kc.baywatch.tests.samples.NewsSamples.A_NEW_HOPE;
+import static fr.ght1pc9kc.baywatch.tests.samples.NewsSamples.MAY_THE_FORCE;
+import static fr.ght1pc9kc.baywatch.tests.samples.NewsSamples.ORDER_66;
+import static fr.ght1pc9kc.baywatch.tests.samples.UserSamples.LUKE;
+import static fr.ght1pc9kc.baywatch.tests.samples.UserSamples.OBIWAN;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class NewsServiceImplTest {
-    private static final News SAMPLE_NEWS_01 = News.builder()
-            .raw(RawNews.builder()
-                    .id("0000000000000000000000000000000000000000000000000000000000000001")
-                    .title("News 01")
-                    .description("Description 01")
-                    .link(URI.create("http://blog.ght1pc9kc.fr/news/01"))
-                    .publication(Instant.parse("2020-12-30T10:10:01Z"))
-                    .build())
-            .state(State.of(Flags.READ))
-            .feeds(Set.of("1000000000000000000000000000000000000000000000000000000000000000"))
-            .build();
-    private static final News SAMPLE_NEWS_02 = News.builder()
-            .raw(RawNews.builder()
-                    .id("0000000000000000000000000000000000000000000000000000000000000002")
-                    .title("News 02")
-                    .description("Description 02")
-                    .link(URI.create("http://blog.ght1pc9kc.fr/news/02"))
-                    .publication(Instant.parse("2020-12-30T10:10:01Z"))
-                    .build())
-            .state(State.of(Flags.SHARED | Flags.READ))
-            .feeds(Set.of("1000000000000000000000000000000000000000000000000000000000000000"))
-            .build();
-    private static final Entity<User> SAMPLE_USER_01 = Entity.identify(
-            Hasher.sha3("okenobi@jedi.light"),
-            User.builder()
-                    .login("okenobi")
-                    .name("Obiwan Kenobi")
-                    .mail("okenobi@jedi.light")
-                    .role(Role.USER)
-                    .build());
-
     private NewsService tested;
 
     private AuthenticationFacade mockAuthFacade;
+    private NewsPersistencePort mockNewsPersistence;
+    private final ArgumentCaptor<QueryContext> captor = ArgumentCaptor.forClass(QueryContext.class);
 
     @BeforeEach
     void setUp() {
-        NewsPersistencePort mockNewsPersistence = mock(NewsPersistencePort.class);
-        when(mockNewsPersistence.list(any())).thenReturn(Flux.just(
-                SAMPLE_NEWS_01, SAMPLE_NEWS_02));
+        mockNewsPersistence = mock(NewsPersistencePort.class);
+        when(mockNewsPersistence.list(any(QueryContext.class))).thenReturn(Flux.just(
+                MAY_THE_FORCE, ORDER_66, A_NEW_HOPE));
+        when(mockNewsPersistence.count(any(QueryContext.class))).thenReturn(Mono.just(3));
         mockAuthFacade = mock(AuthenticationFacade.class);
         StatePersistencePort mockStateRepository = mock(StatePersistencePort.class);
+        when(mockStateRepository.list(any())).thenReturn(Flux.just(
+                Entity.identify(MAY_THE_FORCE.getId(), OBIWAN.id, MAY_THE_FORCE.getState()),
+                Entity.identify(A_NEW_HOPE.getId(), LUKE.id, A_NEW_HOPE.getState())
+        ));
         FeedPersistencePort mockFeedRepository = mock(FeedPersistencePort.class);
+        when(mockFeedRepository.list(any())).thenReturn(Flux.fromIterable(FeedSamples.SAMPLES));
 
         tested = new NewsServiceImpl(
                 new ListPropertiesCriteriaVisitor(), mockNewsPersistence, mockFeedRepository, mockStateRepository, mockAuthFacade);
@@ -87,8 +68,8 @@ class NewsServiceImplTest {
         News actual = tested.list(PageRequest.all()).next().block();
 
         Assertions.assertThat(actual).isNotNull();
-        Assertions.assertThat(actual.getRaw()).isEqualTo(SAMPLE_NEWS_01.getRaw());
-        Assertions.assertThat(actual.getState()).isEqualTo(SAMPLE_NEWS_01.getState());
+        Assertions.assertThat(actual.getRaw()).isEqualTo(MAY_THE_FORCE.getRaw());
+        Assertions.assertThat(actual.getState()).isEqualTo(MAY_THE_FORCE.getState());
     }
 
     @Test
@@ -106,7 +87,7 @@ class NewsServiceImplTest {
 
     @Test
     void should_list_with_illegal_filters_for_user() {
-        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(SAMPLE_USER_01));
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(LUKE));
         PageRequest pageRequest = PageRequest.all(
                 Criteria.property("illegal").eq("May the Force")
                         .and(Criteria.property("read").eq(true)));
@@ -119,31 +100,65 @@ class NewsServiceImplTest {
 
     @Test
     void should_list_news_for_authenticated_user() {
-        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(SAMPLE_USER_01));
-        News actual = tested.list(PageRequest.all()).next().block();
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(LUKE));
 
-        Assertions.assertThat(actual).isNotNull();
-        Assertions.assertThat(actual.getRaw()).isEqualTo(SAMPLE_NEWS_01.getRaw());
-        Assertions.assertThat(actual.getState()).isEqualTo(SAMPLE_NEWS_01.getState());
+        StepVerifier.create(tested.list(PageRequest.all()))
+                .assertNext(actual -> {
+                    Assertions.assertThat(actual).isNotNull();
+                    Assertions.assertThat(actual.getRaw()).isEqualTo(MAY_THE_FORCE.getRaw());
+                    Assertions.assertThat(actual.getState()).isEqualTo(MAY_THE_FORCE.getState());
+                })
+                .expectNextCount(2)
+                .verifyComplete();
+
+        verify(mockNewsPersistence, times(1)).list(captor.capture());
+        Assertions.assertThat(captor.getValue().filter).isEqualTo(Criteria.and(
+                Criteria.or(
+                        Criteria.property(FEED_ID).in(JEDI.getId(), SITH.getId()),
+                        Criteria.property(NEWS_ID).in(MAY_THE_FORCE.getId())
+                ),
+                Criteria.not(Criteria.property(NEWS_ID).in(A_NEW_HOPE.getId()))
+        ));
+    }
+
+    @Test
+    void should_count_for_authenticated_user() {
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(LUKE));
+
+        StepVerifier.create(tested.count(PageRequest.all()))
+                .assertNext(actual -> {
+                    Assertions.assertThat(actual).isNotNull();
+                    Assertions.assertThat(actual).isEqualTo(3);
+                })
+                .verifyComplete();
+
+        verify(mockNewsPersistence, times(1)).count(captor.capture());
+        Assertions.assertThat(captor.getValue().filter).isEqualTo(Criteria.and(
+                Criteria.or(
+                        Criteria.property(FEED_ID).in(JEDI.getId(), SITH.getId()),
+                        Criteria.property(NEWS_ID).in(MAY_THE_FORCE.getId())
+                ),
+                Criteria.not(Criteria.property(NEWS_ID).in(A_NEW_HOPE.getId()))
+        ));
     }
 
     @Test
     void should_get_news_for_anonymous() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.empty());
-        News actual = tested.get(SAMPLE_NEWS_01.getId()).block();
+        News actual = tested.get(MAY_THE_FORCE.getId()).block();
 
         Assertions.assertThat(actual).isNotNull();
-        Assertions.assertThat(actual.getRaw()).isEqualTo(SAMPLE_NEWS_01.getRaw());
-        Assertions.assertThat(actual.getState()).isEqualTo(SAMPLE_NEWS_01.getState());
+        Assertions.assertThat(actual.getRaw()).isEqualTo(MAY_THE_FORCE.getRaw());
+        Assertions.assertThat(actual.getState()).isEqualTo(MAY_THE_FORCE.getState());
     }
 
     @Test
     void should_get_news_for_authenticated_user() {
-        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(SAMPLE_USER_01));
-        News actual = tested.get(SAMPLE_NEWS_01.getId()).block();
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(LUKE));
+        News actual = tested.get(MAY_THE_FORCE.getId()).block();
 
         Assertions.assertThat(actual).isNotNull();
-        Assertions.assertThat(actual.getRaw()).isEqualTo(SAMPLE_NEWS_01.getRaw());
-        Assertions.assertThat(actual.getState()).isEqualTo(SAMPLE_NEWS_01.getState());
+        Assertions.assertThat(actual.getRaw()).isEqualTo(MAY_THE_FORCE.getRaw());
+        Assertions.assertThat(actual.getState()).isEqualTo(MAY_THE_FORCE.getState());
     }
 }

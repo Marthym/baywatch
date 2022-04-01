@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.tests.samples.infra;
 
-import fr.ght1pc9kc.baywatch.security.domain.samples.UserSamples;
+import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.dsl.tables.Users;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
 import fr.irun.testy.jooq.model.RelationalDataSet;
