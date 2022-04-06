@@ -328,7 +328,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     if (vueRef === undefined) {
       throw new Error(`Element with ref ${ref} not found !`);
     }
-    return (vueRef as Vue[])[0].$el
+    return (vueRef)[0].$el
   }
 
   unmounted(): void {
