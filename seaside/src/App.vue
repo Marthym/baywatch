@@ -1,5 +1,6 @@
 <template>
   <div class="flex h-screen overflow-y-hidden">
+    <SideNavOverlay/>
     <SideNav/>
     <div class="flex flex-col flex-1 h-full overflow-hidden">
       <ContentTopNav/>
@@ -17,6 +18,7 @@
 import {Options, Vue} from 'vue-property-decorator';
 import ContentTopNav from "@/components/topnav/ContentTopNav.vue";
 import SideNav from '@/components/sidenav/SideNav.vue';
+import SideNavOverlay from '@/components/sidenav/SideNavOverlay.vue';
 import NotificationArea from "@/components/shared/notificationArea/NotificationArea.vue";
 import authenticationService from '@/services/AuthenticationService'
 import serverEventService from '@/services/sse/ServerEventService'
@@ -31,6 +33,7 @@ import {LOGOUT_MUTATION, UPDATE_MUTATION as USER_UPDATE_MUTATION} from "@/store/
     NotificationArea,
     ContentTopNav,
     SideNav,
+    SideNavOverlay,
   },
 })
 export default class App extends Vue {
