@@ -1,12 +1,10 @@
 <template>
-  <div class="absolute inset-0 h-screen w-screen backdrop-filter bg-gray-700 bg-opacity-90"
+  <div class="absolute inset-0 z-50 h-screen w-screen backdrop-filter bg-neutral lg:bg-opacity-90"
        @click.prevent="closeLoginWindow" @keydown.esc="closeLoginWindow">
-    <div class="card bordered flex rounded-lg shadow-lg overflow-hidden h-full
-                lg:h-fit lg:mt-8 mx-auto lg:card-side lg:max-w-4xl"
+    <div class="card bordered flex rounded-none overflow-hidden h-full
+                lg:rounded-lg lg:shadow-lg lg:h-fit lg:mt-8 mx-auto lg:card-side lg:max-w-4xl"
          @click.stop>
-      <figure class="">
         <img class="object-cover" src="/login.webp" alt="Baywatch">
-      </figure>
       <div class="card-body">
         <form @submit.prevent="onLogin">
           <h2 class="card-title">Baywatch</h2>
