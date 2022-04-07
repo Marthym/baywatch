@@ -2,14 +2,14 @@
   <div class="flex mt-5 text-primary-content" v-if="userState.isAuthenticated">
     <img class="h-12 w-12 mr-2 rounded-full object-cover"
          :src="avatar"
-         :alt="userState.user.id"/>
+         :alt="userState.user._id"/>
     <div>
       <h2 class="text-xl font-extrabold capitalize">
         {{ userState.user.name }}
       </h2>
       <span class="text-sm">
 				<span class="capitalize italic">{{ userState.user.role.toLowerCase()}}</span>
-      {{ userState.user.id }}
+      {{ userState.user._id }}
     </span>
     </div>
   </div>
