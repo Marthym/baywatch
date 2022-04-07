@@ -56,6 +56,7 @@ import {UserState} from "@/store/user/user";
 import feedService, {FeedService} from "@/services/FeedService";
 import newsService, {NewsService} from "@/services/NewsService";
 import tagsService from '@/services/TagsService';
+import {useRouter} from "vue-router";
 
 
 @Options({
@@ -67,6 +68,7 @@ import tagsService from '@/services/TagsService';
 export default class NewsList extends Vue implements ScrollActivable, InfiniteScrollable {
 
   private readonly store = setup(() => useStore());
+  private readonly router = setup(() => useRouter());
   private readonly userState: UserState = setup(() => useStore().state.user);
   private readonly activateOnScroll = setup(() => useScrollingActivation());
   private readonly infiniteScroll = setup(() => useInfiniteScroll());
@@ -88,6 +90,11 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   }
 
   mounted(): void {
+    const queryTag: string = this.router.currentRoute.query.tag as string;
+    if (queryTag) {
+      this.tags = queryTag;
+    }
+
     this.activateOnScroll.connect(this);
     this.infiniteScroll.connect(this);
 
@@ -96,6 +103,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     }
 
     window.addEventListener('keydown', this.onKeyDownListener, false);
+
     this.tagListenerIndex = tagsService.registerListener(tag => {
       this.tags = tag;
       this.news = [];

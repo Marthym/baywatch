@@ -24,24 +24,35 @@
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
 import tagsService from "@/services/TagsService";
+import {setup} from "vue-class-component";
+import {useRouter} from "vue-router";
 
 @Options({name: 'SideNavTags'})
 export default class SideNavTags extends Vue {
+  private router = setup(() => useRouter());
   private tags: string[] = [];
   private selected = '';
 
   mounted(): void {
     tagsService.list().subscribe({
-      next: tags => this.tags = tags
-    })
+      next: tags => {
+        this.tags = tags;
+        const queryTag: string = this.router.currentRoute.query.tag as string;
+        if (queryTag && this.tags.indexOf(queryTag) >= 0) {
+          this.selected = queryTag;
+        }
+      }
+    });
   }
 
   selectTag(event: MouseEvent): void {
     const selected = (event.target as HTMLElement).innerText;
     if (this.selected === selected) {
       this.selected = tagsService.select('');
+      this.router.replace({ path: this.router.currentRoute.path })
     } else {
       this.selected = tagsService.select(selected);
+      this.router.replace({ path: this.router.currentRoute.path, query: { tag: selected } })
     }
   }
 }
