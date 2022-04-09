@@ -28,6 +28,20 @@ class RedditParserPluginTest {
     }
 
     @Test
+    void should_parse_description_with_relative() {
+        final String content = "&amp;#32; submitted by &amp;#32; &lt;a href=&quot;https://www.reddit.com/user/jveverka&quot;&gt;" +
+                " /u/jveverka &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href=&quot;/r/raspberry_pi/comments/tzf5rp/rpi_sensor_drivers_4_java/" +
+                "&quot;&gt;[link]&lt;/a&gt;&lt;/span&gt; &amp;#32; &lt;span&gt;&lt;a href=&quot;" +
+                "https://www.reddit.com/r/java/comments/tzovn6/rpi_sensor_drivers_4_java/&quot;&gt;[comments]&lt;/a" +
+                "&gt;&lt;/span&gt;";
+
+        RawNews actual = tested.handleDescriptionEvent(RawNews.builder().id("42"), content).build();
+
+        assertThat(actual.link).isEqualTo(URI.create(
+                "https://www.reddit.com/r/raspberry_pi/comments/tzf5rp/rpi_sensor_drivers_4_java/"));
+    }
+
+    @Test
     void should_parse_reddit_description_without_protect() {
         final String content = "&#32; submitted by &#32; <a href=\"https://www.reddit.com/user/SSFO\"> /u/SSFO </a> <br/> <span>"
                 + "<a href=\"http://peoplesfeelings.com/what-is-peoples-feelings/\">[link]</a></span> &#32; <span>"

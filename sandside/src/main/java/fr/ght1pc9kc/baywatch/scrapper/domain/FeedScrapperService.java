@@ -194,27 +194,33 @@ public final class FeedScrapperService implements Runnable {
     }
 
     private Mono<News> completeWithOpenGraph(News news) {
-        return headScrapper.scrap(news.getLink())
-                .map(headMetas -> {
-                    RawNews raw = news.getRaw();
+        try {
+            return headScrapper.scrap(news.getLink())
+                    .map(headMetas -> {
+                        RawNews raw = news.getRaw();
 
-                    Links links = headMetas.links();
-                    if (nonNull(links) && nonNull(links.canonical())) {
-                        raw = raw.withLink(links.canonical());
-                    }
+                        Links links = headMetas.links();
+                        if (nonNull(links) && nonNull(links.canonical())) {
+                            raw = raw.withLink(links.canonical());
+                        }
 
-                    OpenGraph og = headMetas.og();
-                    if (og.isEmpty()) {
-                        log.debug("No OG meta found for {}", news.getLink());
+                        OpenGraph og = headMetas.og();
+                        if (og.isEmpty()) {
+                            log.debug("No OG meta found for {}", news.getLink());
+                            return (news.getRaw() == raw) ? news : news.withRaw(raw);
+                        }
+                        raw = Optional.ofNullable(og.title).map(raw::withTitle).orElse(raw);
+                        raw = Optional.ofNullable(og.description).map(raw::withDescription).orElse(raw);
+                        raw = Optional.ofNullable(og.image)
+                                .filter(i -> SUPPORTED_SCHEMES.contains(i.getScheme()))
+                                .map(raw::withImage).orElse(raw);
                         return (news.getRaw() == raw) ? news : news.withRaw(raw);
-                    }
-                    raw = Optional.ofNullable(og.title).map(raw::withTitle).orElse(raw);
-                    raw = Optional.ofNullable(og.description).map(raw::withDescription).orElse(raw);
-                    raw = Optional.ofNullable(og.image)
-                            .filter(i -> SUPPORTED_SCHEMES.contains(i.getScheme()))
-                            .map(raw::withImage).orElse(raw);
-                    return (news.getRaw() == raw) ? news : news.withRaw(raw);
-                }).switchIfEmpty(Mono.just(news));
+                    }).switchIfEmpty(Mono.just(news));
+        } catch (Exception e) {
+            log.warn("Unable to scrap header from {}.", news.getLink());
+            log.debug(ERROR_STACKTRACE_MESSAGE, e);
+            return Mono.just(news);
+        }
     }
 
     @VisibleForTesting
