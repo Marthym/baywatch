@@ -1,10 +1,10 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain.plugins;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.scrapper.api.FeedParserPlugin;
 import fr.ght1pc9kc.baywatch.scrapper.api.FeedScrapperPlugin;
-import fr.ght1pc9kc.baywatch.common.domain.Hasher;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.HtmlUtils;
 
@@ -16,13 +16,14 @@ import java.util.regex.Pattern;
 @Component
 public final class RedditParserPlugin implements FeedParserPlugin, FeedScrapperPlugin {
 
+    private static final URI REDDIT = URI.create("https://www.reddit.com");
     private static final String LINK = "link";
     private static final Pattern LINK_EXTRACT_PATTERN =
             Pattern.compile("href=\"(?<" + LINK + ">[^\"]*)\">\\[link]", Pattern.MULTILINE);
 
     @Override
     public String pluginForDomain() {
-        return "www.reddit.com";
+        return REDDIT.getHost();
     }
 
     @Override
@@ -30,7 +31,12 @@ public final class RedditParserPlugin implements FeedParserPlugin, FeedScrapperP
         String parsableContent = HtmlUtils.htmlUnescape(content);
         Matcher m = LINK_EXTRACT_PATTERN.matcher(parsableContent);
         if (m.find()) {
-            builder.link(URI.create(m.group(LINK)));
+            URI link = URI.create(m.group(LINK));
+            if (link.isAbsolute()) {
+                builder.link(link);
+            } else {
+                builder.link(REDDIT.resolve(link));
+            }
         }
         return builder.description(content);
     }
