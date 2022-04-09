@@ -2,7 +2,7 @@
   <div class="max-w-5xl">
     <template v-for="(card, idx) in news" :key="card.data.id">
       <NewsCard :ref="card.data.id" :card="card" @activate="activateNewsCard(idx)">
-        <template #actions v-if="userState.isAuthenticated">
+        <template #actions v-if="userStore.isAuthenticated">
           <div class="btn-group">
             <button v-if="card.data.read" @click.stop="markNewsRead(idx, false)" class="btn btn-xs btn-ghost">
               <svg class="h-5 w-5 cursor-pointer" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -56,7 +56,7 @@ import {UserState} from "@/store/user/user";
 import feedService, {FeedService} from "@/services/FeedService";
 import newsService, {NewsService} from "@/services/NewsService";
 import tagsService from '@/services/TagsService';
-import {useRouter} from "vue-router";
+import {NewsStore} from "@/store/news/news";
 
 
 @Options({
@@ -68,8 +68,8 @@ import {useRouter} from "vue-router";
 export default class NewsList extends Vue implements ScrollActivable, InfiniteScrollable {
 
   private readonly store = setup(() => useStore());
-  private readonly router = setup(() => useRouter());
-  private readonly userState: UserState = setup(() => useStore().state.user);
+  private readonly userStore: UserState = setup(() => useStore().state.user);
+  private readonly newsStore: NewsStore = setup(() => useStore().state.news);
   private readonly activateOnScroll = setup(() => useScrollingActivation());
   private readonly infiniteScroll = setup(() => useInfiniteScroll());
 
@@ -77,11 +77,10 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   private feeds = new Map<string, Feed>();
 
   private activeNews = -1;
-  private tags = '';
   private tagListenerIndex = -1;
 
   get isAuthenticated(): boolean | undefined {
-    return this.userState.isAuthenticated;
+    return this.userStore.isAuthenticated;
   }
 
   @Watch('isAuthenticated')
@@ -90,25 +89,15 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   }
 
   mounted(): void {
-    const queryTag: string = this.router.currentRoute.query.tag as string;
-    if (queryTag) {
-      this.tags = queryTag;
-    }
-
     this.activateOnScroll.connect(this);
     this.infiniteScroll.connect(this);
 
-    if (this.userState.isAuthenticated !== undefined) {
+    if (this.userStore.isAuthenticated !== undefined) {
       this.onAuthenticationChange();
     }
 
     window.addEventListener('keydown', this.onKeyDownListener, false);
 
-    this.tagListenerIndex = tagsService.registerListener(tag => {
-      this.tags = tag;
-      this.news = [];
-      this.loadNextPage().pipe(take(1)).subscribe(el => this.observeFirst(el))
-    });
     newsService.registerReloadFunction(() => {
       this.news = [];
       this.activeNews = -1;
@@ -129,10 +118,11 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     const query = new URLSearchParams(NewsService.DEFAULT_QUERY);
     if (this.isAuthenticated) {
       query.append('read', 'false');
+      if (this.newsStore.tags.length > 0) {
+        this.newsStore.tags.forEach(tag => query.append('tags', `∋${tag}`));
+      }
     }
-    if (this.tags !== '') {
-      query.append('tags', `∋${this.tags}`);
-    }
+
     const lastIndex = this.news.length - 1;
     if (this.news.length > 0) {
       let toSkip = 0;

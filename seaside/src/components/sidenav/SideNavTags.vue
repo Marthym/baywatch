@@ -11,7 +11,8 @@
 
       <ul class="flex flex-wrap list-none mt-4">
         <li v-for="tag in tags" v-bind:key="tag">
-          <button class="badge m-1" :class="{'badge-accent': selected && tag === selected}" @click="selectTag">{{
+          <button class="badge m-1" :class="{'badge-accent': newsStore.tags[0] && tag === newsStore.tags[0]}"
+                  @click="selectTag">{{
               tag
             }}
           </button>
@@ -24,35 +25,39 @@
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
 import tagsService from "@/services/TagsService";
+import newsService from '@/services/NewsService';
 import {setup} from "vue-class-component";
 import {useRouter} from "vue-router";
+import {useStore} from "vuex";
+import {NewsStore} from "@/store/news/news";
+import {NEWS_REPLACE_TAGS_MUTATION} from "@/store/news/NewsStoreConstants";
 
 @Options({name: 'SideNavTags'})
 export default class SideNavTags extends Vue {
   private router = setup(() => useRouter());
+  private store = setup(() => useStore());
+  private newsStore: NewsStore = setup(() => useStore().state.news);
   private tags: string[] = [];
-  private selected = '';
 
   mounted(): void {
     tagsService.list().subscribe({
       next: tags => {
         this.tags = tags;
-        const queryTag: string = this.router.currentRoute.query.tag as string;
-        if (queryTag && this.tags.indexOf(queryTag) >= 0) {
-          this.selected = queryTag;
-        }
       }
     });
   }
 
   selectTag(event: MouseEvent): void {
+    const currentTags = this.newsStore.tags;
     const selected = (event.target as HTMLElement).innerText;
-    if (this.selected === selected) {
-      this.selected = tagsService.select('');
-      this.router.replace({ path: this.router.currentRoute.path })
-    } else {
-      this.selected = tagsService.select(selected);
-      this.router.replace({ path: this.router.currentRoute.path, query: { tag: selected } })
+    if (currentTags.indexOf(selected) >= 0) {
+      this.store.commit(NEWS_REPLACE_TAGS_MUTATION, []);
+      this.router.replace({path: this.router.currentRoute.path});
+      newsService.reload();
+    } else if (this.tags.indexOf(selected) >= 0) {
+      this.store.commit(NEWS_REPLACE_TAGS_MUTATION, [selected]);
+      this.router.replace({path: this.router.currentRoute.path, query: {tag: selected}});
+      newsService.reload();
     }
   }
 }
