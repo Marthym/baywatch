@@ -8,7 +8,7 @@ import {defineAsyncComponent} from "vue";
 import {NEWS_REPLACE_TAGS_MUTATION} from "@/store/news/NewsStoreConstants";
 import {setup} from "vue-class-component";
 import {useRouter} from "vue-router";
-import {useStore} from "vuex";
+import {Store, useStore} from "vuex";
 
 const NewsList = defineAsyncComponent(() => import('@/components/newslist/NewsList.vue'));
 
@@ -20,7 +20,7 @@ const NewsList = defineAsyncComponent(() => import('@/components/newslist/NewsLi
 })
 export default class HomePage extends Vue {
   private router = setup(() => useRouter());
-  private store = setup(() => useStore());
+  private store: Store<any> = setup(() => useStore());
 
   private mounted(): void {
     this.readQueryParameters();
@@ -28,8 +28,11 @@ export default class HomePage extends Vue {
 
   private readQueryParameters(): void {
     const queryTag: string = this.router.currentRoute.query.tag as string;
+
     if (queryTag && queryTag.length > 0) {
       this.store.commit(NEWS_REPLACE_TAGS_MUTATION, [queryTag]);
+    } else {
+      this.store.commit(NEWS_REPLACE_TAGS_MUTATION, []);
     }
   }
 }

@@ -26,6 +26,7 @@ import {defineAsyncComponent} from "vue";
 import {UserState} from "@/store/user/user";
 import {LOGOUT_MUTATION} from "@/store/user/UserConstants";
 import {switchMap} from "rxjs/operators";
+import {useRouter} from "vue-router";
 
 const SideNavTags = defineAsyncComponent(() => import('./SideNavTags.vue').then(m => m.default))
 const SideNavUserInfo = defineAsyncComponent(() => import('./SideNavUserInfo.vue').then(m => m.default));
@@ -40,6 +41,7 @@ const SideNavUserInfo = defineAsyncComponent(() => import('./SideNavUserInfo.vue
   },
 })
 export default class SideNav extends Vue {
+  private router = setup(() => useRouter());
   private store = setup(() => useStore());
   private state: SidenavState = setup(() => useStore().state.sidenav);
   private user: UserState = setup(() => useStore().state.user);
@@ -50,7 +52,7 @@ export default class SideNav extends Vue {
     ).subscribe(() => {
       this.store.commit(LOGOUT_MUTATION);
       this.store.dispatch(RELOAD_ACTION);
-      this.$router.go(0);
+      this.router.go(0);
     });
   }
 }

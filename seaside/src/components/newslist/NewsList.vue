@@ -55,7 +55,6 @@ import {UserState} from "@/store/user/user";
 
 import feedService, {FeedService} from "@/services/FeedService";
 import newsService, {NewsService} from "@/services/NewsService";
-import tagsService from '@/services/TagsService';
 import {NewsStore} from "@/store/news/news";
 
 
@@ -333,7 +332,6 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     this.activateOnScroll.disconnect();
     this.infiniteScroll.disconnect();
     window.removeEventListener('keydown', this.onKeyDownListener, false);
-    tagsService.unregisterListener(this.tagListenerIndex);
   }
 
 }
