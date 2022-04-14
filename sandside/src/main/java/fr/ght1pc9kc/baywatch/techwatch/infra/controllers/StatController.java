@@ -16,7 +16,6 @@ public class StatController {
     private final StatService statService;
 
     @GetMapping()
-    @PreAuthorize("permitAll()")
     public Mono<Statistics> stats() {
         return Mono.zip(
                 statService.getFeedsCount(),
