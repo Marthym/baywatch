@@ -2,10 +2,9 @@
   <aside class="fixed md:w-64 px-10 pt-4 pb-6 inset-y-0 z-20 flex flex-col flex-shrink-0 w-4/5 max-h-screen overflow-hidden
   transition-all transform bg-base-200 shadow-lg lg:z-auto lg:static lg:shadow-none"
          :class="{'-translate-x-full lg:translate-x-0': !state.open}">
-    <SideNavHeader :unread="baywatchStats.unread"/>
+    <SideNavHeader/>
 
     <SideNavUserInfo/>
-    <SideNavStatistics :statistics="baywatchStats" :isLoggedIn="user.isAuthenticated"/>
 
     <SideNavTags v-if="user.isAuthenticated"/>
     <SideNavManagement @logout="logoutUser()"/>
@@ -16,12 +15,10 @@
 import {Options, Vue} from 'vue-property-decorator';
 import SideNavHeader from "./SideNavHeader.vue";
 import SideNavManagement from './SideNavManagement.vue';
-import SideNavStatistics from "@/components/sidenav/SideNavStatistics.vue";
 
 import authenticationService from "@/services/AuthenticationService";
 import serverEventService from '@/services/sse/ServerEventService'
 import {SidenavState} from "@/store/sidenav/sidenav";
-import {StatisticsState} from "@/store/statistics/statistics";
 import {RELOAD_ACTION} from "@/store/statistics/StatisticsConstants";
 import {useStore} from "vuex";
 import {setup} from "vue-class-component";
@@ -36,7 +33,6 @@ const SideNavUserInfo = defineAsyncComponent(() => import('./SideNavUserInfo.vue
 @Options({
   name: 'SideNav',
   components: {
-    SideNavStatistics,
     SideNavHeader,
     SideNavUserInfo,
     SideNavTags,
@@ -46,7 +42,6 @@ const SideNavUserInfo = defineAsyncComponent(() => import('./SideNavUserInfo.vue
 export default class SideNav extends Vue {
   private store = setup(() => useStore());
   private state: SidenavState = setup(() => useStore().state.sidenav);
-  private baywatchStats: StatisticsState = setup(() => useStore().state.statistics);
   private user: UserState = setup(() => useStore().state.user);
 
   logoutUser(): void {
