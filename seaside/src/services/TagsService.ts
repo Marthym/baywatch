@@ -4,9 +4,6 @@ import {from, Observable} from "rxjs";
 import rest from '@/services/http/RestWrapper';
 
 export class TagsService {
-    private listenerIdx = 0;
-    private tagListeners: Map<number, ((t: string) => void)> = new Map();
-
     /**
      * List all available tags from backend
      */
@@ -22,21 +19,6 @@ export class TagsService {
             }),
             take(1)
         );
-    }
-
-    registerListener(callback: ((t: string) => void)): number {
-        this.tagListeners.set(++this.listenerIdx, callback);
-        return this.listenerIdx;
-    }
-
-    unregisterListener(idx: number): void {
-        if (idx <= 0) return;
-        this.tagListeners.delete(idx);
-    }
-
-    select(tag: string): string {
-        this.tagListeners.forEach(callback => callback(tag));
-        return tag;
     }
 }
 

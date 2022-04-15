@@ -20,12 +20,12 @@ import ContentTopNav from "@/components/topnav/ContentTopNav.vue";
 import SideNav from '@/components/sidenav/SideNav.vue';
 import SideNavOverlay from '@/components/sidenav/SideNavOverlay.vue';
 import NotificationArea from "@/components/shared/notificationArea/NotificationArea.vue";
+import {EventType} from "@/services/sse/EventType.enum";
 import authenticationService from '@/services/AuthenticationService'
 import serverEventService from '@/services/sse/ServerEventService'
-import {EventType} from "@/services/sse/EventType.enum";
-import {RELOAD_ACTION, UPDATE_MUTATION as STATS_UPDATE_MUTATION} from "@/store/statistics/StatisticsConstants";
 import {setup} from "vue-class-component";
 import {useStore} from "vuex";
+import {RELOAD_ACTION, UPDATE_MUTATION as STATS_UPDATE_MUTATION} from "@/store/statistics/StatisticsConstants";
 import {LOGOUT_MUTATION, UPDATE_MUTATION as USER_UPDATE_MUTATION} from "@/store/user/UserConstants";
 
 @Options({

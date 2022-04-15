@@ -35,10 +35,12 @@ import {UPDATE_MUTATION} from "@/store/user/UserConstants";
 import {RELOAD_ACTION} from "@/store/statistics/StatisticsConstants";
 
 import authenticationService from "@/services/AuthenticationService";
+import {useRouter} from "vue-router";
 
 @Options({name: 'LoginPage'})
 export default class LoginPage extends Vue {
   private store = setup(() => useStore());
+  private router = setup(() => useRouter());
 
   public username = '';
   public password = '';
@@ -53,7 +55,7 @@ export default class LoginPage extends Vue {
       authenticationService.login(this.username, this.password).subscribe(user => {
         this.store.commit(UPDATE_MUTATION, user);
         this.store.dispatch(RELOAD_ACTION);
-        this.$router.back();
+        this.router.back();
       });
     } else {
       this.formValidation = true;
@@ -69,7 +71,7 @@ export default class LoginPage extends Vue {
   }
 
   public closeLoginWindow(): void {
-    this.$router.back();
+    this.router.back();
   }
 }
 </script>
