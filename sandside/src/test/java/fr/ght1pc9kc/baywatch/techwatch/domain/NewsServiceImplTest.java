@@ -112,13 +112,12 @@ class NewsServiceImplTest {
                 .verifyComplete();
 
         verify(mockNewsPersistence, times(1)).list(captor.capture());
-        Assertions.assertThat(captor.getValue().filter).isEqualTo(Criteria.and(
+        Assertions.assertThat(captor.getValue().filter).isEqualTo(
                 Criteria.or(
                         Criteria.property(FEED_ID).in(JEDI.getId(), SITH.getId()),
                         Criteria.property(NEWS_ID).in(MAY_THE_FORCE.getId())
-                ),
-                Criteria.not(Criteria.property(NEWS_ID).in(A_NEW_HOPE.getId()))
-        ));
+                )
+        );
     }
 
     @Test
@@ -133,13 +132,12 @@ class NewsServiceImplTest {
                 .verifyComplete();
 
         verify(mockNewsPersistence, times(1)).count(captor.capture());
-        Assertions.assertThat(captor.getValue().filter).isEqualTo(Criteria.and(
+        Assertions.assertThat(captor.getValue().filter).isEqualTo(
                 Criteria.or(
                         Criteria.property(FEED_ID).in(JEDI.getId(), SITH.getId()),
                         Criteria.property(NEWS_ID).in(MAY_THE_FORCE.getId())
-                ),
-                Criteria.not(Criteria.property(NEWS_ID).in(A_NEW_HOPE.getId()))
-        ));
+                )
+        );
     }
 
     @Test
