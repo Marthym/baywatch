@@ -29,6 +29,14 @@
         </svg>
         <span class="hidden sm:inline-block">feeds</span>
       </router-link>
+      <div class="divider divider-horizontal hidden sm:flex"></div>
+      <div v-if="isAuthenticated && statistics.unread_filtered > 0" class="text-sm hidden sm:inline-block">
+        <svg class="h-5 w-5 cursor-pointer inline-block  -mt-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+        </svg> {{ statistics.unread_filtered }}
+      </div>
     </div>
     <div class="navbar-end w-full md:w-1/2 border-b border-base-100 pr-2 mr-2 h-full">
       <div class="indicator mr-3">
@@ -63,14 +71,18 @@ import {SidenavMutation} from "@/store/sidenav/SidenavMutation.enum";
 import {StatisticsState} from "@/store/statistics/statistics";
 import newsService from '@/services/NewsService';
 import {setup} from "vue-class-component";
-import {useStore} from "vuex";
+import {Store, useStore} from "vuex";
 import {RESET_UPDATED_MUTATION} from "@/store/statistics/StatisticsConstants";
 
 @Options({name: 'ContentTopNav'})
 export default class ContentTopNav extends Vue {
 
   private statistics: StatisticsState = setup(() => useStore().state.statistics);
-  private store = setup(() => useStore());
+  private store:Store<any> = setup(() => useStore());
+
+  get isAuthenticated(): boolean {
+    return this.store.state.user.isAuthenticated || false;
+  }
 
   private toggleSidenav(): void {
     this.store.commit(SidenavMutation.TOGGLE);
