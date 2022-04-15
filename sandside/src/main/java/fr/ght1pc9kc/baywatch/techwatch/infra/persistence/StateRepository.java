@@ -15,11 +15,14 @@ import org.jooq.Condition;
 import org.jooq.Cursor;
 import org.jooq.DSLContext;
 import org.jooq.Result;
+import org.jooq.SelectConditionStep;
+import org.jooq.conf.ParamType;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
+import java.time.Duration;
 import java.util.NoSuchElementException;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.NEWS_ID;
@@ -29,6 +32,7 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 @Slf4j
 @Repository
 @RequiredArgsConstructor
+@SuppressWarnings("resource")
 public class StateRepository implements StatePersistencePort {
     public static final JooqConditionVisitor STATE_CONDITION_VISITOR =
             new JooqConditionVisitor(PropertiesMappers.STATE_PROPERTIES_MAPPING);
@@ -52,6 +56,7 @@ public class StateRepository implements StatePersistencePort {
                         rs.forEach(sink::next);
                         if (rs.size() < count) {
                             sink.complete();
+                            cursor.close();
                         }
                     });
                 }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
