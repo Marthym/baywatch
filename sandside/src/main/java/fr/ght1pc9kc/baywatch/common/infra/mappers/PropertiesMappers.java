@@ -34,6 +34,7 @@ public final class PropertiesMappers {
             EntitiesProperties.LINK, NEWS.NEWS_LINK,
             EntitiesProperties.PUBLICATION, NEWS.NEWS_PUBLICATION,
             EntitiesProperties.FEED_ID, NEWS_FEEDS.NEFE_FEED_ID,
+            EntitiesProperties.READ, DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.READ),
             EntitiesProperties.TITLE, NEWS.NEWS_TITLE
     );
 
@@ -46,7 +47,6 @@ public final class PropertiesMappers {
             EntitiesProperties.NEWS_ID, NEWS_USER_STATE.NURS_NEWS_ID,
             EntitiesProperties.USER_ID, NEWS_USER_STATE.NURS_USER_ID,
             EntitiesProperties.STATE, NEWS_USER_STATE.NURS_STATE,
-            EntitiesProperties.READ, DSL.field(DSL.not(DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.READ).eq(Flags.READ))),
             EntitiesProperties.SHARED, DSL.field(DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.SHARED).eq(Flags.SHARED))
     );
     public static final Map<String, Field<?>> USER_PROPERTIES_MAPPING = Map.of(

@@ -103,9 +103,6 @@ public class NewsServiceImpl implements NewsService {
             if (!contexts.getT1().shared().isEmpty()) {
                 filters = Criteria.or(filters, Criteria.property(NEWS_ID).in(contexts.getT1().shared()));
             }
-            if (!contexts.getT1().read().isEmpty()) {
-                filters = Criteria.and(filters, Criteria.not(Criteria.property(NEWS_ID).in(contexts.getT1().read())));
-            }
             filters = Criteria.and(filters, qCtx.getFilter());
 
             return QueryContext.builder()

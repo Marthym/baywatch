@@ -20,12 +20,14 @@ import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.Select;
 import org.jooq.SelectQuery;
+import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
@@ -38,6 +40,7 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 @Slf4j
 @Repository
 @AllArgsConstructor
+@SuppressWarnings("resource")
 public class NewsRepository implements NewsPersistencePort {
     public static final JooqConditionVisitor NEWS_CONDITION_VISITOR =
             new JooqConditionVisitor(NEWS_PROPERTIES_MAPPING);
@@ -63,6 +66,7 @@ public class NewsRepository implements NewsPersistencePort {
                         rs.forEach(sink::next);
                         if (rs.size() < count) {
                             sink.complete();
+                            cursor.close();
                         }
                     });
                 }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
