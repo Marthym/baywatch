@@ -154,14 +154,14 @@ public final class RssAtomParserImpl implements RssAtomParser {
                             }
                         }
                     } catch (XMLStreamException e) {
-                        log.error("Error while parsing element of {}", feed.getUrl());
-                        log.error("{}: {}", e.getClass(), e.getLocalizedMessage());
+                        log.warn("Error while parsing element of {}", feed.getUrl());
+                        log.warn("{}: {}", e.getClass(), e.getLocalizedMessage());
                         log.debug("STACKTRACE", e);
                     }
                 }
             } catch (XMLStreamException e) {
-                log.error("Error while parsing {}", feed.getUrl());
-                log.error("{}: {}", e.getClass(), e.getLocalizedMessage());
+                log.warn("Error while parsing {}", feed.getUrl());
+                log.warn("{}: {}", e.getClass(), e.getLocalizedMessage());
                 log.debug("STACKTRACE", e);
             }
             sink.complete();
