@@ -27,6 +27,7 @@ public final class PropertiesMappers {
             EntitiesProperties.FEED_ID, FEEDS_USERS.FEUS_FEED_ID,
             EntitiesProperties.TAGS, DSL.concat(DSL.value(TAGS_SEPARATOR), FEEDS_USERS.FEUS_TAGS, DSL.value(TAGS_SEPARATOR))
     );
+
     public static final Map<String, Field<?>> NEWS_PROPERTIES_MAPPING = Map.of(
             EntitiesProperties.ID, NEWS.NEWS_ID,
             EntitiesProperties.NEWS_ID, NEWS.NEWS_ID,
@@ -38,17 +39,13 @@ public final class PropertiesMappers {
             EntitiesProperties.TITLE, NEWS.NEWS_TITLE
     );
 
-    /**
-     * Unread news was not present on table {@code NEWS_USER_STATE} so, when looking for {@code read} property
-     * The table field must be translated into {@code not(flag read present)},<br/>
-     * <b>read=false</b> become <pre>{@code not(flag read present) == false}</pre>
-     */
     public static final Map<String, Field<?>> STATE_PROPERTIES_MAPPING = Map.of(
             EntitiesProperties.NEWS_ID, NEWS_USER_STATE.NURS_NEWS_ID,
             EntitiesProperties.USER_ID, NEWS_USER_STATE.NURS_USER_ID,
-            EntitiesProperties.STATE, NEWS_USER_STATE.NURS_STATE,
-            EntitiesProperties.SHARED, DSL.field(DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.SHARED).eq(Flags.SHARED))
+            EntitiesProperties.SHARED, DSL.field(DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE)
+                    .bitAnd(Flags.SHARED).eq(Flags.SHARED))
     );
+
     public static final Map<String, Field<?>> USER_PROPERTIES_MAPPING = Map.of(
             EntitiesProperties.ID, USERS.USER_ID,
             EntitiesProperties.CREATED_AT, USERS.USER_CREATED_AT,

@@ -52,8 +52,7 @@ class NewsServiceImplTest {
         mockAuthFacade = mock(AuthenticationFacade.class);
         StatePersistencePort mockStateRepository = mock(StatePersistencePort.class);
         when(mockStateRepository.list(any())).thenReturn(Flux.just(
-                Entity.identify(MAY_THE_FORCE.getId(), OBIWAN.id, MAY_THE_FORCE.getState()),
-                Entity.identify(A_NEW_HOPE.getId(), LUKE.id, A_NEW_HOPE.getState())
+                Entity.identify(MAY_THE_FORCE.getId(), OBIWAN.id, MAY_THE_FORCE.getState())
         ));
         FeedPersistencePort mockFeedRepository = mock(FeedPersistencePort.class);
         when(mockFeedRepository.list(any())).thenReturn(Flux.fromIterable(FeedSamples.SAMPLES));
