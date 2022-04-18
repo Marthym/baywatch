@@ -10,4 +10,5 @@ export type NewsView = {
      * The card does not change mark when change active
      */
     keepMark: boolean;
+    popularity: number;
 }
