@@ -25,6 +25,15 @@
                       d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
               </svg>
             </button>
+            <button class="btn btn-xs btn-ghost" disabled="disabled">
+              <svg class="w-6 h-6" :class="{'text-warning': card.popularity > 0}" fill="currentColor"
+                   viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd"
+                      d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z"
+                      clip-rule="evenodd"></path>
+              </svg>
+              <span class="text-warning">{{ card.popularity }}</span>
+            </button>
           </div>
         </template>
       </NewsCard>
@@ -41,8 +50,8 @@ import ScrollActivable from "@/services/model/ScrollActivable";
 import {useInfiniteScroll} from "@/services/InfiniteScrollBehaviour";
 import {useScrollingActivation} from "@/services/ScrollingActivationBehaviour";
 import InfiniteScrollable from "@/services/model/InfiniteScrollable";
-import {Mark} from "@/services/model/Mark.enum";
-import {Feed} from "@/services/model/Feed";
+import {Mark} from "@/techwatch/model/Mark.enum";
+import {Feed} from "@/techwatch/model/Feed";
 import {ConstantFilters} from "@/constants";
 import {setup} from "vue-class-component";
 import {useStore} from "vuex";
@@ -50,12 +59,13 @@ import {
   DECREMENT_UNREAD_MUTATION,
   FILTER_MUTATION,
   INCREMENT_UNREAD_MUTATION
-} from "@/store/statistics/StatisticsConstants";
+} from "@/techwatch/store/statistics/StatisticsConstants";
 import {UserState} from "@/store/user/user";
 
-import feedService, {FeedService} from "@/services/FeedService";
-import newsService, {NewsService} from "@/services/NewsService";
-import {NewsStore} from "@/store/news/news";
+import feedService, {FeedService} from "@/techwatch/services/FeedService";
+import newsService, {NewsService} from "@/techwatch/services/NewsService";
+import {NewsStore} from "@/techwatch/store/news/news";
+import popularNewsService from "@/techwatch/services/PopularNewsService";
 
 
 @Options({
@@ -76,7 +86,6 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   private feeds = new Map<string, Feed>();
 
   private activeNews = -1;
-  private tagListenerIndex = -1;
 
   get isAuthenticated(): boolean | undefined {
     return this.userStore.isAuthenticated;
@@ -157,12 +166,32 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
             return elements.next(this.getRefElement(n.data.id));
           });
           elements.complete();
+          this.loadPopularity(lastIndex, Array.from(feeds.keys()));
           this.loadFeeds(lastIndex, feeds);
         });
       },
       error: e => elements.next(e)
     });
     return elements.asObservable();
+  }
+
+  /**
+   * Retrieve the popularity data from server for the latest loaded news
+   *
+   * @param fromIdx The start index in news array
+   * @param ids The ids of last loaded news
+   */
+  loadPopularity(fromIdx: number, ids: string[]): void {
+    popularNewsService.get(ids).subscribe({
+      next: pops => {
+        for (let i = Math.max(fromIdx, 0); i < this.news.length; i++) {
+          let popularity = pops.find(p => p.id === this.news[i].data.id);
+          if (popularity !== undefined) {
+            this.news[i].popularity = popularity.popularity;
+          }
+        }
+      }
+    });
   }
 
   loadFeeds(fromIdx: number, ids: Map<string, string[]>): void {
@@ -181,11 +210,11 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   }
 
   /**
-   * For each news from the index to the and of the array, update the feed with the uptodate feed map
+   * For each news from the index to the end of the array, update the feed with the uptodate feed map
    *
    * @param fromIdx The start index for looping in news array
    * @param ids The list of couple of News Id and Feed Id
-   * @private A Set containing Feed Id not found in feeds map
+   * @return A Set containing Feed Id not found in feeds map
    */
   private updateNewsView(fromIdx: number, ids: Map<string, string[]>): Set<string> {
     const feedIds = new Set<string>();
@@ -294,6 +323,11 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
 
     markObs.subscribe(state => {
       this.news[idx].data.shared = state.shared;
+      if (state.shared) {
+        this.news[idx].popularity += 1;
+      } else {
+        this.news[idx].popularity -= 1;
+      }
     });
   }
 

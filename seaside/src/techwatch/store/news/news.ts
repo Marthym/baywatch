@@ -1,4 +1,4 @@
-import {ADD_TAG, EMPTY_FILTERS, REMOVE_TAG, REPLACE_TAGS} from "@/store/news/NewsStoreConstants";
+import {ADD_TAG, EMPTY_FILTERS, REMOVE_TAG, REPLACE_TAGS} from "@/techwatch/store/news/NewsStoreConstants";
 
 export type NewsStore = {
     tags: string[];

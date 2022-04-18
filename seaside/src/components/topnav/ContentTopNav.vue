@@ -68,11 +68,11 @@
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
 import {SidenavMutation} from "@/store/sidenav/SidenavMutation.enum";
-import {StatisticsState} from "@/store/statistics/statistics";
-import newsService from '@/services/NewsService';
+import {StatisticsState} from "@/techwatch/store/statistics/statistics";
+import newsService from '@/techwatch/services/NewsService';
 import {setup} from "vue-class-component";
 import {Store, useStore} from "vuex";
-import {RESET_UPDATED_MUTATION} from "@/store/statistics/StatisticsConstants";
+import {RESET_UPDATED_MUTATION} from "@/techwatch/store/statistics/StatisticsConstants";
 
 @Options({name: 'ContentTopNav'})
 export default class ContentTopNav extends Vue {

@@ -1,6 +1,6 @@
 import {map, switchMap, take} from "rxjs/operators";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
-import {Feed} from "@/services/model/Feed";
+import {Feed} from "@/techwatch/model/Feed";
 import {Page} from "@/services/model/Page";
 import {from, Observable, throwError} from "rxjs";
 import {ConstantFilters, ConstantHttpHeaders} from "@/constants";

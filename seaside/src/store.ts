@@ -1,8 +1,8 @@
 import {createLogger, createStore} from "vuex";
 import sidenav from '@/store/sidenav/sidenav'
-import statistics from '@/store/statistics/statistics'
+import statistics from '@/techwatch/store/statistics/statistics'
 import user from '@/store/user/user'
-import news from '@/store/news/news'
+import news from '@/techwatch/store/news/news'
 
 const debug = process.env.NODE_ENV !== 'production'
 

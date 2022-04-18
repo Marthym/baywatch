@@ -12,7 +12,6 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.domain.filter.CriteriaModifierVisitor;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
-import fr.ght1pc9kc.baywatch.techwatch.domain.model.StateQueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
@@ -20,16 +19,11 @@ import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.api.Pagination;
 import fr.ght1pc9kc.juery.api.filter.CriteriaVisitor;
-import fr.ght1pc9kc.juery.api.pagination.Order;
-import fr.ght1pc9kc.juery.api.pagination.Sort;
 import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 import java.util.Collection;
 import java.util.List;
@@ -49,11 +43,10 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.TITLE;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.USER_ID;
 import static java.util.function.Predicate.not;
 
-@Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class NewsServiceImpl implements NewsService {
-    private static final Set<String> ALLOWED_CRITERIA = Set.of(ID, SHARED, STATE, TITLE, FEED_ID);
-    private static final Set<String> ALLOWED_AUTHENTICATED_CRITERIA = Set.of(READ, TAGS, PUBLICATION);
+    private static final Set<String> ALLOWED_CRITERIA = Set.of(ID, STATE, TITLE, FEED_ID);
+    private static final Set<String> ALLOWED_AUTHENTICATED_CRITERIA = Set.of(READ, SHARED, TAGS, PUBLICATION);
     private static final int MAX_ANONYMOUS_NEWS = 20;
     private static final String AUTHENTICATION_NOT_FOUND = "Authentication not found !";
 
@@ -95,13 +88,13 @@ public class NewsServiceImpl implements NewsService {
             // Shortcut for get one News from id
             return Mono.just(qCtx);
         }
-        Mono<StateQueryContext> state = getStateQueryContext(qCtx);
+        Mono<List<String>> states = getStateQueryContext(qCtx);
         Mono<List<String>> feeds = getFeedFor(qCtx);
 
-        return Mono.zip(state, feeds).map(contexts -> {
+        return Mono.zip(states, feeds).map(contexts -> {
             Criteria filters = Criteria.property(FEED_ID).in(contexts.getT2());
-            if (!contexts.getT1().shared().isEmpty()) {
-                filters = Criteria.or(filters, Criteria.property(NEWS_ID).in(contexts.getT1().shared()));
+            if (!contexts.getT1().isEmpty()) {
+                filters = Criteria.or(filters, Criteria.property(NEWS_ID).in(contexts.getT1()));
             }
             filters = Criteria.and(filters, qCtx.getFilter());
 
@@ -119,41 +112,18 @@ public class NewsServiceImpl implements NewsService {
                 .collectList();
     }
 
-    public Mono<StateQueryContext> getStateQueryContext(QueryContext qCtx) {
+    public Mono<List<String>> getStateQueryContext(QueryContext qCtx) {
         Criteria sharedCriteria = Criteria.not(Criteria.property(USER_ID).eq(qCtx.userId))
                 .and(Criteria.property(SHARED).eq(true));
-        Criteria readCriteria = Criteria.property(USER_ID).eq(qCtx.userId)
-                .and(qCtx.getFilter());
+
         QueryContext stateQueryContext = QueryContext.builder()
-                .filter(Criteria.or(sharedCriteria, readCriteria))
-                .pagination(Pagination.of(-1, -1, Sort.of(Order.desc(USER_ID))))
+                .filter(sharedCriteria)
+                .pagination(Pagination.ALL)
                 .build();
 
         return stateRepository.list(stateQueryContext)
-                .groupBy(s -> qCtx.userId.equals(s.createdBy))
-                .flatMap(grouped -> {
-                    if (grouped.key()) {
-                        return grouped.filter(s -> s.self.isRead())
-                                .map(s -> s.id)
-                                .distinct()
-                                .collectList()
-                                .map(l -> Tuples.of(grouped.key(), l));
-                    } else {
-                        return grouped.map(s -> s.id).distinct().collectList()
-                                .map(l -> Tuples.of(grouped.key(), l));
-                    }
-                }).collectList()
-                .map(l -> {
-                    var stateContextBuilder = StateQueryContext.builder();
-                    for (Tuple2<Boolean, List<String>> nids : l) {
-                        if (Boolean.TRUE.equals(nids.getT1())) {
-                            stateContextBuilder.read(nids.getT2());
-                        } else {
-                            stateContextBuilder.shared(nids.getT2());
-                        }
-                    }
-                    return stateContextBuilder.build();
-                });
+                .map(state -> state.id)
+                .distinct().collectList();
     }
 
     @Override

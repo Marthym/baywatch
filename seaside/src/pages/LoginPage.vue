@@ -32,7 +32,7 @@ import {Options, Vue} from 'vue-property-decorator';
 import {setup} from "vue-class-component";
 import {useStore} from "vuex";
 import {UPDATE_MUTATION} from "@/store/user/UserConstants";
-import {RELOAD_ACTION} from "@/store/statistics/StatisticsConstants";
+import {RELOAD_ACTION} from "@/techwatch/store/statistics/StatisticsConstants";
 
 import authenticationService from "@/services/AuthenticationService";
 import {useRouter} from "vue-router";

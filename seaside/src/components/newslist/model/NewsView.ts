@@ -1,4 +1,4 @@
-import {News} from "@/services/model/News";
+import {News} from "@/techwatch/model/News";
 
 export type NewsView = {
     data: News;
@@ -10,4 +10,5 @@ export type NewsView = {
      * The card does not change mark when change active
      */
     keepMark: boolean;
+    popularity: number;
 }

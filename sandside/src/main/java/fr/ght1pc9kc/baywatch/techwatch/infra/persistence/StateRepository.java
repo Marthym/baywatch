@@ -11,22 +11,17 @@ import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jooq.Condition;
 import org.jooq.Cursor;
 import org.jooq.DSLContext;
 import org.jooq.Result;
-import org.jooq.SelectConditionStep;
-import org.jooq.conf.ParamType;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
-import java.time.Duration;
 import java.util.NoSuchElementException;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.NEWS_ID;
-import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.USER_ID;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 
 @Slf4j
@@ -47,9 +42,13 @@ public class StateRepository implements StatePersistencePort {
 
     @Override
     public Flux<Entity<State>> list(QueryContext queryContext) {
-        Condition conditions = queryContext.getFilter().accept(STATE_CONDITION_VISITOR);
+        var query = dsl.selectQuery(NEWS_USER_STATE);
+        query.addConditions(queryContext.getFilter().accept(STATE_CONDITION_VISITOR));
+        if (queryContext.isScoped()) {
+            query.addConditions(NEWS_USER_STATE.NURS_USER_ID.eq(queryContext.getUserId()));
+        }
         return Flux.<NewsUserStateRecord>create(sink -> {
-                    Cursor<NewsUserStateRecord> cursor = dsl.selectFrom(NEWS_USER_STATE).where(conditions).fetchLazy();
+                    Cursor<NewsUserStateRecord> cursor = query.fetchLazy();
                     sink.onRequest(n -> {
                         int count = (int) n;
                         Result<NewsUserStateRecord> rs = cursor.fetchNext(count);
@@ -73,10 +72,7 @@ public class StateRepository implements StatePersistencePort {
                         .execute())
                 .filter(updated -> updated > 0)
                 .switchIfEmpty(Mono.error(NoSuchElementException::new))
-                .flatMap(u -> get(QueryContext.first(Criteria.and(
-                        Criteria.property(NEWS_ID).eq(newsId),
-                        Criteria.property(USER_ID).eq(userId)
-                ))))
+                .flatMap(u -> get(QueryContext.first(Criteria.property(NEWS_ID).eq(newsId)).withUserId(userId)))
                 .subscribeOn(databaseScheduler);
     }
 
@@ -90,10 +86,7 @@ public class StateRepository implements StatePersistencePort {
                         .execute())
                 .filter(updated -> updated > 0)
                 .switchIfEmpty(Mono.error(NoSuchElementException::new))
-                .flatMap(u -> get(QueryContext.first(Criteria.and(
-                        Criteria.property(NEWS_ID).eq(newsId),
-                        Criteria.property(USER_ID).eq(userId)
-                ))))
+                .flatMap(u -> get(QueryContext.first(Criteria.property(NEWS_ID).eq(newsId)).withUserId(userId)))
                 .subscribeOn(databaseScheduler);
     }
 }

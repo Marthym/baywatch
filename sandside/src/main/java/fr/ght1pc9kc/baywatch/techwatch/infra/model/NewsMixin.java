@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.common.infra.config.jackson.mixins;
+package fr.ght1pc9kc.baywatch.techwatch.infra.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
