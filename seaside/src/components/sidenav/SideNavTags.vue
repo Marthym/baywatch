@@ -24,13 +24,13 @@
 
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
-import tagsService from "@/services/TagsService";
-import newsService from '@/services/NewsService';
+import tagsService from "@/techwatch/services/TagsService";
+import newsService from '@/techwatch/services/NewsService';
 import {setup} from "vue-class-component";
 import {useRouter} from "vue-router";
 import {useStore} from "vuex";
-import {NewsStore} from "@/store/news/news";
-import {NEWS_REPLACE_TAGS_MUTATION} from "@/store/news/NewsStoreConstants";
+import {NewsStore} from "@/techwatch/store/news/news";
+import {NEWS_REPLACE_TAGS_MUTATION} from "@/techwatch/store/news/NewsStoreConstants";
 
 @Options({name: 'SideNavTags'})
 export default class SideNavTags extends Vue {

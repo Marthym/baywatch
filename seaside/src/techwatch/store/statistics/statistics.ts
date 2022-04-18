@@ -1,5 +1,5 @@
-import {Statistics} from "@/services/model/Statistics";
-import statsService from "@/services/StatisticsService";
+import {Statistics} from "@/techwatch/model/Statistics";
+import statsService from "@/techwatch/services/StatisticsService";
 import {
     DECREMENT_UNREAD,
     FILTER,
@@ -7,7 +7,7 @@ import {
     RELOAD,
     RESET_UPDATED,
     UPDATE
-} from "@/store/statistics/StatisticsConstants";
+} from "@/techwatch/store/statistics/StatisticsConstants";
 import {ActionContext} from "vuex";
 
 export type StatisticsState = {

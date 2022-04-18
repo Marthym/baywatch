@@ -1,12 +1,12 @@
 import {EMPTY, from, Observable} from 'rxjs';
 import {map, switchMap, take} from "rxjs/operators";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
-import {News} from "@/services/model/News";
-import {Mark} from "@/services/model/Mark.enum";
+import {News} from "@/techwatch/model/News";
+import {Mark} from "@/techwatch/model/Mark.enum";
 import rest from '@/services/http/RestWrapper';
 import {ConstantHttpHeaders} from "@/constants";
 import {Infinite} from "@/services/model/Infinite";
-import {NewsState} from "@/services/model/NewsState";
+import {NewsState} from "@/techwatch/model/NewsState";
 
 export class NewsService {
 

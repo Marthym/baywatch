@@ -1,4 +1,4 @@
-import {News} from "@/services/model/News";
+import {News} from "@/techwatch/model/News";
 
 export type NewsView = {
     data: News;

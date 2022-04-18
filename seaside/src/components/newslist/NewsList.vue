@@ -41,8 +41,8 @@ import ScrollActivable from "@/services/model/ScrollActivable";
 import {useInfiniteScroll} from "@/services/InfiniteScrollBehaviour";
 import {useScrollingActivation} from "@/services/ScrollingActivationBehaviour";
 import InfiniteScrollable from "@/services/model/InfiniteScrollable";
-import {Mark} from "@/services/model/Mark.enum";
-import {Feed} from "@/services/model/Feed";
+import {Mark} from "@/techwatch/model/Mark.enum";
+import {Feed} from "@/techwatch/model/Feed";
 import {ConstantFilters} from "@/constants";
 import {setup} from "vue-class-component";
 import {useStore} from "vuex";
@@ -50,12 +50,12 @@ import {
   DECREMENT_UNREAD_MUTATION,
   FILTER_MUTATION,
   INCREMENT_UNREAD_MUTATION
-} from "@/store/statistics/StatisticsConstants";
+} from "@/techwatch/store/statistics/StatisticsConstants";
 import {UserState} from "@/store/user/user";
 
-import feedService, {FeedService} from "@/services/FeedService";
-import newsService, {NewsService} from "@/services/NewsService";
-import {NewsStore} from "@/store/news/news";
+import feedService, {FeedService} from "@/techwatch/services/FeedService";
+import newsService, {NewsService} from "@/techwatch/services/NewsService";
+import {NewsStore} from "@/techwatch/store/news/news";
 
 
 @Options({

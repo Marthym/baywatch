@@ -5,7 +5,7 @@
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
 import {defineAsyncComponent} from "vue";
-import {NEWS_REPLACE_TAGS_MUTATION} from "@/store/news/NewsStoreConstants";
+import {NEWS_REPLACE_TAGS_MUTATION} from "@/techwatch/store/news/NewsStoreConstants";
 import {setup} from "vue-class-component";
 import {useRouter} from "vue-router";
 import {Store, useStore} from "vuex";
