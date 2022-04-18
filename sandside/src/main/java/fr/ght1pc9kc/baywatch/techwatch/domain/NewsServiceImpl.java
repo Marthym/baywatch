@@ -20,9 +20,8 @@ import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.api.Pagination;
 import fr.ght1pc9kc.juery.api.filter.CriteriaVisitor;
 import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -44,8 +43,7 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.TITLE;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.USER_ID;
 import static java.util.function.Predicate.not;
 
-@Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class NewsServiceImpl implements NewsService {
     private static final Set<String> ALLOWED_CRITERIA = Set.of(ID, STATE, TITLE, FEED_ID);
     private static final Set<String> ALLOWED_AUTHENTICATED_CRITERIA = Set.of(READ, SHARED, TAGS, PUBLICATION);
@@ -90,10 +88,10 @@ public class NewsServiceImpl implements NewsService {
             // Shortcut for get one News from id
             return Mono.just(qCtx);
         }
-        Mono<List<String>> shared = getStateQueryContext(qCtx);
+        Mono<List<String>> states = getStateQueryContext(qCtx);
         Mono<List<String>> feeds = getFeedFor(qCtx);
 
-        return Mono.zip(shared, feeds).map(contexts -> {
+        return Mono.zip(states, feeds).map(contexts -> {
             Criteria filters = Criteria.property(FEED_ID).in(contexts.getT2());
             if (!contexts.getT1().isEmpty()) {
                 filters = Criteria.or(filters, Criteria.property(NEWS_ID).in(contexts.getT1()));
