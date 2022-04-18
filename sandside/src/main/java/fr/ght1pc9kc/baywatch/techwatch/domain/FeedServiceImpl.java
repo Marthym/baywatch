@@ -1,11 +1,11 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
-import fr.ght1pc9kc.baywatch.techwatch.api.FeedService;
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
+import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
+import fr.ght1pc9kc.baywatch.techwatch.api.FeedService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
-import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
-import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -37,7 +37,7 @@ public class FeedServiceImpl implements FeedService {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
                 .map(u -> QueryContext.from(pageRequest).withUserId(u.id))
-                .onErrorResume(UnauthenticatedUser.class, (e) -> Mono.just(QueryContext.from(pageRequest)))
+                .onErrorResume(UnauthenticatedUser.class, e -> Mono.just(QueryContext.from(pageRequest)))
                 .flatMapMany(feedRepository::list);
     }
 
@@ -46,7 +46,7 @@ public class FeedServiceImpl implements FeedService {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
                 .map(u -> QueryContext.all(pageRequest.filter()).withUserId(u.id))
-                .onErrorResume(UnauthenticatedUser.class, (e) -> Mono.just(QueryContext.all(pageRequest.filter())))
+                .onErrorResume(UnauthenticatedUser.class, e -> Mono.just(QueryContext.all(pageRequest.filter())))
                 .flatMap(feedRepository::count);
     }
 

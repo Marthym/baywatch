@@ -6,8 +6,8 @@ import fr.ght1pc9kc.baywatch.notify.api.NotifyManager;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.notify.api.model.ReactiveEvent;
 import fr.ght1pc9kc.baywatch.notify.api.model.ServerEventVisitor;
-import fr.ght1pc9kc.baywatch.techwatch.api.StatService;
-import fr.ght1pc9kc.baywatch.techwatch.infra.model.Statistics;
+import fr.ght1pc9kc.baywatch.admin.api.StatisticsService;
+import fr.ght1pc9kc.baywatch.admin.infra.model.Statistics;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.VisibleForTesting;
@@ -30,7 +30,7 @@ import reactor.core.publisher.Mono;
 public class NotificationController {
     private final NotifyManager notifyManager;
     private final NotifyService notifyService;
-    private final StatService statService;
+    private final StatisticsService statService;
 
     @VisibleForTesting
     private int userBidon = 0;

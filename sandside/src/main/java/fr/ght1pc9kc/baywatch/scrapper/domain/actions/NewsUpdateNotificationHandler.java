@@ -1,10 +1,10 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain.actions;
 
-import fr.ght1pc9kc.baywatch.techwatch.api.StatService;
+import fr.ght1pc9kc.baywatch.admin.api.StatisticsService;
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.scrapper.api.ScrappingHandler;
-import fr.ght1pc9kc.baywatch.techwatch.infra.model.Statistics;
+import fr.ght1pc9kc.baywatch.admin.infra.model.Statistics;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class NewsUpdateNotificationHandler implements ScrappingHandler {
     private final NotifyService notifyService;
-    private final StatService statService;
+    private final StatisticsService statService;
 
     @Override
     public Mono<Void> after(int persisted) {

@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain.actions;
 
-import fr.ght1pc9kc.baywatch.techwatch.api.StatService;
+import fr.ght1pc9kc.baywatch.admin.api.StatisticsService;
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,12 +14,12 @@ class NewsUpdateNotificationHandlerTest {
     private NewsUpdateNotificationHandler tested;
 
     private NotifyService notifyServiceMock;
-    private StatService statServiceMock;
+    private StatisticsService statServiceMock;
 
     @BeforeEach
     void setUp() {
         notifyServiceMock = mock(NotifyService.class);
-        statServiceMock = spy(new StatService() {
+        statServiceMock = spy(new StatisticsService() {
             @Override
             public Mono<Integer> getNewsCount() {
                 return Mono.just(42);

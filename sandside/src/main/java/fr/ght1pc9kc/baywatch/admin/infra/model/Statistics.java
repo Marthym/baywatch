@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.techwatch.infra.model;
+package fr.ght1pc9kc.baywatch.admin.infra.model;
 
 import lombok.AccessLevel;
 import lombok.Builder;
