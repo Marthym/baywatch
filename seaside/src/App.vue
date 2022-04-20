@@ -25,7 +25,7 @@ import authenticationService from '@/services/AuthenticationService'
 import serverEventService from '@/techwatch/services/ServerEventService'
 import {setup} from "vue-class-component";
 import {useStore} from "vuex";
-import {RELOAD_ACTION, UPDATE_MUTATION as STATS_UPDATE_MUTATION} from "@/techwatch/store/statistics/StatisticsConstants";
+import {UPDATE_MUTATION as STATS_UPDATE_MUTATION} from "@/techwatch/store/statistics/StatisticsConstants";
 import {LOGOUT_MUTATION, UPDATE_MUTATION as USER_UPDATE_MUTATION} from "@/store/user/UserConstants";
 
 @Options({
@@ -44,12 +44,10 @@ export default class App extends Vue {
       next: session => {
         this.store.commit(USER_UPDATE_MUTATION, session.user);
         serverEventService.registerListener(EventType.NEWS, this.onServerMessage);
-        this.store.dispatch(RELOAD_ACTION);
       },
       error: () => {
         this.store.commit(LOGOUT_MUTATION);
         serverEventService.unregister(EventType.NEWS, this.onServerMessage);
-        this.store.dispatch(RELOAD_ACTION);
       }
     });
   }

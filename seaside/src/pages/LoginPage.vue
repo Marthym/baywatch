@@ -4,7 +4,7 @@
     <div class="card bordered flex rounded-none overflow-hidden h-full
                 lg:rounded-lg lg:shadow-lg lg:h-fit lg:mt-8 mx-auto lg:card-side lg:max-w-4xl"
          @click.stop>
-        <img class="object-cover" src="/login.webp" alt="Baywatch">
+      <img class="object-cover" src="/login.webp" alt="Baywatch">
       <div class="card-body">
         <form @submit.prevent="onLogin">
           <h2 class="card-title">Baywatch</h2>
@@ -32,7 +32,6 @@ import {Options, Vue} from 'vue-property-decorator';
 import {setup} from "vue-class-component";
 import {useStore} from "vuex";
 import {UPDATE_MUTATION} from "@/store/user/UserConstants";
-import {RELOAD_ACTION} from "@/techwatch/store/statistics/StatisticsConstants";
 
 import authenticationService from "@/services/AuthenticationService";
 import {useRouter} from "vue-router";
@@ -54,7 +53,6 @@ export default class LoginPage extends Vue {
     if (this.username !== '' && this.password !== '') {
       authenticationService.login(this.username, this.password).subscribe(user => {
         this.store.commit(UPDATE_MUTATION, user);
-        this.store.dispatch(RELOAD_ACTION);
         this.router.back();
       });
     } else {

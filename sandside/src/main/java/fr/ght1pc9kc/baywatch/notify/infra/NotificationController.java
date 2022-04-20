@@ -1,16 +1,11 @@
 package fr.ght1pc9kc.baywatch.notify.infra;
 
-import fr.ght1pc9kc.baywatch.notify.api.model.BasicEvent;
-import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyManager;
-import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
+import fr.ght1pc9kc.baywatch.notify.api.model.BasicEvent;
 import fr.ght1pc9kc.baywatch.notify.api.model.ReactiveEvent;
 import fr.ght1pc9kc.baywatch.notify.api.model.ServerEventVisitor;
-import fr.ght1pc9kc.baywatch.techwatch.api.StatService;
-import fr.ght1pc9kc.baywatch.techwatch.infra.model.Statistics;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.VisibleForTesting;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
@@ -29,11 +24,6 @@ import reactor.core.publisher.Mono;
 @RequestMapping("${baywatch.base-route}/sse")
 public class NotificationController {
     private final NotifyManager notifyManager;
-    private final NotifyService notifyService;
-    private final StatService statService;
-
-    @VisibleForTesting
-    private int userBidon = 0;
 
     @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<Object>> sse() {
@@ -58,26 +48,8 @@ public class NotificationController {
     @DeleteMapping
     public Mono<ResponseEntity<Object>> disposeSse() {
         return notifyManager.unsubscribe()
-                .map(_x -> ResponseEntity.noContent().build())
+                .map(ignore -> ResponseEntity.noContent().build())
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
 
-    }
-
-    @VisibleForTesting
-    @GetMapping("/test")
-    @PreAuthorize("hasRole('ADMIN')")
-    public Mono<Void> test() {
-        ++userBidon;
-        Mono<Statistics> stats = Mono.zip(
-                statService.getFeedsCount(),
-                statService.getNewsCount(),
-                statService.getUnreadCount()
-        ).map(s -> Statistics.builder()
-                .feeds(s.getT1())
-                .news(s.getT2() + 10)
-                .unread(s.getT3() + 10)
-                .users(userBidon).build());
-        notifyService.send(EventType.NEWS, stats);
-        return Mono.empty().then();
     }
 }

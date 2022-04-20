@@ -1,30 +1,21 @@
-import {Statistics} from "@/techwatch/model/Statistics";
-import statsService from "@/techwatch/services/StatisticsService";
+import {Statistics} from "@/administration/model/Statistics.type";
 import {
     DECREMENT_UNREAD,
     FILTER,
     INCREMENT_UNREAD,
-    RELOAD,
     RESET_UPDATED,
     UPDATE
 } from "@/techwatch/store/statistics/StatisticsConstants";
-import {ActionContext} from "vuex";
 
 export type StatisticsState = {
-    news: number;
     unread: number;
     unread_filtered: number;
-    feeds: number;
-    users: number;
     updated: number;
 }
 
 const state = (): StatisticsState => ({
-    news: 0,
     unread: 0,
     unread_filtered: 0,
-    feeds: 0,
-    users: 0,
     updated: 0,
 });
 
@@ -32,34 +23,30 @@ const state = (): StatisticsState => ({
 const getters = {}
 
 // actions
-const actions = {
-    [RELOAD]({commit}: ActionContext<StatisticsState, StatisticsState>) {
-        statsService.get().subscribe(s => commit(UPDATE, s));
-    }
-}
+const actions = {}
 
 // mutations
 const mutations = {
-    [DECREMENT_UNREAD](state: StatisticsState): void {
-        --state.unread;
-        --state.unread_filtered;
+    [DECREMENT_UNREAD](st: StatisticsState): void {
+        --st.unread;
+        --st.unread_filtered;
     },
-    [INCREMENT_UNREAD](state: StatisticsState): void {
-        ++state.unread;
-        ++state.unread_filtered;
+    [INCREMENT_UNREAD](st: StatisticsState): void {
+        ++st.unread;
+        ++st.unread_filtered;
     },
-    [UPDATE](state: StatisticsState, payload: Statistics): void {
-        const unread = state.unread;
-        Object.assign(state, payload);
-        if (unread != 0 && state.unread > unread) {
-            state.updated += state.unread - unread;
+    [UPDATE](st: StatisticsState, payload: Statistics): void {
+        const unread = st.unread;
+        Object.assign(st, payload);
+        if (unread != 0 && st.unread > unread) {
+            st.updated += st.unread - unread;
         }
     },
-    [RESET_UPDATED](state: StatisticsState): void {
-        state.updated = 0;
+    [RESET_UPDATED](st: StatisticsState): void {
+        st.updated = 0;
     },
-    [FILTER](state: StatisticsState, payload: number): void {
-        state.unread_filtered = payload;
+    [FILTER](st: StatisticsState, payload: number): void {
+        st.unread_filtered = payload;
     },
 }
 

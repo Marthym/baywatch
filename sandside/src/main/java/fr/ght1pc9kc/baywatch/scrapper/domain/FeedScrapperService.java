@@ -22,7 +22,6 @@ import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
-import org.springframework.util.StopWatch;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
@@ -110,8 +109,6 @@ public final class FeedScrapperService implements Runnable {
         if (!lock.tryAcquire()) {
             log.warn("Scrapping in progress !");
         }
-        StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
         log.info("Start scrapping ...");
         Mono<Set<String>> alreadyHave = newsRepository.list()
                 .map(News::getId)
@@ -137,9 +134,9 @@ public final class FeedScrapperService implements Runnable {
                 })
                 .doFinally(signal -> {
                     lock.release();
-                    stopWatch.stop();
-                    log.info("Scrapping finished with {} in {}", signal, Duration.ofMillis(stopWatch.getTotalTimeMillis()));
-                }).contextWrite(authFacade.withSystemAuthentication())
+                    log.info("Scraping terminated successfully !");
+                })
+                .contextWrite(authFacade.withSystemAuthentication())
                 .subscribe();
     }
 

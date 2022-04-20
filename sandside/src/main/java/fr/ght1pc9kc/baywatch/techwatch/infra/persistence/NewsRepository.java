@@ -20,16 +20,15 @@ import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.Select;
 import org.jooq.SelectQuery;
-import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
-import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers.NEWS_PROPERTIES_MAPPING;
@@ -134,7 +133,8 @@ public class NewsRepository implements NewsPersistencePort {
     }
 
     private SelectQuery<Record> buildSelectQuery(QueryContext qCtx) {
-        Condition conditions = qCtx.filter.accept(NEWS_CONDITION_VISITOR);
+        Condition conditions = Optional.ofNullable(qCtx.filter).map(f -> f.accept(NEWS_CONDITION_VISITOR))
+                .orElse(DSL.noCondition());
 
         SelectQuery<Record> select = dsl.selectQuery();
         select.addSelect(NEWS.fields());

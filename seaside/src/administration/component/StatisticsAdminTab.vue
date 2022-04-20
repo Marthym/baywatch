@@ -1,7 +1,6 @@
 <template>
-  <div class="stats shadow mt-4">
-
-    <div class="stat">
+  <div class="flex justify-center flex-wrap">
+    <div class="stat bg-secondary-content rounded-xl shadow m-2 grow w-fit">
       <div class="stat-figure text-secondary">
         <svg class="inline-block w-10 h-10" fill="currentColor" viewBox="0 0 20 20"
              xmlns="http://www.w3.org/2000/svg">
@@ -11,25 +10,24 @@
           <path d="M15 7h1a2 2 0 012 2v5.5a1.5 1.5 0 01-3 0V7z"></path>
         </svg>
       </div>
-      <div class="stat-title">News</div>
-      <div class="stat-value">{{ newsCount }}</div>
-      <div class="stat-desc">Registered</div>
+      <div class="stat-title">{{ newsCount.name }}</div>
+      <div class="stat-value">{{ newsCount.value }}</div>
+      <div class="stat-desc">{{ newsCount.description }}</div>
     </div>
-
-    <div class="stat">
+    <div class="stat bg-secondary-content rounded-xl shadow m-2 grow w-fit">
       <div class="stat-figure text-secondary">
-        <svg class="inline-block w-10 h-10" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+        <svg class="inline-block w-10 h-10" fill="currentColor" viewBox="0 0 20 20"
+             xmlns="http://www.w3.org/2000/svg">
           <path d="M5 3a1 1 0 000 2c5.523 0 10 4.477 10 10a1 1 0 102 0C17 8.373 11.627 3 5 3z"></path>
           <path
               d="M4 9a1 1 0 011-1 7 7 0 017 7 1 1 0 11-2 0 5 5 0 00-5-5 1 1 0 01-1-1zM3 15a2 2 0 114 0 2 2 0 01-4 0z"></path>
         </svg>
       </div>
-      <div class="stat-title">Feeds</div>
-      <div class="stat-value">{{ feedsCount }}</div>
-      <div class="stat-desc">Registered</div>
+      <div class="stat-title">{{ feedsCount.name }}</div>
+      <div class="stat-value">{{ feedsCount.value }}</div>
+      <div class="stat-desc">{{ feedsCount.description }}</div>
     </div>
-
-    <div class="stat">
+    <div class="stat bg-secondary-content rounded-xl shadow m-2 grow w-fit">
       <div class="stat-figure text-secondary">
         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
              class="inline-block w-10 h-10">
@@ -39,18 +37,32 @@
               12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path>
         </svg>
       </div>
-      <div class="stat-title">Users</div>
-      <div class="stat-value">{{ usersCount }}</div>
-      <div class="stat-desc">registered</div>
+      <div class="stat-title">{{ usersCount.name }}</div>
+      <div class="stat-value">{{ usersCount.value }}</div>
+      <div class="stat-desc">{{ usersCount.description }}</div>
     </div>
-
+    <div class="stat bg-secondary-content rounded-xl shadow m-2 grow w-fit">
+      <div class="stat-figure text-secondary">
+        <svg class="inline-block w-10 h-10" fill="currentColor" viewBox="0 0 20 20"
+             xmlns="http://www.w3.org/2000/svg">
+          <path
+              d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0
+                001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z"></path>
+          <path d="M9 13h2v5a1 1 0 11-2 0v-5z"></path>
+        </svg>
+      </div>
+      <div class="stat-title">{{ scrapDuration.name }}</div>
+      <div class="stat-value">{{ scrapDuration.value }}</div>
+      <div class="stat-desc">{{ scrapDuration.description }}</div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
 
-import statisticsService from '@/techwatch/services/StatisticsService';
+import statisticsService from '@/administration/services/StatisticsService';
+import {Counter, NONE} from "@/administration/model/Counter.type";
 
 @Options({
   name: 'StatisticsAdminTab',
@@ -58,16 +70,18 @@ import statisticsService from '@/techwatch/services/StatisticsService';
 })
 export default class StatisticsAdminTab extends Vue {
 
-  private newsCount: number = 0;
-  private feedsCount: number = 0;
-  private usersCount: number = 0;
+  private newsCount: Counter = {...NONE};
+  private feedsCount: Counter = {...NONE};
+  private usersCount: Counter = {...NONE};
+  private scrapDuration: Counter = {...NONE};
 
   public mounted(): void {
     statisticsService.get().subscribe({
       next: stats => {
-        this.newsCount = stats.news;
-        this.feedsCount = stats.feeds;
-        this.usersCount = stats.users;
+        Object.assign(this.newsCount, stats.news);
+        Object.assign(this.feedsCount, stats.feeds);
+        Object.assign(this.usersCount, stats.users);
+        Object.assign(this.scrapDuration, stats.scrap);
       }
     })
   }
