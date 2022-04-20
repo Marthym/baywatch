@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.admin.infra.controllers;
 
 import fr.ght1pc9kc.baywatch.admin.api.StatisticsService;
 import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
+import fr.ght1pc9kc.baywatch.admin.api.model.CounterType;
 import fr.ght1pc9kc.baywatch.admin.infra.model.Statistics;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,11 +23,13 @@ public class StatisticsController {
         return Mono.zip(
                 statService.getFeedsCount().defaultIfEmpty(Counter.NONE),
                 statService.getNewsCount().defaultIfEmpty(Counter.NONE),
-                statService.getUsersCount().defaultIfEmpty(Counter.NONE)
+                statService.getUsersCount().defaultIfEmpty(Counter.NONE),
+                statService.compute(CounterType.SCRAPING_DURATION)
         ).map(t -> Statistics.builder()
                 .feeds(t.getT1())
                 .news(t.getT2())
                 .users(t.getT3())
+                .scrap(t.getT4())
                 .build());
     }
 }

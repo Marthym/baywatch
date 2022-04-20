@@ -19,20 +19,21 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     @Override
     public Mono<Counter> getNewsCount() {
-        return computeCounterValue(CounterType.NEWS_COUNT);
+        return compute(CounterType.NEWS_COUNT);
     }
 
     @Override
     public Mono<Counter> getFeedsCount() {
-        return computeCounterValue(CounterType.FEEDS_COUNT);
+        return compute(CounterType.FEEDS_COUNT);
     }
 
     @Override
     public Mono<Counter> getUsersCount() {
-        return computeCounterValue(CounterType.USERS_COUNT);
+        return compute(CounterType.USERS_COUNT);
     }
 
-    private Mono<Counter> computeCounterValue(CounterType type) {
+    @Override
+    public Mono<Counter> compute(CounterType type) {
         CounterProvider counter = counters.stream().filter(c -> c.name() == type).findFirst()
                 .orElse(NoCounterProvider.NOP);
         return authFacade.getConnectedUser()

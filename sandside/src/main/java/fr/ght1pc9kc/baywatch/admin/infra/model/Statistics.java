@@ -6,7 +6,8 @@ import lombok.Builder;
 public record Statistics(
         Counter news,
         Counter feeds,
-        Counter users
+        Counter users,
+        Counter scrap
 ) {
     @Builder
     public Statistics {
