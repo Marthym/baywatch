@@ -18,21 +18,6 @@ public class StatisticsServiceImpl implements StatisticsService {
     private final List<CounterProvider> counters;
 
     @Override
-    public Mono<Counter> getNewsCount() {
-        return compute(CounterType.NEWS_COUNT);
-    }
-
-    @Override
-    public Mono<Counter> getFeedsCount() {
-        return compute(CounterType.FEEDS_COUNT);
-    }
-
-    @Override
-    public Mono<Counter> getUsersCount() {
-        return compute(CounterType.USERS_COUNT);
-    }
-
-    @Override
     public Mono<Counter> compute(CounterType type) {
         CounterProvider counter = counters.stream().filter(c -> c.name() == type).findFirst()
                 .orElse(NoCounterProvider.NOP);

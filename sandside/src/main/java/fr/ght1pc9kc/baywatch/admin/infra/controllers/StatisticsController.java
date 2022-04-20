@@ -21,10 +21,10 @@ public class StatisticsController {
     @GetMapping()
     public Mono<Statistics> stats() {
         return Mono.zip(
-                statService.getFeedsCount().defaultIfEmpty(Counter.NONE),
-                statService.getNewsCount().defaultIfEmpty(Counter.NONE),
-                statService.getUsersCount().defaultIfEmpty(Counter.NONE),
-                statService.compute(CounterType.SCRAPING_DURATION)
+                statService.compute(CounterType.FEEDS_COUNT).defaultIfEmpty(Counter.NONE),
+                statService.compute(CounterType.NEWS_COUNT).defaultIfEmpty(Counter.NONE),
+                statService.compute(CounterType.USERS_COUNT).defaultIfEmpty(Counter.NONE),
+                statService.compute(CounterType.SCRAPING_DURATION).defaultIfEmpty(Counter.NONE)
         ).map(t -> Statistics.builder()
                 .feeds(t.getT1())
                 .news(t.getT2())
