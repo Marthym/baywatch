@@ -58,6 +58,7 @@ export default class FeedEditor extends Vue {
     this.feed = feed;
     this.isOpened = true;
     this.subject = new Subject<Feed>();
+    this.errors.splice(0);
     return this.subject.asObservable();
   }
 

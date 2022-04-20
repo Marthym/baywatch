@@ -23,5 +23,13 @@ public final class FeedSamples {
                     .build())
             .build();
 
+    public static final Feed UNSECURE_PROTOCOL = Feed.builder()
+            .raw(RawFeed.builder()
+                    .id("e341d3fdf81148da31088a4caf45cb8b9b6e959f41ea6402d199345db3c898d1")
+                    .name("Unsecure Protocol")
+                    .url(URI.create("files://localhost/.env"))
+                    .build())
+            .build();
+
     public static final List<Feed> SAMPLES = List.of(JEDI, SITH);
 }

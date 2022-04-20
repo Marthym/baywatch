@@ -1,14 +1,14 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain;
 
 import com.machinezoo.noexception.Exceptions;
+import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
+import fr.ght1pc9kc.baywatch.scrapper.api.FeedParserPlugin;
+import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
+import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScrapperProperties;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
-import fr.ght1pc9kc.baywatch.scrapper.api.FeedParserPlugin;
-import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
-import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScrapperProperties;
-import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.owasp.html.PolicyFactory;
@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public final class RssAtomParserImpl implements RssAtomParser {
-
+    private static final Set<String> ALLOWED_PROTOCOL = Set.of("http", "https");
     private static final String ITEM = "item";
     private static final String ENTRY = "entry";
     private static final String TITLE = "title";
@@ -83,8 +83,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
                                 continue;
                             }
                             switch (startElement.getName().getLocalPart()) {
-                                case ENTRY:
-                                case ITEM:
+                                case ENTRY, ITEM:
                                     bldr = plugin.handleItemEvent();
                                     break;
                                 case TITLE:
@@ -94,8 +93,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
                                     String title = reader.getElementText();
                                     bldr = plugin.handleTitleEvent(bldr, title);
                                     break;
-                                case CONTENT:
-                                case DESCRIPTION:
+                                case CONTENT, DESCRIPTION:
                                     if (bldr == null) {
                                         break;
                                     }
@@ -136,6 +134,10 @@ public final class RssAtomParserImpl implements RssAtomParser {
                             String localPart = endElement.getName().getLocalPart();
                             if (ITEM.equals(localPart) || ENTRY.equals(localPart)) {
                                 RawNews rawNews = plugin.handleEndEvent(bldr);
+                                if (!ALLOWED_PROTOCOL.contains(rawNews.getLink().getScheme())) {
+                                    log.warn("Illegal URL detected : {} in feed :{}", rawNews.getLink(), feed.getName());
+                                    continue;
+                                }
                                 RawNews raw = rawNews
                                         .withTitle(HTML_POLICY.sanitize(rawNews.title))
                                         .withDescription(HTML_POLICY.sanitize(rawNews.description));
