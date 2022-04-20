@@ -1,41 +1,31 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain.actions;
 
-import fr.ght1pc9kc.baywatch.admin.api.StatisticsService;
-import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
+import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
+import fr.ght1pc9kc.baywatch.techwatch.api.NewsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import reactor.core.publisher.Mono;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class NewsUpdateNotificationHandlerTest {
     private NewsUpdateNotificationHandler tested;
 
     private NotifyService notifyServiceMock;
-    private StatisticsService statServiceMock;
+    private NewsService newsServiceMock;
 
     @BeforeEach
     void setUp() {
         notifyServiceMock = mock(NotifyService.class);
-        statServiceMock = spy(new StatisticsService() {
-            @Override
-            public Mono<Integer> getNewsCount() {
-                return Mono.just(42);
-            }
-
-            @Override
-            public Mono<Integer> getFeedsCount() {
-                return Mono.just(24);
-            }
-
-            @Override
-            public Mono<Integer> getUnreadCount() {
-                return Mono.just(12);
-            }
-        });
-        tested = new NewsUpdateNotificationHandler(notifyServiceMock, statServiceMock);
+        newsServiceMock = mock(NewsService.class);
+        when(newsServiceMock.count(any())).thenReturn(Mono.just(42));
+        tested = new NewsUpdateNotificationHandler(notifyServiceMock, newsServiceMock);
     }
 
     @Test
@@ -47,8 +37,6 @@ class NewsUpdateNotificationHandlerTest {
 
         captor.getValue().block();
 
-        verify(statServiceMock).getFeedsCount();
-        verify(statServiceMock).getNewsCount();
-        verify(statServiceMock).getUnreadCount();
+        verify(newsServiceMock).count(any());
     }
 }

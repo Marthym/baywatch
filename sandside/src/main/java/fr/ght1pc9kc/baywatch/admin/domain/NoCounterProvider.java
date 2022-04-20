@@ -1,13 +1,11 @@
 package fr.ght1pc9kc.baywatch.admin.domain;
 
+import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import reactor.core.publisher.Mono;
-
-import java.math.BigDecimal;
-import java.time.Instant;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class NoCounterProvider implements CounterProvider {
@@ -19,17 +17,7 @@ public class NoCounterProvider implements CounterProvider {
     }
 
     @Override
-    public Mono<BigDecimal> computeNumeric() {
-        return Mono.empty();
-    }
-
-    @Override
-    public Mono<Instant> computeInstant() {
-        return Mono.empty();
-    }
-
-    @Override
-    public Mono<String> computeString() {
+    public Mono<Counter> computeCounter() {
         return Mono.empty();
     }
 }

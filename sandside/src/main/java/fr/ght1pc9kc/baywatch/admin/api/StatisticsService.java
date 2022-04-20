@@ -1,11 +1,12 @@
 package fr.ght1pc9kc.baywatch.admin.api;
 
+import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
 import reactor.core.publisher.Mono;
 
 public interface StatisticsService {
-    Mono<Integer> getNewsCount();
+    Mono<Counter> getNewsCount();
 
-    Mono<Integer> getFeedsCount();
+    Mono<Counter> getFeedsCount();
 
-    Mono<Integer> getUsersCount();
+    Mono<Counter> getUsersCount();
 }

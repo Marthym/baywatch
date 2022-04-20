@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.infra.adapters;
 
+import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterType;
 import fr.ght1pc9kc.baywatch.security.infra.persistence.UserRepository;
@@ -7,8 +8,6 @@ import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-
-import java.math.BigDecimal;
 
 @Component
 @RequiredArgsConstructor
@@ -22,8 +21,8 @@ public class UsersCounterProvider implements CounterProvider {
     }
 
     @Override
-    public Mono<BigDecimal> computeNumeric() {
+    public Mono<Counter> computeCounter() {
         return userRepository.count(QueryContext.empty())
-                .map(BigDecimal::new);
+                .map(r -> new Counter("User Count", Integer.toString(r), "Users in database"));
     }
 }
