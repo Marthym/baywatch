@@ -4,4 +4,5 @@ export type Statistics = {
     news: Counter;
     feeds: Counter;
     users: Counter;
+    scrap: Counter;
 }

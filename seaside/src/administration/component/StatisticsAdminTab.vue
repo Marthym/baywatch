@@ -1,6 +1,6 @@
 <template>
   <div class="flex justify-center flex-wrap">
-    <div class="stats shadow m-2 w-fit">
+    <div class="stats shadow m-2 w-fit grow">
       <div class="stat">
         <div class="stat-figure text-secondary">
           <svg class="inline-block w-10 h-10" fill="currentColor" viewBox="0 0 20 20"
@@ -16,7 +16,7 @@
         <div class="stat-desc">{{ newsCount.description }}</div>
       </div>
     </div>
-    <div class="stats shadow m-2 w-fit">
+    <div class="stats shadow m-2 w-fit grow">
       <div class="stat">
         <div class="stat-figure text-secondary">
           <svg class="inline-block w-10 h-10" fill="currentColor" viewBox="0 0 20 20"
@@ -31,7 +31,7 @@
         <div class="stat-desc">{{ feedsCount.description }}</div>
       </div>
     </div>
-    <div class="stats shadow m-2 w-fit">
+    <div class="stats shadow m-2 w-fit grow">
       <div class="stat">
         <div class="stat-figure text-secondary">
           <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
@@ -45,6 +45,22 @@
         <div class="stat-title">{{ usersCount.name }}</div>
         <div class="stat-value">{{ usersCount.value }}</div>
         <div class="stat-desc">{{ usersCount.description }}</div>
+      </div>
+    </div>
+    <div class="stats shadow m-2 w-fit grow">
+      <div class="stat">
+        <div class="stat-figure text-secondary">
+          <svg class="inline-block w-10 h-10" fill="currentColor" viewBox="0 0 20 20"
+               xmlns="http://www.w3.org/2000/svg">
+            <path
+                d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0
+                001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z"></path>
+            <path d="M9 13h2v5a1 1 0 11-2 0v-5z"></path>
+          </svg>
+        </div>
+        <div class="stat-title">{{ scrapDuration.name }}</div>
+        <div class="stat-value">{{ scrapDuration.value }}</div>
+        <div class="stat-desc">{{ scrapDuration.description }}</div>
       </div>
     </div>
   </div>
@@ -65,6 +81,7 @@ export default class StatisticsAdminTab extends Vue {
   private newsCount: Counter = {...NONE};
   private feedsCount: Counter = {...NONE};
   private usersCount: Counter = {...NONE};
+  private scrapDuration: Counter = {...NONE};
 
   public mounted(): void {
     statisticsService.get().subscribe({
@@ -72,6 +89,7 @@ export default class StatisticsAdminTab extends Vue {
         Object.assign(this.newsCount, stats.news);
         Object.assign(this.feedsCount, stats.feeds);
         Object.assign(this.usersCount, stats.users);
+        Object.assign(this.scrapDuration, stats.scrap);
       }
     })
   }
