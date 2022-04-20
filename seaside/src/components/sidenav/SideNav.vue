@@ -19,7 +19,6 @@ import SideNavManagement from './SideNavManagement.vue';
 import authenticationService from "@/services/AuthenticationService";
 import serverEventService from '@/techwatch/services/ServerEventService'
 import {SidenavState} from "@/store/sidenav/sidenav";
-import {RELOAD_ACTION} from "@/techwatch/store/statistics/StatisticsConstants";
 import {useStore} from "vuex";
 import {setup} from "vue-class-component";
 import {defineAsyncComponent} from "vue";
@@ -51,7 +50,6 @@ export default class SideNav extends Vue {
         switchMap(() => authenticationService.logout())
     ).subscribe(() => {
       this.store.commit(LOGOUT_MUTATION);
-      this.store.dispatch(RELOAD_ACTION);
       this.router.go(0);
     });
   }
