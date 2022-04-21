@@ -33,6 +33,8 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers.NEWS_PROPERTIES_MAPPING;
+import static fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers.NEWS_STATE;
+import static fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers.POPULAR;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
@@ -56,7 +58,7 @@ public class NewsRepository implements NewsPersistencePort {
 
     @Override
     public Flux<News> list(QueryContext qCtx) {
-        final Select<Record> query = buildSelectQuery(qCtx);
+        final Select<Record> query = buildSelectQuery(qCtx, dsl);
 
         return Flux.<Record>create(sink -> {
                     Cursor<Record> cursor = query.fetchLazy();
@@ -128,12 +130,12 @@ public class NewsRepository implements NewsPersistencePort {
 
     @Override
     public Mono<Integer> count(QueryContext qCtx) {
-        SelectQuery<Record> select = buildSelectQuery(qCtx);
+        SelectQuery<Record> select = buildSelectQuery(qCtx, dsl);
         return Mono.fromCallable(() -> dsl.fetchCount(select))
                 .subscribeOn(databaseScheduler);
     }
 
-    private SelectQuery<Record> buildSelectQuery(QueryContext qCtx) {
+    private static SelectQuery<Record> buildSelectQuery(QueryContext qCtx, DSLContext dsl) {
         Condition conditions = Optional.ofNullable(qCtx.filter).map(f -> f.accept(NEWS_CONDITION_VISITOR))
                 .orElse(DSL.noCondition());
 
@@ -147,11 +149,13 @@ public class NewsRepository implements NewsPersistencePort {
         select.addGroupBy(NEWS.fields());
 
         if (!StringUtils.isBlank(qCtx.userId)) {
-            select.addSelect(NEWS_USER_STATE.NURS_STATE);
-            select.addJoin(NEWS_USER_STATE, JoinType.LEFT_OUTER_JOIN,
-                    NEWS.NEWS_ID.eq(NEWS_USER_STATE.NURS_NEWS_ID)
-                            .and(NEWS_USER_STATE.NURS_USER_ID.eq(qCtx.userId) // Is for current user or is shared
-                                    .or(DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.SHARED).eq(Flags.SHARED))));
+            select.addSelect(NEWS_STATE.NURS_STATE);
+            select.addJoin(NEWS_STATE, JoinType.LEFT_OUTER_JOIN,
+                    NEWS.NEWS_ID.eq(NEWS_STATE.NURS_NEWS_ID).and(NEWS_STATE.NURS_USER_ID.eq(qCtx.userId)));
+
+            select.addJoin(POPULAR, JoinType.LEFT_OUTER_JOIN,
+                    NEWS.NEWS_ID.eq(POPULAR.NURS_NEWS_ID)
+                            .and(DSL.coalesce(POPULAR.NURS_STATE, Flags.NONE).bitAnd(Flags.SHARED).eq(Flags.SHARED)));
         }
 
         SelectQuery<Record> paginateSelect = (SelectQuery<Record>) JooqPagination.apply(qCtx.pagination, NEWS_PROPERTIES_MAPPING, select);

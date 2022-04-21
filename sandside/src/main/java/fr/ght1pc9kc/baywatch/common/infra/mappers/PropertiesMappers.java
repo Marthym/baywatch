@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.common.infra.mappers;
 
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
+import fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import lombok.experimental.UtilityClass;
 import org.jooq.Field;
@@ -18,6 +19,9 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.Users.USERS;
 
 @UtilityClass
 public final class PropertiesMappers {
+    public static final NewsUserState POPULAR = NEWS_USER_STATE.as("POPULAR");
+    public static final NewsUserState NEWS_STATE = NEWS_USER_STATE.as("NEWS_STATE");
+
     public static final Map<String, Field<?>> FEEDS_PROPERTIES_MAPPING = Map.of(
             EntitiesProperties.ID, FEEDS.FEED_ID,
             EntitiesProperties.NAME, FEEDS.FEED_NAME,
@@ -35,8 +39,8 @@ public final class PropertiesMappers {
             EntitiesProperties.LINK, NEWS.NEWS_LINK,
             EntitiesProperties.PUBLICATION, NEWS.NEWS_PUBLICATION,
             EntitiesProperties.FEED_ID, NEWS_FEEDS.NEFE_FEED_ID,
-            EntitiesProperties.READ, DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.READ),
-            EntitiesProperties.POPULAR, DSL.field(DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE)
+            EntitiesProperties.READ, DSL.coalesce(NEWS_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.READ),
+            EntitiesProperties.POPULAR, DSL.field(DSL.coalesce(POPULAR.NURS_STATE, Flags.NONE)
                     .bitAnd(Flags.SHARED).eq(Flags.SHARED)),
             EntitiesProperties.TITLE, NEWS.NEWS_TITLE
     );
