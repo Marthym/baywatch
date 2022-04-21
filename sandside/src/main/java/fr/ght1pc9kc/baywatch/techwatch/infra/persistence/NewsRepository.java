@@ -4,6 +4,7 @@ import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
@@ -148,7 +149,9 @@ public class NewsRepository implements NewsPersistencePort {
         if (!StringUtils.isBlank(qCtx.userId)) {
             select.addSelect(NEWS_USER_STATE.NURS_STATE);
             select.addJoin(NEWS_USER_STATE, JoinType.LEFT_OUTER_JOIN,
-                    NEWS.NEWS_ID.eq(NEWS_USER_STATE.NURS_NEWS_ID).and(NEWS_USER_STATE.NURS_USER_ID.eq(qCtx.userId)));
+                    NEWS.NEWS_ID.eq(NEWS_USER_STATE.NURS_NEWS_ID)
+                            .and(NEWS_USER_STATE.NURS_USER_ID.eq(qCtx.userId) // Is for current user or is shared
+                                    .or(DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.SHARED).eq(Flags.SHARED))));
         }
 
         SelectQuery<Record> paginateSelect = (SelectQuery<Record>) JooqPagination.apply(qCtx.pagination, NEWS_PROPERTIES_MAPPING, select);

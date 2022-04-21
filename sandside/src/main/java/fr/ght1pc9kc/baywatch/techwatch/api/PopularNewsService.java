@@ -2,7 +2,6 @@ package fr.ght1pc9kc.baywatch.techwatch.api;
 
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Popularity;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.util.Collection;
 

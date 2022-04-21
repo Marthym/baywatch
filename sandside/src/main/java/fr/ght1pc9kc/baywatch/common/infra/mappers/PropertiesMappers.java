@@ -36,6 +36,8 @@ public final class PropertiesMappers {
             EntitiesProperties.PUBLICATION, NEWS.NEWS_PUBLICATION,
             EntitiesProperties.FEED_ID, NEWS_FEEDS.NEFE_FEED_ID,
             EntitiesProperties.READ, DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.READ),
+            EntitiesProperties.POPULAR, DSL.field(DSL.coalesce(NEWS_USER_STATE.NURS_STATE, Flags.NONE)
+                    .bitAnd(Flags.SHARED).eq(Flags.SHARED)),
             EntitiesProperties.TITLE, NEWS.NEWS_TITLE
     );
 
