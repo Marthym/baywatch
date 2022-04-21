@@ -116,7 +116,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   private observeFirst(el: Element): void {
     if (this.isAuthenticated) {
       this.activateOnScroll.observe(el);
-      if (this.news.length > 3) {
+      if (this.news.length >= 19) {
         this.infiniteScroll.observe(this.getRefElement(this.news[this.news.length - 3].data.id));
       }
     }
