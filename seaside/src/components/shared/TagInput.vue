@@ -12,7 +12,7 @@
       {{ tag.name }}
     </div>
     <div class="dropdown">
-      <input type="text" placeholder="Ajouter un tag..." class="input input-ghost input-xs w-32 flex-grow"
+      <input type="text" placeholder="Ajouter un tag..." class="input input-ghost input-xs w-32 flex-grow focus:outline-none"
              v-model.trim="tag" @keydown="onKeydown">
       <ul tabindex="0" v-if="displayProposal && proposal.length > 0"
           class="py-3 shadow menu bg-neutral border-primary-content border border-opacity-20 dropdown-content w-60">

@@ -1,6 +1,6 @@
 import Vue from "vue";
 import InfiniteScrollable from "@/services/model/InfiniteScrollable";
-import {take, takeLast} from "rxjs/operators";
+import {skip, take} from "rxjs/operators";
 
 export class InfiniteScrollBehaviour {
     private observer: IntersectionObserver;
@@ -11,8 +11,8 @@ export class InfiniteScrollBehaviour {
             if (entry.isIntersecting) {
                 this.observer.disconnect();
                 component.loadNextPage().pipe(
-                    takeLast(3),
-                    take(1)
+                    skip(17),
+                    take(1),
                 ).subscribe(el => {
                     this.observer.observe(el);
                 });

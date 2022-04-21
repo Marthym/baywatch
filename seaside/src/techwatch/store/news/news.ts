@@ -1,11 +1,22 @@
-import {ADD_TAG, EMPTY_FILTERS, REMOVE_TAG, REPLACE_TAGS} from "@/techwatch/store/news/NewsStoreConstants";
+import {
+    ADD_TAG,
+    EMPTY_FILTERS,
+    REMOVE_TAG,
+    REPLACE_TAGS,
+    TOGGLE_POPULAR,
+    TOGGLE_UNREAD
+} from "@/techwatch/store/news/NewsStoreConstants";
 
 export type NewsStore = {
     tags: string[];
+    unread: boolean,
+    popular: boolean
 }
 
 const state = (): NewsStore => ({
-    tags: []
+    tags: [],
+    unread: true,
+    popular: false
 });
 
 // getters
@@ -29,6 +40,12 @@ const mutations = {
     },
     [EMPTY_FILTERS](st: NewsStore): void {
         st.tags.splice(0);
+    },
+    [TOGGLE_UNREAD](st: NewsStore): void {
+        st.unread = !st.unread;
+    },
+    [TOGGLE_POPULAR](st: NewsStore): void {
+        st.popular = !st.popular;
     },
 }
 
