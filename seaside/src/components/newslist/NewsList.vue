@@ -122,14 +122,24 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     }
   }
 
-  loadNextPage(): Observable<Element> {
+  private buildNewsQueryString(): URLSearchParams {
     const query = new URLSearchParams(NewsService.DEFAULT_QUERY);
     if (this.isAuthenticated) {
-      query.append('read', 'false');
+      if (this.newsStore.unread) {
+        query.append('read', 'false');
+      }
+      if (this.newsStore.popular) {
+        query.append('popular', 'true');
+      }
       if (this.newsStore.tags.length > 0) {
         this.newsStore.tags.forEach(tag => query.append('tags', `∋${tag}`));
       }
     }
+    return query;
+  }
+
+  loadNextPage(): Observable<Element> {
+    const query = this.buildNewsQueryString();
 
     const lastIndex = this.news.length - 1;
     if (this.news.length > 0) {

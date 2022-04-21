@@ -6,7 +6,7 @@
 
     <SideNavUserInfo/>
 
-    <SideNavTags v-if="user.isAuthenticated"/>
+    <SideNavFilters v-if="user.isAuthenticated"/>
     <SideNavManagement @logout="logoutUser()"/>
   </aside>
 </template>
@@ -16,26 +16,24 @@ import {Options, Vue} from 'vue-property-decorator';
 import SideNavHeader from "./SideNavHeader.vue";
 import SideNavManagement from './SideNavManagement.vue';
 
-import authenticationService from "@/services/AuthenticationService";
-import serverEventService from '@/techwatch/services/ServerEventService'
+import {LOGOUT_MUTATION} from "@/store/user/UserConstants";
 import {SidenavState} from "@/store/sidenav/sidenav";
+import SideNavUserInfo from "@/components/sidenav/SideNavUserInfo.vue";
+import SideNavFilters from "@/components/sidenav/SideNavFilters.vue";
+import {UserState} from "@/store/user/user";
 import {useStore} from "vuex";
 import {setup} from "vue-class-component";
-import {defineAsyncComponent} from "vue";
-import {UserState} from "@/store/user/user";
-import {LOGOUT_MUTATION} from "@/store/user/UserConstants";
 import {switchMap} from "rxjs/operators";
 import {useRouter} from "vue-router";
-
-const SideNavTags = defineAsyncComponent(() => import('./SideNavTags.vue').then(m => m.default))
-const SideNavUserInfo = defineAsyncComponent(() => import('./SideNavUserInfo.vue').then(m => m.default));
+import authenticationService from "@/services/AuthenticationService";
+import serverEventService from '@/techwatch/services/ServerEventService'
 
 @Options({
   name: 'SideNav',
   components: {
     SideNavHeader,
     SideNavUserInfo,
-    SideNavTags,
+    SideNavFilters,
     SideNavManagement,
   },
 })

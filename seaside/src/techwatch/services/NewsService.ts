@@ -12,8 +12,7 @@ export class NewsService {
 
     public static readonly DEFAULT_PER_PAGE: number = 20;
     /**
-     * By default query the 10 latest published news
-     * @private
+     * By default, query the 20 latest published news
      */
     public static readonly DEFAULT_QUERY: string = `?_pp=${NewsService.DEFAULT_PER_PAGE}&_s=-publication`;
 
