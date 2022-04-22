@@ -10,7 +10,7 @@ import {setup} from "vue-class-component";
 import {useRouter} from "vue-router";
 import {Store, useStore} from "vuex";
 
-const NewsList = defineAsyncComponent(() => import('@/components/newslist/NewsList.vue'));
+const NewsList = defineAsyncComponent(() => import('@/techwatch/components/newslist/NewsList.vue'));
 
 @Options({
   name: 'HomePage',

@@ -39,6 +39,7 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 @Slf4j
 @Repository
 @AllArgsConstructor
+@SuppressWarnings("resource")
 public class FeedRepository implements FeedPersistencePort {
     private static final JooqConditionVisitor JOOQ_CONDITION_VISITOR =
             new JooqConditionVisitor(FEEDS_PROPERTIES_MAPPING::get);

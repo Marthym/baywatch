@@ -39,7 +39,7 @@
 
 <script lang="ts">
 import {Options, Prop, Vue} from 'vue-property-decorator';
-import {NewsView} from "@/components/newslist/model/NewsView";
+import {NewsView} from "@/techwatch/components/newslist/model/NewsView";
 
 @Options({name: 'NewsCard'})
 export default class NewsCard extends Vue {
