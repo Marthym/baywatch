@@ -36,7 +36,6 @@ import reactor.core.publisher.Mono;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,7 +50,7 @@ import java.util.stream.Collectors;
 @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
 @RequestMapping("${baywatch.base-route}/feeds")
 public class FeedController {
-
+    private static final URI FEED_BASE = URI.create("/feeds");
     private static final QueryStringParser qsParser = QueryStringParser.withDefaultConfig();
     private final FeedService feedService;
     private final ObjectMapper mapper;
@@ -79,13 +78,13 @@ public class FeedController {
         List<Mono<URI>> operations = new ArrayList<>(patchs.getResources().size());
 
         for (ResourcePatch resource : patchs.getResources()) {
-            if (!resource.path().getPath().startsWith("/feeds")) {
+            if (!resource.path().getPath().startsWith(FEED_BASE.getPath())) {
                 continue;
             }
             switch (resource.op()) {
                 case remove:
                     try {
-                        String id = Paths.get(resource.path()).getFileName().toString();
+                        String id = FEED_BASE.relativize(resource.path()).toString();
                         operations.add(feedService.delete(List.of(id)).map(deleted -> resource.path()));
                     } catch (Exception e) {
                         return Flux.error(new IllegalArgumentException("Malformed PATCH (remove) request !", e));
@@ -96,7 +95,7 @@ public class FeedController {
                     try {
                         FeedForm toPersist = mapper.readerFor(FeedForm.class).readValue(resource.value(), FeedForm.class);
                         Mono<URI> persisted = subscribe(Mono.just(toPersist))
-                                .map(re -> URI.create("/feeds/" + Objects.requireNonNull(re.getBody()).getId()));
+                                .map(re -> URI.create(FEED_BASE.getPath() + "/" + Objects.requireNonNull(re.getBody()).getId()));
                         operations.add(persisted);
                         break;
                     } catch (IOException e) {
@@ -105,10 +104,10 @@ public class FeedController {
 
                 case replace:
                     try {
-                        String id = Paths.get(resource.path()).getFileName().toString();
+                        String id = FEED_BASE.relativize(resource.path()).toString();
                         FeedForm toPersist = mapper.readerFor(FeedForm.class).readValue(resource.value(), FeedForm.class);
                         Mono<URI> persisted = update(id, Mono.just(toPersist))
-                                .map(re -> URI.create("/feeds/" + re.getId()));
+                                .map(re -> URI.create(FEED_BASE.getPath() + "/" + re.getId()));
                         operations.add(persisted);
                         break;
                     } catch (IOException e) {
