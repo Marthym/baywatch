@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed right-0 h-full w-full bg-base-200 bg-opacity-60 lg:hidden"
+  <div class="fixed right-0 h-full w-full bg-base-200 bg-opacity-60 z-10 lg:hidden"
        :class="{'hidden': !state.open}"
        @click.stop="sideNavToggle"
   ></div>
