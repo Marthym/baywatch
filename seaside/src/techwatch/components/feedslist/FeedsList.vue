@@ -121,10 +121,10 @@ export default class FeedsList extends Vue {
   loadFeedPage(page: number): Observable<FeedView[]> {
     const resolvedPage = (page > 0) ? page : 0;
     return feedsService.list(resolvedPage).pipe(
-        switchMap(page => {
-          this.pagesNumber = page.totalPage;
-          this.activePage = page.currentPage;
-          return page.data;
+        switchMap(feedPage => {
+          this.pagesNumber = feedPage.totalPage;
+          this.activePage = feedPage.currentPage;
+          return feedPage.data;
         }),
         map(fs => fs.map(f => this.modelToView(f))),
         tap(fs => this.feeds = fs)
@@ -158,9 +158,9 @@ export default class FeedsList extends Vue {
   }
 
   private itemUpdate(item: Feed): void {
-    this.feedEditor.openFeed(item).pipe(
+    this.feedEditor.openFeed({...item}).pipe(
         take(1),
-        switchMap(feed => feedsService.update(feed)),
+        switchMap(feed => feedsService.update(feed, item.url !== feed.url)),
         switchMap(() => this.loadFeedPage(this.activePage)),
     ).subscribe({
       next: () => notificationService.pushSimpleOk('Mis à jour avec succès'),
@@ -178,11 +178,11 @@ export default class FeedsList extends Vue {
         filter(response => response === AlertResponse.CONFIRM),
         switchMap(() => feedsService.remove(itemId)),
         tap(() => {
-          const idx = this.feeds.findIndex(fv => fv.data.id === itemId);
-          this.feeds.splice(idx, 1);
+          const concernedIndexes = this.feeds.findIndex(fv => fv.data.id === itemId);
+          this.feeds.splice(concernedIndexes, 1);
         })
     ).subscribe({
-      next: feed => notificationService.pushSimpleOk(`Feed ${feed.id.substr(0, 10)} deleted successfully !`),
+      next: feed => notificationService.pushSimpleOk(`Feed ${feed.id.substring(0, 10)} deleted successfully !`),
       error: e => {
         console.error(e);
         notificationService.pushSimpleError('Impossible de mettre à jour le fil');

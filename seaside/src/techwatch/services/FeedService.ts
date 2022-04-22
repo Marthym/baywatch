@@ -47,58 +47,58 @@ export class FeedService {
 
     add(feed: Feed): Observable<Feed> {
         return rest.post('/feeds', feed).pipe(
-            switchMap(response => {
-                if (response.ok) {
-                    return from(response.json());
-                } else {
-                    return from(response.json()).pipe(switchMap(j =>
-                        throwError(() => new HttpStatusError(response.status, j.message))));
-                }
-            }),
+            switchMap(this.responseToFeed),
             take(1)
         );
     }
 
-    update(feed: Feed): Observable<Feed> {
-        return rest.put(`/feeds/${feed.id}`, feed).pipe(
-            switchMap(response => {
-                if (response.ok) {
-                    return from(response.json());
-                } else {
-                    return from(response.json()).pipe(switchMap(j =>
-                        throwError(() => new HttpStatusError(response.status, j.message))));
-                }
-            }),
-            take(1)
-        );
+    public update(feed: Feed, urlChange: boolean = true): Observable<string> {
+        if (!urlChange) {
+            return rest.put(`/feeds/${feed.id}`, feed).pipe(
+                switchMap(this.responseToFeed),
+                map((updatedFeed: Feed) => updatedFeed.id),
+                take(1)
+            );
+        } else {
+            const jsonPatch: OpPatch[] = [];
+            jsonPatch.push({op: 'remove', path: `/feeds/${feed.id}`});
+            jsonPatch.push({op: 'add', path: '/feeds', value: feed});
+
+            return this.patch(jsonPatch).pipe(
+                map(updated => updated.pop())
+            );
+        }
     }
 
     remove(id: string): Observable<Feed> {
         return rest.delete(`/feeds/${id}`).pipe(
-            switchMap(response => {
-                if (response.ok) {
-                    return from(response.json());
-                } else {
-                    throw new HttpStatusError(response.status, `Error while unsubscribing feed ${id}`);
-                }
-            }),
+            switchMap(this.responseToFeed),
             take(1)
         );
     }
 
     bulkRemove(ids: string[]): Observable<number> {
         const jsonPatch: OpPatch[] = [];
-        ids.forEach(id => jsonPatch.push({op: 'remove', path: `/feeds/${id}`}))
-        return rest.patch(`/feeds`, jsonPatch).pipe(
-            switchMap(response => {
-                if (response.ok) {
-                    return from(response.json());
-                } else {
-                    throw new HttpStatusError(response.status, `Error while unsubscribing feeds ${ids}`);
-                }
-            }),
+        ids.forEach(id => jsonPatch.push({op: 'remove', path: `/feeds/${id}`}));
+        return this.patch(jsonPatch).pipe(
+            map(deleted => deleted.length)
+        );
+    }
+
+    private patch(payload: OpPatch[]): Observable<string[]> {
+        return rest.patch(`/feeds`, payload).pipe(
+            switchMap(this.responseToFeed),
             take(1)
         );
+    }
+
+    private responseToFeed(response: Response): Observable<any> {
+        if (response.ok) {
+            return from(response.json());
+        } else {
+            return from(response.json()).pipe(switchMap(j =>
+                throwError(() => new HttpStatusError(response.status, j.message))));
+        }
     }
 }
 
