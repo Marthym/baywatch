@@ -1,8 +1,8 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain.plugins;
 
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
-import fr.ght1pc9kc.baywatch.scrapper.api.FeedParserPlugin;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
+import fr.ght1pc9kc.baywatch.scrapper.api.FeedParserPlugin;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;

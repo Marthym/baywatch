@@ -104,6 +104,9 @@ public final class RssAtomParserImpl implements RssAtomParser {
                                             .map(Attribute::getValue)
                                             .orElseGet(Exceptions.wrap().supplier(reader::getElementText));
                                     URI link = URI.create(href.trim());
+                                    if (!link.isAbsolute()) {
+                                        link = feed.getUrl().resolve(link);
+                                    }
                                     if (bldr == null) {
                                         plugin = plugins.getOrDefault(link.getHost(), plugin);
                                         break;
@@ -134,7 +137,8 @@ public final class RssAtomParserImpl implements RssAtomParser {
                             String localPart = endElement.getName().getLocalPart();
                             if (ITEM.equals(localPart) || ENTRY.equals(localPart)) {
                                 RawNews rawNews = plugin.handleEndEvent(bldr);
-                                if (!ALLOWED_PROTOCOL.contains(rawNews.getLink().getScheme())) {
+                                if (rawNews.getLink().getScheme() == null
+                                        || !ALLOWED_PROTOCOL.contains(rawNews.getLink().getScheme())) {
                                     log.warn("Illegal URL detected : {} in feed :{}", rawNews.getLink(), feed.getName());
                                     continue;
                                 }
