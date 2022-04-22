@@ -74,19 +74,19 @@
 </template>
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
-import FeedListHeader from "@/components/feedslist/FeedListHeader.vue";
-import FeedListItem from "@/components/feedslist/FeedListItem.vue";
-import {FeedView} from "@/components/feedslist/model/FeedView";
+import FeedListHeader from "@/techwatch/components/feedslist/FeedListHeader.vue";
+import FeedListItem from "@/techwatch/components/feedslist/FeedListItem.vue";
+import {FeedView} from "@/techwatch/components/feedslist/model/FeedView";
 import {filter, map, switchMap, take, tap} from "rxjs/operators";
 import {Observable} from "rxjs";
 import {Feed} from "@/techwatch/model/Feed";
-import FeedEditor from "@/components/feedslist/FeedEditor.vue";
+import FeedEditor from "@/techwatch/components/feedslist/FeedEditor.vue";
 import feedsService from "@/techwatch/services/FeedService";
 import opmlService from "@/techwatch/services/OpmlService";
 import notificationService from "@/services/notification/NotificationService";
 import {defineAsyncComponent} from "vue";
 import {AlertResponse, AlertType} from "@/components/shared/alertdialog/AlertDialog.types";
-import FeedActions from "@/components/feedslist/FeedActions.vue";
+import FeedActions from "@/techwatch/components/feedslist/FeedActions.vue";
 import {setup} from "vue-class-component";
 import {useStore} from "vuex";
 import {UserState} from "@/store/user/user";

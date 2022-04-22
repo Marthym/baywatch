@@ -42,10 +42,10 @@
 </template>
 <script lang="ts">
 import {Options, Vue, Watch} from 'vue-property-decorator';
-import NewsCard from "@/components/newslist/NewsCard.vue";
+import NewsCard from "@/techwatch/components/newslist/NewsCard.vue";
 import {iif, Observable, Subject} from "rxjs";
 import {map, switchMap, take, tap} from "rxjs/operators";
-import {NewsView} from "@/components/newslist/model/NewsView";
+import {NewsView} from "@/techwatch/components/newslist/model/NewsView";
 import ScrollActivable from "@/services/model/ScrollActivable";
 import {useInfiniteScroll} from "@/services/InfiniteScrollBehaviour";
 import {useScrollingActivation} from "@/services/ScrollingActivationBehaviour";
