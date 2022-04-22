@@ -19,5 +19,5 @@ import java.util.List;
 @JsonFormat(with = JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_VALUES)
 public class PatchPayload {
     @JsonIgnore
-    private final List<ResourcePatch> operations;
+    private final List<ResourcePatch> resources;
 }

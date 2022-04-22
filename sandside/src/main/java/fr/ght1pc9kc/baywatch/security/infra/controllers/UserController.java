@@ -1,13 +1,13 @@
 package fr.ght1pc9kc.baywatch.security.infra.controllers;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
-import fr.ght1pc9kc.baywatch.security.api.UserService;
-import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.common.infra.model.CreateValidation;
 import fr.ght1pc9kc.baywatch.common.infra.model.Page;
 import fr.ght1pc9kc.baywatch.common.infra.model.PatchOperation;
 import fr.ght1pc9kc.baywatch.common.infra.model.PatchPayload;
+import fr.ght1pc9kc.baywatch.security.api.UserService;
+import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.infra.config.SecurityMapper;
 import fr.ght1pc9kc.baywatch.security.infra.exceptions.AlreadyExistsException;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserForm;
@@ -35,6 +35,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -100,9 +101,9 @@ public class UserController {
     @PatchMapping
     public Flux<Entity<User>> bulkUpdate(@RequestBody PatchPayload patchs) {
         log.debug(patchs.toString());
-        Set<String> ids = patchs.getOperations().stream()
-                .filter(p -> p.op == PatchOperation.remove && p.path.getParent().toString().equals("/users"))
-                .map(p -> p.path.getFileName().toString())
+        Set<String> ids = patchs.getResources().stream()
+                .filter(p -> p.op() == PatchOperation.remove && p.path().getPath().startsWith("/users"))
+                .map(p -> Paths.get(p.path()).getFileName().toString())
                 .collect(Collectors.toUnmodifiableSet());
         return userService.delete(ids);
     }
