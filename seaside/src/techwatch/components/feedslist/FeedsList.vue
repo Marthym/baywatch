@@ -74,8 +74,7 @@
 </template>
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
-import FeedListHeader from "@/techwatch/components/feedslist/FeedListHeader.vue";
-import FeedListItem from "@/techwatch/components/feedslist/FeedListItem.vue";
+import FeedListItem from "@/techwatch/components/feedslist/FeedsListItem.vue";
 import {FeedView} from "@/techwatch/components/feedslist/model/FeedView";
 import {filter, map, switchMap, take, tap} from "rxjs/operators";
 import {Observable} from "rxjs";
@@ -95,7 +94,7 @@ const FileUploadWindow = defineAsyncComponent(() => import('@/components/shared/
 
 @Options({
   name: 'FeedsList',
-  components: {FeedActions, FeedEditor, FeedListItem, FeedListHeader, FileUploadWindow},
+  components: {FeedActions, FeedEditor, FeedListItem, FileUploadWindow},
 })
 export default class FeedsList extends Vue {
   private userState: UserState = setup(() => useStore().state.user);

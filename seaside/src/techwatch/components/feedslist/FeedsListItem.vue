@@ -12,7 +12,7 @@
         {{ view.data.name }}
       </div>
       <div class="text-sm opacity-50">
-        {{ view.data.id.substr(0, 10) }}
+        {{ view.data.id.substring(0, 10) }}
       </div>
     </div>
   </div>
