@@ -21,13 +21,6 @@ logging:
     fr.ght1pc9kc.scraphead: ${BAYWATCH_LOG_LEVEL:DEBUG}
     # Avoid unwanted log error ...
     org.springframework.boot.autoconfigure.jooq.JooqExceptionTranslator: OFF
-  file:
-    name: ${BAYWATCH_LOG_FILE:}
-  logback:
-    rollingpolicy:
-      file-name-pattern: baywatch-%d{yyyy-MM-dd}.%i.log
-      max-file-size: 10MB
-      total-size-cap: 10
 
 baywatch:
   base-route: /api
