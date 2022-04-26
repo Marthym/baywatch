@@ -13,6 +13,7 @@ import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.scraphead.core.HeadScraper;
 import fr.ght1pc9kc.scraphead.core.model.links.Links;
 import fr.ght1pc9kc.scraphead.core.model.opengraph.OpenGraph;
+import io.netty.channel.ChannelOption;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -68,6 +69,8 @@ public final class FeedScrapperService implements Runnable {
                     HttpClient.create()
                             .followRedirect(true)
                             .compress(true)
+                            .responseTimeout(Duration.ofSeconds(2))
+                            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2_000)
             )).build();
     private final Clock clock = Clock.systemUTC();
     private final Semaphore lock = new Semaphore(1);
