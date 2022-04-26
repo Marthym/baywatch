@@ -2,7 +2,18 @@ package fr.ght1pc9kc.baywatch.common.infra;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.ght1pc9kc.juery.api.filter.*;
+import fr.ght1pc9kc.juery.api.filter.AndOperation;
+import fr.ght1pc9kc.juery.api.filter.ContainsOperation;
+import fr.ght1pc9kc.juery.api.filter.CriteriaVisitor;
+import fr.ght1pc9kc.juery.api.filter.EqualOperation;
+import fr.ght1pc9kc.juery.api.filter.GreaterThanEqualsOperation;
+import fr.ght1pc9kc.juery.api.filter.GreaterThanOperation;
+import fr.ght1pc9kc.juery.api.filter.InOperation;
+import fr.ght1pc9kc.juery.api.filter.LowerThanEqualsOperation;
+import fr.ght1pc9kc.juery.api.filter.LowerThanOperation;
+import fr.ght1pc9kc.juery.api.filter.NoCriterion;
+import fr.ght1pc9kc.juery.api.filter.NotOperation;
+import fr.ght1pc9kc.juery.api.filter.OrOperation;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;

@@ -31,5 +31,9 @@ baywatch:
     jwt.validity: ${BAYWATCH_TOKEN_VALIDITY:1h}
   scrapper:
     start: true
+    timeout: ${BAYWATCH_SCRAPPER_TIMEOUT:2s}
     frequency: ${BAYWATCH_SCRAPPER_FREQUENCY:1h}
     conservation: ${BAYWATCH_SCRAPPER_CONSERVATION:3m}
+    supportedScheme:
+      - http
+      - https

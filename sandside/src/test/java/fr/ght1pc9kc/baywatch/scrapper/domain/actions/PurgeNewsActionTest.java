@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.time.Period;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -40,7 +41,8 @@ class PurgeNewsActionTest {
         newsPersistenceMock = mock(NewsPersistencePort.class);
         StatePersistencePort statePersistenceMock = mock(StatePersistencePort.class);
         tested = new PurgeNewsHandler(newsPersistenceMock, statePersistenceMock,
-                new ScrapperProperties(true, Duration.ofHours(1), Period.ofMonths(5)))
+                new ScrapperProperties(true, Duration.ofHours(1), Duration.ofSeconds(10), Period.ofMonths(5),
+                        Set.of("http", "https")))
                 .clock(Clock.fixed(Instant.parse("2020-12-18T22:42:42Z"), ZoneOffset.UTC));
 
         when(newsPersistenceMock.list(any())).thenReturn(testDataForPersistenceList());

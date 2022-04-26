@@ -65,7 +65,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
     }
 
     public Flux<News> parse(Feed feed, InputStream is) {
-        final Instant maxAge = DateUtils.toInstant(DateUtils.toLocalDate(clock.instant()).minus(properties.conservation));
+        final Instant maxAge = DateUtils.toInstant(DateUtils.toLocalDate(clock.instant()).minus(properties.conservation()));
 
         return Flux.create(sink -> {
             try {
