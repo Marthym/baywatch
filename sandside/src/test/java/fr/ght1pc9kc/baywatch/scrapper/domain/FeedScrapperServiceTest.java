@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
+import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScrapperProperties;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
@@ -36,9 +37,11 @@ import wiremock.org.apache.commons.io.IOUtils;
 import java.io.InputStream;
 import java.net.URI;
 import java.time.Duration;
+import java.time.Period;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -52,6 +55,9 @@ import static org.mockito.Mockito.when;
 class FeedScrapperServiceTest {
 
     static final WireMockServer mockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
+    static final ScrapperProperties scraperProperties = new ScrapperProperties(
+            true, Duration.ofDays(1), Duration.ofSeconds(2), Period.ofDays(30), Set.of("http", "https")
+    );
 
     private FeedScrapperService tested;
 
@@ -59,6 +65,7 @@ class FeedScrapperServiceTest {
     private NewsPersistencePort newsPersistenceMock;
     private RssAtomParser rssAtomParserMock;
     private FeedPersistencePort feedPersistenceMock;
+
 
     @BeforeAll
     static void stubAllMockServerRoute() {
@@ -274,7 +281,7 @@ class FeedScrapperServiceTest {
         AuthenticationFacade authFacadeMock = mock(AuthenticationFacade.class);
         when(authFacadeMock.withSystemAuthentication()).thenReturn(Context.empty());
 
-        tested = new FeedScrapperService(Duration.ofDays(1),
+        tested = new FeedScrapperService(scraperProperties,
                 feedPersistenceMock, newsPersistenceMock, authFacadeMock, rssAtomParserMock, headScraperMock,
                 Collections.emptyList(), Map.of());
     }

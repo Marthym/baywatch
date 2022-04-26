@@ -4,6 +4,7 @@ import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.scrapper.api.FeedScrapperPlugin;
 import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scrapper.api.ScrappingHandler;
+import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScrapperProperties;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
@@ -14,7 +15,6 @@ import fr.ght1pc9kc.scraphead.core.HeadScraper;
 import fr.ght1pc9kc.scraphead.core.model.links.Links;
 import fr.ght1pc9kc.scraphead.core.model.opengraph.OpenGraph;
 import io.netty.channel.ChannelOption;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.VisibleForTesting;
@@ -53,7 +53,6 @@ import java.util.stream.Collectors;
 import static java.util.Objects.nonNull;
 
 @Slf4j
-@RequiredArgsConstructor
 public final class FeedScrapperService implements Runnable {
 
     private static final Set<String> SUPPORTED_SCHEMES = Set.of("http", "https");
@@ -64,18 +63,11 @@ public final class FeedScrapperService implements Runnable {
             new CustomizableThreadFactory("scrapSched-"));
     private final Scheduler scrapperScheduler =
             Schedulers.newBoundedElastic(5, Integer.MAX_VALUE, "scrapper");
-    private final WebClient http = WebClient.builder()
-            .clientConnector(new ReactorClientHttpConnector(
-                    HttpClient.create()
-                            .followRedirect(true)
-                            .compress(true)
-                            .responseTimeout(Duration.ofSeconds(2))
-                            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2_000)
-            )).build();
+    private final WebClient http;
     private final Clock clock = Clock.systemUTC();
     private final Semaphore lock = new Semaphore(1);
 
-    private final Duration scrapFrequency;
+    private final ScrapperProperties properties;
     private final FeedPersistencePort feedRepository;
     private final NewsPersistencePort newsRepository;
     private final AuthenticationFacade authFacade;
@@ -84,13 +76,38 @@ public final class FeedScrapperService implements Runnable {
     private final Collection<ScrappingHandler> scrappingHandlers;
     private final Map<String, FeedScrapperPlugin> plugins;
 
+    public FeedScrapperService(ScrapperProperties properties,
+                               FeedPersistencePort feedRepository, NewsPersistencePort newsRepository,
+                               AuthenticationFacade authFacade,
+                               RssAtomParser feedParser, HeadScraper headScrapper,
+                               Collection<ScrappingHandler> scrappingHandlers,
+                               Map<String, FeedScrapperPlugin> plugins) {
+        this.properties = properties;
+        this.feedRepository = feedRepository;
+        this.newsRepository = newsRepository;
+        this.authFacade = authFacade;
+        this.feedParser = feedParser;
+        this.headScrapper = headScrapper;
+        this.scrappingHandlers = scrappingHandlers;
+        this.plugins = plugins;
+
+        this.http = WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector(
+                        HttpClient.create()
+                                .followRedirect(true)
+                                .compress(true)
+                                .responseTimeout(properties.timeout())
+                                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) properties.timeout().toMillis())
+                )).build();
+    }
+
     public void startScrapping() {
         Instant now = clock.instant();
-        Instant nextScrapping = now.plus(scrapFrequency);
+        Instant nextScrapping = now.plus(properties.frequency());
         Duration toNextScrapping = Duration.between(now, nextScrapping);
 
         scheduleExecutor.scheduleAtFixedRate(this,
-                toNextScrapping.getSeconds(), scrapFrequency.getSeconds(), TimeUnit.SECONDS);
+                toNextScrapping.getSeconds(), properties.frequency().getSeconds(), TimeUnit.SECONDS);
         log.debug("Next scrapping at {}", LocalDateTime.now().plus(toNextScrapping));
         scheduleExecutor.schedule(this, 0, TimeUnit.MILLISECONDS);
     }

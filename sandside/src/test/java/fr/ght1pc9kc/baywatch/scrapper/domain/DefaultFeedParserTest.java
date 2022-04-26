@@ -1,26 +1,33 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain;
 
+import fr.ght1pc9kc.baywatch.common.domain.Hasher;
+import fr.ght1pc9kc.baywatch.scrapper.domain.plugins.DefaultParserPlugin;
+import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScrapperProperties;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
-import fr.ght1pc9kc.baywatch.scrapper.domain.plugins.DefaultParserPlugin;
-import fr.ght1pc9kc.baywatch.common.domain.Hasher;
-import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScrapperProperties;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.time.*;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.Period;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DefaultFeedParserTest {
 
-    private final ScrapperProperties props = new ScrapperProperties(false, Duration.ZERO, Period.ofDays(2));
+    private final ScrapperProperties props = new ScrapperProperties(false,
+            Duration.ZERO, Duration.ofSeconds(10), Period.ofDays(2),
+            Set.of("http", "https"));
     private final RssAtomParserImpl tested = new RssAtomParserImpl(props, List.of(new DefaultParserPlugin()));
 
     @ParameterizedTest(name = "{1}")

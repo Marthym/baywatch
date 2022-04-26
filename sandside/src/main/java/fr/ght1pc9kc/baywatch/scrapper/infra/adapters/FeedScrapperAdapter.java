@@ -4,18 +4,17 @@ import fr.ght1pc9kc.baywatch.scrapper.api.FeedScrapperPlugin;
 import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scrapper.api.ScrappingHandler;
 import fr.ght1pc9kc.baywatch.scrapper.domain.FeedScrapperService;
+import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScrapperProperties;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.scraphead.core.HeadScraper;
 import lombok.SneakyThrows;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
@@ -32,13 +31,12 @@ public class FeedScrapperAdapter {
                                Collection<ScrappingHandler> scrappingHandlers,
                                Collection<FeedScrapperPlugin> scrapperPlugins,
                                AuthenticationFacade authFacade,
-                               @Value("${baywatch.scrapper.start}") boolean startScrapper,
-                               @Value("${baywatch.scrapper.frequency}") Duration scrapFrequency) {
+                               ScrapperProperties properties) {
         Map<String, FeedScrapperPlugin> plugins = scrapperPlugins.stream()
                 .collect(Collectors.toUnmodifiableMap(FeedScrapperPlugin::pluginForDomain, Function.identity()));
-        this.startScrapper = startScrapper;
+        this.startScrapper = properties.start();
         this.scrapper = new FeedScrapperService(
-                scrapFrequency, feedPersistence, newsPersistence, authFacade,
+                properties, feedPersistence, newsPersistence, authFacade,
                 rssAtomParser, ogScrapper, scrappingHandlers, plugins);
     }
 

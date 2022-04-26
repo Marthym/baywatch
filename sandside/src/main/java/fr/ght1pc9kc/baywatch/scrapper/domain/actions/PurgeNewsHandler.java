@@ -37,7 +37,7 @@ public class PurgeNewsHandler implements ScrappingHandler {
 
     @Override
     public Mono<Void> before() {
-        LocalDateTime maxPublicationPasDate = LocalDateTime.now(clock).minus(scrapperProperties.conservation);
+        LocalDateTime maxPublicationPasDate = LocalDateTime.now(clock).minus(scrapperProperties.conservation());
         Criteria criteria = Criteria.property(PUBLICATION).lt(maxPublicationPasDate);
         return newsPersistence.list(QueryContext.all(criteria))
                 .map(News::getId)
