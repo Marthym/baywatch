@@ -41,7 +41,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -102,6 +104,7 @@ public final class FeedScrapperService implements Runnable {
                                 .nameServerProvider(
                                         new SequentialDnsServerAddressStreamProvider(
                                                 new InetSocketAddress("9.9.9.9", 53),
+                                                new InetSocketAddress("2620:fe::fe", 53),
                                                 new InetSocketAddress("8.8.8.8", 53))));
 
 
@@ -145,6 +148,7 @@ public final class FeedScrapperService implements Runnable {
     public void run() {
         if (!lock.tryAcquire()) {
             log.warn("Scrapping in progress !");
+            return;
         }
         log.info("Start scrapping ...");
         Mono<Set<String>> alreadyHave = newsRepository.list()
@@ -184,10 +188,12 @@ public final class FeedScrapperService implements Runnable {
         URI feedUrl = (hostPlugin != null) ? hostPlugin.uriModifier(feed.getUrl()) : feed.getUrl();
 
         log.debug("Start scraping feed {} ...", feedHost);
-//            PipedOutputStream osPipe = new PipedOutputStream();
-//            PipedInputStream isFeedPayload = new PipedInputStream(osPipe);
 
-        final Instant maxAge = DateUtils.toInstant(DateUtils.toLocalDate(clock.instant()).minus(properties.conservation()));
+        final Instant maxAge = LocalDate.now(clock)
+                .minus(properties.conservation())
+                .atTime(LocalTime.MAX)
+                .toInstant(DateUtils.DEFAULT_ZONE_OFFSET);
+
         return http.get()
                 .uri(feedUrl)
                 .accept(MediaType.APPLICATION_ATOM_XML)
@@ -203,14 +209,12 @@ public final class FeedScrapperService implements Runnable {
                             ResolvableType.NONE, null, null);
                 })
                 .doFirst(() -> log.trace("Receiving event from {}...", feedHost))
-                .skipUntil(e -> e.isStartElement() && (
-                        "item".equals(e.asStartElement().getName().getLocalPart())
-                                || "entry".equals(e.asStartElement().getName().getLocalPart())))
-                .bufferUntil(e -> e.isEndElement() && (
-                        "item".equals(e.asEndElement().getName().getLocalPart())
-                                || "entry".equals(e.asEndElement().getName().getLocalPart())))
+
+                .skipUntil(feedParser.firstItemEvent())
+                .bufferUntil(feedParser.itemEndEvent())
                 .flatMap(entry -> feedParser.readEntryEvents(entry, feed))
-                .takeUntil(news -> news.getPublication().isBefore(maxAge))
+                .takeWhile(news -> news.getPublication().isAfter(maxAge))
+
                 .doFinally(s -> log.debug("Finish scraping feed {}", feedHost))
                 .onErrorResume(e -> {
                     log.warn(ERROR_CLASS_MESSAGE, feedHost, e.getLocalizedMessage());
