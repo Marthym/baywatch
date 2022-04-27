@@ -15,6 +15,7 @@ import org.owasp.html.PolicyFactory;
 import org.owasp.html.Sanitizers;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
@@ -49,6 +50,8 @@ public final class RssAtomParserImpl implements RssAtomParser {
     private static final String LINK = "link";
     private static final String PUB_DATE = "pubDate";
     private static final String UPDATED = "updated";
+
+    private static final Set<String> SUPPORTED_EVENT = Set.of(ITEM, ENTRY, TITLE, DESCRIPTION, CONTENT, LINK, PUB_DATE, UPDATED);
     private static final QName HREF = new QName("href");
     private static final PolicyFactory HTML_POLICY = Sanitizers.FORMATTING;
 
@@ -62,6 +65,110 @@ public final class RssAtomParserImpl implements RssAtomParser {
         this.properties = properties;
         this.plugins = plugins.stream()
                 .collect(Collectors.toUnmodifiableMap(FeedParserPlugin::pluginForDomain, Function.identity()));
+    }
+
+    public Mono<News> readEntryEvents(List<XMLEvent> events, Feed feed) {
+        FeedParserPlugin plugin = plugins.get("*");
+        RawNews.RawNewsBuilder bldr = null;
+        for (int i = 0; i < events.size(); i++) {
+            final XMLEvent nextEvent = events.get(i);
+            if (nextEvent.isStartElement()) {
+                final StartElement startElement = nextEvent.asStartElement();
+                if (!startElement.getName().getPrefix().isBlank()) {
+                    continue;
+                }
+                switch (startElement.getName().getLocalPart()) {
+                    case ENTRY, ITEM:
+                        bldr = plugin.handleItemEvent();
+                        break;
+                    case TITLE:
+                        if (bldr == null) {
+                            break;
+                        }
+                        String title = events.get(i + 1).asCharacters().getData();
+                        bldr = plugin.handleTitleEvent(bldr, title);
+                        break;
+                    case CONTENT, DESCRIPTION:
+                        if (bldr == null) {
+                            break;
+                        }
+                        bldr = plugin.handleDescriptionEvent(bldr, events.get(i + 1).asCharacters().getData());
+                        break;
+                    case LINK:
+                        final int nextIdx = i + 1;
+                        String href = Optional.ofNullable(startElement.getAttributeByName(HREF))
+                                .map(Attribute::getValue)
+                                .orElseGet(Exceptions.wrap().supplier(() -> events.get(nextIdx).asCharacters().getData()));
+                        URI link = URI.create(href.trim());
+                        if (!link.isAbsolute()) {
+                            link = feed.getUrl().resolve(link);
+                        }
+                        if (bldr == null) {
+                            plugin = plugins.getOrDefault(link.getHost(), plugin);
+                            break;
+                        }
+                        bldr = plugin.handleLinkEvent(bldr, link);
+                        break;
+                    case UPDATED:
+                        if (bldr == null) {
+                            break;
+                        }
+                        String updated = events.get(i + 1).asCharacters().getData();
+                        Instant updatedAt = DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(updated, Instant::from);
+                        bldr = plugin.handlePublicationEvent(bldr, updatedAt);
+                        break;
+                    case PUB_DATE:
+                        if (bldr == null) {
+                            break;
+                        }
+                        String pubDate = events.get(i + 1).asCharacters().getData();
+                        Instant datetime = Exceptions.silence().get(() -> DateTimeFormatter.RFC_1123_DATE_TIME.parse(pubDate, Instant::from))
+                                .orElseGet(() -> DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(pubDate, Instant::from));
+                        bldr = plugin.handlePublicationEvent(bldr, datetime);
+                        break;
+                }
+            }
+            if (nextEvent.isEndElement() && bldr != null) {
+                final EndElement endElement = nextEvent.asEndElement();
+                String localPart = endElement.getName().getLocalPart();
+                if (ITEM.equals(localPart) || ENTRY.equals(localPart)) {
+                    RawNews rawNews = plugin.handleEndEvent(bldr);
+                    if (rawNews.getLink().getScheme() == null
+                            || !ALLOWED_PROTOCOL.contains(rawNews.getLink().getScheme())) {
+                        log.warn("Illegal URL detected : {} in feed :{}", rawNews.getLink(), feed.getName());
+                        continue;
+                    }
+                    RawNews raw = rawNews
+                            .withTitle(HTML_POLICY.sanitize(rawNews.title))
+                            .withDescription(HTML_POLICY.sanitize(rawNews.description));
+
+                    return Mono.just(News.builder()
+                            .raw(raw)
+                            .feeds(Set.of(feed.getId()))
+                            .state(State.NONE)
+                            .build());
+                }
+            }
+
+        }
+        if (bldr == null) {
+            return Mono.empty();
+        }
+        RawNews rawNews = plugin.handleEndEvent(bldr);
+        if (rawNews.getLink().getScheme() == null
+                || !ALLOWED_PROTOCOL.contains(rawNews.getLink().getScheme())) {
+            log.warn("Illegal URL detected : {} in feed :{}", rawNews.getLink(), feed.getName());
+            return Mono.empty();
+        }
+        RawNews raw = rawNews
+                .withTitle(HTML_POLICY.sanitize(rawNews.title))
+                .withDescription(HTML_POLICY.sanitize(rawNews.description));
+
+        return Mono.just(News.builder()
+                .raw(raw)
+                .feeds(Set.of(feed.getId()))
+                .state(State.NONE)
+                .build());
     }
 
     public Flux<News> parse(Feed feed, InputStream is) {
