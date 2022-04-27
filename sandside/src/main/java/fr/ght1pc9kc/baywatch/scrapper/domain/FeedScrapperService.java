@@ -15,6 +15,10 @@ import fr.ght1pc9kc.scraphead.core.HeadScraper;
 import fr.ght1pc9kc.scraphead.core.model.links.Links;
 import fr.ght1pc9kc.scraphead.core.model.opengraph.OpenGraph;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.epoll.EpollDatagramChannel;
+import io.netty.resolver.dns.DnsAddressResolverGroup;
+import io.netty.resolver.dns.DnsNameResolverBuilder;
+import io.netty.resolver.dns.SequentialDnsServerAddressStreamProvider;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.VisibleForTesting;
@@ -31,6 +35,7 @@ import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import reactor.netty.http.client.HttpClient;
 
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -89,9 +94,21 @@ public final class FeedScrapperService implements Runnable {
         this.scrappingHandlers = scrappingHandlers;
         this.plugins = plugins;
 
+        DnsAddressResolverGroup dnsAddressResolverGroup =
+                new DnsAddressResolverGroup(
+                        new DnsNameResolverBuilder()
+                                .queryTimeoutMillis(10_000)
+                                .channelType(EpollDatagramChannel.class)
+                                .nameServerProvider(
+                                        new SequentialDnsServerAddressStreamProvider(
+                                                new InetSocketAddress("9.9.9.9", 53),
+                                                new InetSocketAddress("8.8.8.8", 53))));
+
+
         this.http = WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(
                         HttpClient.create()
+                                .resolver(dnsAddressResolverGroup)
                                 .followRedirect(true)
                                 .compress(true)
                                 .responseTimeout(properties.timeout())
@@ -182,7 +199,8 @@ public final class FeedScrapperService implements Runnable {
                         return Flux.empty();
                     }
                     return this.xmlEventDecoder.decode(
-                            response.bodyToFlux(DataBuffer.class), ResolvableType.NONE, null, null);
+                            response.bodyToFlux(DataBuffer.class).publishOn(scrapperScheduler),
+                            ResolvableType.NONE, null, null);
                 })
                 .doFirst(() -> log.trace("Receiving event from {}...", feedHost))
                 .skipUntil(e -> e.isStartElement() && (
