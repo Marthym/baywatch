@@ -19,6 +19,9 @@ import io.netty.channel.epoll.EpollDatagramChannel;
 import io.netty.resolver.dns.DnsAddressResolverGroup;
 import io.netty.resolver.dns.DnsNameResolverBuilder;
 import io.netty.resolver.dns.SequentialDnsServerAddressStreamProvider;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.VisibleForTesting;
@@ -67,9 +70,8 @@ public final class FeedScrapperService implements Runnable {
             new CustomizableThreadFactory("scrapSched-"));
     private final Scheduler scrapperScheduler =
             Schedulers.newBoundedElastic(5, Integer.MAX_VALUE, "scrapper");
-    private final WebClient http;
-    private final Clock clock = Clock.systemUTC();
     private final Semaphore lock = new Semaphore(1);
+    private final WebClient http;
 
     private final ScrapperProperties properties;
     private final FeedPersistencePort feedRepository;
@@ -80,6 +82,9 @@ public final class FeedScrapperService implements Runnable {
     private final Collection<ScrappingHandler> scrappingHandlers;
     private final Map<String, FeedScrapperPlugin> plugins;
     private final XmlEventDecoder xmlEventDecoder;
+
+    @Setter(value = AccessLevel.PACKAGE, onMethod = @__({@VisibleForTesting}))
+    private Clock clock = Clock.systemUTC();
 
     public FeedScrapperService(ScrapperProperties properties,
                                FeedPersistencePort feedRepository, NewsPersistencePort newsRepository,
@@ -128,7 +133,7 @@ public final class FeedScrapperService implements Runnable {
 
         scheduleExecutor.scheduleAtFixedRate(this,
                 toNextScrapping.getSeconds(), properties.frequency().getSeconds(), TimeUnit.SECONDS);
-        log.debug("Next scrapping at {}", LocalDateTime.now().plus(toNextScrapping));
+        log.debug("Next scraping at {}", LocalDateTime.now().plus(toNextScrapping));
         scheduleExecutor.schedule(this, 0, TimeUnit.MILLISECONDS);
     }
 
@@ -140,17 +145,17 @@ public final class FeedScrapperService implements Runnable {
         scrapperScheduler.dispose();
         scheduleExecutor.shutdownNow();
         lock.release();
-        log.info("All scrapper tasks finished and stopped !");
+        log.info("All scraper tasks finished and stopped !");
     }
 
     @Override
     @SneakyThrows
     public void run() {
         if (!lock.tryAcquire()) {
-            log.warn("Scrapping in progress !");
+            log.warn("Scraping in progress !");
             return;
         }
-        log.info("Start scrapping ...");
+        log.info("Start scraping ...");
         Mono<Set<String>> alreadyHave = newsRepository.list()
                 .map(News::getId)
                 .collect(Collectors.toUnmodifiableSet())
@@ -205,7 +210,7 @@ public final class FeedScrapperService implements Runnable {
                         return Flux.empty();
                     }
                     return this.xmlEventDecoder.decode(
-                            response.bodyToFlux(DataBuffer.class).publishOn(scrapperScheduler),
+                            response.bodyToFlux(DataBuffer.class),
                             ResolvableType.NONE, null, null);
                 })
                 .doFirst(() -> log.trace("Receiving event from {}...", feedHost))

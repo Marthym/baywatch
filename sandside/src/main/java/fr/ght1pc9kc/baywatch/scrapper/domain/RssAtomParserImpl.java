@@ -68,7 +68,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
 
     @Override
     public Mono<News> readEntryEvents(List<XMLEvent> events, Feed feed) {
-        FeedParserPlugin defaultPlugin = plugins.get("*");
+        FeedParserPlugin defaultPlugin = plugins.getOrDefault("*", FeedParserPlugin.NO_PLUGIN);
         FeedParserPlugin plugin = plugins.getOrDefault(feed.getUrl().getHost(), defaultPlugin);
 
         RawNews.RawNewsBuilder bldr = null;
@@ -187,6 +187,6 @@ public final class RssAtomParserImpl implements RssAtomParser {
                 break;
             }
         }
-        return buf.getBuffer().toString();
+        return buf.getBuffer().toString().trim();
     }
 }
