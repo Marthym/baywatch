@@ -9,7 +9,7 @@ import java.util.List;
 public final class FeedSamples {
     public static final Feed JEDI = Feed.builder()
             .raw(RawFeed.builder()
-                    .id("9e9195bd69117a6091e8865185ac8c04d099cbc92d7a465990cc32392e1c1f06")
+                    .id("5fc2a11c3788ce8a200c5c498ed2a8fa3177fe652916ca1e09a85be23077d543")
                     .name("Jedi Feed")
                     .url(URI.create("https://www.jedi.com/"))
                     .build())
@@ -17,7 +17,7 @@ public final class FeedSamples {
 
     public static final Feed SITH = Feed.builder()
             .raw(RawFeed.builder()
-                    .id("29950200eacfb32e79855986ae5cc41fb9fdbdd80629e856fd654f0c64769329")
+                    .id("0fdde474b3817af529e3d66ef6c6e8e008dfa6d24d8b02296831bdeb9f0976c3")
                     .name("Sith Feed")
                     .url(URI.create("https://www.sith.com/"))
                     .build())

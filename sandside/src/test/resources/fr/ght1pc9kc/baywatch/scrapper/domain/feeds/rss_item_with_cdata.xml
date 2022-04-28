@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+    <item>
+        <title>
+            <![CDATA[Des milliers de policiers ont manifesté pour appeler à « protéger ceux qui protègent la République »]]></title>
+        <pubDate>Thu, 20 May 2021 05:14:23 +0200</pubDate>
+        <description>
+            <![CDATA[Les principaux syndicats policiers étaient rassemblés, mercredi, à deux pas de l’Assemblée nationale, alors que le garde des sceaux Eric Dupond-Moretti défendait au même moment son projet de loi « pour la confiance dans l’institution judiciaire ».]]></description>
+        <guid isPermaLink="true">
+            https://www.lemonde.fr/societe/article/2021/05/20/des-milliers-de-policiers-ont-manifeste-pour-appeler-a-proteger-ceux-qui-protegent-la-republique_6080801_3224.html
+        </guid>
+        <link>
+            https://www.lemonde.fr/societe/article/2021/05/20/des-milliers-de-policiers-ont-manifeste-pour-appeler-a-proteger-ceux-qui-protegent-la-republique_6080801_3224.html
+        </link>
+        <media:content
+                url="https://img.lemde.fr/2021/05/20/533/0/5976/2982/644/322/60/0/bda4eec_322142350-daj21014d13.JPG"
+                width="644" height="322">
+            <media:description type="plain">Rassemblement des policiers à l’appel des syndicats, devant l’Assemblée
+                nationale à Paris, le 19 mai 2021.
+            </media:description>
+            <media:credit scheme="urn:ebu">JULIEN DANIEL / MYOP POUR « LE MONDE »</media:credit>
+        </media:content>
+    </item>
+</rss>
