@@ -13,9 +13,11 @@ import org.owasp.html.Sanitizers;
 import reactor.core.publisher.Mono;
 
 import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
+import java.io.StringWriter;
 import java.net.URI;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -121,7 +123,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
         if (bldr == null) {
             return null;
         }
-        String title = events.get(idx + 1).asCharacters().getData();
+        String title = readElementText(events, idx);
         return plugin.handleTitleEvent(bldr, title);
     }
 
@@ -130,7 +132,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
         if (bldr == null) {
             return null;
         }
-        return plugin.handleDescriptionEvent(bldr, events.get(idx + 1).asCharacters().getData());
+        return plugin.handleDescriptionEvent(bldr, readElementText(events, idx));
     }
 
     private RawNews.RawNewsBuilder onLink(RawNews.RawNewsBuilder bldr, FeedParserPlugin plugin, Feed feed,
@@ -169,5 +171,22 @@ public final class RssAtomParserImpl implements RssAtomParser {
         Instant datetime = Exceptions.silence().get(() -> DateTimeFormatter.RFC_1123_DATE_TIME.parse(pubDate, Instant::from))
                 .orElseGet(() -> DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(pubDate, Instant::from));
         return plugin.handlePublicationEvent(bldr, datetime);
+    }
+
+    private String readElementText(List<XMLEvent> events, int idx) {
+        StringWriter buf = new StringWriter(1024);
+        for (int i = idx + 1; i < events.size() - 1; i++) {
+            XMLEvent textEvent = events.get(i);
+            if (textEvent.isCharacters()) {
+                try {
+                    textEvent.writeAsEncodedUnicode(buf);
+                } catch (XMLStreamException e) {
+                    log.debug("Fail to write title buffer at index " + i, e);
+                }
+            } else {
+                break;
+            }
+        }
+        return buf.getBuffer().toString();
     }
 }
