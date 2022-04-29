@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain;
 
-import com.machinezoo.noexception.Exceptions;
+import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.scrapper.api.FeedScrapperPlugin;
 import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scrapper.api.ScrappingHandler;
@@ -15,31 +15,38 @@ import fr.ght1pc9kc.scraphead.core.HeadScraper;
 import fr.ght1pc9kc.scraphead.core.model.links.Links;
 import fr.ght1pc9kc.scraphead.core.model.opengraph.OpenGraph;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.epoll.EpollDatagramChannel;
+import io.netty.resolver.dns.DnsAddressResolverGroup;
+import io.netty.resolver.dns.DnsNameResolverBuilder;
+import io.netty.resolver.dns.SequentialDnsServerAddressStreamProvider;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.VisibleForTesting;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.http.codec.xml.XmlEventDecoder;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import reactor.netty.http.client.HttpClient;
 
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -63,9 +70,8 @@ public final class FeedScrapperService implements Runnable {
             new CustomizableThreadFactory("scrapSched-"));
     private final Scheduler scrapperScheduler =
             Schedulers.newBoundedElastic(5, Integer.MAX_VALUE, "scrapper");
-    private final WebClient http;
-    private final Clock clock = Clock.systemUTC();
     private final Semaphore lock = new Semaphore(1);
+    private final WebClient http;
 
     private final ScrapperProperties properties;
     private final FeedPersistencePort feedRepository;
@@ -75,6 +81,10 @@ public final class FeedScrapperService implements Runnable {
     private final HeadScraper headScrapper;
     private final Collection<ScrappingHandler> scrappingHandlers;
     private final Map<String, FeedScrapperPlugin> plugins;
+    private final XmlEventDecoder xmlEventDecoder;
+
+    @Setter(value = AccessLevel.PACKAGE, onMethod = @__({@VisibleForTesting}))
+    private Clock clock = Clock.systemUTC();
 
     public FeedScrapperService(ScrapperProperties properties,
                                FeedPersistencePort feedRepository, NewsPersistencePort newsRepository,
@@ -91,14 +101,29 @@ public final class FeedScrapperService implements Runnable {
         this.scrappingHandlers = scrappingHandlers;
         this.plugins = plugins;
 
+        DnsAddressResolverGroup dnsAddressResolverGroup =
+                new DnsAddressResolverGroup(
+                        new DnsNameResolverBuilder()
+                                .queryTimeoutMillis(10_000)
+                                .channelType(EpollDatagramChannel.class)
+                                .nameServerProvider(
+                                        new SequentialDnsServerAddressStreamProvider(
+                                                new InetSocketAddress("9.9.9.9", 53),
+                                                new InetSocketAddress("2620:fe::fe", 53),
+                                                new InetSocketAddress("8.8.8.8", 53))));
+
+
         this.http = WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(
                         HttpClient.create()
+                                .resolver(dnsAddressResolverGroup)
                                 .followRedirect(true)
                                 .compress(true)
                                 .responseTimeout(properties.timeout())
                                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) properties.timeout().toMillis())
                 )).build();
+        this.xmlEventDecoder = new XmlEventDecoder();
+        this.xmlEventDecoder.setMaxInMemorySize(16 * 1024 * 1024);
     }
 
     public void startScrapping() {
@@ -108,7 +133,7 @@ public final class FeedScrapperService implements Runnable {
 
         scheduleExecutor.scheduleAtFixedRate(this,
                 toNextScrapping.getSeconds(), properties.frequency().getSeconds(), TimeUnit.SECONDS);
-        log.debug("Next scrapping at {}", LocalDateTime.now().plus(toNextScrapping));
+        log.debug("Next scraping at {}", LocalDateTime.now().plus(toNextScrapping));
         scheduleExecutor.schedule(this, 0, TimeUnit.MILLISECONDS);
     }
 
@@ -120,16 +145,17 @@ public final class FeedScrapperService implements Runnable {
         scrapperScheduler.dispose();
         scheduleExecutor.shutdownNow();
         lock.release();
-        log.info("All scrapper tasks finished and stopped !");
+        log.info("All scraper tasks finished and stopped !");
     }
 
     @Override
     @SneakyThrows
     public void run() {
         if (!lock.tryAcquire()) {
-            log.warn("Scrapping in progress !");
+            log.warn("Scraping in progress !");
+            return;
         }
-        log.info("Start scrapping ...");
+        log.info("Start scraping ...");
         Mono<Set<String>> alreadyHave = newsRepository.list()
                 .map(News::getId)
                 .collect(Collectors.toUnmodifiableSet())
@@ -138,11 +164,11 @@ public final class FeedScrapperService implements Runnable {
         Flux.concat(scrappingHandlers.stream().map(ScrappingHandler::before).toList())
                 .thenMany(feedRepository.list())
                 .parallel(4).runOn(scrapperScheduler)
-                .flatMap(this::wgetFeedNews)
+                .concatMap(this::wgetFeedNews)
                 .sequential()
                 .filterWhen(n -> alreadyHave.map(l -> !l.contains(n.getId())))
                 .parallel(4).runOn(scrapperScheduler)
-                .flatMap(this::completeWithOpenGraph)
+                .concatMap(this::completeWithOpenGraph)
                 .sequential()
                 .buffer(100)
                 .flatMap(newsRepository::persist)
@@ -162,52 +188,44 @@ public final class FeedScrapperService implements Runnable {
 
     @SuppressWarnings("java:S2095")
     private Flux<News> wgetFeedNews(Feed feed) {
-        try {
-            String feedHost = feed.getUrl().getHost();
-            FeedScrapperPlugin hostPlugin = plugins.get(feedHost);
-            URI feedUrl = (hostPlugin != null) ? hostPlugin.uriModifier(feed.getUrl()) : feed.getUrl();
+        String feedHost = feed.getUrl().getHost();
+        FeedScrapperPlugin hostPlugin = plugins.get(feedHost);
+        URI feedUrl = (hostPlugin != null) ? hostPlugin.uriModifier(feed.getUrl()) : feed.getUrl();
 
-            log.debug("Start scrapping feed {} ...", feedHost);
-            PipedOutputStream osPipe = new PipedOutputStream();
-            PipedInputStream isFeedPayload = new PipedInputStream(osPipe);
+        log.debug("Start scraping feed {} ...", feedHost);
 
-            Flux<DataBuffer> buffers = http.get()
-                    .uri(feedUrl)
-                    .accept(MediaType.APPLICATION_ATOM_XML)
-                    .accept(MediaType.APPLICATION_RSS_XML)
-                    .acceptCharset(StandardCharsets.UTF_8)
-                    .retrieve()
-                    .bodyToFlux(DataBuffer.class)
-                    .doFirst(() -> log.trace("Receiving data from {}...", feedHost))
-                    .onErrorResume(e -> {
-                        log.warn(ERROR_CLASS_MESSAGE, feedHost, e.getLocalizedMessage());
-                        log.debug(ERROR_STACKTRACE_MESSAGE, e);
+        final Instant maxAge = LocalDate.now(clock)
+                .minus(properties.conservation())
+                .atTime(LocalTime.MAX)
+                .toInstant(DateUtils.DEFAULT_ZONE_OFFSET);
+
+        return http.get()
+                .uri(feedUrl)
+                .accept(MediaType.APPLICATION_ATOM_XML)
+                .accept(MediaType.APPLICATION_RSS_XML)
+                .acceptCharset(StandardCharsets.UTF_8)
+                .exchangeToFlux(response -> {
+                    if (!response.statusCode().is2xxSuccessful()) {
+                        log.info("Host {} respond {}", feedHost, response.statusCode());
                         return Flux.empty();
-                    });
+                    }
+                    return this.xmlEventDecoder.decode(
+                            response.bodyToFlux(DataBuffer.class),
+                            ResolvableType.NONE, null, null);
+                })
+                .doFirst(() -> log.trace("Receiving event from {}...", feedHost))
 
-            Disposable feedReadingSubscription = DataBufferUtils.write(buffers, osPipe)
-                    .onErrorContinue((e, buffer) -> {
-                        log.warn(ERROR_CLASS_MESSAGE, feedHost, e.getLocalizedMessage());
-                        log.debug(ERROR_STACKTRACE_MESSAGE, e);
-                        DataBufferUtils.release((DataBuffer) buffer);
-                    })
-                    .doFinally(Exceptions.silence().consumer(Exceptions.wrap().consumer(signal -> {
-                        osPipe.flush();
-                        osPipe.close();
-                        log.debug("Finish Scrapping feed {}.", feedHost);
-                    }))).subscribe(DataBufferUtils.releaseConsumer());
+                .skipUntil(feedParser.firstItemEvent())
+                .bufferUntil(feedParser.itemEndEvent())
+                .flatMap(entry -> feedParser.readEntryEvents(entry, feed))
+                .takeWhile(news -> news.getPublication().isAfter(maxAge))
 
-            return feedParser.parse(feed, isFeedPayload)
-                    .doOnComplete(feedReadingSubscription::dispose)
-                    .doFinally(Exceptions.wrap().consumer(signal -> {
-                        isFeedPayload.close();
-                        log.trace("Finish Parsing feed {}.", feedHost);
-                    }));
-        } catch (IOException e) {
-            log.error(ERROR_CLASS_MESSAGE, e.getClass(), e.getLocalizedMessage());
-            log.debug(ERROR_STACKTRACE_MESSAGE, e);
-        }
-        return Flux.empty();
+                .doFinally(s -> log.debug("Finish scraping feed {}", feedHost))
+                .onErrorResume(e -> {
+                    log.warn(ERROR_CLASS_MESSAGE, feedHost, e.getLocalizedMessage());
+                    log.debug(ERROR_STACKTRACE_MESSAGE, e);
+                    return Flux.empty();
+                });
     }
 
     private Mono<News> completeWithOpenGraph(News news) {

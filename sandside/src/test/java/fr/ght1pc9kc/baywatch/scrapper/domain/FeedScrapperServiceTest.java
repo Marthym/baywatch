@@ -3,7 +3,6 @@ package fr.ght1pc9kc.baywatch.scrapper.domain;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScrapperProperties;
@@ -32,16 +31,19 @@ import org.springframework.http.MediaType;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
-import wiremock.org.apache.commons.io.IOUtils;
 
-import java.io.InputStream;
+import javax.xml.stream.events.XMLEvent;
 import java.net.URI;
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.Period;
+import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -74,7 +76,10 @@ class FeedScrapperServiceTest {
                         .willReturn(WireMock.aResponse()
                                 .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_ATOM_XML_VALUE)
                                 .withStatus(HttpStatus.OK.value())
-                                .withBody("Obiwan Kenobi"))
+                                .withBody("""
+                                        <?xml version="1.0" encoding="UTF-8" ?>
+                                        <entry>Obiwan Kenobi</entry>
+                                        """))
         );
         mockServer.stubFor(
                 WireMock.get(WireMock.urlEqualTo("/error/darth-vader.xml"))
@@ -100,7 +105,7 @@ class FeedScrapperServiceTest {
         mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/feeds/journal_du_hacker.xml")));
         mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/feeds/spring-blog.xml")));
 
-        verify(rssAtomParserMock, times(2)).parse(any(Feed.class), any());
+        verify(rssAtomParserMock, times(2)).readEntryEvents(any(), any(Feed.class));
         verify(newsPersistenceMock,
                 times(1).description("Expect only one call because of the buffer to 100")
         ).persist(anyCollection());
@@ -118,12 +123,12 @@ class FeedScrapperServiceTest {
                         .id(darthVaderSha3)
                         .name("fail")
                         .url(darthVaderUri)
-                        .build()).build(),
+                        .build()).name("fail").build(),
                 Feed.builder().raw(RawFeed.builder()
                         .id(springSha3)
                         .name("Spring")
                         .url(springUri)
-                        .build()).build()
+                        .build()).name("Spring").build()
         ));
 
         tested.startScrapping();
@@ -134,9 +139,9 @@ class FeedScrapperServiceTest {
 
         mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/error/darth-vader.xml")));
         mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/feeds/spring-blog.xml")));
-        verify(rssAtomParserMock, times(2)).parse(any(Feed.class), any());
+        verify(rssAtomParserMock, times(1)).readEntryEvents(any(), any(Feed.class));
         verify(newsPersistenceMock,
-                times(1).description("Expect only one call because of the buffer to 100")
+                times(1).description("Expect only one call because of the buffer of 100")
         ).persist(anyCollection());
     }
 
@@ -154,7 +159,7 @@ class FeedScrapperServiceTest {
 
         mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/error/darth-vader.xml")));
         mockServer.verify(WireMock.getRequestedFor(WireMock.urlEqualTo("/feeds/spring-blog.xml")));
-        verify(rssAtomParserMock, times(2)).parse(any(Feed.class), any());
+        verify(rssAtomParserMock, times(2)).readEntryEvents(any(), any(Feed.class));
     }
 
     @Test
@@ -177,14 +182,15 @@ class FeedScrapperServiceTest {
         tested.shutdownScrapping();
 
         News actual = captor.getValue().stream()
-                .filter(n -> "5cb3ec34e0ee141ca87703239d6e285f8cf2a5fec11a13726e5798e61b118c1a".equals(n.getId()))
+                .filter(n -> "a815eff60162e6f8dd18c2397ab15d0843a23a2be13bf521e517e38eb835ab28".equals(n.getId()))
                 .findAny().orElseThrow();
         Assertions.assertThat(actual).isEqualTo(News.builder()
                 .raw(RawNews.builder()
-                        .id("5cb3ec34e0ee141ca87703239d6e285f8cf2a5fec11a13726e5798e61b118c1a")
+                        .id("a815eff60162e6f8dd18c2397ab15d0843a23a2be13bf521e517e38eb835ab28")
                         .title("OpenGraph Title")
                         .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
                         .image(URI.create("http://www.ght1pc9kc.fr/featured.jpg"))
+                        .publication(Instant.parse("2022-04-29T12:35:41Z"))
                         .build())
                 .state(State.NONE)
                 .build());
@@ -208,14 +214,15 @@ class FeedScrapperServiceTest {
         tested.shutdownScrapping();
 
         News actual = captor.getValue().stream()
-                .filter(n -> "22781b72a72e1a71a533c6096df2de5828ffa6ac58a00843944e7cd4ad38340f".equals(n.getId()))
+                .filter(n -> "1d665bbff973032c28c72064f2073a85f8777b6ca3c3e0f9b9c2385cd2b206c0".equals(n.getId()))
                 .findAny().orElseThrow();
         Assertions.assertThat(actual).isEqualTo(News.builder()
                 .raw(RawNews.builder()
-                        .id("22781b72a72e1a71a533c6096df2de5828ffa6ac58a00843944e7cd4ad38340f")
+                        .id("1d665bbff973032c28c72064f2073a85f8777b6ca3c3e0f9b9c2385cd2b206c0")
                         .title("Dummy Title 2")
                         .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
                         .image(URI.create("https://practicalprogramming.fr/image.jpg"))
+                        .publication(Instant.parse("2022-04-30T12:42:24Z"))
                         .build())
                 .state(State.NONE)
                 .build());
@@ -227,32 +234,44 @@ class FeedScrapperServiceTest {
         when(newsPersistenceMock.list()).thenReturn(Flux.empty());
         when(newsPersistenceMock.persist(anyCollection())).thenReturn(Mono.just(1));
 
-        //Mockito does not support Lambda
-        //noinspection Convert2Lambda
         rssAtomParserMock = spy(new RssAtomParser() {
             @Override
-            public Flux<News> parse(Feed feed, InputStream is) {
-                // Must consume the inputstream
-                Exceptions.wrap().get(() -> IOUtils.toByteArray(is));
-                return Flux.just(
-                        News.builder()
-                                .raw(RawNews.builder()
-                                        .id(Hasher.sha3(feed.getName() + "01"))
-                                        .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
-                                        .title("Dummy Title")
-                                        .build())
-                                .state(State.NONE)
-                                .build(),
-                        News.builder()
-                                .raw(RawNews.builder()
-                                        .id(Hasher.sha3(feed.getName() + "02"))
-                                        .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
-                                        .image(URI.create("https://practicalprogramming.fr/image.jpg"))
-                                        .title("Dummy Title 2")
-                                        .build())
-                                .state(State.NONE)
-                                .build()
-                );
+            public Predicate<XMLEvent> firstItemEvent() {
+                return e -> true;
+            }
+
+            @Override
+            public Predicate<XMLEvent> itemEndEvent() {
+                return e -> false;
+            }
+
+            @Override
+            public Mono<News> readEntryEvents(List<XMLEvent> events, Feed feed) {
+                if (feed.getName().equals("Reddit")) {
+                    return Mono.just(
+                            News.builder()
+                                    .raw(RawNews.builder()
+                                            .id(Hasher.sha3(feed.getName() + "01"))
+                                            .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
+                                            .title("Dummy Title")
+                                            .publication(Instant.parse("2022-04-29T12:35:41Z"))
+                                            .build())
+                                    .state(State.NONE)
+                                    .build());
+                } else {
+                    return Mono.just(
+                            News.builder()
+                                    .raw(RawNews.builder()
+                                            .id(Hasher.sha3(feed.getName() + "02"))
+                                            .link(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/"))
+                                            .image(URI.create("https://practicalprogramming.fr/image.jpg"))
+                                            .title("Dummy Title 2")
+                                            .publication(Instant.parse("2022-04-30T12:42:24Z"))
+                                            .build())
+                                    .state(State.NONE)
+                                    .build()
+                    );
+                }
             }
         });
 
@@ -270,12 +289,12 @@ class FeedScrapperServiceTest {
                         .id(jdhSha3)
                         .name("Reddit")
                         .url(jdhUri)
-                        .build()).build(),
+                        .build()).name("Reddit").build(),
                 Feed.builder().raw(RawFeed.builder()
                         .id(springSha3)
                         .name("Spring")
                         .url(springUri)
-                        .build()).build()
+                        .build()).name("Spring").build()
         ));
 
         AuthenticationFacade authFacadeMock = mock(AuthenticationFacade.class);
@@ -284,5 +303,6 @@ class FeedScrapperServiceTest {
         tested = new FeedScrapperService(scraperProperties,
                 feedPersistenceMock, newsPersistenceMock, authFacadeMock, rssAtomParserMock, headScraperMock,
                 Collections.emptyList(), Map.of());
+        tested.setClock(Clock.fixed(Instant.parse("2022-04-30T12:35:41Z"), ZoneOffset.UTC));
     }
 }

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<entry>
+    <title>Spring Data 2020.0 - New and Noteworthy in Spring Data for Apache Cassandra 3.1</title>
+    <link rel="alternate" href="https://spring.io/blog/2020/11/26/spring-data-2020-0-new-and-noteworthy-in-spring-data-for-apache-cassandra-3-1" />
+    <category term="engineering" label="Engineering" />
+    <author>
+        <name>Mark Paluch</name>
+    </author>
+    <id>tag:spring.io,2020-11-05:4258</id>
+    <updated>2020-11-26T14:08:50Z</updated>
+    <content type="html">&lt;p&gt;&lt;a href="https://spring.io/blog/2020/11/06/spring-data-2020-0-new-and-noteworthy-a-general-overview"&gt;Spring Data &lt;code&gt;2020.0.0&lt;/code&gt;&lt;/a&gt; ships with Spring Data for Apache Cassandra 3.1. This release ships with numerous enhancements that refine existing functionality and introduce support for selected Cassandra 4 features:&lt;/p&gt;
+        &lt;ul&gt;
+        &lt;li&gt;Reactive auditing&lt;/li&gt;
+        &lt;li&gt;Reactive SpEL support in &lt;code&gt;@Query&lt;/code&gt; query methods.&lt;/li&gt;
+        &lt;li&gt;Configuration of the keyspace per &lt;code&gt;Statement&lt;/code&gt; through &lt;code&gt;CqlTemplate&lt;/code&gt; and &lt;code&gt;QueryOptions&lt;/code&gt;.&lt;/li&gt;
+        &lt;li&gt;Revised &lt;code&gt;CqlOperations&lt;/code&gt; with new &lt;code&gt;queryForStream(…)&lt;/code&gt; methods returning a &lt;code&gt;Stream&lt;/code&gt; with transparent pagination.&lt;/li&gt;
+        &lt;li&gt;&lt;code&gt;DataClassRowMapper&lt;/code&gt; to map Cassandra results to data classes via constructor creation/bean properties&lt;/li&gt;
+        &lt;/ul&gt;&lt;h2&gt;&lt;a href="#reactive-auditing" class="anchor" name="reactive-auditing"&gt;&lt;/a&gt;Reactive Auditing&lt;/h2&gt;
+        &lt;p&gt;Reactive auditing is enabled by annotating your configuration class with &lt;code&gt;@EnableReactiveCassandraAuditing&lt;/code&gt;. Registering a bean that implements &lt;code&gt;ReactiveAuditorAware&lt;/code&gt; serves as an interface to obtain the current auditor. The following example shows the required configuration:&lt;/p&gt;
+        &lt;pre&gt;&lt;code class="prettyprint java"&gt;@Configuration&#xD;
+        @EnableReactiveCassandraAuditing  &#xD;
+        class ApplicationConfiguration {  &#xD;
+        &#xD;
+        @Bean  &#xD;
+        ReactiveAuditorAware&amp;lt;String&amp;gt; reactiveAuditorAware() {  &#xD;
+        return …;&#xD;
+        }  &#xD;
+        }
+        &lt;/code&gt;&lt;/pre&gt;
+        &lt;p&gt;After enabling reactive auditing, you can use Spring Data&amp;rsquo;s auditing annotations in your domain class. If you have used Spring Data auditing before, then you may notice that there&amp;rsquo;s no difference in setting up the domain model compared to imperative usage of Spring Data.&lt;/p&gt;
+        &lt;pre&gt;&lt;code class="prettyprint java"&gt;public class Order implements Persistable&amp;lt;String&amp;gt; {  &#xD;
+        &#xD;
+        @Id String orderId;  &#xD;
+        &#xD;
+        @CreatedBy String createdBy;  &#xD;
+        &#xD;
+        @CreatedDate Instant createdDate;  &#xD;
+        &#xD;
+        @LastModifiedBy String lastModifiedBy;  &#xD;
+        &#xD;
+        @LastModifiedDate Instant lastModifiedDate;   &#xD;
+        }
+        &lt;/code&gt;&lt;/pre&gt;
+        &lt;p&gt;The domain class shown above refers to the auditor by using properties annotated with &lt;code&gt;@CreatedBy&lt;/code&gt; and &lt;code&gt;@LastModifiedBy&lt;/code&gt;. Properties that hold the creation or modification time are annotated with &lt;code&gt;@CreatedDate&lt;/code&gt; or &lt;code&gt;@LastModifiedDate&lt;/code&gt;, respectively.&lt;/p&gt;
+        &lt;p&gt;You might have noticed that the domain class implements &lt;code&gt;Persistable&lt;/code&gt;. To properly mark an entity as audited, Spring Data needs to know whether an entity is new or whether it should be considered to exist in the database. Typically, this happens by inspecting the &lt;code&gt;@Id&lt;/code&gt; property to see whether it is &lt;code&gt;null&lt;/code&gt;. Cassandra has no means to generate primary key values. New objects must be persisted with a provided identifier. Therefore, your domain model must express whether it should be considered new or existing (see &lt;code&gt;Persistable.isNew()&lt;/code&gt;).&lt;br/&gt;Alternatively, Spring Data can inspect the &lt;code&gt;@Version&lt;/code&gt; property when using optimistic locking to tell whether an entity should be considered new.&lt;/p&gt;
+        &lt;p&gt;You can use Reactive Auditing through reactive Cassandra repositories and through &lt;code&gt;ReactiveCassandraTemplate&lt;/code&gt;.&lt;/p&gt;
+        &lt;p&gt;A final note on the migration: With the introduction of reactive auditing, the entire reactive auditing infrastructure is registered only when your configuration is marked with &lt;code&gt;@EnableReactiveCassandraAuditing&lt;/code&gt;. The previous version (3.0.x) registered a lightweight auditing called &lt;code&gt;EntityCallback&lt;/code&gt; when &lt;code&gt;@EnableCassandraAuditing&lt;/code&gt; was configured. That is no longer the case, so make sure to revisit your annotation-based configuration if you have previously used auditing features.&lt;/p&gt;
+        &lt;p&gt;You can read more about &lt;a href="https://docs.spring.io/spring-data/cassandra/docs/current/reference/html/#auditing"&gt;auditing with Apache Cassandra&lt;/a&gt; in the &lt;a href="https://docs.spring.io/spring-data/cassandra/docs/current/reference/html/"&gt;Spring Data Cassandra reference documentation&lt;/a&gt;.&lt;/p&gt;&lt;h2&gt;&lt;a href="#keyspace-configuration-per-statement" class="anchor" name="keyspace-configuration-per-statement"&gt;&lt;/a&gt;Keyspace configuration per Statement&lt;/h2&gt;
+        &lt;p&gt;Cassandra 4 allows specifying the target keyspace on a per-statement level. Instead of running statements in the logged keyspace, individual statements can target a different keyspace. To support this feature, Spring Data for Apache Cassandra allows configuration of the keyspace through:&lt;/p&gt;
+        &lt;ul&gt;
+        &lt;li&gt;&lt;code&gt;CqlTemplate&lt;/code&gt; (including &lt;code&gt;AsyncCqlTemplate&lt;/code&gt; and &lt;code&gt;ReactiveCqlTemplate&lt;/code&gt;)&lt;/li&gt;
+        &lt;li&gt;&lt;code&gt;QueryOptions&lt;/code&gt; (including subclasses)&lt;/li&gt;
+        &lt;/ul&gt;
+        &lt;p&gt;Configuring a keyspace on the Template API allows running all statements through a particular template on a different keyspace than the logged keyspace. A typical use case could be a keyspace per tenant model:&lt;/p&gt;
+        &lt;pre&gt;&lt;code class="prettyprint java"&gt;CqlSession cqlSession = …;  &#xD;
+        CqlTemplate tenant1Template = new CqlTemplate(cqlSession);  &#xD;
+        tenant1Template.setKeyspace(CqlIdentifier.fromCql(&amp;quot;my-other-keyspace&amp;quot;));  &#xD;
+        tenant1Template.queryForList(&amp;quot;SELECT …&amp;quot;);
+        &lt;/code&gt;&lt;/pre&gt;
+        &lt;p&gt;&lt;code&gt;CqlTemplate&lt;/code&gt; and its asynchronous and reactive variants are used by &lt;code&gt;CassandraTemplate&lt;/code&gt; and the repository infrastructure, which allows wiring an entire stack to a different keyspace.&lt;/p&gt;
+        &lt;p&gt;To customize the keyspace for individual operations on &lt;code&gt;CassandraTemplate&lt;/code&gt;, you can use &lt;code&gt;QueryOptions&lt;/code&gt; and its operation-specific subclasses to control the keyspace:&lt;/p&gt;
+        &lt;pre&gt;&lt;code class="prettyprint java"&gt;CassandraTemplate template = …;  &#xD;
+        &#xD;
+        template.insert(person, InsertOptions.builder().keyspace(&amp;quot;my-other-keyspace&amp;quot;).build());
+        &lt;/code&gt;&lt;/pre&gt;
+        &lt;p&gt;Note that this feature requires Cassandra 4, and it does not affect earlier Cassandra versions.&lt;/p&gt;&lt;h2&gt;&lt;a href="#revised-cqltemplate-and-asynchronous-reactive-variants" class="anchor" name="revised-cqltemplate-and-asynchronous-reactive-variants"&gt;&lt;/a&gt;Revised CqlTemplate and asynchronous/reactive variants&lt;/h2&gt;
+        &lt;p&gt;With this release, we took the opportunity to refine our CQL Template API. For quite a while already, we wanted &lt;code&gt;CqlTemplate&lt;/code&gt; to support Java 8 Stream, including transparent paging on &lt;code&gt;CqlTemplate&lt;/code&gt;. Its reactive counterpart, &lt;code&gt;ReactiveCqlTemplate&lt;/code&gt;, supported this feature with &lt;code&gt;queryForFlux&lt;/code&gt; (since version 2.0). With this version, you can use &lt;code&gt;queryForStream&lt;/code&gt; on &lt;code&gt;CqlTemplate&lt;/code&gt;, allowing for lazy iteration over a &lt;code&gt;java.util.stream.Stream&lt;/code&gt;:&lt;/p&gt;
+        &lt;pre&gt;&lt;code class="prettyprint java"&gt;CqlTemplate template = …;&#xD;
+        &#xD;
+        Stream&amp;lt;String&amp;gt; stream = cqlTemplate.queryForStream(&amp;quot;SELECT * from USERS&amp;quot;, (row, index) -&amp;gt; row.getString(0));
+        &lt;/code&gt;&lt;/pre&gt;
+        &lt;p&gt;Additionally, &lt;code&gt;queryForStream&lt;/code&gt; serves &lt;code&gt;CassandraTemplate.stream(…)&lt;/code&gt; to run queries that return a stream of entities.&lt;/p&gt;
+        &lt;p&gt;The use of lightweight data classes and records (as of Java 15 and newer) becomes an increasingly popular choice for ad-hoc mapping of results. Instead of using the Entity-oriented &lt;code&gt;CassandraTemplate&lt;/code&gt;, this release enables a more lightweight pattern to consume query results as plain Java beans, Kotlin data classes, and Java records. &lt;code&gt;DataClassRowMapper&lt;/code&gt; is a dedicated &lt;code&gt;RowMapper&lt;/code&gt; that instantiates classes following the data class/Java records pattern by inspecting their constructor properties. The following example illustrates Java Records usage: &lt;/p&gt;
+        &lt;pre&gt;&lt;code class="prettyprint java"&gt;record User(String id, String name, int age){}&#xD;
+        &#xD;
+        CqlTemplate template = …;&#xD;
+        &#xD;
+        Stream&amp;lt;User&amp;gt; stream = cqlTemplate.queryForStream(&amp;quot;SELECT * from USERS&amp;quot;, new DataClassRowMapper(User.class));
+        &lt;/code&gt;&lt;/pre&gt;
+        &lt;p&gt;Here is the Kotlin data class variant:&lt;/p&gt;
+        &lt;pre&gt;&lt;code class="prettyprint kotlin"&gt;data class User(id: String, name: String, age: Int)&#xD;
+        &#xD;
+        val stream : Stream&amp;lt;Person&amp;gt; = cqlTemplate.queryForStream(&amp;quot;SELECT * from USERS&amp;quot;, DataClassRowMapper&amp;lt;User&amp;gt;())
+        &lt;/code&gt;&lt;/pre&gt;
+        &lt;p&gt;You can use &lt;code&gt;DataClassRowMapper&lt;/code&gt; with all &lt;code&gt;CqlTemplate&lt;/code&gt; variants as all of these accept &lt;code&gt;RowMapper&lt;/code&gt;.&lt;/p&gt;
+        &lt;!-- rendered by Sagan Renderer Service --&gt;</content>
+</entry>

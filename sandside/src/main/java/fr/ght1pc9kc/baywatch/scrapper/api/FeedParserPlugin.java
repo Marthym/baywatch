@@ -8,6 +8,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 public interface FeedParserPlugin {
+    FeedParserPlugin NO_PLUGIN = () -> "*";
+
     String pluginForDomain();
 
     default RawNews.RawNewsBuilder handleItemEvent() {
