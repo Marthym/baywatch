@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.scrapper.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.scrapper.api.FeedScrapperPlugin;
+import fr.ght1pc9kc.baywatch.scrapper.api.NewsFilter;
 import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scrapper.api.ScrappingHandler;
 import fr.ght1pc9kc.baywatch.scrapper.domain.FeedScrapperService;
@@ -8,7 +9,6 @@ import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScrapperProperties;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
-import fr.ght1pc9kc.scraphead.core.HeadScraper;
 import lombok.SneakyThrows;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -27,17 +28,19 @@ public class FeedScrapperAdapter {
     private final boolean startScrapper;
 
     public FeedScrapperAdapter(FeedPersistencePort feedPersistence, NewsPersistencePort newsPersistence,
-                               HeadScraper ogScrapper, RssAtomParser rssAtomParser,
+                               ScrapperProperties properties,
+                               RssAtomParser rssAtomParser,
                                Collection<ScrappingHandler> scrappingHandlers,
                                Collection<FeedScrapperPlugin> scrapperPlugins,
                                AuthenticationFacade authFacade,
-                               ScrapperProperties properties) {
+                               List<NewsFilter> newsFilters
+    ) {
         Map<String, FeedScrapperPlugin> plugins = scrapperPlugins.stream()
                 .collect(Collectors.toUnmodifiableMap(FeedScrapperPlugin::pluginForDomain, Function.identity()));
         this.startScrapper = properties.start();
         this.scrapper = new FeedScrapperService(
                 properties, feedPersistence, newsPersistence, authFacade,
-                rssAtomParser, ogScrapper, scrappingHandlers, plugins);
+                rssAtomParser, scrappingHandlers, plugins, newsFilters);
     }
 
     @PostConstruct

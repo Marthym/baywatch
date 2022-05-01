@@ -1,7 +1,6 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain.filters;
 
 import fr.ght1pc9kc.baywatch.scrapper.api.NewsFilter;
-import fr.ght1pc9kc.baywatch.scrapper.api.NewsFilterStep;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -26,25 +25,27 @@ public class NewsSanitizerFilter implements NewsFilter {
             .allowAttributes("href").onElements("a")
             .toFactory();
 
-    @Override
-    public NewsFilterStep getStep() {
-        return NewsFilterStep.SANITIZE;
-    }
 
     @Override
     public Mono<RawNews> filter(@NotNull RawNews news) {
         String description = news.getDescription();
-        String descrEllipsed = description.substring(0, Math.min(DESCRIPTION_MAX_LENGTH, description.length() - 1));
-        StringBuilder descrHtml = new StringBuilder();
-        HtmlStreamRenderer descrRenderer = HtmlStreamRenderer.create(descrHtml, invalid -> log.trace("Invalid tag detected in description {}", invalid));
-        HtmlSanitizer.sanitize(HtmlUtils.htmlUnescape(descrEllipsed), DESCRIPTION_POLICY.apply(descrRenderer));
-        String saneDescription = HtmlUtils.htmlEscape(descrHtml.toString(), StandardCharsets.UTF_8.name());
+        String saneDescription = news.getDescription();
+        if (!description.isBlank()) {
+            String descrEllipsed = description.substring(0, Math.min(DESCRIPTION_MAX_LENGTH, description.length() - 1));
+            StringBuilder descrHtml = new StringBuilder();
+            HtmlStreamRenderer descrRenderer = HtmlStreamRenderer.create(descrHtml, invalid -> log.trace("Invalid tag detected in description {}", invalid));
+            HtmlSanitizer.sanitize(HtmlUtils.htmlUnescape(descrEllipsed), DESCRIPTION_POLICY.apply(descrRenderer));
+            saneDescription = HtmlUtils.htmlEscape(descrHtml.toString(), StandardCharsets.UTF_8.name());
+        }
 
         String title = news.getTitle();
-        StringBuilder ttlBuilder = new StringBuilder();
-        HtmlStreamRenderer ttlRenderer = HtmlStreamRenderer.create(ttlBuilder, invalid -> log.trace("Invalid tag detected in title {}", invalid));
-        HtmlSanitizer.sanitize(HtmlUtils.htmlUnescape(title), TITLE_POLICY.apply(ttlRenderer));
-        String saneTitle = ttlBuilder.toString();
+        String saneTitle = news.getTitle();
+        if (!saneTitle.isBlank()) {
+            StringBuilder ttlBuilder = new StringBuilder();
+            HtmlStreamRenderer ttlRenderer = HtmlStreamRenderer.create(ttlBuilder, invalid -> log.trace("Invalid tag detected in title {}", invalid));
+            HtmlSanitizer.sanitize(HtmlUtils.htmlUnescape(title), TITLE_POLICY.apply(ttlRenderer));
+            saneTitle = ttlBuilder.toString();
+        }
 
         return Mono.just(news.withTitle(saneTitle).withDescription(saneDescription));
     }

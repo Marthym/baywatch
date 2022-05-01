@@ -1,7 +1,6 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain.filters;
 
 import fr.ght1pc9kc.baywatch.scrapper.api.NewsFilter;
-import fr.ght1pc9kc.baywatch.scrapper.api.NewsFilterStep;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.scraphead.core.scrap.OGScrapperUtils;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -22,11 +21,6 @@ import java.util.Set;
 public class ImageLinkValidationFilter implements NewsFilter {
     private static final Set<String> SUPPORTED_SCHEMES = Set.of("http", "https");
     private final WebClient http;
-
-    @Override
-    public NewsFilterStep getStep() {
-        return NewsFilterStep.ENHANCE;
-    }
 
     @Override
     public Mono<RawNews> filter(RawNews news) {

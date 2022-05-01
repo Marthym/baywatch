@@ -2,7 +2,6 @@ package fr.ght1pc9kc.baywatch.scrapper.domain.filters;
 
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.scrapper.api.NewsFilter;
-import fr.ght1pc9kc.baywatch.scrapper.api.NewsFilterStep;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import org.springframework.web.util.HtmlUtils;
 import reactor.core.publisher.Mono;
@@ -16,11 +15,6 @@ public class RedditNewsFilter implements NewsFilter {
     private static final String LINK = "link";
     private static final Pattern LINK_EXTRACT_PATTERN =
             Pattern.compile("href=\"(?<" + LINK + ">[^\"]*)\">\\[link]", Pattern.MULTILINE);
-
-    @Override
-    public NewsFilterStep getStep() {
-        return NewsFilterStep.RESOLVE;
-    }
 
     @Override
     public Mono<RawNews> filter(RawNews news) {
