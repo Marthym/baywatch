@@ -26,7 +26,7 @@ public class ImageLinkValidationFilter implements NewsFilter {
     public Mono<RawNews> filter(RawNews news) {
         if (Objects.isNull(news.getImage())
                 || !SUPPORTED_SCHEMES.contains(news.getImage().getScheme())) {
-            return Mono.just(news);
+            return Mono.just(news.withImage(null));
         }
         URI tested = (news.getImage().getQuery() == null) ? news.getImage() :
                 URI.create(OGScrapperUtils.removeQueryString(news.getImage().toString())
