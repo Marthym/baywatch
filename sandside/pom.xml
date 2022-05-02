@@ -67,6 +67,7 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
 
+
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -117,7 +118,11 @@
             <artifactId>ulid-creator</artifactId>
             <version>${ulid-creator.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.fasterxml</groupId>
+            <artifactId>aalto-xml</artifactId>
+            <version>${aalto-xml.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
