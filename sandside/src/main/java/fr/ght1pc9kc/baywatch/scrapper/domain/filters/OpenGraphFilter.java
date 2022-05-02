@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Slf4j
@@ -56,7 +57,7 @@ public class OpenGraphFilter implements NewsFilter {
                         }
 
                         OpenGraph og = headMetas.og();
-                        if (og.isEmpty()) {
+                        if (isNull(og) || og.isEmpty()) {
                             log.debug("No OG meta found for {}", news.getLink());
                             return raw;
                         }
