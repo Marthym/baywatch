@@ -1,12 +1,10 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.scrapper.api.FeedParserPlugin;
+import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import lombok.extern.slf4j.Slf4j;
 import org.owasp.html.PolicyFactory;
 import org.owasp.html.Sanitizers;
@@ -22,12 +20,9 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Slf4j
 public final class RssAtomParserImpl implements RssAtomParser {
@@ -43,12 +38,6 @@ public final class RssAtomParserImpl implements RssAtomParser {
 
     private static final QName HREF = new QName("href");
     private static final PolicyFactory HTML_POLICY = Sanitizers.FORMATTING;
-    private final Map<String, FeedParserPlugin> plugins;
-
-    public RssAtomParserImpl(List<FeedParserPlugin> plugins) {
-        this.plugins = plugins.stream()
-                .collect(Collectors.toUnmodifiableMap(FeedParserPlugin::pluginForDomain, Function.identity()));
-    }
 
     @Override
     public Predicate<XMLEvent> firstItemEvent() {
@@ -67,10 +56,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
     }
 
     @Override
-    public Mono<News> readEntryEvents(List<XMLEvent> events, Feed feed) {
-        FeedParserPlugin defaultPlugin = plugins.getOrDefault("*", FeedParserPlugin.NO_PLUGIN);
-        FeedParserPlugin plugin = plugins.getOrDefault(feed.getUrl().getHost(), defaultPlugin);
-
+    public Mono<RawNews> readEntryEvents(List<XMLEvent> events, Feed feed) {
         RawNews.RawNewsBuilder bldr = null;
         for (int i = 0; i < events.size(); i++) {
             final XMLEvent nextEvent = events.get(i);
@@ -81,12 +67,12 @@ public final class RssAtomParserImpl implements RssAtomParser {
                 }
 
                 bldr = switch (startElement.getName().getLocalPart()) {
-                    case ENTRY, ITEM -> onItemEntry(plugin);
-                    case TITLE -> onTitle(bldr, plugin, events, i);
-                    case CONTENT, DESCRIPTION -> onContentDescription(bldr, plugin, events, i);
-                    case LINK -> onLink(bldr, plugin, feed, events, i);
-                    case UPDATED -> onUpdated(bldr, plugin, events, i);
-                    case PUB_DATE -> onPublicationDate(bldr, plugin, events, i);
+                    case ENTRY, ITEM -> onItemEntry();
+                    case TITLE -> onTitle(bldr, events, i);
+                    case CONTENT, DESCRIPTION -> onContentDescription(bldr, events, i);
+                    case LINK -> onLink(bldr, feed, events, i);
+                    case UPDATED -> onUpdated(bldr, events, i);
+                    case PUB_DATE -> onPublicationDate(bldr, events, i);
                     default -> bldr;
                 };
             }
@@ -96,46 +82,46 @@ public final class RssAtomParserImpl implements RssAtomParser {
             return Mono.empty();
         }
 
-        RawNews rawNews = plugin.handleEndEvent(bldr);
+        RawNews rawNews = bldr.build();
         if (rawNews.getLink().getScheme() == null
                 || !ALLOWED_PROTOCOL.contains(rawNews.getLink().getScheme())) {
             log.warn("Illegal URL detected : {} in feed :{}", rawNews.getLink(), feed.getName());
             return Mono.empty();
         }
-        RawNews raw = rawNews
+
+        return Mono.just(rawNews
                 .withTitle(HTML_POLICY.sanitize(rawNews.title))
-                .withDescription(HTML_POLICY.sanitize(rawNews.description));
-
-        return Mono.just(News.builder()
-                .raw(raw)
-                .feeds(Set.of(feed.getId()))
-                .state(State.NONE)
-                .build());
+                .withDescription(HTML_POLICY.sanitize(rawNews.description)));
     }
 
-    private RawNews.RawNewsBuilder onItemEntry(FeedParserPlugin plugin) {
+    private RawNews.RawNewsBuilder onItemEntry() {
         log.trace("start parsing entry");
-        return plugin.handleItemEvent();
+        return RawNews.builder();
     }
 
-    private RawNews.RawNewsBuilder onTitle(RawNews.RawNewsBuilder bldr, FeedParserPlugin plugin,
+    private RawNews.RawNewsBuilder onTitle(RawNews.RawNewsBuilder bldr,
                                            List<XMLEvent> events, int idx) {
         if (bldr == null) {
             return null;
         }
         String title = readElementText(events, idx);
-        return plugin.handleTitleEvent(bldr, title);
+        return bldr.title(title);
     }
 
-    private RawNews.RawNewsBuilder onContentDescription(RawNews.RawNewsBuilder bldr, FeedParserPlugin plugin,
+    private RawNews.RawNewsBuilder onContentDescription(RawNews.RawNewsBuilder bldr,
                                                         List<XMLEvent> events, int idx) {
         if (bldr == null) {
             return null;
         }
-        return plugin.handleDescriptionEvent(bldr, readElementText(events, idx));
+        String content = readElementText(events, idx);
+        if (content.isBlank()) {
+            return bldr;
+        } else {
+            return bldr.description(content);
+        }
     }
 
-    private RawNews.RawNewsBuilder onLink(RawNews.RawNewsBuilder bldr, FeedParserPlugin plugin, Feed feed,
+    private RawNews.RawNewsBuilder onLink(RawNews.RawNewsBuilder bldr, Feed feed,
                                           List<XMLEvent> events, int idx) {
         if (bldr == null) {
             return null;
@@ -149,20 +135,20 @@ public final class RssAtomParserImpl implements RssAtomParser {
         if (!link.isAbsolute()) {
             link = feed.getUrl().resolve(link);
         }
-        return plugin.handleLinkEvent(bldr, link);
+        return bldr.id(Hasher.identify(link)).link(link);
     }
 
-    private RawNews.RawNewsBuilder onUpdated(RawNews.RawNewsBuilder bldr, FeedParserPlugin plugin,
+    private RawNews.RawNewsBuilder onUpdated(RawNews.RawNewsBuilder bldr,
                                              List<XMLEvent> events, int idx) {
         if (bldr == null) {
             return null;
         }
         String updated = events.get(idx + 1).asCharacters().getData();
         Instant updatedAt = DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(updated, Instant::from);
-        return plugin.handlePublicationEvent(bldr, updatedAt);
+        return bldr.publication(updatedAt);
     }
 
-    private RawNews.RawNewsBuilder onPublicationDate(RawNews.RawNewsBuilder bldr, FeedParserPlugin plugin,
+    private RawNews.RawNewsBuilder onPublicationDate(RawNews.RawNewsBuilder bldr,
                                                      List<XMLEvent> events, int idx) {
         if (bldr == null) {
             return null;
@@ -170,7 +156,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
         String pubDate = events.get(idx + 1).asCharacters().getData();
         Instant datetime = Exceptions.silence().get(() -> DateTimeFormatter.RFC_1123_DATE_TIME.parse(pubDate, Instant::from))
                 .orElseGet(() -> DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(pubDate, Instant::from));
-        return plugin.handlePublicationEvent(bldr, datetime);
+        return bldr.publication(datetime);
     }
 
     private String readElementText(List<XMLEvent> events, int idx) {

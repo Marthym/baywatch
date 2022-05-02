@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain;
 
-import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.tests.samples.FeedSamples;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +30,7 @@ class RssAtomParserImplTest {
 
     @BeforeEach
     void setUp() {
-        tested = new RssAtomParserImpl(List.of());
+        tested = new RssAtomParserImpl();
     }
 
     @ParameterizedTest(name = "{0}")
@@ -79,13 +79,13 @@ class RssAtomParserImplTest {
 
         StepVerifier.create(tested.readEntryEvents(xmlEvents, FeedSamples.JEDI))
                 .assertNext(actual -> Assertions.assertAll(
-                                () -> assertThat(actual).extracting(News::getTitle)
+                                () -> assertThat(actual).extracting(RawNews::getTitle)
                                         .isEqualTo("DBaaS: Tout comprendre des bases de données managées"),
-                                () -> assertThat(actual).extracting(News::getLink)
+                                () -> assertThat(actual).extracting(RawNews::getLink)
                                         .isEqualTo(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/")),
-                                () -> assertThat(actual).extracting(News::getPublication)
+                                () -> assertThat(actual).extracting(RawNews::getPublication)
                                         .isEqualTo(Instant.parse("2020-11-30T15:58:26Z")),
-                                () -> assertThat(actual).extracting(News::getDescription)
+                                () -> assertThat(actual).extracting(RawNews::getDescription)
                                         .isEqualTo("&lt;p&gt;&lt;a href&#61;&#34;https://www.journalduhacker.net/s/vzuiyr/dbaas_tout_comprendre_des_bases_de_donn_es&#34;&gt;Comments&lt;/a&gt;&lt;/p&gt;")
                         )
                 ).verifyComplete();
@@ -97,13 +97,13 @@ class RssAtomParserImplTest {
 
         StepVerifier.create(tested.readEntryEvents(xmlEvents, FeedSamples.JEDI))
                 .assertNext(actual -> Assertions.assertAll(
-                                () -> assertThat(actual).extracting(News::getTitle)
+                                () -> assertThat(actual).extracting(RawNews::getTitle)
                                         .isEqualTo("What&#39;s New in Maven 4 · Maarten on IT"),
-                                () -> assertThat(actual).extracting(News::getLink)
+                                () -> assertThat(actual).extracting(RawNews::getLink)
                                         .isEqualTo(URI.create("https://www.reddit.com/r/java/comments/k3rv35/whats_new_in_maven_4_maarten_on_it/")),
-                                () -> assertThat(actual).extracting(News::getPublication)
+                                () -> assertThat(actual).extracting(RawNews::getPublication)
                                         .isEqualTo(Instant.parse("2020-11-30T08:20:58Z")),
-                                () -> assertThat(actual).extracting(News::getDescription)
+                                () -> assertThat(actual).extracting(RawNews::getDescription)
                                         .isEqualTo("&amp;#32; submitted by &amp;#32; &lt;a href&#61;&#34;https://www.reddit.com/user/nonusedaccountname&#34;&gt;\n" +
                                                 "        /u/nonusedaccountname &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href&#61;&#34;https://maarten.mulders.it/2020/11/whats-new-in-maven-4/&#34;&gt;[link]&lt;/a&gt;&lt;/span&gt;\n" +
                                                 "        &amp;#32; &lt;span&gt;&lt;a href&#61;&#34;https://www.reddit.com/r/java/comments/k3rv35/whats_new_in_maven_4_maarten_on_it/&#34;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;")
@@ -117,13 +117,13 @@ class RssAtomParserImplTest {
 
         StepVerifier.create(tested.readEntryEvents(xmlEvents, FeedSamples.JEDI))
                 .assertNext(actual -> Assertions.assertAll(
-                                () -> assertThat(actual).extracting(News::getTitle)
+                                () -> assertThat(actual).extracting(RawNews::getTitle)
                                         .isEqualTo("Spring Data 2020.0 - New and Noteworthy in Spring Data for Apache Cassandra 3.1"),
-                                () -> assertThat(actual).extracting(News::getLink)
+                                () -> assertThat(actual).extracting(RawNews::getLink)
                                         .isEqualTo(URI.create("https://spring.io/blog/2020/11/26/spring-data-2020-0-new-and-noteworthy-in-spring-data-for-apache-cassandra-3-1")),
-                                () -> assertThat(actual).extracting(News::getPublication)
+                                () -> assertThat(actual).extracting(RawNews::getPublication)
                                         .isEqualTo(Instant.parse("2020-11-26T14:08:50Z")),
-                                () -> assertThat(actual).extracting(News::getDescription)
+                                () -> assertThat(actual).extracting(RawNews::getDescription)
                                         .asString().startsWith("&lt;p&gt;&lt;a href&#61;&#34;")
                                         .endsWith("&lt;!-- rendered by Sagan Renderer Service --&gt;")
                         )
@@ -136,15 +136,15 @@ class RssAtomParserImplTest {
 
         StepVerifier.create(tested.readEntryEvents(xmlEvents, FeedSamples.JEDI))
                 .assertNext(actual -> Assertions.assertAll(
-                        () -> assertThat(actual).extracting(News::getTitle)
-                                .isEqualTo("Passage à la fibre : c’est mon tour !"),
-                        () -> assertThat(actual).extracting(News::getLink)
-                                .isEqualTo(URI.create("https://blog.seboss666.info/2020/11/passage-a-la-fibre-cest-mon-tour/")),
-                        () -> assertThat(actual).extracting(News::getPublication)
-                                .isEqualTo(Instant.parse("2020-11-18T17:00:47Z")),
-                        () -> assertThat(actual).extracting(News::getDescription).asString()
-                                .startsWith("Et dieu sait que je rageais d&amp;#8217;être le dernier de la famille à ne pas être équipé.")
-                                .endsWith("Mon propriétaire à fini par faire les travaux [...]")
+                                () -> assertThat(actual).extracting(RawNews::getTitle)
+                                        .isEqualTo("Passage à la fibre : c’est mon tour !"),
+                                () -> assertThat(actual).extracting(RawNews::getLink)
+                                        .isEqualTo(URI.create("https://blog.seboss666.info/2020/11/passage-a-la-fibre-cest-mon-tour/")),
+                                () -> assertThat(actual).extracting(RawNews::getPublication)
+                                        .isEqualTo(Instant.parse("2020-11-18T17:00:47Z")),
+                                () -> assertThat(actual).extracting(RawNews::getDescription).asString()
+                                        .startsWith("Et dieu sait que je rageais d&amp;#8217;être le dernier de la famille à ne pas être équipé.")
+                                        .endsWith("Mon propriétaire à fini par faire les travaux [...]")
                         )
                 ).verifyComplete();
     }
@@ -155,13 +155,13 @@ class RssAtomParserImplTest {
 
         StepVerifier.create(tested.readEntryEvents(xmlEvents, FeedSamples.JEDI))
                 .assertNext(actual -> Assertions.assertAll(
-                                () -> assertThat(actual).extracting(News::getTitle)
+                                () -> assertThat(actual).extracting(RawNews::getTitle)
                                         .isEqualTo("Des milliers de policiers ont manifesté pour appeler à « protéger ceux qui protègent la République »"),
-                                () -> assertThat(actual).extracting(News::getLink)
+                                () -> assertThat(actual).extracting(RawNews::getLink)
                                         .isEqualTo(URI.create("https://www.lemonde.fr/societe/article/2021/05/20/des-milliers-de-policiers-ont-manifeste-pour-appeler-a-proteger-ceux-qui-protegent-la-republique_6080801_3224.html")),
-                                () -> assertThat(actual).extracting(News::getPublication)
+                                () -> assertThat(actual).extracting(RawNews::getPublication)
                                         .isEqualTo(Instant.parse("2021-05-20T03:14:23Z")),
-                                () -> assertThat(actual).extracting(News::getDescription).asString()
+                                () -> assertThat(actual).extracting(RawNews::getDescription).asString()
                                         .startsWith("Les principaux syndicats policiers étaient rassemblés, mercredi")
                                         .endsWith("l’institution judiciaire ».")
                         )
@@ -174,13 +174,13 @@ class RssAtomParserImplTest {
 
         StepVerifier.create(tested.readEntryEvents(xmlEvents, FeedSamples.JEDI))
                 .assertNext(actual -> Assertions.assertAll(
-                                () -> assertThat(actual).extracting(News::getTitle)
+                                () -> assertThat(actual).extracting(RawNews::getTitle)
                                         .isEqualTo("DBaaS: Tout comprendre des bases de données managées"),
-                                () -> assertThat(actual).extracting(News::getLink)
+                                () -> assertThat(actual).extracting(RawNews::getLink)
                                         .isEqualTo(URI.create("https://www.jedi.com/dbaas-la-base-de-donnees-dans-le-cloud/")),
-                                () -> assertThat(actual).extracting(News::getPublication)
+                                () -> assertThat(actual).extracting(RawNews::getPublication)
                                         .isEqualTo(Instant.parse("2020-11-30T15:58:26Z")),
-                                () -> assertThat(actual).extracting(News::getDescription)
+                                () -> assertThat(actual).extracting(RawNews::getDescription)
                                         .isEqualTo("&lt;p&gt;&lt;a href&#61;&#34;https://www.journalduhacker.net/s/vzuiyr/dbaas_tout_comprendre_des_bases_de_donn_es&#34;&gt;Comments&lt;/a&gt;&lt;/p&gt;")
                         )
                 ).verifyComplete();

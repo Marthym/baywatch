@@ -31,7 +31,7 @@
         <db.password>security</db.password>
 
         <juery.version>1.2.1</juery.version>
-        <scraphead.version>1.0.1</scraphead.version>
+        <scraphead.version>1.1.0</scraphead.version>
         <html-sanitizer.version>20211018.2</html-sanitizer.version>
         <noexception.version>1.7.1</noexception.version>
         <unbescape.version>1.1.6.RELEASE</unbescape.version>
