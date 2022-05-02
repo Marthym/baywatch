@@ -11,7 +11,6 @@ import org.owasp.html.HtmlStreamRenderer;
 import org.springframework.web.util.HtmlUtils;
 import reactor.core.publisher.Mono;
 
-import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
 
 @Slf4j
@@ -26,22 +25,21 @@ public class NewsSanitizerFilter implements NewsFilter {
             .allowAttributes("href").onElements("a")
             .toFactory();
 
-
     @Override
     public Mono<RawNews> filter(@NotNull RawNews news) {
         String description = news.getDescription();
         String saneDescription = news.getDescription();
-        if (!description.isBlank()) {
+        if (description != null && !description.isBlank()) {
             String descrEllipsed = description.substring(0, Math.min(DESCRIPTION_MAX_LENGTH, description.length()) - 1);
             StringBuilder descrHtml = new StringBuilder();
             HtmlStreamRenderer descrRenderer = HtmlStreamRenderer.create(descrHtml, invalid -> log.trace("Invalid tag detected in description {}", invalid));
             HtmlSanitizer.sanitize(HtmlUtils.htmlUnescape(descrEllipsed), DESCRIPTION_POLICY.apply(descrRenderer));
-            saneDescription = HtmlUtils.htmlEscape(descrHtml.toString(), StandardCharsets.UTF_8.name());
+            saneDescription = descrHtml.toString();
         }
 
         String title = news.getTitle();
         String saneTitle = news.getTitle();
-        if (!saneTitle.isBlank()) {
+        if (title != null && !title.isBlank()) {
             String ttlEllipsed = title.substring(0, Math.min(TITLE_MAX_LENGTH, title.length()) - 1);
             StringBuilder ttlBuilder = new StringBuilder();
             HtmlStreamRenderer ttlRenderer = HtmlStreamRenderer.create(ttlBuilder, invalid -> log.trace("Invalid tag detected in title {}", invalid));
