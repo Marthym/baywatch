@@ -100,7 +100,7 @@ public final class FeedScrapperService implements Runnable {
 
         scheduleExecutor.scheduleAtFixedRate(this,
                 toNextScrapping.getSeconds(), properties.frequency().getSeconds(), TimeUnit.SECONDS);
-        log.debug("Next scraping at {}", LocalDateTime.now().plus(toNextScrapping));
+        log.debug("Next scraping at {}", LocalDateTime.now(clock).plus(toNextScrapping));
         scheduleExecutor.schedule(this, 0, TimeUnit.MILLISECONDS);
     }
 
@@ -163,7 +163,7 @@ public final class FeedScrapperService implements Runnable {
         URI feedUrl = (hostPlugin != null) ? hostPlugin.uriModifier(feed.getUrl()) : feed.getUrl();
 
         if (!SUPPORTED_SCHEMES.contains(feedUrl.getScheme())) {
-            log.warn("Unsiported scheme for {} !", feedUrl);
+            log.warn("Unsupported scheme for {} !", feedUrl);
             return Flux.empty();
         }
 
@@ -217,7 +217,7 @@ public final class FeedScrapperService implements Runnable {
     }
 
     @VisibleForTesting
-    public boolean isScrapping() {
+    public boolean isScraping() {
         return lock.availablePermits() == 0;
     }
 }

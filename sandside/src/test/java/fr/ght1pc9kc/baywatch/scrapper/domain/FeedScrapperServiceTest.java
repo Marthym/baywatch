@@ -50,13 +50,13 @@ import static org.mockito.Mockito.when;
 
 class FeedScrapperServiceTest {
 
-    static final ScraperProperties scraperProperties = new ScraperProperties(
+    static final ScraperProperties SCRAPER_PROPERTIES = new ScraperProperties(
             true, Duration.ofDays(1), Period.ofDays(30), Duration.ofSeconds(2),
             new ScraperProperties.DnsProperties(Duration.ofSeconds(10), List.of())
     );
 
     @SuppressWarnings({"Convert2Lambda", "Anonymous2MethodRef"})
-    private static final NewsFilter mockNewsFilter = spy(new NewsFilter() {
+    private final NewsFilter mockNewsFilter = spy(new NewsFilter() {
         @Override
         public Mono<RawNews> filter(RawNews news) {
             return Mono.just(news);
@@ -74,7 +74,7 @@ class FeedScrapperServiceTest {
         tested.startScrapping();
         Awaitility.await("for scrapping begin").timeout(Duration.ofSeconds(5))
                 .pollDelay(Duration.ZERO)
-                .until(() -> tested.isScrapping());
+                .until(() -> tested.isScraping());
         tested.shutdownScrapping();
 
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/journal_du_hacker.xml")));
@@ -88,7 +88,7 @@ class FeedScrapperServiceTest {
     }
 
     @Test
-    void should_fail_scrapper_without_fail_scrapping() {
+    void should_fail_scraper_without_fail_scraping() {
         URI darthVaderUri = URI.create("https://www.jedi.com/error/darth-vader.xml");
         URI springUri = URI.create("https://www.jedi.com/feeds/spring-blog.xml");
         String darthVaderSha3 = Hasher.identify(darthVaderUri);
@@ -111,7 +111,7 @@ class FeedScrapperServiceTest {
         tested.startScrapping();
         Awaitility.await("for scrapping begin").timeout(Duration.ofSeconds(5))
                 .pollDelay(Duration.ZERO)
-                .until(() -> tested.isScrapping());
+                .until(() -> tested.isScraping());
         tested.shutdownScrapping();
 
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/error/darth-vader.xml")));
@@ -126,13 +126,14 @@ class FeedScrapperServiceTest {
     @Test
     void should_fail_on_persistence() {
         reset(newsPersistenceMock);
-        when(newsPersistenceMock.persist(anyCollection())).thenReturn(Mono.error(new RuntimeException()).then(Mono.just(1)));
+        when(newsPersistenceMock.persist(anyCollection())).thenReturn(Mono.error(new RuntimeException("Persistence failure simulation"))
+                .then(Mono.just(1)));
         when(newsPersistenceMock.list()).thenReturn(Flux.empty());
 
         tested.startScrapping();
         Awaitility.await("for scrapping begin").timeout(Duration.ofSeconds(5))
                 .pollDelay(Duration.ZERO)
-                .until(() -> tested.isScrapping());
+                .until(() -> tested.isScraping());
         tested.shutdownScrapping();
 
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/journal_du_hacker.xml")));
@@ -149,12 +150,12 @@ class FeedScrapperServiceTest {
                         .name("Unsupported")
                         .url(URI.create("file://localhost/.env"))
                         .build()).name("Reddit").build()
-        ));
+        ).delayElements(Duration.ofMillis(100))); // Delay avoid Awaitility start polling after the and of scraping
 
         tested.startScrapping();
-        Awaitility.await("for scrapping begin").timeout(Duration.ofSeconds(5))
+        Awaitility.await("for scraping begin").timeout(Duration.ofSeconds(5))
                 .pollDelay(Duration.ZERO)
-                .until(() -> tested.isScrapping());
+                .until(() -> tested.isScraping());
         tested.shutdownScrapping();
 
         verify(mockExchangeFunction, never()).exchange(any());
@@ -222,7 +223,7 @@ class FeedScrapperServiceTest {
                         .build()).name("Spring").build()
         ));
 
-        tested = new FeedScrapperService(scraperProperties,
+        tested = new FeedScrapperService(SCRAPER_PROPERTIES,
                 feedPersistenceMock, newsPersistenceMock, mockWebClient, rssAtomParserMock,
                 Collections.emptyList(), Map.of(), List.of(mockNewsFilter));
         tested.setClock(Clock.fixed(Instant.parse("2022-04-30T12:35:41Z"), ZoneOffset.UTC));
