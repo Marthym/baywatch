@@ -21,6 +21,7 @@ logging:
     fr.ght1pc9kc.scraphead: ${BAYWATCH_LOG_LEVEL:DEBUG}
     # Avoid unwanted log error ...
     org.springframework.boot.autoconfigure.jooq.JooqExceptionTranslator: OFF
+    reactor.netty.http.client: ERROR
 
 baywatch:
   base-route: /api
