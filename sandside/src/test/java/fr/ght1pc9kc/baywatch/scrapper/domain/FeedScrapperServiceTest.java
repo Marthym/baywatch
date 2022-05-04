@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.scrapper.domain;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.scrapper.api.NewsFilter;
 import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
-import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScrapperProperties;
+import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScraperProperties;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
@@ -35,7 +35,6 @@ import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -51,8 +50,9 @@ import static org.mockito.Mockito.when;
 
 class FeedScrapperServiceTest {
 
-    static final ScrapperProperties scraperProperties = new ScrapperProperties(
-            true, Duration.ofDays(1), Duration.ofSeconds(2), Period.ofDays(30), Set.of("http", "https")
+    static final ScraperProperties scraperProperties = new ScraperProperties(
+            true, Duration.ofDays(1), Period.ofDays(30), Duration.ofSeconds(2),
+            new ScraperProperties.DnsProperties(Duration.ofSeconds(10), List.of())
     );
 
     @SuppressWarnings({"Convert2Lambda", "Anonymous2MethodRef"})

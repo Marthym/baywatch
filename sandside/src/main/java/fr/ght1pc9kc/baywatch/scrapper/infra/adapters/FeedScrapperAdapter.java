@@ -6,7 +6,7 @@ import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scrapper.api.ScrappingHandler;
 import fr.ght1pc9kc.baywatch.scrapper.domain.FeedScrapperService;
 import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScraperQualifier;
-import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScrapperProperties;
+import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScraperProperties;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import lombok.SneakyThrows;
@@ -29,7 +29,7 @@ public class FeedScrapperAdapter {
     private final boolean startScrapper;
 
     public FeedScrapperAdapter(FeedPersistencePort feedPersistence, NewsPersistencePort newsPersistence,
-                               ScrapperProperties properties,
+                               ScraperProperties properties,
                                RssAtomParser rssAtomParser,
                                Collection<ScrappingHandler> scrappingHandlers,
                                Collection<FeedScrapperPlugin> scrapperPlugins,

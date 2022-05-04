@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch;
 
-import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScrapperProperties;
+import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScraperProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,7 +11,7 @@ import reactor.core.scheduler.Schedulers;
 
 @Slf4j
 @SpringBootApplication
-@EnableConfigurationProperties({ScrapperProperties.class})
+@EnableConfigurationProperties({ScraperProperties.class})
 public class BaywatchApplication {
 
     public static final String APPLICATION_NAME = "Baywatch";

@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.Set;
 
 @Configuration
@@ -19,21 +20,25 @@ public class WebClientConfiguration {
 
     @Bean
     @ScraperQualifier
-    public DnsAddressResolverGroup getDnsAddressResolver() {
-        return new DnsAddressResolverGroup(
-                new DnsNameResolverBuilder()
-                        .queryTimeoutMillis(10_000)
-                        .channelType(EpollDatagramChannel.class)
-                        .nameServerProvider(
-                                new SequentialDnsServerAddressStreamProvider(
-                                        new InetSocketAddress("9.9.9.9", 53),
-                                        new InetSocketAddress("2620:fe::fe", 53),
-                                        new InetSocketAddress("8.8.8.8", 53))));
+    public DnsAddressResolverGroup getDnsAddressResolver(ScraperProperties properties) {
+        var dnsNameResolverBuilder = new DnsNameResolverBuilder()
+                .queryTimeoutMillis(properties.dns().timeout().toMillis())
+                .channelType(EpollDatagramChannel.class);
+
+        List<InetSocketAddress> servers = properties.dns().servers().stream()
+                .map(ip -> new InetSocketAddress(ip, 53))
+                .toList();
+
+        if (!servers.isEmpty()) {
+            dnsNameResolverBuilder.nameServerProvider(new SequentialDnsServerAddressStreamProvider(servers));
+        }
+
+        return new DnsAddressResolverGroup(dnsNameResolverBuilder);
     }
 
     @Bean
     @ScraperQualifier
-    public WebClient getScraperWebClient(ScrapperProperties properties, DnsAddressResolverGroup dnsAddressResolverGroup) {
+    public WebClient getScraperWebClient(ScraperProperties properties, DnsAddressResolverGroup dnsAddressResolverGroup) {
         return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(
                         HttpClient.create()
