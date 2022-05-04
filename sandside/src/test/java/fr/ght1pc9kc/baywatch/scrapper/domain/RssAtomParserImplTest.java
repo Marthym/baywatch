@@ -35,12 +35,12 @@ class RssAtomParserImplTest {
 
     @ParameterizedTest(name = "{0}")
     @CsvSource({
-            "feeds/journal_du_hacker.xml, item, 1524",
-            "feeds/reddit-java.xml, entry, 979",
-            "feeds/reddit-prog.xml, entry, 2304",
-            "feeds/sebosss.xml, item, 1684",
-            "feeds/spring-blog.xml, entry, 14338",
-            "feeds/lemonde.xml, item, 688",
+            "feeds/journal_du_hacker.xml, item, 971",
+            "feeds/reddit-java.xml, entry, 267",
+            "feeds/reddit-prog.xml, entry, 951",
+            "feeds/sebosss.xml, item, 1671",
+            "feeds/spring-blog.xml, entry, 681",
+            "feeds/lemonde.xml, item, 672",
     })
     void should_skip_until_entries(String resource, String tag, int expectedCount) {
         Flux<XMLEvent> actual = Flux.fromIterable(toXmlEventList(resource))
@@ -143,7 +143,7 @@ class RssAtomParserImplTest {
                                 () -> assertThat(actual).extracting(RawNews::getPublication)
                                         .isEqualTo(Instant.parse("2020-11-18T17:00:47Z")),
                                 () -> assertThat(actual).extracting(RawNews::getDescription).asString()
-                                        .startsWith("Et dieu sait que je rageais d&amp;#8217;être le dernier de la famille à ne pas être équipé.")
+                                        .startsWith("Et dieu sait que je rageais d’être le dernier de la famille à ne pas être équipé.")
                                         .endsWith("Mon propriétaire à fini par faire les travaux [...]")
                         )
                 ).verifyComplete();
