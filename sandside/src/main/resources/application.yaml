@@ -21,6 +21,7 @@ logging:
     fr.ght1pc9kc.scraphead: ${BAYWATCH_LOG_LEVEL:DEBUG}
     # Avoid unwanted log error ...
     org.springframework.boot.autoconfigure.jooq.JooqExceptionTranslator: OFF
+    reactor.netty.http.client: ERROR
 
 baywatch:
   base-route: /api
@@ -29,11 +30,10 @@ baywatch:
       name: X-TOKEN
       validity: ${BAYWATCH_COOKIE_VALIDITY:24h}
     jwt.validity: ${BAYWATCH_TOKEN_VALIDITY:1h}
-  scrapper:
+  scraper:
     start: true
-    timeout: ${BAYWATCH_SCRAPPER_TIMEOUT:2s}
-    frequency: ${BAYWATCH_SCRAPPER_FREQUENCY:1h}
-    conservation: ${BAYWATCH_SCRAPPER_CONSERVATION:3m}
-    supportedScheme:
-      - http
-      - https
+    frequency: ${BAYWATCH_SCRAPER_FREQUENCY:1h}
+    conservation: ${BAYWATCH_SCRAPER_CONSERVATION:3m}
+    timeout: ${BAYWATCH_SCRAPER_TIMEOUT:2s}
+    dns.timeout: ${BAYWATCH_DNS_TIMEOUT:10s}
+    dns.servers: ${BAYWATCH_DNS_SERVERS:}

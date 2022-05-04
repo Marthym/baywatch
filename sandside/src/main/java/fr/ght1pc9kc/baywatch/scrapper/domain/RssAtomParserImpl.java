@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import java.io.StringWriter;
@@ -126,11 +127,10 @@ public final class RssAtomParserImpl implements RssAtomParser {
         if (bldr == null) {
             return null;
         }
-        final int nextIdx = idx + 1;
         StartElement startElement = events.get(idx).asStartElement();
         String href = Optional.ofNullable(startElement.getAttributeByName(HREF))
                 .map(Attribute::getValue)
-                .orElseGet(Exceptions.wrap().supplier(() -> events.get(nextIdx).asCharacters().getData()));
+                .orElseGet(Exceptions.wrap().supplier(() -> readElementText(events, idx)));
         URI link = URI.create(href.trim());
         if (!link.isAbsolute()) {
             link = feed.getUrl().resolve(link);
@@ -143,7 +143,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
         if (bldr == null) {
             return null;
         }
-        String updated = events.get(idx + 1).asCharacters().getData();
+        String updated = readElementText(events, idx);
         Instant updatedAt = DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(updated, Instant::from);
         return bldr.publication(updatedAt);
     }
@@ -153,7 +153,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
         if (bldr == null) {
             return null;
         }
-        String pubDate = events.get(idx + 1).asCharacters().getData();
+        String pubDate = readElementText(events, idx);
         Instant datetime = Exceptions.silence().get(() -> DateTimeFormatter.RFC_1123_DATE_TIME.parse(pubDate, Instant::from))
                 .orElseGet(() -> DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(pubDate, Instant::from));
         return bldr.publication(datetime);
@@ -165,7 +165,12 @@ public final class RssAtomParserImpl implements RssAtomParser {
             XMLEvent textEvent = events.get(i);
             if (textEvent.isCharacters()) {
                 try {
-                    textEvent.writeAsEncodedUnicode(buf);
+                    Characters charEvent = (Characters) textEvent;
+                    if (charEvent.isCData()) {
+                        buf.write(charEvent.getData());
+                    } else {
+                        textEvent.writeAsEncodedUnicode(buf);
+                    }
                 } catch (XMLStreamException e) {
                     log.debug("Fail to write title buffer at index " + i, e);
                 }

@@ -1,9 +1,9 @@
 package fr.ght1pc9kc.baywatch.security.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
+import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.domain.UserServiceImpl;
+import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.security.infra.model.BaywatchUserDetails;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
@@ -25,20 +25,18 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.LOGIN;
 public class UserServiceAdapter implements UserService, ReactiveUserDetailsService {
     @Delegate
     private final UserService delegate;
-    private final AuthenticationFacade authFacade;
 
     @Autowired
     public UserServiceAdapter(UserPersistencePort userPersistencePort, AuthenticationFacade authFacade,
                               PasswordEncoder passwordEncoder) {
         this.delegate = new UserServiceImpl(userPersistencePort, authFacade, passwordEncoder, Clock.systemUTC());
-        this.authFacade = authFacade;
     }
 
     @Override
     public Mono<UserDetails> findByUsername(String username) {
         return Mono.just(username).flatMapMany(u ->
                         delegate.list(PageRequest.one(Criteria.property(LOGIN).eq(username)))
-                                .contextWrite(authFacade.withSystemAuthentication()))
+                                .contextWrite(AuthenticationFacade.withSystemAuthentication()))
                 .single().map(BaywatchUserDetails::new);
     }
 }

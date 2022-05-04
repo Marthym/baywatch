@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.scrapper.domain.actions;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
-import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScrapperProperties;
+import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScraperProperties;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
@@ -22,7 +22,6 @@ import java.time.Instant;
 import java.time.Period;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -38,11 +37,13 @@ class PurgeNewsActionTest {
 
     @BeforeEach
     void setUp() {
+        final ScraperProperties scraperProperties = new ScraperProperties(
+                true, Duration.ofHours(1), Period.ofMonths(5), Duration.ofSeconds(10),
+                new ScraperProperties.DnsProperties(Duration.ofSeconds(10), List.of())
+        );
         newsPersistenceMock = mock(NewsPersistencePort.class);
         StatePersistencePort statePersistenceMock = mock(StatePersistencePort.class);
-        tested = new PurgeNewsHandler(newsPersistenceMock, statePersistenceMock,
-                new ScrapperProperties(true, Duration.ofHours(1), Duration.ofSeconds(10), Period.ofMonths(5),
-                        Set.of("http", "https")))
+        tested = new PurgeNewsHandler(newsPersistenceMock, statePersistenceMock, scraperProperties)
                 .clock(Clock.fixed(Instant.parse("2020-12-18T22:42:42Z"), ZoneOffset.UTC));
 
         when(newsPersistenceMock.list(any())).thenReturn(testDataForPersistenceList());

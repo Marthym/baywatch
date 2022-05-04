@@ -1,19 +1,19 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="BaywatchApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <option name="ACTIVE_PROFILES" />
+    <envs>
+      <env name="BAYWATCH_DNS_SERVERS" value="9.9.9.9, 8.8.8.8, 2620:fe::fe" />
+      <env name="BAYWATCH_HOME" value="$USER_HOME$" />
+    </envs>
     <module name="sandside" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="fr.ght1pc9kc.baywatch.BaywatchApplication" />
+    <option name="VM_PARAMETERS" value="-Dio.netty.leakDetection.level=paranoid" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="fr.ght1pc9kc.baywatch.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
-    <option name="SPRING_BOOT_MAIN_CLASS" value="fr.ght1pc9kc.baywatch.BaywatchApplication" />
-    <option name="VM_PARAMETERS" value="-Dio.netty.leakDetection.level=paranoid" />
-    <option name="ALTERNATIVE_JRE_PATH" />
-    <envs>
-      <env name="BAYWATCH_HOME" value="$USER_HOME$" />
-      <env name="BAYWATCH_LOG_FILE" value="baywatch.log" />
-    </envs>
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

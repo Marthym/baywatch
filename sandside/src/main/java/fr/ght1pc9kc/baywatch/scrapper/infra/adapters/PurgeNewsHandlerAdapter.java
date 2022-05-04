@@ -2,7 +2,7 @@ package fr.ght1pc9kc.baywatch.scrapper.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.scrapper.api.ScrappingHandler;
 import fr.ght1pc9kc.baywatch.scrapper.domain.actions.PurgeNewsHandler;
-import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScrapperProperties;
+import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScraperProperties;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ public class PurgeNewsHandlerAdapter implements ScrappingHandler {
 
     @Autowired
     public PurgeNewsHandlerAdapter(NewsPersistencePort newsPersistencePort, StatePersistencePort statePersistencePort,
-                                   ScrapperProperties props) {
+                                   ScraperProperties props) {
         this.delegate = new PurgeNewsHandler(newsPersistencePort, statePersistencePort, props);
     }
 }

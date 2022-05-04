@@ -5,13 +5,14 @@ import fr.ght1pc9kc.baywatch.scrapper.api.NewsFilter;
 import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scrapper.api.ScrappingHandler;
 import fr.ght1pc9kc.baywatch.scrapper.domain.FeedScrapperService;
-import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScrapperProperties;
-import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScraperQualifier;
+import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScraperProperties;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import lombok.SneakyThrows;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -28,18 +29,18 @@ public class FeedScrapperAdapter {
     private final boolean startScrapper;
 
     public FeedScrapperAdapter(FeedPersistencePort feedPersistence, NewsPersistencePort newsPersistence,
-                               ScrapperProperties properties,
+                               ScraperProperties properties,
                                RssAtomParser rssAtomParser,
                                Collection<ScrappingHandler> scrappingHandlers,
                                Collection<FeedScrapperPlugin> scrapperPlugins,
-                               AuthenticationFacade authFacade,
+                               @ScraperQualifier WebClient webClient,
                                List<NewsFilter> newsFilters
     ) {
         Map<String, FeedScrapperPlugin> plugins = scrapperPlugins.stream()
                 .collect(Collectors.toUnmodifiableMap(FeedScrapperPlugin::pluginForDomain, Function.identity()));
         this.startScrapper = properties.start();
         this.scrapper = new FeedScrapperService(
-                properties, feedPersistence, newsPersistence, authFacade,
+                properties, feedPersistence, newsPersistence, webClient,
                 rssAtomParser, scrappingHandlers, plugins, newsFilters);
     }
 

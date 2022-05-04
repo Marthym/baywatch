@@ -5,7 +5,7 @@ import fr.ght1pc9kc.baywatch.scrapper.api.FeedScrapperPlugin;
 import fr.ght1pc9kc.baywatch.scrapper.api.NewsFilter;
 import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scrapper.api.ScrappingHandler;
-import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScrapperProperties;
+import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScraperProperties;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
@@ -13,11 +13,6 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.epoll.EpollDatagramChannel;
-import io.netty.resolver.dns.DnsAddressResolverGroup;
-import io.netty.resolver.dns.DnsNameResolverBuilder;
-import io.netty.resolver.dns.SequentialDnsServerAddressStreamProvider;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -26,7 +21,6 @@ import org.jetbrains.annotations.VisibleForTesting;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.http.codec.xml.XmlEventDecoder;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -34,9 +28,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
-import reactor.netty.http.client.HttpClient;
 
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -69,10 +61,9 @@ public final class FeedScrapperService implements Runnable {
     private final Semaphore lock = new Semaphore(1);
     private final WebClient http;
 
-    private final ScrapperProperties properties;
+    private final ScraperProperties properties;
     private final FeedPersistencePort feedRepository;
     private final NewsPersistencePort newsRepository;
-    private final AuthenticationFacade authFacade;
     private final RssAtomParser feedParser;
     private final Collection<ScrappingHandler> scrappingHandlers;
     private final Map<String, FeedScrapperPlugin> plugins;
@@ -82,10 +73,9 @@ public final class FeedScrapperService implements Runnable {
     @Setter(value = AccessLevel.PACKAGE, onMethod = @__({@VisibleForTesting}))
     private Clock clock = Clock.systemUTC();
 
-    public FeedScrapperService(ScrapperProperties properties,
+    public FeedScrapperService(ScraperProperties properties,
                                FeedPersistencePort feedRepository, NewsPersistencePort newsRepository,
-                               AuthenticationFacade authFacade,
-                               RssAtomParser feedParser,
+                               WebClient webClient, RssAtomParser feedParser,
                                Collection<ScrappingHandler> scrappingHandlers,
                                Map<String, FeedScrapperPlugin> plugins,
                                List<NewsFilter> newsFilters
@@ -93,33 +83,12 @@ public final class FeedScrapperService implements Runnable {
         this.properties = properties;
         this.feedRepository = feedRepository;
         this.newsRepository = newsRepository;
-        this.authFacade = authFacade;
         this.feedParser = feedParser;
         this.scrappingHandlers = scrappingHandlers;
         this.plugins = plugins;
         this.newsFilters = newsFilters;
+        this.http = webClient;
 
-        DnsAddressResolverGroup dnsAddressResolverGroup =
-                new DnsAddressResolverGroup(
-                        new DnsNameResolverBuilder()
-                                .queryTimeoutMillis(10_000)
-                                .channelType(EpollDatagramChannel.class)
-                                .nameServerProvider(
-                                        new SequentialDnsServerAddressStreamProvider(
-                                                new InetSocketAddress("9.9.9.9", 53),
-                                                new InetSocketAddress("2620:fe::fe", 53),
-                                                new InetSocketAddress("8.8.8.8", 53))));
-
-
-        this.http = WebClient.builder()
-                .clientConnector(new ReactorClientHttpConnector(
-                        HttpClient.create()
-                                .resolver(dnsAddressResolverGroup)
-                                .followRedirect(true)
-                                .compress(true)
-                                .responseTimeout(properties.timeout())
-                                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) properties.timeout().toMillis())
-                )).build();
         this.xmlEventDecoder = new XmlEventDecoder();
         this.xmlEventDecoder.setMaxInMemorySize(16 * 1024 * 1024);
     }
@@ -131,7 +100,7 @@ public final class FeedScrapperService implements Runnable {
 
         scheduleExecutor.scheduleAtFixedRate(this,
                 toNextScrapping.getSeconds(), properties.frequency().getSeconds(), TimeUnit.SECONDS);
-        log.debug("Next scraping at {}", LocalDateTime.now().plus(toNextScrapping));
+        log.debug("Next scraping at {}", LocalDateTime.now(clock).plus(toNextScrapping));
         scheduleExecutor.schedule(this, 0, TimeUnit.MILLISECONDS);
     }
 
@@ -184,18 +153,17 @@ public final class FeedScrapperService implements Runnable {
                     lock.release();
                     log.info("Scraping terminated successfully !");
                 })
-                .contextWrite(authFacade.withSystemAuthentication())
+                .contextWrite(AuthenticationFacade.withSystemAuthentication())
                 .subscribe();
     }
 
-    @SuppressWarnings("java:S2095")
     private Flux<News> wgetFeedNews(Feed feed) {
         String feedHost = feed.getUrl().getHost();
         FeedScrapperPlugin hostPlugin = plugins.get(feedHost);
         URI feedUrl = (hostPlugin != null) ? hostPlugin.uriModifier(feed.getUrl()) : feed.getUrl();
 
         if (!SUPPORTED_SCHEMES.contains(feedUrl.getScheme())) {
-            log.warn("Unsiported scheme for {} !", feedUrl);
+            log.warn("Unsupported scheme for {} !", feedUrl);
             return Flux.empty();
         }
 
@@ -249,7 +217,7 @@ public final class FeedScrapperService implements Runnable {
     }
 
     @VisibleForTesting
-    public boolean isScrapping() {
+    public boolean isScraping() {
         return lock.availablePermits() == 0;
     }
 }
