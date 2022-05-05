@@ -3,7 +3,7 @@
     <div class="avatar placeholder">
       <div class="w-8 h-8 mask mask-squircle">
         <img class="text-center"
-             :src="view.icon" :alt="view.data.name.substr(0,1)"
+             :src="view.icon" :alt="view.data.name.substring(0,1)"
              @error.prevent.stop="iconFallback">
       </div>
     </div>
@@ -18,6 +18,7 @@
   </div>
   <div class="md:col-span-7">
     <a class="link whitespace-normal">{{ view.data.url }}</a><br>
+    <div v-for="tag in view.data.tags" class="badge mr-1 rounded">{{ tag }}</div>
   </div>
   <div class="md:col-span-2 btn-group justify-self-end">
     <button class="btn btn-sm btn-square btn-ghost" @click="$emit('item-update', view.data)">
