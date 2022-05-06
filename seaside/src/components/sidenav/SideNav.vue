@@ -1,68 +1,55 @@
 <template>
-  <nav class="flex flex-col bg-gray-200 dark:bg-gray-900 md:w-64 px-12 pt-4 pb-6">
+  <aside class="fixed md:w-64 px-10 pt-4 pb-6 inset-y-0 z-20 flex flex-col flex-shrink-0 w-4/5 max-h-screen overflow-hidden
+  transition-all transform bg-base-200 shadow-lg lg:z-auto lg:static lg:shadow-none"
+         :class="{'-translate-x-full lg:translate-x-0': !state.open}">
+    <SideNavHeader/>
 
-    <SideNavHeader :unread="statistics.unread"/>
+    <SideNavUserInfo/>
 
-    <SideNavUserInfo :user="user"/>
-
-    <button class="mt-8 flex items-center justify-between py-3 px-2 text-white
-			dark:text-gray-200 bg-green-400 dark:bg-green-500 rounded-lg shadow">
-      <!-- Action -->
-      <span>Add user</span>
-      <svg class="h-5 w-5 stroke-current" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-           xmlns="http://www.w3.org/2000/svg">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-      </svg>
-    </button>
-
-    <SideNavFeeds/>
-
-    <SideNavImportantActions
-        :isLoggedIn="isLoggedIn" @logout="logoutUser()"/>
-  </nav>
+    <SideNavFilters v-if="user.isAuthenticated"/>
+    <SideNavManagement @logout="logoutUser()"/>
+  </aside>
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
+import {Options, Vue} from 'vue-property-decorator';
 import SideNavHeader from "./SideNavHeader.vue";
-import SideNavUserInfo from "./SideNavUserInfo.vue";
-import SideNavImportantActions from "./SideNavImportantActions.vue";
-import SideNavFeeds from "./SideNavFeeds.vue";
-import {Statistics} from "@/services/model/Statistics";
-import UserService from "@/services/UserService";
+import SideNavManagement from './SideNavManagement.vue';
 
-@Component({
+import {LOGOUT_MUTATION} from "@/store/user/UserConstants";
+import {SidenavState} from "@/store/sidenav/sidenav";
+import SideNavUserInfo from "@/components/sidenav/SideNavUserInfo.vue";
+import SideNavFilters from "@/components/sidenav/SideNavFilters.vue";
+import {UserState} from "@/store/user/user";
+import {useStore} from "vuex";
+import {setup} from "vue-class-component";
+import {switchMap} from "rxjs/operators";
+import {useRouter} from "vue-router";
+import authenticationService from "@/services/AuthenticationService";
+import serverEventService from '@/techwatch/services/ServerEventService'
+
+@Options({
+  name: 'SideNav',
   components: {
     SideNavHeader,
     SideNavUserInfo,
-    SideNavFeeds,
-    SideNavImportantActions,
+    SideNavFilters,
+    SideNavManagement,
   },
 })
 export default class SideNav extends Vue {
-  @Prop() statistics?: Statistics;
-
-  private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
-
-  private user = this.userService.get() || {};
-
-  get isLoggedIn(): boolean {
-    return 'id' in this.user;
-  }
-
-  mounted(): void {
-    if ('id' in this.user) {
-      this.userService.refresh()
-          .subscribe(
-              user => this.$nextTick(() => this.user = user),
-              () => this.$nextTick(() => delete this.user));
-    }
-  }
+  private router = setup(() => useRouter());
+  private store = setup(() => useStore());
+  private state: SidenavState = setup(() => useStore().state.sidenav);
+  private user: UserState = setup(() => useStore().state.user);
 
   logoutUser(): void {
-    this.userService.logout()
-        .subscribe(() => this.$router.go(0));
+    serverEventService.close().pipe(
+        switchMap(() => authenticationService.logout())
+    ).subscribe(() => {
+      this.store.commit(LOGOUT_MUTATION);
+      this.router.go(0);
+    });
   }
 }
 </script>

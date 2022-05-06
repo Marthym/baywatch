@@ -1,46 +1,39 @@
 <template>
-  <div class="md:h-screen flex md:flex-row flex-col overflow-hidden">
-    <SideNav :statistics="baywatchStats"/>
-    <MainContent :statistics="baywatchStats"/>
-  </div>
+  <NewsList/>
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
-import {Subscription} from "rxjs";
-import StatsService from "@/services/StatsService";
-import {Statistics} from "@/services/model/Statistics";
+import {Options, Vue} from 'vue-property-decorator';
+import {defineAsyncComponent} from "vue";
+import {NEWS_REPLACE_TAGS_MUTATION} from "@/techwatch/store/news/NewsStoreConstants";
+import {setup} from "vue-class-component";
+import {useRouter} from "vue-router";
+import {Store, useStore} from "vuex";
 
-const SideNav = () => import('../components/sidenav/SideNav.vue');
-const MainContent = () => import('../components/content/MainContent.vue');
+const NewsList = defineAsyncComponent(() => import('@/techwatch/components/newslist/NewsList.vue'));
 
-@Component({
+@Options({
+  name: 'HomePage',
   components: {
-    SideNav,
-    MainContent,
+    NewsList,
   },
 })
-export default class Home extends Vue {
-  private statsService: StatsService = new StatsService(process.env.VUE_APP_API_BASE_URL);
-  private baywatchStats: Statistics = {
-    users: 0,
-    feeds: 0,
-    news: 0,
-    unread: 0
-  };
+export default class HomePage extends Vue {
+  private router = setup(() => useRouter());
+  private store: Store<any> = setup(() => useStore());
 
-  private subscriptions?: Subscription;
-
-  created(): void {
-    this.subscriptions = this.statsService.getBaywatchStats()
-        .subscribe(
-            stats => this.baywatchStats = stats,
-            e => console.log(e)
-        );
+  private mounted(): void {
+    this.readQueryParameters();
   }
 
-  beforeDestroy(): void {
-    this.subscriptions?.unsubscribe();
+  private readQueryParameters(): void {
+    const queryTag: string = this.router.currentRoute.query.tag as string;
+
+    if (queryTag && queryTag.length > 0) {
+      this.store.commit(NEWS_REPLACE_TAGS_MUTATION, [queryTag]);
+    } else {
+      this.store.commit(NEWS_REPLACE_TAGS_MUTATION, []);
+    }
   }
 }
 </script>

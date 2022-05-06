@@ -1,87 +1,99 @@
-import {Observable, throwError} from "rxjs";
-import {fromFetch} from "rxjs/fetch";
+import {from, Observable, throwError} from "rxjs";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
+import {map, switchMap, take} from "rxjs/operators";
+import rest from '@/services/http/RestWrapper';
+import {Page} from "@/services/model/Page";
+import {ConstantFilters, ConstantHttpHeaders} from "@/constants";
 import {User} from "@/services/model/User";
-import {catchError, map, switchMap, take} from "rxjs/operators";
+import {OpPatch} from "json-patch";
 
-export default class UserService {
+export class UserService {
+    public static readonly DEFAULT_PER_PAGE: number = 20;
+    public static readonly DEFAULT_QUERY: string = `?${ConstantFilters.PER_PAGE}=${UserService.DEFAULT_PER_PAGE}&_s=login`;
 
-    serviceBaseUrl: string;
+    //TODO: Refactor to avoid duplication with same method in feed Service
+    list(page = 0, query: URLSearchParams = new URLSearchParams(UserService.DEFAULT_QUERY)): Observable<Page<User>> {
+        const resolvedPage = (page > 0) ? page : 0;
+        query.set(ConstantFilters.PAGE, String(resolvedPage));
+        let resolvedPerPage = query.get(ConstantFilters.PER_PAGE);
+        if (resolvedPerPage === null) {
+            resolvedPerPage = String(UserService.DEFAULT_PER_PAGE);
+            query.append(ConstantFilters.PER_PAGE, resolvedPerPage);
+        }
 
-    constructor(baseURL: string) {
-        this.serviceBaseUrl = baseURL;
-    }
-
-    login(username: string, password: string): Observable<User> {
-        const data = new FormData();
-        data.append("username", username);
-        data.append("password", password);
-        return fromFetch(`${this.serviceBaseUrl}/auth/login`, {
-            method: "POST",
-            body: data
-        }).pipe(
-            switchMap(response => {
+        return rest.get(`/users?${query.toString()}`).pipe(
+            map(response => {
                 if (response.ok) {
-                    return response.json();
+                    const totalCount = parseInt(response.headers.get(ConstantHttpHeaders.X_TOTAL_COUNT) || "-1");
+                    const data: Observable<User[]> = from(response.json());
+                    return {
+                        currentPage: resolvedPage,
+                        totalPage: Math.ceil(totalCount / Number(resolvedPerPage)),
+                        data: data
+                    };
                 } else {
                     throw new HttpStatusError(response.status, `Error while getting news.`);
                 }
             }),
-            map(user => this.save(user)),
             take(1)
         );
     }
 
-    logout(): Observable<void> {
-        return fromFetch(`${this.serviceBaseUrl}/auth/logout`, {
-            method: "DELETE",
-        }).pipe(
-            map(response => {
-                if (!response.ok) {
-                    throw new HttpStatusError(response.status, `Error while login out user !`);
-                }
-                return null;
-            }),
-            map(() => localStorage.removeItem('user')),
-            take(1)
-        );
-    }
-
-    refresh(): Observable<User> {
-        return fromFetch(`${this.serviceBaseUrl}/auth/refresh`, {
-            method: "PUT",
-        }).pipe(
+    add(user: User): Observable<User> {
+        return rest.post('/users', user).pipe(
             switchMap(response => {
                 if (response.ok) {
-                    return response.json();
+                    return from(response.json());
                 } else {
-                    throw new HttpStatusError(response.status, `Error while refreshing token.`);
+                    return from(response.json()).pipe(switchMap(j =>
+                        throwError(() => new HttpStatusError(response.status, j.message))));
                 }
-            }),
-            map(user => this.save(user)),
-            catchError(err => {
-                localStorage.removeItem('user');
-                return throwError(err);
             }),
             take(1)
         );
     }
 
-    save(user: User): User {
-        const parsed = JSON.stringify(user);
-        localStorage.setItem('user', parsed);
-        return user;
+    update(user: User): Observable<User> {
+        return rest.put(`/users/${user._id}`, user).pipe(
+            switchMap(response => {
+                if (response.ok) {
+                    return from(response.json());
+                } else {
+                    return from(response.json()).pipe(switchMap(j =>
+                        throwError(() => new HttpStatusError(response.status, j.message))));
+                }
+            }),
+            take(1)
+        );
     }
 
-    get(): User | undefined {
-        const user = localStorage.getItem('user');
-        if (user) {
-            try {
-                return JSON.parse(user);
-            } catch (e) {
-                localStorage.removeItem('user');
-                throw e;
-            }
-        }
+    remove(id: string): Observable<User> {
+        return rest.delete(`/users/${id}`).pipe(
+            switchMap(response => {
+                if (response.ok) {
+                    return from(response.json());
+                } else {
+                    throw new HttpStatusError(response.status, `Error while unsubscribing user ${id}`);
+                }
+            }),
+            take(1)
+        );
+    }
+
+    bulkRemove(ids: string[]): Observable<User> {
+        const jsonPatch: OpPatch[] = [];
+        ids.forEach(id => jsonPatch.push({op: 'remove', path: `/users/${id}`}))
+        return rest.patch(`/users`, jsonPatch).pipe(
+            switchMap(response => {
+                if (response.ok) {
+                    return from(response.json());
+                } else {
+                    throw new HttpStatusError(response.status, `Error while unsubscribing feeds ${ids}`);
+                }
+            }),
+            take(1)
+        );
     }
 }
+
+export default new UserService();

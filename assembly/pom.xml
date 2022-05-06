@@ -6,7 +6,7 @@
     <parent>
         <groupId>fr.ght1pc9kc</groupId>
         <artifactId>baywatch</artifactId>
-        <version>0.1.0</version>
+        <version>1.0.0</version>
     </parent>
 
     <artifactId>assembly</artifactId>
@@ -44,7 +44,7 @@
                             <goal>single</goal>
                         </goals>
                         <configuration>
-                            <finalName>${project.name}-${project.version}</finalName>
+                            <finalName>${project.parent.artifactId}-${project.parent.version}</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                             <descriptorRefs>
                                 <descriptorRef>baywatch</descriptorRef>
@@ -52,6 +52,27 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <configuration>
+                    <to>
+                        <image>marthym/baywatch:${project.version}</image>
+                    </to>
+                    <container>
+                        <mainClass>fr.ght1pc9kc.baywatch.BaywatchApplication</mainClass>
+                        <environment>
+                            <BAYWATCH_HOME>/var/baywatch</BAYWATCH_HOME>
+                        </environment>
+                        <volumes>/var/baywatch</volumes>
+                        <jvmFlags>
+                            <jvmFlag>-server</jvmFlag>
+                            <jvmFlag>-Xms256m</jvmFlag>
+                            <jvmFlag>-Xmx512m</jvmFlag>
+                        </jvmFlags>
+                    </container>
+                </configuration>
             </plugin>
         </plugins>
     </build>

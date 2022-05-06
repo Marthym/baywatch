@@ -11,19 +11,29 @@ server:
   error:
     include-message: ALWAYS
 
-# Avoid infinite stacktrace due to reactor
 logging:
+  # Avoid infinite stacktrace due to reactor
   exception-conversion-word: "%wEx{full, reactor.core.publisher}"
   level:
     root: INFO
     org.jooq: WARN
-    fr.ght1pc9kc.baywatch: DEBUG
+    fr.ght1pc9kc.baywatch: ${BAYWATCH_LOG_LEVEL:DEBUG}
+    fr.ght1pc9kc.scraphead: ${BAYWATCH_LOG_LEVEL:DEBUG}
+    # Avoid unwanted log error ...
+    org.springframework.boot.autoconfigure.jooq.JooqExceptionTranslator: OFF
+    reactor.netty.http.client: ERROR
 
 baywatch:
   base-route: /api
   security:
-    cookie.name: X-TOKEN
-    jwt.validity: 1h
-  scrapper:
+    cookie:
+      name: X-TOKEN
+      validity: ${BAYWATCH_COOKIE_VALIDITY:24h}
+    jwt.validity: ${BAYWATCH_TOKEN_VALIDITY:1h}
+  scraper:
     start: true
-    frequency: 1h
+    frequency: ${BAYWATCH_SCRAPER_FREQUENCY:1h}
+    conservation: ${BAYWATCH_SCRAPER_CONSERVATION:3m}
+    timeout: ${BAYWATCH_SCRAPER_TIMEOUT:2s}
+    dns.timeout: ${BAYWATCH_DNS_TIMEOUT:10s}
+    dns.servers: ${BAYWATCH_DNS_SERVERS:}

@@ -1,0 +1,52 @@
+### /auth/login
+POST http://{{host}}/api/auth/login
+Content-Type: application/x-www-form-urlencoded
+
+username={{login}}&password={{password}}
+
+### Bulk Delete feeds
+PATCH http://{{host}}/api/feeds
+
+[
+  { "op": "remove", "path": "/feeds/26722e2a1658e3d3d27e9dcad9b192974b1b997eefb06948faab3bc8ed9309d8"},
+  { "op": "remove", "path": "/feeds/bf65c9d2128ef29a1f9037f8aebb1f5629769834ecb517952de1d5865aff5a34"},
+  { "op": "remove", "path": "/feeds/2d74d3c8063a252a666af515cbbeb54c59983c26225c2ca187654d4da749c0a4"}
+]
+
+### Import feeds
+POST http://{{host}}/api/feeds/import
+
+[
+    { "name": "A Java Geek", "url": "https://blog.frankel.ch/feed.xml",
+        "tags": ["java", "coding", "techno"]},
+    { "name": "Clubic High Tech", "url": "https://www.clubic.com/feed/news-pro.rss" ,
+        "tags": ["culture", "hight-tech"]},
+    { "name": "Clubic", "url": "https://www.clubic.com/feed/news.rss" ,
+        "tags": ["culture", "hight-tech"]},
+    { "name": "Debian Bits", "url": "https://bits.debian.org/feeds/feed.rss" ,
+        "tags": ["linux", "techno"]},
+    { "name": "Developpez.com", "url": "https://www.developpez.com/index/rss" ,
+        "tags": ["coding", "techno"]},
+    { "name": "ght1kp9kc.fr", "url": "https://blog.ght1pc9kc.fr/index.xml" ,
+        "tags": ["java", "techno", "culture"]},
+    { "name": "Human Coders", "url": "https://news.humancoders.com/items/feed.rss" ,
+        "tags": ["java", "coding", "techno"]},
+    { "name": "Journal Du Hacker", "url": "https://www.journalduhacker.net/rss" ,
+        "tags": ["culture", "techno"]},
+    { "name": "Sebosss", "url": "https://blog.seboss666.info/feed/" ,
+        "tags": ["culture", "techno"]},
+    { "name": "Le Monde", "url": "https://www.lemonde.fr/rss/une.xml" ,
+        "tags": ["culture", "general"]},
+    { "name": "Les Cast Codeurs", "url": "https://lescastcodeurs.libsyn.com/rss" ,
+        "tags": ["culture", "techno"]},
+    { "name": "OCTO Talk!", "url": "https://blog.octo.com/feed/" ,
+        "tags": ["culture", "techno"]},
+    { "name": "Presse Citron", "url": "https://feeds.feedburner.com/Pressecitron" ,
+        "tags": ["culture", "hight-tech"]},
+    { "name": "Reddit Top Java", "url": "https://www.reddit.com/r/java/top/.rss",
+        "tags": ["java", "techno", "coding"]},
+    { "name": "Reddit Top Programming", "url": "https://www.reddit.com/r/programming/top/.rss",
+        "tags": ["coding", "techno"]},
+    { "name": "Spring", "url": "https://spring.io/blog.atom",
+        "tags": ["java", "techno"]}
+]

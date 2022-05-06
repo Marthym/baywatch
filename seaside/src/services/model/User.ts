@@ -1,6 +1,19 @@
+import {UserRole} from "@/services/model/UserRole.enum";
+
 export type User = {
-    id: string;
+    _id?: string;
+    _createdAt?: string;
     login: string;
     name: string;
     mail: string;
+    role: UserRole;
+    password?: string;
+    confirm?: string;
 }
+
+export const ANONYMOUS: User = {
+    login: '',
+    name: 'Anonymous',
+    mail: '',
+    role: UserRole.ANONYMOUS,
+};

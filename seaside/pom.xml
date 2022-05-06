@@ -2,12 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>baywatch</artifactId>
         <groupId>fr.ght1pc9kc</groupId>
-        <version>0.1.0</version>
+        <version>1.0.0</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
 
     <artifactId>seaside</artifactId>
 
@@ -34,9 +34,10 @@
                         <id>NPM Install</id>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <executable>npm</executable>
+                            <executable>yarn</executable>
                             <arguments>
-                                <argument>ci</argument>
+                                <argument>install</argument>
+                                <argument>--frozen-lockfile</argument>
                             </arguments>
                         </configuration>
                         <goals>
@@ -47,9 +48,8 @@
                         <id>Webpack build</id>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <executable>npm</executable>
+                            <executable>yarn</executable>
                             <arguments>
-                                <argument>run</argument>
                                 <argument>build</argument>
                             </arguments>
                         </configuration>
@@ -78,6 +78,14 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <configuration>
+                    <!-- we don't want jib to execute on this module -->
+                    <skip>true</skip>
+                </configuration>
             </plugin>
         </plugins>
     </build>

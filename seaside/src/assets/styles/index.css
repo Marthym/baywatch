@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    .proposal-selected {
+        @apply bg-base-content bg-opacity-20;
+    }
+}

@@ -13,9 +13,9 @@ baywatch:
     start: false
 
 logging:
+  # Avoid infinite stacktrace due to reactor
+  exception-conversion-word: "%wEx{full, reactor.core.publisher}"
   level:
     root: OFF
-#    fr.ght1pc9kc: DEBUG
-#    reactor.netty.http.server.AccessLog: INFO
-#    org.springframework.boot.autoconfigure: DEBUG
-#    org.jooq: DEBUG
+    fr.ght1pc9kc.baywatch: OFF
+    fr.ght1pc9kc.scraphead: OFF

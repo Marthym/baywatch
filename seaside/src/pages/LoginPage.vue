@@ -1,58 +1,75 @@
 <template>
-  <div class="py-6">
-    <div class="flex bg-white rounded-lg shadow-lg overflow-hidden mx-auto max-w-sm lg:max-w-4xl">
-      <div class="hidden lg:block lg:w-1/2 bg-cover"
-           style="background-image:url('https://images.unsplash.com/photo-1546514714-df0ccc50d7bf?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=667&q=80')"></div>
-      <div class="w-full p-8 lg:w-1/2">
-        <h2 class="text-2xl font-semibold text-gray-700 text-center">Brand</h2>
-        <p class="text-xl text-gray-600 text-center">Welcome back!</p>
-        <div class="mt-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
-          <input v-model="username"
-                 class="bg-gray-200 text-gray-700
-                      focus:outline-none focus:shadow-outline
-                      border border-gray-300 rounded py-2 px-4 block w-full appearance-none"
-                 type="email">
-        </div>
-        <div class="mt-4">
-          <div class="flex justify-between">
-            <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-            <a href="#" class="text-xs text-gray-500">Forget Password?</a>
+  <div class="absolute inset-0 z-50 h-screen w-screen backdrop-filter bg-neutral lg:bg-opacity-90"
+       @click.prevent="closeLoginWindow" @keydown.esc="closeLoginWindow">
+    <div class="card bordered flex rounded-none overflow-hidden h-full
+                lg:rounded-lg lg:shadow-lg lg:h-fit lg:mt-8 mx-auto lg:card-side lg:max-w-4xl"
+         @click.stop>
+      <img class="object-cover" src="/login.webp" alt="Baywatch">
+      <div class="card-body">
+        <form @submit.prevent="onLogin">
+          <h2 class="card-title">Baywatch</h2>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Email Address</span></label>
+            <input ref="usrInput" v-model="username" class="input input-bordered" type="text" placeholder="Username"
+                   tabindex="1"
+                   :class="{'input-error': usernameError}">
           </div>
-          <input v-model="password"
-                 class="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none"
-                 type="password">
-        </div>
-        <div class="mt-8">
-          <button v-on:click="onLogin"
-                  class="bg-gray-700 text-white font-bold py-2 px-4 w-full rounded hover:bg-gray-600">Login
-          </button>
-        </div>
-        <!--        <div class="mt-4 flex items-center justify-between">-->
-        <!--          <span class="border-b w-1/5 md:w-1/4"></span>-->
-        <!--          <a href="#" class="text-xs text-gray-500 uppercase">or sign up</a>-->
-        <!--          <span class="border-b w-1/5 md:w-1/4"></span>-->
-        <!--        </div>-->
+          <div class="form-control mt-4">
+            <label class="label"><span class="label-text">Password</span>
+              <a href="#" class="label-text-alt">Forget password ?</a></label>
+            <input v-model="password" class="input input-bordered" type="password" placeholder="Password" tabindex="2"
+                   :class="{'input-error': passwordError}">
+            <button type="submit" class="btn btn-primary mt-4" tabindex="3">Se connecter</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
-import UserService from "@/services/UserService";
+import {Options, Vue} from 'vue-property-decorator';
+import {setup} from "vue-class-component";
+import {useStore} from "vuex";
+import {UPDATE_MUTATION} from "@/store/user/UserConstants";
 
-@Component
-export default class LoginWindow extends Vue {
-  private userService: UserService = new UserService(process.env.VUE_APP_API_BASE_URL);
+import authenticationService from "@/services/AuthenticationService";
+import {useRouter} from "vue-router";
+
+@Options({name: 'LoginPage'})
+export default class LoginPage extends Vue {
+  private store = setup(() => useStore());
+  private router = setup(() => useRouter());
 
   public username = '';
   public password = '';
+  private formValidation = false;
 
-  onLogin(): void {
-    this.userService.login(this.username, this.password)
-        .subscribe(() => this.$router.push("/"));
+  mounted(): void {
+    (this.$refs.usrInput as HTMLElement).focus();
   }
 
+  onLogin(): void {
+    if (this.username !== '' && this.password !== '') {
+      authenticationService.login(this.username, this.password).subscribe(user => {
+        this.store.commit(UPDATE_MUTATION, user);
+        this.router.back();
+      });
+    } else {
+      this.formValidation = true;
+    }
+  }
+
+  get usernameError(): boolean {
+    return this.username === '' && this.formValidation;
+  }
+
+  get passwordError(): boolean {
+    return this.password === '' && this.formValidation;
+  }
+
+  public closeLoginWindow(): void {
+    this.router.back();
+  }
 }
 </script>

@@ -1,34 +1,37 @@
 <template>
-  <div class="mt-8" v-if="user.id">
-    <!-- User info -->
-    <img class="h-12 w-12 rounded-full object-cover"
+  <div class="flex mt-5 text-primary-content" v-if="userState.isAuthenticated">
+    <img class="h-12 w-12 mr-2 rounded-full object-cover"
          :src="avatar"
-         alt="enoshima profile"/>
-    <h2 class="mt-4 text-xl dark:text-gray-300 font-extrabold capitalize">
-      {{ user.name }}
-    </h2>
-    <span class="text-sm dark:text-gray-300">
-				<span class="font-semibold text-green-600 dark:text-green-300">Admin</span>
-      {{ user.id }}
+         :alt="userState.user.login"/>
+    <div>
+      <h2 class="text-xl font-extrabold capitalize">
+        {{ userState.user.name }}
+      </h2>
+      <span class="text-sm">
+				<span class="italic">{{ userState.user.login }}</span>
+        <span v-if="userState.user.role !== 'USER'" class="capitalize text-neutral-content italic"> ({{ userState.user.role.toLowerCase() }})</span>
     </span>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
+import {Options, Vue} from 'vue-property-decorator';
 import md5 from "js-md5";
-import {User} from "@/services/model/User";
+import {setup} from "vue-class-component";
+import {useStore} from "vuex";
+import {UserState} from "@/store/user/user";
 
-@Component
+@Options({name: 'SideNavUserInfo'})
 export default class SideNavUserInfo extends Vue {
-  @Prop() private user?: User;
+  private userState: UserState = setup(() => useStore().state.user);
 
   get avatar(): string {
     let hash = "0";
-    if (this.user?.mail !== undefined) {
-      hash = md5(this.user.mail);
+    if (this.userState.user.mail !== '') {
+      hash = md5(this.userState.user.mail);
     }
-    return `https://www.gravatar.com/avatar/${hash}?s=48`;
+    return `https://www.gravatar.com/avatar/${hash}?s=48&d=retro`;
   }
 }
 </script>

@@ -30,18 +30,6 @@
     </dependencySets>
 
     <fileSets>
-<!--        <fileSet>-->
-<!--            <useDefaultExcludes>false</useDefaultExcludes>-->
-<!--            <fileMode>0644</fileMode>-->
-<!--            <directory>${project.build.directory}</directory>-->
-<!--            <excludes>-->
-<!--                <exclude>*-sources.jar</exclude>-->
-<!--            </excludes>-->
-<!--            <includes>-->
-<!--                <include>*.jar</include>-->
-<!--            </includes>-->
-<!--            <outputDirectory/>-->
-<!--        </fileSet>-->
         <fileSet>
             <fileMode>0755</fileMode>
             <directory>src/shell</directory>
