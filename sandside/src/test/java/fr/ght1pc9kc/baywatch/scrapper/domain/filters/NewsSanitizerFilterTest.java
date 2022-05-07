@@ -30,7 +30,7 @@ class NewsSanitizerFilterTest {
                 .assertNext(actual -> Assertions.assertThat(actual.getTitle()).isEqualTo(
                         "Illagal tag usageIllagal tag usageLorem ipsum dolor sit amet, consectetur adipiscing " +
                                 "elit, sed do eiusmod tempor incididunt ut labore et\n" +
-                                "dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exerc"))
+                                "dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exerci"))
                 .verifyComplete();
     }
 
@@ -51,7 +51,7 @@ class NewsSanitizerFilterTest {
                                         "mollit anim id est laborum.\n" +
                                         "Illagal tag usageIllagal tag usage<p>Lorem ipsum dolor sit amet")
                         .endsWith("quis nostrud exercitation ullamco laboris nisi ut aliquip ex\n" +
-                                "ea commodo consequat. Duis aute</p>"))
+                                "ea commodo consequat. Duis aute </p>"))
                 .verifyComplete();
     }
 }

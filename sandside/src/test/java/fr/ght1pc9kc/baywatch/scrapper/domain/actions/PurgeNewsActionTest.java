@@ -39,7 +39,7 @@ class PurgeNewsActionTest {
     void setUp() {
         final ScraperProperties scraperProperties = new ScraperProperties(
                 true, Duration.ofHours(1), Period.ofMonths(5), Duration.ofSeconds(10),
-                new ScraperProperties.DnsProperties(Duration.ofSeconds(10), List.of())
+                new ScraperProperties.DnsProperties(Duration.ofSeconds(10))
         );
         newsPersistenceMock = mock(NewsPersistencePort.class);
         StatePersistencePort statePersistenceMock = mock(StatePersistencePort.class);
