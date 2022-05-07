@@ -36,4 +36,3 @@ baywatch:
     conservation: ${BAYWATCH_SCRAPER_CONSERVATION:3m}
     timeout: ${BAYWATCH_SCRAPER_TIMEOUT:2s}
     dns.timeout: ${BAYWATCH_DNS_TIMEOUT:10s}
-    dns.servers: ${BAYWATCH_DNS_SERVERS:}
