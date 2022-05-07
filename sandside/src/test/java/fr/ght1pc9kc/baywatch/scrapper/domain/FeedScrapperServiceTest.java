@@ -52,7 +52,7 @@ class FeedScrapperServiceTest {
 
     static final ScraperProperties SCRAPER_PROPERTIES = new ScraperProperties(
             true, Duration.ofDays(1), Period.ofDays(30), Duration.ofSeconds(2),
-            new ScraperProperties.DnsProperties(Duration.ofSeconds(10), List.of())
+            new ScraperProperties.DnsProperties(Duration.ofSeconds(10))
     );
 
     @SuppressWarnings({"Convert2Lambda", "Anonymous2MethodRef"})
