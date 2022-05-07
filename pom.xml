@@ -12,7 +12,7 @@
 
     <groupId>fr.ght1pc9kc</groupId>
     <artifactId>baywatch</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <name>baywatch</name>
     <packaging>pom</packaging>
 
