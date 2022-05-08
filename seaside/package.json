@@ -6,7 +6,7 @@
     "test": "jest",
     "lint": "eslint --fix --ext .js,.vue --ignore-path .gitignore src",
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build --mode production",
     "preview": "vite preview"
   },
   "dependencies": {
