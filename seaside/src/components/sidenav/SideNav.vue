@@ -8,6 +8,7 @@
 
     <SideNavFilters v-if="user.isAuthenticated"/>
     <SideNavManagement @logout="logoutUser()"/>
+    <span class="text-xs text-neutral font-bold mx-auto -mb-3">{{ VERSION }}</span>
   </aside>
 </template>
 
@@ -38,6 +39,8 @@ import serverEventService from '@/techwatch/services/ServerEventService'
   },
 })
 export default class SideNav extends Vue {
+  private readonly VERSION = import.meta.env.VITE_BW_VERSION;
+
   private router = setup(() => useRouter());
   private store = setup(() => useStore());
   private state: SidenavState = setup(() => useStore().state.sidenav);
