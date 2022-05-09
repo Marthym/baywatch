@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.admin.api;
+package fr.ght1pc9kc.baywatch.techwatch.api;
 
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;

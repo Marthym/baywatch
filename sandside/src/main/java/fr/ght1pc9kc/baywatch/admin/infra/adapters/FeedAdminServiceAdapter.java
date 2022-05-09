@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.admin.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.admin.api.FeedAdminService;
-import fr.ght1pc9kc.baywatch.admin.domain.FeedAdminServiceImpl;
+import fr.ght1pc9kc.baywatch.techwatch.api.FeedAdminService;
+import fr.ght1pc9kc.baywatch.techwatch.domain.FeedAdminServiceImpl;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.infra.persistence.FeedRepository;
 import lombok.experimental.Delegate;

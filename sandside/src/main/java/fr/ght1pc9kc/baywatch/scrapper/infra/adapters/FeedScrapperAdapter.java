@@ -7,6 +7,7 @@ import fr.ght1pc9kc.baywatch.scrapper.api.ScrappingHandler;
 import fr.ght1pc9kc.baywatch.scrapper.domain.FeedScrapperService;
 import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScraperQualifier;
 import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScraperProperties;
+import fr.ght1pc9kc.baywatch.techwatch.api.FeedAdminService;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import lombok.SneakyThrows;
@@ -28,7 +29,7 @@ public class FeedScrapperAdapter {
     private final FeedScrapperService scrapper;
     private final boolean startScrapper;
 
-    public FeedScrapperAdapter(FeedPersistencePort feedPersistence, NewsPersistencePort newsPersistence,
+    public FeedScrapperAdapter(FeedAdminService feedAdminService, NewsPersistencePort newsPersistence,
                                ScraperProperties properties,
                                RssAtomParser rssAtomParser,
                                Collection<ScrappingHandler> scrappingHandlers,
@@ -40,7 +41,7 @@ public class FeedScrapperAdapter {
                 .collect(Collectors.toUnmodifiableMap(FeedScrapperPlugin::pluginForDomain, Function.identity()));
         this.startScrapper = properties.start();
         this.scrapper = new FeedScrapperService(
-                properties, feedPersistence, newsPersistence, webClient,
+                properties, feedAdminService, newsPersistence, webClient,
                 rssAtomParser, scrappingHandlers, plugins, newsFilters);
     }
 

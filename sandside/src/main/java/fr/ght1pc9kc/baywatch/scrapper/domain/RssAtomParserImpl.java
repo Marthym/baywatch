@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.scrapper.domain;
 import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import lombok.extern.slf4j.Slf4j;
 import org.owasp.html.PolicyFactory;
@@ -57,7 +57,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
     }
 
     @Override
-    public Mono<RawNews> readEntryEvents(List<XMLEvent> events, Feed feed) {
+    public Mono<RawNews> readEntryEvents(List<XMLEvent> events, RawFeed feed) {
         RawNews.RawNewsBuilder bldr = null;
         for (int i = 0; i < events.size(); i++) {
             final XMLEvent nextEvent = events.get(i);
@@ -122,7 +122,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
         }
     }
 
-    private RawNews.RawNewsBuilder onLink(RawNews.RawNewsBuilder bldr, Feed feed,
+    private RawNews.RawNewsBuilder onLink(RawNews.RawNewsBuilder bldr, RawFeed feed,
                                           List<XMLEvent> events, int idx) {
         if (bldr == null) {
             return null;

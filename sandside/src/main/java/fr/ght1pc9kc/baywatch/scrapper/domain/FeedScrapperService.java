@@ -7,11 +7,11 @@ import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scrapper.api.ScrappingHandler;
 import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScraperProperties;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.techwatch.api.FeedAdminService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
-import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import lombok.AccessLevel;
 import lombok.Setter;
@@ -62,7 +62,7 @@ public final class FeedScrapperService implements Runnable {
     private final WebClient http;
 
     private final ScraperProperties properties;
-    private final FeedPersistencePort feedRepository;
+    private final FeedAdminService feedAdminService;
     private final NewsPersistencePort newsRepository;
     private final RssAtomParser feedParser;
     private final Collection<ScrappingHandler> scrappingHandlers;
@@ -74,14 +74,14 @@ public final class FeedScrapperService implements Runnable {
     private Clock clock = Clock.systemUTC();
 
     public FeedScrapperService(ScraperProperties properties,
-                               FeedPersistencePort feedRepository, NewsPersistencePort newsRepository,
+                               FeedAdminService feedAdminService, NewsPersistencePort newsRepository,
                                WebClient webClient, RssAtomParser feedParser,
                                Collection<ScrappingHandler> scrappingHandlers,
                                Map<String, FeedScrapperPlugin> plugins,
                                List<NewsFilter> newsFilters
     ) {
         this.properties = properties;
-        this.feedRepository = feedRepository;
+        this.feedAdminService = feedAdminService;
         this.newsRepository = newsRepository;
         this.feedParser = feedParser;
         this.scrappingHandlers = scrappingHandlers;
@@ -129,7 +129,7 @@ public final class FeedScrapperService implements Runnable {
                 .cache();
 
         Flux.concat(scrappingHandlers.stream().map(ScrappingHandler::before).toList())
-                .thenMany(feedRepository.list())
+                .thenMany(feedAdminService.list())
                 .parallel(4).runOn(scraperScheduler)
                 .concatMap(this::wgetFeedNews)
                 .sequential()
@@ -157,7 +157,7 @@ public final class FeedScrapperService implements Runnable {
                 .subscribe();
     }
 
-    private Flux<News> wgetFeedNews(Feed feed) {
+    private Flux<News> wgetFeedNews(RawFeed feed) {
         String feedHost = feed.getUrl().getHost();
         FeedScrapperPlugin hostPlugin = plugins.get(feedHost);
         URI feedUrl = (hostPlugin != null) ? hostPlugin.uriModifier(feed.getUrl()) : feed.getUrl();

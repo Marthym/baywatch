@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.api.model;
 
-import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
+import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,7 +27,7 @@ public final class RoleUtils {
 
     public static User hasRoleOrThrow(User user, @NotNull Role expectedRole) {
         if (!hasRole(user, expectedRole)) {
-            throw new UnauthorizedOperation(String.format("%s have no authority for getting raw feed !", user.login));
+            throw new UnauthorizedException(String.format("%s have no authority for getting raw feed !", user.login));
         }
         return user;
     }

@@ -4,10 +4,10 @@ import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.scrapper.api.NewsFilter;
 import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScraperProperties;
+import fr.ght1pc9kc.baywatch.techwatch.api.FeedAdminService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
-import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import org.awaitility.Awaitility;
 import org.jetbrains.annotations.NotNull;
@@ -66,7 +66,7 @@ class FeedScrapperServiceTest {
     private FeedScrapperService tested;
     private NewsPersistencePort newsPersistenceMock;
     private RssAtomParser rssAtomParserMock;
-    private FeedPersistencePort feedPersistenceMock;
+    private FeedAdminService feedAdminServiceMock;
     private ExchangeFunction mockExchangeFunction;
 
     @Test
@@ -80,7 +80,7 @@ class FeedScrapperServiceTest {
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/journal_du_hacker.xml")));
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/spring-blog.xml")));
 
-        verify(rssAtomParserMock, times(2)).readEntryEvents(any(), any(Feed.class));
+        verify(rssAtomParserMock, times(2)).readEntryEvents(any(), any(RawFeed.class));
         verify(newsPersistenceMock,
                 times(1).description("Expect only one call because of the buffer to 100")
         ).persist(anyCollection());
@@ -94,18 +94,18 @@ class FeedScrapperServiceTest {
         String darthVaderSha3 = Hasher.identify(darthVaderUri);
         String springSha3 = Hasher.identify(springUri);
 
-        reset(feedPersistenceMock);
-        when(feedPersistenceMock.list()).thenReturn(Flux.just(
-                Feed.builder().raw(RawFeed.builder()
+        reset(feedAdminServiceMock);
+        when(feedAdminServiceMock.list()).thenReturn(Flux.just(
+                RawFeed.builder()
                         .id(darthVaderSha3)
                         .name("fail")
                         .url(darthVaderUri)
-                        .build()).name("fail").build(),
-                Feed.builder().raw(RawFeed.builder()
+                        .build(),
+                RawFeed.builder()
                         .id(springSha3)
                         .name("Spring")
                         .url(springUri)
-                        .build()).name("Spring").build()
+                        .build()
         ));
 
         tested.startScrapping();
@@ -117,7 +117,7 @@ class FeedScrapperServiceTest {
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/error/darth-vader.xml")));
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/spring-blog.xml")));
 
-        verify(rssAtomParserMock, times(1)).readEntryEvents(any(), any(Feed.class));
+        verify(rssAtomParserMock, times(1)).readEntryEvents(any(), any(RawFeed.class));
         verify(newsPersistenceMock,
                 times(1).description("Expect only one call because of the buffer of 100")
         ).persist(anyCollection());
@@ -138,13 +138,13 @@ class FeedScrapperServiceTest {
 
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/journal_du_hacker.xml")));
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/spring-blog.xml")));
-        verify(rssAtomParserMock, times(2)).readEntryEvents(any(), any(Feed.class));
+        verify(rssAtomParserMock, times(2)).readEntryEvents(any(), any(RawFeed.class));
     }
 
     @Test
     void should_fail_on_unsupported_scheme() {
-        reset(feedPersistenceMock);
-        when(feedPersistenceMock.list()).thenAnswer((Answer<Flux<Feed>>) invocationOnMock -> Flux.just(
+        reset(feedAdminServiceMock);
+        when(feedAdminServiceMock.list()).thenAnswer((Answer<Flux<Feed>>) invocationOnMock -> Flux.just(
                 Feed.builder().raw(RawFeed.builder()
                         .id("0")
                         .name("Unsupported")
@@ -184,7 +184,7 @@ class FeedScrapperServiceTest {
             }
 
             @Override
-            public Mono<RawNews> readEntryEvents(List<XMLEvent> events, Feed feed) {
+            public Mono<RawNews> readEntryEvents(List<XMLEvent> events, RawFeed feed) {
                 if (feed.getName().equals("Reddit")) {
                     return Mono.just(RawNews.builder()
                             .id(Hasher.sha3(feed.getName() + "01"))
@@ -209,22 +209,22 @@ class FeedScrapperServiceTest {
         String springSha3 = Hasher.identify(springUri);
         String jdhSha3 = Hasher.identify(jdhUri);
 
-        feedPersistenceMock = mock(FeedPersistencePort.class);
-        when(feedPersistenceMock.list()).thenAnswer((Answer<Flux<Feed>>) invocationOnMock -> Flux.just(
-                Feed.builder().raw(RawFeed.builder()
+        feedAdminServiceMock = mock(FeedAdminService.class);
+        when(feedAdminServiceMock.list()).thenAnswer((Answer<Flux<RawFeed>>) invocationOnMock -> Flux.just(
+                RawFeed.builder()
                         .id(jdhSha3)
                         .name("Reddit")
                         .url(jdhUri)
-                        .build()).name("Reddit").build(),
-                Feed.builder().raw(RawFeed.builder()
+                        .build(),
+                RawFeed.builder()
                         .id(springSha3)
                         .name("Spring")
                         .url(springUri)
-                        .build()).name("Spring").build()
+                        .build()
         ));
 
         tested = new FeedScrapperService(SCRAPER_PROPERTIES,
-                feedPersistenceMock, newsPersistenceMock, mockWebClient, rssAtomParserMock,
+                feedAdminServiceMock, newsPersistenceMock, mockWebClient, rssAtomParserMock,
                 Collections.emptyList(), Map.of(), List.of(mockNewsFilter));
         tested.setClock(Clock.fixed(Instant.parse("2022-04-30T12:35:41Z"), ZoneOffset.UTC));
     }

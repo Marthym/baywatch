@@ -1,10 +1,9 @@
-package fr.ght1pc9kc.baywatch.admin.domain;
+package fr.ght1pc9kc.baywatch.techwatch.domain;
 
-import fr.ght1pc9kc.baywatch.admin.api.FeedAdminService;
+import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
-import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
+import fr.ght1pc9kc.baywatch.techwatch.api.FeedAdminService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
@@ -50,7 +49,7 @@ class FeedAdminServiceImplTest {
     @Test
     void should_get_feed_as_user() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
-        StepVerifier.create(tested.get("42")).verifyError(UnauthorizedOperation.class);
+        StepVerifier.create(tested.get("42")).verifyError(UnauthorizedException.class);
     }
 
     @Test
@@ -65,13 +64,13 @@ class FeedAdminServiceImplTest {
     @Test
     void should_list_feed_for_anonymous() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.empty());
-        StepVerifier.create(tested.list()).verifyError(UnauthenticatedUser.class);
+        StepVerifier.create(tested.list()).verifyError(UnauthorizedException.class);
     }
 
     @Test
     void should_list_feed_for_user() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
-        StepVerifier.create(tested.list()).verifyError(UnauthorizedOperation.class);
+        StepVerifier.create(tested.list()).verifyError(UnauthorizedException.class);
     }
 
     @Test
@@ -103,7 +102,7 @@ class FeedAdminServiceImplTest {
     @Test
     void should_delete_feed_for_user() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
-        StepVerifier.create(tested.delete(List.of(FeedRecordSamples.JEDI.getFeedId()))).verifyError(UnauthorizedOperation.class);
+        StepVerifier.create(tested.delete(List.of(FeedRecordSamples.JEDI.getFeedId()))).verifyError(UnauthorizedException.class);
     }
 
     @Test
