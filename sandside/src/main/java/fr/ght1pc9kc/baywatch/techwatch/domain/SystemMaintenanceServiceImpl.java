@@ -63,11 +63,11 @@ public class SystemMaintenanceServiceImpl implements SystemMaintenanceService {
     }
 
     @Override
-    public Mono<Integer> newsOrphanize(Collection<String> toOrphanize) {
+    public Mono<Integer> newsLoad(Collection<News> toLoad) {
         return authFacade.getConnectedUser()
                 .filter(user -> Role.SYSTEM == user.self.role)
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(EXCEPTION_MESSAGE)))
-                .flatMap(user -> newsRepository.unlink(toOrphanize));
+                .flatMap(user -> newsRepository.persist(toLoad));
     }
 
     @Override

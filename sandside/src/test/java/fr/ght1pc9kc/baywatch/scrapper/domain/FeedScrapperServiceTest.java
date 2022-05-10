@@ -3,12 +3,11 @@ package fr.ght1pc9kc.baywatch.scrapper.domain;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.scrapper.api.NewsFilter;
 import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
-import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScraperProperties;
-import fr.ght1pc9kc.baywatch.techwatch.api.FeedAdminService;
+import fr.ght1pc9kc.baywatch.scrapper.domain.model.ScraperConfig;
+import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
-import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import org.awaitility.Awaitility;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +41,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -50,9 +48,8 @@ import static org.mockito.Mockito.when;
 
 class FeedScrapperServiceTest {
 
-    static final ScraperProperties SCRAPER_PROPERTIES = new ScraperProperties(
-            true, Duration.ofDays(1), Period.ofDays(30), Duration.ofSeconds(2),
-            new ScraperProperties.DnsProperties(Duration.ofSeconds(10))
+    static final ScraperConfig SCRAPER_PROPERTIES = new ScraperConfig(
+            Duration.ofDays(1), Period.ofDays(30)
     );
 
     @SuppressWarnings({"Convert2Lambda", "Anonymous2MethodRef"})
@@ -64,9 +61,8 @@ class FeedScrapperServiceTest {
     });
 
     private FeedScrapperService tested;
-    private NewsPersistencePort newsPersistenceMock;
     private RssAtomParser rssAtomParserMock;
-    private FeedAdminService feedAdminServiceMock;
+    private SystemMaintenanceService systemMaintenanceMock;
     private ExchangeFunction mockExchangeFunction;
 
     @Test
@@ -81,9 +77,9 @@ class FeedScrapperServiceTest {
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/spring-blog.xml")));
 
         verify(rssAtomParserMock, times(2)).readEntryEvents(any(), any(RawFeed.class));
-        verify(newsPersistenceMock,
+        verify(systemMaintenanceMock,
                 times(1).description("Expect only one call because of the buffer to 100")
-        ).persist(anyCollection());
+        ).newsLoad(anyCollection());
         verify(mockNewsFilter, times(2)).filter(any());
     }
 
@@ -94,8 +90,7 @@ class FeedScrapperServiceTest {
         String darthVaderSha3 = Hasher.identify(darthVaderUri);
         String springSha3 = Hasher.identify(springUri);
 
-        reset(feedAdminServiceMock);
-        when(feedAdminServiceMock.list()).thenReturn(Flux.just(
+        when(systemMaintenanceMock.feedList()).thenReturn(Flux.just(
                 RawFeed.builder()
                         .id(darthVaderSha3)
                         .name("fail")
@@ -118,17 +113,16 @@ class FeedScrapperServiceTest {
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/spring-blog.xml")));
 
         verify(rssAtomParserMock, times(1)).readEntryEvents(any(), any(RawFeed.class));
-        verify(newsPersistenceMock,
+        verify(systemMaintenanceMock,
                 times(1).description("Expect only one call because of the buffer of 100")
-        ).persist(anyCollection());
+        ).newsLoad(anyCollection());
     }
 
     @Test
     void should_fail_on_persistence() {
-        reset(newsPersistenceMock);
-        when(newsPersistenceMock.persist(anyCollection())).thenReturn(Mono.error(new RuntimeException("Persistence failure simulation"))
+        when(systemMaintenanceMock.newsLoad(anyCollection())).thenReturn(Mono.error(new RuntimeException("Persistence failure simulation"))
                 .then(Mono.just(1)));
-        when(newsPersistenceMock.list()).thenReturn(Flux.empty());
+        when(systemMaintenanceMock.newsList(any())).thenReturn(Flux.empty());
 
         tested.startScrapping();
         Awaitility.await("for scrapping begin").timeout(Duration.ofSeconds(5))
@@ -143,14 +137,13 @@ class FeedScrapperServiceTest {
 
     @Test
     void should_fail_on_unsupported_scheme() {
-        reset(feedAdminServiceMock);
-        when(feedAdminServiceMock.list()).thenAnswer((Answer<Flux<Feed>>) invocationOnMock -> Flux.just(
+        when(systemMaintenanceMock.feedList()).thenAnswer((Answer<Flux<Feed>>) invocationOnMock -> Flux.just(
                 Feed.builder().raw(RawFeed.builder()
                         .id("0")
                         .name("Unsupported")
                         .url(URI.create("file://localhost/.env"))
                         .build()).name("Reddit").build()
-        ).delayElements(Duration.ofMillis(100))); // Delay avoid Awaitility start polling after the and of scraping
+        ).delayElements(Duration.ofMillis(100)));  // Delay avoid Awaitility start polling after the and of scraping
 
         tested.startScrapping();
         Awaitility.await("for scraping begin").timeout(Duration.ofSeconds(5))
@@ -160,14 +153,15 @@ class FeedScrapperServiceTest {
 
         verify(mockExchangeFunction, never()).exchange(any());
         verify(rssAtomParserMock, never()).readEntryEvents(any(), any());
-        verify(newsPersistenceMock, never()).persist(anyCollection());
+        verify(systemMaintenanceMock, never()).newsLoad(anyCollection());
     }
 
     @BeforeEach
     void setUp() {
-        newsPersistenceMock = mock(NewsPersistencePort.class);
-        when(newsPersistenceMock.list()).thenReturn(Flux.empty());
-        when(newsPersistenceMock.persist(anyCollection())).thenReturn(Mono.just(1));
+        systemMaintenanceMock = mock(SystemMaintenanceService.class);
+        when(systemMaintenanceMock.newsList(any())).thenReturn(Flux.<RawNews>empty()
+                .delayElements(Duration.ofMillis(200)));  // Delay avoid Awaitility start polling after the and of scraping
+        when(systemMaintenanceMock.newsLoad(anyCollection())).thenReturn(Mono.just(1));
 
         mockExchangeFunction = spy(new MockExchangeFunction());
         WebClient mockWebClient = WebClient.builder().exchangeFunction(mockExchangeFunction).build();
@@ -209,8 +203,7 @@ class FeedScrapperServiceTest {
         String springSha3 = Hasher.identify(springUri);
         String jdhSha3 = Hasher.identify(jdhUri);
 
-        feedAdminServiceMock = mock(FeedAdminService.class);
-        when(feedAdminServiceMock.list()).thenAnswer((Answer<Flux<RawFeed>>) invocationOnMock -> Flux.just(
+        when(systemMaintenanceMock.feedList()).thenAnswer((Answer<Flux<RawFeed>>) invocationOnMock -> Flux.just(
                 RawFeed.builder()
                         .id(jdhSha3)
                         .name("Reddit")
@@ -224,7 +217,7 @@ class FeedScrapperServiceTest {
         ));
 
         tested = new FeedScrapperService(SCRAPER_PROPERTIES,
-                feedAdminServiceMock, newsPersistenceMock, mockWebClient, rssAtomParserMock,
+                systemMaintenanceMock, mockWebClient, rssAtomParserMock,
                 Collections.emptyList(), Map.of(), List.of(mockNewsFilter));
         tested.setClock(Clock.fixed(Instant.parse("2022-04-30T12:35:41Z"), ZoneOffset.UTC));
     }

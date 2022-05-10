@@ -1,13 +1,13 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
+import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
+import fr.ght1pc9kc.baywatch.common.domain.Hasher;
+import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
-import fr.ght1pc9kc.baywatch.common.domain.Hasher;
-import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
-import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
-import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
-import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
@@ -194,7 +194,7 @@ class FeedRepositoryTest {
 
         {
             int countUser = dsl.fetchCount(FEEDS_USERS, FEEDS_USERS.FEUS_FEED_ID.in(ids));
-            assertThat(countUser).isEqualTo(0);
+            assertThat(countUser).isZero();
         }
     }
 

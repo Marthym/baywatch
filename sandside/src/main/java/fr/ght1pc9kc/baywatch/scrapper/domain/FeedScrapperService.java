@@ -5,14 +5,14 @@ import fr.ght1pc9kc.baywatch.scrapper.api.FeedScrapperPlugin;
 import fr.ght1pc9kc.baywatch.scrapper.api.NewsFilter;
 import fr.ght1pc9kc.baywatch.scrapper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scrapper.api.ScrappingHandler;
-import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScraperProperties;
+import fr.ght1pc9kc.baywatch.scrapper.domain.model.ScraperConfig;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.techwatch.api.FeedAdminService;
+import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
-import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
+import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -61,9 +61,8 @@ public final class FeedScrapperService implements Runnable {
     private final Semaphore lock = new Semaphore(1);
     private final WebClient http;
 
-    private final ScraperProperties properties;
-    private final FeedAdminService feedAdminService;
-    private final NewsPersistencePort newsRepository;
+    private final ScraperConfig properties;
+    private final SystemMaintenanceService systemMaintenanceService;
     private final RssAtomParser feedParser;
     private final Collection<ScrappingHandler> scrappingHandlers;
     private final Map<String, FeedScrapperPlugin> plugins;
@@ -73,16 +72,15 @@ public final class FeedScrapperService implements Runnable {
     @Setter(value = AccessLevel.PACKAGE, onMethod = @__({@VisibleForTesting}))
     private Clock clock = Clock.systemUTC();
 
-    public FeedScrapperService(ScraperProperties properties,
-                               FeedAdminService feedAdminService, NewsPersistencePort newsRepository,
+    public FeedScrapperService(ScraperConfig properties,
+                               SystemMaintenanceService systemMaintenanceService,
                                WebClient webClient, RssAtomParser feedParser,
                                Collection<ScrappingHandler> scrappingHandlers,
                                Map<String, FeedScrapperPlugin> plugins,
                                List<NewsFilter> newsFilters
     ) {
         this.properties = properties;
-        this.feedAdminService = feedAdminService;
-        this.newsRepository = newsRepository;
+        this.systemMaintenanceService = systemMaintenanceService;
         this.feedParser = feedParser;
         this.scrappingHandlers = scrappingHandlers;
         this.plugins = plugins;
@@ -116,45 +114,51 @@ public final class FeedScrapperService implements Runnable {
     }
 
     @Override
-    @SneakyThrows
     public void run() {
-        if (!lock.tryAcquire()) {
-            log.warn("Scraping in progress !");
-            return;
+        try {
+            if (!lock.tryAcquire()) {
+                log.warn("Scraping in progress !");
+                return;
+            }
+            log.info("Start scraping ...");
+            Mono<Set<String>> alreadyHave = systemMaintenanceService.newsList(PageRequest.all())
+                    .map(RawNews::getId)
+                    .collect(Collectors.toUnmodifiableSet())
+                    .cache();
+
+            Flux.concat(scrappingHandlers.stream().map(ScrappingHandler::before).toList())
+                    .thenMany(systemMaintenanceService.feedList())
+                    .parallel(4).runOn(scraperScheduler)
+                    .concatMap(this::wgetFeedNews)
+                    .sequential()
+
+                    .filterWhen(n -> alreadyHave.map(l -> !l.contains(n.getId())))
+                    .parallel(4).runOn(scraperScheduler)
+                    .concatMap(this::applyNewsFilters)
+                    .sequential()
+
+                    .filterWhen(n -> alreadyHave.map(l -> !l.contains(n.getId())))
+                    .buffer(100)
+                    .flatMap(systemMaintenanceService::newsLoad)
+
+                    .reduce(Integer::sum)
+                    .flatMap(count -> Flux.concat(scrappingHandlers.stream().map(h -> h.after(count)).toList()).then())
+                    .doOnError(e -> {
+                        log.error(ERROR_CLASS_MESSAGE, e.getClass(), e.getLocalizedMessage());
+                        log.debug(ERROR_STACKTRACE_MESSAGE, e);
+                    })
+                    .doFinally(signal -> {
+                        lock.release();
+                        log.info("Scraping terminated successfully !");
+                    })
+                    .contextWrite(AuthenticationFacade.withSystemAuthentication())
+                    .subscribe();
+        } catch (Exception e) {
+            lock.release();
+            log.error("Scraping terminated on error !");
+            log.error(ERROR_CLASS_MESSAGE, e.getClass(), e.getLocalizedMessage());
+            log.debug(ERROR_STACKTRACE_MESSAGE, e);
         }
-        log.info("Start scraping ...");
-        Mono<Set<String>> alreadyHave = newsRepository.list()
-                .map(News::getId)
-                .collect(Collectors.toUnmodifiableSet())
-                .cache();
-
-        Flux.concat(scrappingHandlers.stream().map(ScrappingHandler::before).toList())
-                .thenMany(feedAdminService.list())
-                .parallel(4).runOn(scraperScheduler)
-                .concatMap(this::wgetFeedNews)
-                .sequential()
-
-                .filterWhen(n -> alreadyHave.map(l -> !l.contains(n.getId())))
-                .parallel(4).runOn(scraperScheduler)
-                .concatMap(this::applyNewsFilters)
-                .sequential()
-
-                .filterWhen(n -> alreadyHave.map(l -> !l.contains(n.getId())))
-                .buffer(100)
-                .flatMap(newsRepository::persist)
-
-                .reduce(Integer::sum)
-                .flatMap(count -> Flux.concat(scrappingHandlers.stream().map(h -> h.after(count)).toList()).then())
-                .doOnError(e -> {
-                    log.error(ERROR_CLASS_MESSAGE, e.getClass(), e.getLocalizedMessage());
-                    log.debug(ERROR_STACKTRACE_MESSAGE, e);
-                })
-                .doFinally(signal -> {
-                    lock.release();
-                    log.info("Scraping terminated successfully !");
-                })
-                .contextWrite(AuthenticationFacade.withSystemAuthentication())
-                .subscribe();
     }
 
     private Flux<News> wgetFeedNews(RawFeed feed) {

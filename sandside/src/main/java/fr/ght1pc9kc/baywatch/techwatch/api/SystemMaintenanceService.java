@@ -1,7 +1,6 @@
 package fr.ght1pc9kc.baywatch.techwatch.api;
 
 import fr.ght1pc9kc.baywatch.security.api.model.User;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
@@ -40,13 +39,7 @@ public interface SystemMaintenanceService {
      */
     Flux<RawNews> newsList(PageRequest pageRequest);
 
-    /**
-     * Delete all links between {@link News} and {@link Feed}
-     *
-     * @param toOrphanize The {@link News} to be orphans
-     * @return nothing
-     */
-    Mono<Integer> newsOrphanize(Collection<String> toOrphanize);
+    Mono<Integer> newsLoad(Collection<News> toLoad);
 
     /**
      * Delete {@link RawNews} from the database

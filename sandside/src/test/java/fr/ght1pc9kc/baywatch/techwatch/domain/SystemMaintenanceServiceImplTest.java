@@ -57,7 +57,6 @@ class SystemMaintenanceServiceImplTest {
         when(mockFeedRepository.list(any())).thenReturn(Flux.just(jediFeed));
         when(mockFeedRepository.delete(any())).thenReturn(Mono.just(new FeedDeletedResult(1, 2)));
 
-        when(mockNewsRepository.unlink(anyCollection())).thenReturn(Mono.just(3));
         when(mockNewsRepository.delete(anyCollection())).thenReturn(Mono.just(3));
         when(mockNewsRepository.list(any())).thenReturn(Flux.just(MAY_THE_FORCE, A_NEW_HOPE));
 
@@ -137,18 +136,6 @@ class SystemMaintenanceServiceImplTest {
         ArgumentCaptor<QueryContext> captor = ArgumentCaptor.forClass(QueryContext.class);
         verify(mockNewsRepository, times(1)).list(captor.capture());
         Assertions.assertThat(captor.getValue().filter).isEqualTo(filter);
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    void should_batch_orphanize_news() {
-        StepVerifier.create(tested.newsOrphanize(List.of("1", "2", "3")))
-                .expectNext(3)
-                .verifyComplete();
-
-        ArgumentCaptor<List<String>> captor = ArgumentCaptor.forClass(List.class);
-        verify(mockNewsRepository, times(1)).unlink(captor.capture());
-        assertThat(captor.getValue()).containsExactly("1", "2", "3");
     }
 
     @Test

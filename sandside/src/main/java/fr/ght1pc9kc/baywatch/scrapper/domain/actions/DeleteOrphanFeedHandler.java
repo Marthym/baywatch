@@ -1,8 +1,7 @@
 package fr.ght1pc9kc.baywatch.scrapper.domain.actions;
 
-import fr.ght1pc9kc.baywatch.techwatch.api.NewsService;
-import fr.ght1pc9kc.baywatch.techwatch.api.FeedAdminService;
 import fr.ght1pc9kc.baywatch.scrapper.api.ScrappingHandler;
+import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -12,16 +11,13 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
-import java.util.Collection;
-
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.COUNT;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.FEED_ID;
 
 /**
  * Delete the orphan {@link Feed}. Orphan was the Feeds followed by nobody.
  * <p>
- * If the Feed to delete have {@link News} the News are deleted or, if the News is
- * shared, it was {@link NewsService#orphanize(Collection)}.
+ * If the Feed to delete have {@link News} the News are deleted
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -29,53 +25,35 @@ public class DeleteOrphanFeedHandler implements ScrappingHandler {
 
     private static final int BATCH_BUFFER_SIZE = 500;
 
-    private final FeedAdminService feedAdminService;
-    private final NewsService newsService;
+    private final SystemMaintenanceService maintenanceService;
 
     @Override
     public Mono<Void> before() {
         log.debug("DeleteOrphanFeedHandler Start ...");
-        Sinks.Many<String> shared = Sinks.many().multicast().onBackpressureBuffer();
-        Sinks.Many<String> unshared = Sinks.many().multicast().onBackpressureBuffer();
+        Sinks.Many<String> newsSink = Sinks.many().multicast().onBackpressureBuffer();
         Sinks.Many<String> feeds = Sinks.many().multicast().onBackpressureBuffer();
 
-        Mono<Integer> orphanized = shared.asFlux()
+        Mono<Void> deleted = newsSink.asFlux()
                 .buffer(BATCH_BUFFER_SIZE)
-                .flatMap(newsService::orphanize)
-                .reduce(0, Integer::sum);
-
-        Mono<Integer> deleted = unshared.asFlux()
-                .buffer(BATCH_BUFFER_SIZE)
-                .flatMap(newsService::delete)
-                .reduce(0, Integer::sum);
-
-        Mono<Void> finalizeFlux = Mono.zip(orphanized, deleted)
-                .doOnSuccess(count -> log.debug("{} dependent News(s) unlinked, {} deleted.", count.getT1(), count.getT2()))
+                .flatMap(maintenanceService::newsDelete)
+                .reduce(0, Integer::sum)
+                .doOnSuccess(count -> log.debug("{} dependent News(s) deleted.", count))
                 .then();
 
         Mono<Void> deletedFeeds = feeds.asFlux()
                 .buffer(BATCH_BUFFER_SIZE)
-                .flatMap(feedAdminService::delete)
+                .flatMap(maintenanceService::feedDelete)
                 .reduce(0, Integer::sum)
                 .doOnSuccess(count -> log.debug("{} Feed(s) deleted.", count))
                 .then();
 
-        return feedAdminService.list(PageRequest.all(Criteria.property(COUNT).eq(0)))
+        return maintenanceService.feedList(PageRequest.all(Criteria.property(COUNT).eq(0)))
                 .doOnNext(feed -> feeds.tryEmitNext(feed.getId()))
                 .doOnComplete(feeds::tryEmitComplete)
-                .flatMap(feed -> newsService.list(PageRequest.all(Criteria.property(FEED_ID).eq(feed.getId()))))
-                .doOnComplete(() -> {
-                    shared.tryEmitComplete();
-                    unshared.tryEmitComplete();
-                })
-                .doOnNext(news -> {
-                    if (news.isShared()) {
-                        shared.tryEmitNext(news.getId());
-                    } else {
-                        unshared.tryEmitNext(news.getId());
-                    }
-                })
-                .then(finalizeFlux)
+                .flatMap(feed -> maintenanceService.newsList(PageRequest.all(Criteria.property(FEED_ID).eq(feed.getId()))))
+                .doOnComplete(newsSink::tryEmitComplete)
+                .doOnNext(news -> newsSink.tryEmitNext(news.getId()))
+                .then(deleted)
                 .then(deletedFeeds)
                 .doOnTerminate(() -> log.debug("DeleteOrphanFeedHandler terminated."));
     }
