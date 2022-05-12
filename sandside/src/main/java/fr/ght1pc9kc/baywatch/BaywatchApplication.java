@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch;
 
-import fr.ght1pc9kc.baywatch.scrapper.infra.config.ScraperProperties;
+import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
