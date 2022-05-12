@@ -110,7 +110,11 @@ public class NewsServiceImpl implements NewsService {
     public Mono<List<String>> getFeedFor(QueryContext qCtx) {
         return feedRepository.list(qCtx)
                 .map(Feed::getId)
-                .collectList();
+                .collectList()
+                .map(feeds -> {
+                    feeds.add(qCtx.getUserId());
+                    return feeds;
+                });
     }
 
     public Mono<List<String>> getStateQueryContext(QueryContext qCtx) {
