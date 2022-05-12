@@ -1,8 +1,8 @@
 package fr.ght1pc9kc.baywatch.scraper.domain;
 
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
-import fr.ght1pc9kc.baywatch.scraper.api.NewsFilter;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperPlugin;
+import fr.ght1pc9kc.baywatch.scraper.api.NewsEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapingHandler;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScraperConfig;
@@ -38,7 +38,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -66,7 +65,7 @@ public final class FeedScraperService implements Runnable {
     private final RssAtomParser feedParser;
     private final Collection<ScrapingHandler> scrapingHandlers;
     private final Map<String, FeedScraperPlugin> plugins;
-    private final List<NewsFilter> newsFilters;
+    private final NewsEnrichmentService newsEnrichmentService;
     private final XmlEventDecoder xmlEventDecoder;
 
     @Setter(value = AccessLevel.PACKAGE, onMethod = @__({@VisibleForTesting}))
@@ -77,14 +76,14 @@ public final class FeedScraperService implements Runnable {
                               WebClient webClient, RssAtomParser feedParser,
                               Collection<ScrapingHandler> scrapingHandlers,
                               Map<String, FeedScraperPlugin> plugins,
-                              List<NewsFilter> newsFilters
+                              NewsEnrichmentService newsEnrichmentService
     ) {
         this.properties = properties;
         this.systemMaintenanceService = systemMaintenanceService;
         this.feedParser = feedParser;
         this.scrapingHandlers = scrapingHandlers;
         this.plugins = plugins;
-        this.newsFilters = newsFilters;
+        this.newsEnrichmentService = newsEnrichmentService;
         this.http = webClient;
 
         this.xmlEventDecoder = new XmlEventDecoder();
@@ -134,7 +133,7 @@ public final class FeedScraperService implements Runnable {
 
                     .filterWhen(n -> alreadyHave.map(l -> !l.contains(n.getId())))
                     .parallel(4).runOn(scraperScheduler)
-                    .concatMap(this::applyNewsFilters)
+                    .concatMap(newsEnrichmentService::applyNewsFilters)
                     .sequential()
 
                     .filterWhen(n -> alreadyHave.map(l -> !l.contains(n.getId())))
@@ -163,7 +162,7 @@ public final class FeedScraperService implements Runnable {
 
     private Flux<News> wgetFeedNews(RawFeed feed) {
         String feedHost = feed.getUrl().getHost();
-        FeedScrapperPlugin hostPlugin = plugins.get(feedHost);
+        FeedScraperPlugin hostPlugin = plugins.get(feedHost);
         URI feedUrl = (hostPlugin != null) ? hostPlugin.uriModifier(feed.getUrl()) : feed.getUrl();
 
         if (!SUPPORTED_SCHEMES.contains(feedUrl.getScheme())) {
@@ -210,14 +209,6 @@ public final class FeedScraperService implements Runnable {
                     log.debug(ERROR_STACKTRACE_MESSAGE, e);
                     return Flux.empty();
                 });
-    }
-
-    private Mono<News> applyNewsFilters(News news) {
-        Mono<RawNews> raw = Mono.just(news.getRaw());
-        for (NewsFilter filter : newsFilters) {
-            raw = raw.flatMap(filter::filter);
-        }
-        return raw.map(news::withRaw);
     }
 
     @VisibleForTesting

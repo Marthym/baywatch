@@ -1,11 +1,12 @@
 package fr.ght1pc9kc.baywatch.scraper.domain;
 
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
-import fr.ght1pc9kc.baywatch.scraper.api.NewsFilter;
+import fr.ght1pc9kc.baywatch.scraper.api.NewsEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScraperConfig;
 import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import org.awaitility.Awaitility;
@@ -52,13 +53,7 @@ class FeedScraperServiceTest {
             Duration.ofDays(1), Period.ofDays(30)
     );
 
-    @SuppressWarnings({"Convert2Lambda", "Anonymous2MethodRef"})
-    private final NewsFilter mockNewsFilter = spy(new NewsFilter() {
-        @Override
-        public Mono<RawNews> filter(RawNews news) {
-            return Mono.just(news);
-        }
-    });
+    private final NewsEnrichmentService mockNewsEnrichmentService = mock(NewsEnrichmentService.class);
 
     private FeedScraperService tested;
     private RssAtomParser rssAtomParserMock;
@@ -80,7 +75,7 @@ class FeedScraperServiceTest {
         verify(systemMaintenanceMock,
                 times(1).description("Expect only one call because of the buffer to 100")
         ).newsLoad(anyCollection());
-        verify(mockNewsFilter, times(2)).filter(any());
+        verify(mockNewsEnrichmentService, times(2)).applyNewsFilters(any());
     }
 
     @Test
@@ -216,9 +211,12 @@ class FeedScraperServiceTest {
                         .build()
         ));
 
+        when(mockNewsEnrichmentService.applyNewsFilters(any(News.class)))
+                .thenAnswer(((Answer<Mono<News>>) answer -> Mono.just(answer.getArgument(0))));
+
         tested = new FeedScraperService(SCRAPER_PROPERTIES,
                 systemMaintenanceMock, mockWebClient, rssAtomParserMock,
-                Collections.emptyList(), Map.of(), List.of(mockNewsFilter));
+                Collections.emptyList(), Map.of(), mockNewsEnrichmentService);
         tested.setClock(Clock.fixed(Instant.parse("2022-04-30T12:35:41Z"), ZoneOffset.UTC));
     }
 

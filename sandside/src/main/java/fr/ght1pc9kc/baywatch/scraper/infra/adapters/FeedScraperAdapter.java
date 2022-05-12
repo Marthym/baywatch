@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.scraper.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.scraper.api.NewsFilter;
+import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperPlugin;
+import fr.ght1pc9kc.baywatch.scraper.api.NewsEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapingHandler;
 import fr.ght1pc9kc.baywatch.scraper.domain.FeedScraperService;
@@ -16,7 +17,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -33,7 +33,7 @@ public class FeedScraperAdapter {
                               Collection<ScrapingHandler> scrappingHandlers,
                               Collection<FeedScraperPlugin> scrapperPlugins,
                               @ScraperQualifier WebClient webClient,
-                              List<NewsFilter> newsFilters
+                              NewsEnrichmentService newsEnrichmentService
     ) {
         Map<String, FeedScraperPlugin> plugins = scrapperPlugins.stream()
                 .collect(Collectors.toUnmodifiableMap(FeedScraperPlugin::pluginForDomain, Function.identity()));
@@ -41,6 +41,7 @@ public class FeedScraperAdapter {
         ScraperConfig config = new ScraperConfig(properties.frequency(), properties.conservation());
         this.scraper = new FeedScraperService(
                 config, systemMaintenanceService, webClient,
+                rssAtomParser, scrappingHandlers, plugins, newsEnrichmentService);
     }
 
     @PostConstruct

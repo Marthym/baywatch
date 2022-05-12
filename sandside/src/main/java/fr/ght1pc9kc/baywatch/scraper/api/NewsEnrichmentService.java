@@ -9,4 +9,6 @@ public interface NewsEnrichmentService {
     Mono<News> buildStandaloneNews(URI uri);
 
     Mono<News> applyNewsFilters(News news);
+
+    Mono<News> saveAndShare(News news);
 }
