@@ -10,6 +10,7 @@ import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -44,6 +45,7 @@ public class NewsEnrichmentServiceImpl implements NewsEnrichmentService {
                                 .publication(clock.instant())
                                 .build())
                         .feeds(Set.of(u.id))
+                        .state(State.NONE)
                         .build());
     }
 

@@ -54,6 +54,10 @@ public class ImageLinkValidationFilter implements NewsFilter {
                         log.debug("BAD     {}", tested);
                         return news.withImage(null);
                     }
+                }).onErrorResume(e -> {
+                    log.info("Error on validate link {}", tested);
+                    log.debug("{}: {}", e.getClass(), e.getLocalizedMessage());
+                    return Mono.just(news.withImage(null));
                 });
     }
 }
