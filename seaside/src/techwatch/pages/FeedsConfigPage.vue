@@ -4,7 +4,7 @@
 
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
-import FeedsList from '@/techwatch/components/feedslist/FeedsList.vue';
+import FeedsList from '@/configuration/components/feedslist/FeedsList.vue';
 
 @Options({
   name: 'FeedsConfigPage',

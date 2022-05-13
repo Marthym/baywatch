@@ -62,10 +62,11 @@ import {
 } from "@/techwatch/store/statistics/StatisticsConstants";
 import {UserState} from "@/store/user/user";
 
-import feedService, {FeedService} from "@/techwatch/services/FeedService";
+import feedService, {FeedService} from "@/configuration/services/FeedService";
 import newsService, {NewsService} from "@/techwatch/services/NewsService";
 import {NewsStore} from "@/techwatch/store/news/news";
 import popularNewsService from "@/techwatch/services/PopularNewsService";
+import {Popularity} from "@/techwatch/model/Popularity.type";
 
 
 @Options({
@@ -195,7 +196,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     popularNewsService.get(ids).subscribe({
       next: pops => {
         for (let i = Math.max(fromIdx, 0); i < this.news.length; i++) {
-          let popularity = pops.find(p => p.id === this.news[i].data.id);
+          let popularity: Popularity | undefined = pops.find(p => p.id === this.news[i].data.id);
           if (popularity !== undefined) {
             this.news[i].popularity = popularity.popularity;
           }
@@ -372,6 +373,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     return (vueRef)[0].$el
   }
 
+  // noinspection JSUnusedGlobalSymbols
   unmounted(): void {
     this.activateOnScroll.disconnect();
     this.infiniteScroll.disconnect();

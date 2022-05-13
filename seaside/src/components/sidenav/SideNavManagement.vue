@@ -28,7 +28,7 @@
       </a>
     </li>
     <li v-if="user.isAuthenticated && store.getters['user/hasRoleUser']">
-      <a>
+      <router-link to="/config">
         <svg class="fill-current w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20"
              xmlns="http://www.w3.org/2000/svg">
           <path
@@ -37,7 +37,7 @@
               3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z"></path>
         </svg>
         Configuration
-      </a>
+      </router-link>
     </li>
     <li class="text-primary">
       <a v-if="user.isAuthenticated" @click.stop="$emit('logout')">

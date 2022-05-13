@@ -38,7 +38,7 @@
 
 <script lang="ts">
 import {Options, Prop, Vue} from 'vue-property-decorator';
-import {FeedView} from "@/techwatch/components/feedslist/model/FeedView";
+import {FeedView} from "@/configuration/components/feedslist/model/FeedView";
 
 @Options({name: 'FeedsListItem', emits: ['item-update', 'item-delete']})
 export default class FeedsListItem extends Vue {
