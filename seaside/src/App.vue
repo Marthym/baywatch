@@ -3,7 +3,7 @@
     <SideNavOverlay/>
     <SideNav/>
     <div class="flex flex-col flex-1 h-full overflow-hidden">
-      <ContentTopNav/>
+      <TopNavigationBar/>
       <main ref="mainElement"
             class="flex-1 flex flex-col bg-gray-700 transition duration-500 ease-in-out overflow-y-auto px-4  py-2 lg:px-10">
         <router-view></router-view>
@@ -16,7 +16,7 @@
 
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
-import ContentTopNav from "@/components/topnav/ContentTopNav.vue";
+import TopNavigationBar from "@/layout/components/TopNavigationBar.vue";
 import SideNav from '@/components/sidenav/SideNav.vue';
 import SideNavOverlay from '@/components/sidenav/SideNavOverlay.vue';
 import NotificationArea from "@/components/shared/notificationArea/NotificationArea.vue";
@@ -31,7 +31,7 @@ import {LOGOUT_MUTATION, UPDATE_MUTATION as USER_UPDATE_MUTATION} from "@/store/
 @Options({
   components: {
     NotificationArea,
-    ContentTopNav,
+    TopNavigationBar,
     SideNav,
     SideNavOverlay,
   },

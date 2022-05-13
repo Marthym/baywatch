@@ -1,9 +1,9 @@
 import {createRouter, createWebHashHistory, RouterOptions} from 'vue-router';
 import {routes as adminRoutes} from "@/administration/router";
 
-const HomePage = () => import('@/pages/HomePage.vue');
+const HomePage = () => import('@/techwatch/pages/HomePage.vue');
 const LoginPage = () => import('@/pages/LoginPage.vue');
-const FeedsConfigPage = () => import('@/pages/FeedsConfigPage.vue');
+const FeedsConfigPage = () => import('@/techwatch/pages/FeedsConfigPage.vue');
 
 export default createRouter({
     history: createWebHashHistory(),

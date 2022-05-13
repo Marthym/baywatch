@@ -31,14 +31,25 @@
       </router-link>
       <div class="divider divider-horizontal hidden sm:flex"></div>
       <div v-if="isAuthenticated && statistics.unread_filtered > 0" class="text-sm hidden sm:inline-block">
-        <svg class="h-5 w-5 cursor-pointer inline-block  -mt-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+        <svg class="h-5 w-5 cursor-pointer inline-block  -mt-1" xmlns="http://www.w3.org/2000/svg" fill="none"
+             viewBox="0 0 24 24"
              stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-        </svg> {{ statistics.unread_filtered }}
+        </svg>
+        {{ statistics.unread_filtered }}
       </div>
     </div>
     <div class="navbar-end w-full md:w-1/2 border-b border-base-100 pr-2 mr-2 h-full">
+      <div v-if="isAuthenticated && statistics.unread_filtered > 0" class="text-sm hidden sm:inline-block">
+        <button class="btn btn-square btn-ghost btn-sm" >
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd"
+                  d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z"
+                  clip-rule="evenodd"></path>
+          </svg>
+        </button>
+      </div>
       <div class="indicator mr-3">
         <div v-if="statistics.updated > 0" class="indicator-item badge badge-xs badge-accent text-2xs">
           {{ statistics.updated }}
@@ -74,11 +85,11 @@ import {setup} from "vue-class-component";
 import {Store, useStore} from "vuex";
 import {RESET_UPDATED_MUTATION} from "@/techwatch/store/statistics/StatisticsConstants";
 
-@Options({name: 'ContentTopNav'})
-export default class ContentTopNav extends Vue {
+@Options({name: 'TopNavigationBar'})
+export default class TopNavigationBar extends Vue {
 
   private statistics: StatisticsState = setup(() => useStore().state.statistics);
-  private store:Store<any> = setup(() => useStore());
+  private store: Store<any> = setup(() => useStore());
 
   get isAuthenticated(): boolean {
     return this.store.state.user.isAuthenticated || false;
