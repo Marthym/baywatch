@@ -23,10 +23,10 @@
 
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
-import {Feed} from '@/techwatch/model/Feed';
+import {Feed} from '@/configuration/model/Feed';
 import {Observable, Subject} from "rxjs";
-import ModalWindow from "@/components/shared/ModalWindow.vue";
-import TagInput from "@/components/shared/TagInput.vue";
+import ModalWindow from "@/shared/components/ModalWindow.vue";
+import TagInput from "@/shared/components/TagInput.vue";
 import tagsService from '@/techwatch/services/TagsService';
 
 const URL_PATTERN = new RegExp('^(https?:\\/\\/)?' + // protocol

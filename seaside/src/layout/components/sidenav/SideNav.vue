@@ -19,8 +19,8 @@ import SideNavManagement from './SideNavManagement.vue';
 
 import {LOGOUT_MUTATION} from "@/store/user/UserConstants";
 import {SidenavState} from "@/store/sidenav/sidenav";
-import SideNavUserInfo from "@/components/sidenav/SideNavUserInfo.vue";
-import SideNavFilters from "@/components/sidenav/SideNavFilters.vue";
+import SideNavUserInfo from "@/layout/components/sidenav/SideNavUserInfo.vue";
+import SideNavFilters from "@/layout/components/sidenav/SideNavFilters.vue";
 import {UserState} from "@/store/user/user";
 import {useStore} from "vuex";
 import {setup} from "vue-class-component";

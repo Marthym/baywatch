@@ -1,4 +1,4 @@
-import {Feed} from "@/techwatch/model/Feed";
+import {Feed} from "@/configuration/model/Feed";
 
 export type FeedView = {
     icon: string;

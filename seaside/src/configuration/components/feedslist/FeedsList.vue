@@ -78,19 +78,19 @@ import FeedListItem from "@/configuration/components/feedslist/FeedsListItem.vue
 import {FeedView} from "@/configuration/components/feedslist/model/FeedView";
 import {filter, map, switchMap, take, tap} from "rxjs/operators";
 import {Observable} from "rxjs";
-import {Feed} from "@/techwatch/model/Feed";
+import {Feed} from "@/configuration/model/Feed";
 import FeedEditor from "@/configuration/components/feedslist/FeedEditor.vue";
 import feedsService from "@/configuration/services/FeedService";
 import opmlService from "@/techwatch/services/OpmlService";
 import notificationService from "@/services/notification/NotificationService";
 import {defineAsyncComponent} from "vue";
-import {AlertResponse, AlertType} from "@/components/shared/alertdialog/AlertDialog.types";
+import {AlertResponse, AlertType} from "@/shared/components/alertdialog/AlertDialog.types";
 import FeedActions from "@/configuration/components/feedslist/FeedActions.vue";
 import {setup} from "vue-class-component";
 import {useStore} from "vuex";
 import {UserState} from "@/store/user/user";
 
-const FileUploadWindow = defineAsyncComponent(() => import('@/components/shared/FileUploadWindow.vue'));
+const FileUploadWindow = defineAsyncComponent(() => import('@/shared/components/FileUploadWindow.vue'));
 
 @Options({
   name: 'FeedsList',

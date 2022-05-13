@@ -20,7 +20,7 @@ import {
   AlertResponse,
   AlertType,
   IAlertDialog
-} from "@/components/shared/alertdialog/AlertDialog.types";
+} from "@/shared/components/alertdialog/AlertDialog.types";
 import {setup} from "vue-class-component";
 import {inject} from "vue";
 

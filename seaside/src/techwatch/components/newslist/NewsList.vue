@@ -51,7 +51,7 @@ import {useInfiniteScroll} from "@/services/InfiniteScrollBehaviour";
 import {useScrollingActivation} from "@/services/ScrollingActivationBehaviour";
 import InfiniteScrollable from "@/services/model/InfiniteScrollable";
 import {Mark} from "@/techwatch/model/Mark.enum";
-import {Feed} from "@/techwatch/model/Feed";
+import {Feed} from "@/configuration/model/Feed";
 import {ConstantFilters} from "@/constants";
 import {setup} from "vue-class-component";
 import {useStore} from "vuex";

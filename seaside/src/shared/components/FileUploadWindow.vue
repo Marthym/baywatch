@@ -25,7 +25,7 @@
 
 <script lang="ts">
 import {Options, Prop, Vue} from 'vue-property-decorator';
-import ModalWindow from "@/components/shared/ModalWindow.vue";
+import ModalWindow from "@/shared/components/ModalWindow.vue";
 
 const UPLOAD_EVENT = 'upload';
 

@@ -17,9 +17,9 @@
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
 import TopNavigationBar from "@/layout/components/TopNavigationBar.vue";
-import SideNav from '@/components/sidenav/SideNav.vue';
-import SideNavOverlay from '@/components/sidenav/SideNavOverlay.vue';
-import NotificationArea from "@/components/shared/notificationArea/NotificationArea.vue";
+import SideNav from '@/layout/components/sidenav/SideNav.vue';
+import SideNavOverlay from '@/layout/components/sidenav/SideNavOverlay.vue';
+import NotificationArea from "@/shared/components/notificationArea/NotificationArea.vue";
 import {EventType} from "@/techwatch/model/EventType.enum";
 import authenticationService from '@/services/AuthenticationService'
 import serverEventService from '@/techwatch/services/ServerEventService'

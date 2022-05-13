@@ -1,4 +1,4 @@
-import {IAlertDialog} from "@/components/shared/alertdialog/AlertDialog.types";
+import {IAlertDialog} from "@/shared/components/alertdialog/AlertDialog.types";
 
 declare module '*.vue' {
     import Vue from 'vue'
