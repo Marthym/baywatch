@@ -36,25 +36,27 @@
 
     <!-- The RIGHT side of top bar -->
     <div class="navbar-end w-full md:w-1/2 border-b border-base-100 pr-2 mr-2 h-full">
-      <!-- Clip icon -->
-      <div v-if="isAuthenticated" class="text-sm inline-block">
-        <button class="btn btn-square btn-ghost btn-sm" >
-          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-            <path fill-rule="evenodd"
-                  d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z"
-                  clip-rule="evenodd"></path>
-          </svg>
-        </button>
-      </div>
       <!-- Refresh Icon -->
-      <div class="indicator mr-3">
+      <div class="indicator mx-1">
         <div v-if="statistics.updated > 0" class="indicator-item badge badge-xs badge-accent text-2xs">
           {{ statistics.updated }}
         </div>
         <button class="btn btn-square btn-ghost btn-sm" @click="reload()">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0
+                  01-15.357-2m15.357 2H15"/>
+          </svg>
+        </button>
+      </div>
+      <!-- Clip icon -->
+      <div v-if="isAuthenticated" class="text-sm inline-block mx-1 mr-3">
+        <button class="btn btn-square btn-ghost btn-sm" @click="toggleClipAction">
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd"
+                  d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1
+                  1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z"
+                  clip-rule="evenodd"></path>
           </svg>
         </button>
       </div>
@@ -71,7 +73,19 @@
       </div>
     </div>
   </header>
-
+  <transition
+      enter-active-class="lg:duration-200 ease-out"
+      enter-from-class="lg:transform lg:translate-x-80"
+      enter-to-class="lg:translate-x-0"
+      leave-active-class="lg:duration-200 ease-in"
+      leave-from-class="lg:translate-x-0"
+      leave-to-class="lg:transform lg:translate-x-80">
+    <TopNavActionOverlay v-if="actionOverlayOpen">
+      <template v-slot:content>
+        <component :is="actionOverlayContent" @close="actionOverlayOpen = false"></component>
+      </template>
+    </TopNavActionOverlay>
+  </transition>
 </template>
 
 <script lang="ts">
@@ -82,12 +96,27 @@ import newsService from '@/techwatch/services/NewsService';
 import {setup} from "vue-class-component";
 import {Store, useStore} from "vuex";
 import {RESET_UPDATED_MUTATION} from "@/techwatch/store/statistics/StatisticsConstants";
+import TopNavActionOverlay from "@/layout/components/TopNavActionOverlay.vue";
+import {defineAsyncComponent} from "vue";
 
-@Options({name: 'TopNavigationBar'})
+const AddSingleNewsAction = defineAsyncComponent(() => import('@/layout/components/AddSingleNewsAction.vue'));
+
+type ActionOverlayComponent = 'AddSingleNewsAction';
+
+@Options({
+  name: 'TopNavigationBar',
+  components: {
+    TopNavActionOverlay,
+    AddSingleNewsAction,
+  }
+})
 export default class TopNavigationBar extends Vue {
 
   private statistics: StatisticsState = setup(() => useStore().state.statistics);
   private store: Store<any> = setup(() => useStore());
+
+  private actionOverlayOpen = false;
+  private actionOverlayContent: ActionOverlayComponent = 'AddSingleNewsAction';
 
   get isAuthenticated(): boolean {
     return this.store.state.user.isAuthenticated || false;
@@ -100,6 +129,10 @@ export default class TopNavigationBar extends Vue {
   private reload(): void {
     this.store.commit(RESET_UPDATED_MUTATION);
     newsService.reload();
+  }
+
+  private toggleClipAction(): void {
+    this.actionOverlayOpen = !this.actionOverlayOpen;
   }
 }
 </script>
