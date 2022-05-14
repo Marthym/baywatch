@@ -110,7 +110,11 @@ public class NewsServiceImpl implements NewsService {
     public Mono<List<String>> getFeedFor(QueryContext qCtx) {
         return feedRepository.list(qCtx)
                 .map(Feed::getId)
-                .collectList();
+                .collectList()
+                .map(feeds -> {
+                    feeds.add(qCtx.getUserId());
+                    return feeds;
+                });
     }
 
     public Mono<List<String>> getStateQueryContext(QueryContext qCtx) {
@@ -144,14 +148,6 @@ public class NewsServiceImpl implements NewsService {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(() -> new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
                 .flatMap(user -> stateRepository.unflag(id, user.id, flag));
-    }
-
-    @Override
-    public Mono<Integer> orphanize(Collection<String> toOrphanize) {
-        return authFacade.getConnectedUser()
-                .filter(user -> Role.SYSTEM == user.self.role)
-                .switchIfEmpty(Mono.error(() -> new UnauthorizedOperation("Orphanize news not permitted for user !")))
-                .flatMap(user -> newsRepository.unlink(toOrphanize));
     }
 
     @Override

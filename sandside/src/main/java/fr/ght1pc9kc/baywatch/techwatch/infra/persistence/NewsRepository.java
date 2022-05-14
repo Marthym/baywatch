@@ -110,22 +110,14 @@ public class NewsRepository implements NewsPersistencePort {
     }
 
     @Override
-    public Mono<Integer> unlink(Collection<String> ids) {
-        return Mono.fromCallable(() ->
-                        dsl.deleteFrom(NEWS_FEEDS).where(NEWS_FEEDS.NEFE_NEWS_ID.in(ids)).execute())
-                .subscribeOn(databaseScheduler);
-    }
-
-    @Override
     public Mono<Integer> delete(Collection<String> ids) {
-        return unlink(ids)
-                .then(Mono.fromCallable(() ->
-                        dsl.transactionResult(tx -> {
-                            DSLContext txDsl = tx.dsl();
-                            txDsl.deleteFrom(NEWS_USER_STATE).where(NEWS_USER_STATE.NURS_NEWS_ID.in(ids)).execute();
-                            return txDsl.deleteFrom(NEWS).where(NEWS.NEWS_ID.in(ids)).execute();
-                        })).subscribeOn(databaseScheduler)
-                );
+        return Mono.fromCallable(() ->
+                dsl.transactionResult(tx -> {
+                    DSLContext txDsl = tx.dsl();
+                    txDsl.deleteFrom(NEWS_FEEDS).where(NEWS_FEEDS.NEFE_NEWS_ID.in(ids)).execute();
+                    txDsl.deleteFrom(NEWS_USER_STATE).where(NEWS_USER_STATE.NURS_NEWS_ID.in(ids)).execute();
+                    return txDsl.deleteFrom(NEWS).where(NEWS.NEWS_ID.in(ids)).execute();
+                })).subscribeOn(databaseScheduler);
     }
 
     @Override

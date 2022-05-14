@@ -18,8 +18,6 @@ public interface NewsPersistencePort {
 
     Mono<Integer> persist(Collection<News> toCreate);
 
-    Mono<Integer> unlink(Collection<String> ids);
-
     Mono<Integer> delete(Collection<String> ids);
 
     Mono<Integer> count(QueryContext qCtx);
