@@ -90,7 +90,7 @@ public interface BaywatchMapper {
                 ? State.of(r.get(NEWS_USER_STATE.NURS_STATE))
                 : State.NONE;
         Set<String> feeds = (r.indexOf(NEWS_FEEDS.NEFE_FEED_ID.getName()) >= 0)
-                ? Optional.ofNullable(r.get(NEWS_FEEDS.NEFE_FEED_ID.getName(), String[].class))
+                ? Optional.of(r.get(NEWS_FEEDS.NEFE_FEED_ID.getName(), String.class).split(","))
                 .map(Set::of).orElse(Set.of())
                 : Set.of();
         Set<String> tags = (r.indexOf(FEEDS_USERS.FEUS_TAGS.getName()) >= 0)

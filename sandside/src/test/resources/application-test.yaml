@@ -1,7 +1,7 @@
 ---
 spring:
   datasource:
-    url: jdbc:h2:file:./target/baywatch
+    url: jdbc:sqlite:file:./target/test_baywatch.db
   main:
     banner-mode: off
 

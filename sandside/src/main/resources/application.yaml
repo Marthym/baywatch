@@ -1,10 +1,12 @@
 ---
 spring:
   datasource:
-    url: jdbc:h2:file:${BAYWATCH_HOME:.}/.baywatch/baywatch
-    driver-class-name: org.h2.Driver
+    url: jdbc:sqlite:file:${BAYWATCH_HOME:.}/.baywatch/data.db?cache=shared&journal_mode=WAL&synchronous=NORMAL
+    driver-class-name: org.sqlite.JDBC
     username: baywatch
     password: hasselhoff
+  jooq:
+    sql-dialect: sqlite
 
 server:
   port: ${BAYWATCH_SERVER_PORT:8081}

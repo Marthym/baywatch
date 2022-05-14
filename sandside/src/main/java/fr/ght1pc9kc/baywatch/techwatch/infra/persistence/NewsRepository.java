@@ -136,7 +136,7 @@ public class NewsRepository implements NewsPersistencePort {
         select.addFrom(NEWS);
         select.addConditions(conditions);
 
-        select.addSelect(DSL.arrayAggDistinct(NEWS_FEEDS.NEFE_FEED_ID).as(NEWS_FEEDS.NEFE_FEED_ID));
+        select.addSelect(DSL.groupConcat(NEWS_FEEDS.NEFE_FEED_ID).as(NEWS_FEEDS.NEFE_FEED_ID));
         select.addJoin(NEWS_FEEDS, JoinType.LEFT_OUTER_JOIN, NEWS.NEWS_ID.eq(NEWS_FEEDS.NEFE_NEWS_ID));
         select.addGroupBy(NEWS.fields());
 

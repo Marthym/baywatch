@@ -67,10 +67,9 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
 
-
         <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -147,7 +146,6 @@
             <optional>true</optional>
         </dependency>
 
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -213,6 +211,30 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+            <plugin> <!-- Only present in order to create target dir for flyway -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-folder</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>../.run</directory>
+                                    <includes>
+                                        <include>*.db</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>
@@ -252,11 +274,10 @@
                             </jdbc>
                             <generator>
                                 <database>
-                                    <name>org.jooq.meta.h2.H2Database</name>
+                                    <name>org.jooq.meta.sqlite.SQLiteDatabase</name>
                                     <includes>.*</includes>
                                     <excludes>FLYWAY_SCHEMA_HISTORY</excludes>
                                     <outputSchemaToDefault>false</outputSchemaToDefault>
-                                    <inputSchema>PUBLIC</inputSchema>
                                 </database>
                                 <generate>
                                     <generatedAnnotation>true</generatedAnnotation>
