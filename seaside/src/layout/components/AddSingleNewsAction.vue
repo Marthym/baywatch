@@ -1,5 +1,5 @@
 <template>
-  <label class="text-right relative w-full">
+  <label class="text-right relative w-full" @click.stop>
     <button @click="importNewsFromLink"
             class="absolute -right-2 top-1/2 -mt-6 opacity-60 btn btn-circle btn-link text-secondary">
       <svg class="w-6 h-6 rotate-90" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">

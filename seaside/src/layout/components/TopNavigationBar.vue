@@ -73,19 +73,11 @@
       </div>
     </div>
   </header>
-  <transition
-      enter-active-class="lg:duration-200 ease-out"
-      enter-from-class="lg:transform lg:translate-x-80"
-      enter-to-class="lg:translate-x-0"
-      leave-active-class="lg:duration-200 ease-in"
-      leave-from-class="lg:translate-x-0"
-      leave-to-class="lg:transform lg:translate-x-80">
-    <TopNavActionOverlay v-if="actionOverlayOpen">
-      <template v-slot:content>
-        <component :is="actionOverlayContent" @close="actionOverlayOpen = false"></component>
-      </template>
-    </TopNavActionOverlay>
-  </transition>
+  <TopNavActionOverlay v-show="actionOverlayOpen" :is-open="actionOverlayOpen" @close="actionOverlayOpen = false">
+    <template v-slot:content>
+      <component :is="actionOverlayContent" @close="actionOverlayOpen = false"></component>
+    </template>
+  </TopNavActionOverlay>
 </template>
 
 <script lang="ts">
