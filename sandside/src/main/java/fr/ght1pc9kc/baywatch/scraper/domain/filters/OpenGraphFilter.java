@@ -17,7 +17,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Slf4j
@@ -55,15 +54,20 @@ public class OpenGraphFilter implements NewsFilter {
                         }
 
                         OpenGraph og = headMetas.og();
-                        if (isNull(og) || og.isEmpty()) {
+                        if (nonNull(og) && !og.isEmpty()) {
+                            raw = Optional.ofNullable(og.title).map(raw::withTitle).orElse(raw);
+                            raw = Optional.ofNullable(og.description).map(raw::withDescription).orElse(raw);
+                            raw = Optional.ofNullable(og.image)
+                                    .filter(i -> SUPPORTED_SCHEMES.contains(i.getScheme()))
+                                    .map(raw::withImage).orElse(raw);
+                        } else {
                             log.debug("No OG meta found for {}", news.getLink());
-                            return raw;
                         }
-                        raw = Optional.ofNullable(og.title).map(raw::withTitle).orElse(raw);
-                        raw = Optional.ofNullable(og.description).map(raw::withDescription).orElse(raw);
-                        raw = Optional.ofNullable(og.image)
-                                .filter(i -> SUPPORTED_SCHEMES.contains(i.getScheme()))
-                                .map(raw::withImage).orElse(raw);
+
+                        if (nonNull(headMetas.title()) && !headMetas.title().isBlank()) {
+                            raw = raw.withTitle(headMetas.title());
+                        }
+
                         return raw;
                     }).switchIfEmpty(Mono.just(news));
         } catch (Exception e) {

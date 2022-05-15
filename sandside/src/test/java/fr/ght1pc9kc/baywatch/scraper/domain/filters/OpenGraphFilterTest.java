@@ -68,6 +68,35 @@ class OpenGraphFilterTest {
     }
 
     @Test
+    void should_filter_opengraph_with_title() {
+        when(mockScraper.scrap(any(ScrapRequest.class))).thenReturn(Mono.just(
+                Metas.builder()
+                        .title("Title from title tag")
+                        .og(OpenGraph.builder()
+                                .title("Opengraph title")
+                                .description("Opengraph description")
+                                .image(URI.create("https://open.graph.img/image.jpg"))
+                                .build()
+                        ).build()
+        ));
+
+        StepVerifier.create(tested.filter(RAW))
+                .assertNext(actual -> Assertions.assertAll(
+                        () -> assertThat(actual.getId()).isEqualTo("0"),
+                        () -> assertThat(actual.getTitle()).isEqualTo("Title from title tag"),
+                        () -> assertThat(actual.getDescription()).isEqualTo("Opengraph description"),
+                        () -> assertThat(actual.getImage()).isEqualTo(URI.create("https://open.graph.img/image.jpg"))
+                ))
+                .verifyComplete();
+
+        ArgumentCaptor<ScrapRequest> captor = ArgumentCaptor.forClass(ScrapRequest.class);
+        verify(mockScraper).scrap(captor.capture());
+
+        assertThat(captor.getValue()).extracting(ScrapRequest::location)
+                .isEqualTo(RAW.getLink());
+    }
+
+    @Test
     void should_filter_opengraph_with_canonical() {
         when(mockScraper.scrap(any(ScrapRequest.class))).thenReturn(Mono.just(
                 Metas.builder()
