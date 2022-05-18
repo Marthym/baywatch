@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.scraper.infra.adapters;
+package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
 import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
@@ -8,19 +8,14 @@ import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.VisibleForTesting;
-import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.time.Clock;
 import java.time.Duration;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
-@Component
 public class ScrapingDurationCounter implements CounterProvider, ScrapingHandler {
     private final AtomicReference<Long> startNanoTime = new AtomicReference<>(null);
     private final AtomicReference<String> lastDuration = new AtomicReference<>("...");
@@ -38,10 +33,7 @@ public class ScrapingDurationCounter implements CounterProvider, ScrapingHandler
 
     @Override
     public Mono<Void> after(int persisted) {
-        lastInstant.set(DateTimeFormatter.RFC_1123_DATE_TIME
-                .withLocale(Locale.FRANCE)
-                .withZone(ZoneOffset.UTC)
-                .format(clock.instant()));
+        lastInstant.set(clock.instant().toString());
         long endTime = clock.millis();
         Long startTime = startNanoTime.getAndSet(null);
         String duration = Optional.ofNullable(startTime).map(st -> {
