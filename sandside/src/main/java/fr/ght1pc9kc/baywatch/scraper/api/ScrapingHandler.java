@@ -23,4 +23,6 @@ public interface ScrapingHandler {
     default Mono<Void> after(int persisted) {
         return Mono.empty().then();
     }
+
+    default void onTerminate() {}
 }

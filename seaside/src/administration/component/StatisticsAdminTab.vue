@@ -82,6 +82,10 @@ export default class StatisticsAdminTab extends Vue {
         Object.assign(this.feedsCount, stats.feeds);
         Object.assign(this.usersCount, stats.users);
         Object.assign(this.scrapDuration, stats.scrap);
+        this.scrapDuration.description = 'Last run at '+new Date(this.scrapDuration.description).toLocaleDateString(navigator.languages, {
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          year: 'numeric', month: 'short', day: '2-digit', hour: "2-digit", minute: "2-digit"
+        });
       }
     })
   }

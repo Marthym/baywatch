@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.scraper.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
+import fr.ght1pc9kc.baywatch.scraper.domain.actions.ScrapingDurationCounter;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 

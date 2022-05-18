@@ -148,6 +148,7 @@ public final class FeedScraperService implements Runnable {
                     })
                     .doFinally(signal -> {
                         lock.release();
+                        scrapingHandlers.forEach(ScrapingHandler::onTerminate);
                         log.info("Scraping terminated successfully !");
                     })
                     .contextWrite(AuthenticationFacade.withSystemAuthentication())
