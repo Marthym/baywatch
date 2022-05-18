@@ -33,16 +33,27 @@ public class ScrapingDurationCounter implements CounterProvider, ScrapingHandler
 
     @Override
     public Mono<Void> after(int persisted) {
+        if (log.isDebugEnabled()) {
+            String duration = getCurrentDuration();
+            log.debug("Scraping finished, load {} news in {}", persisted, duration);
+        }
+        return ScrapingHandler.super.after(persisted);
+    }
+
+    @Override
+    public void onTerminate() {
         lastInstant.set(clock.instant().toString());
+        lastDuration.set(getCurrentDuration());
+        ScrapingHandler.super.onTerminate();
+    }
+
+    private String getCurrentDuration() {
         long endTime = clock.millis();
         Long startTime = startNanoTime.getAndSet(null);
-        String duration = Optional.ofNullable(startTime).map(st -> {
+        return Optional.ofNullable(startTime).map(st -> {
             Duration d = Duration.ofMillis(endTime - st);
             return String.format("%02ds %02dms", d.toSecondsPart(), d.toMillisPart());
         }).orElse("...");
-        lastDuration.set(duration);
-        log.debug("Scrapping finished, load {} news in {}", persisted, duration);
-        return ScrapingHandler.super.after(persisted);
     }
 
     @Override
