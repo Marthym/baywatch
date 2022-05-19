@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@heroicons/vue": "1.0.6",
     "core-js": "3.22.4",
     "daisyui": "2.14.3",
     "js-md5": "0.7.3",
@@ -21,8 +22,8 @@
     "vuex": "4.0.2"
   },
   "devDependencies": {
-    "@types/js-md5": "0.4.3",
     "@types/jest": "27.5.0",
+    "@types/js-md5": "0.4.3",
     "@types/json-patch": "0.0.30",
     "@typescript-eslint/eslint-plugin": "5.22.0",
     "@typescript-eslint/parser": "5.22.0",
