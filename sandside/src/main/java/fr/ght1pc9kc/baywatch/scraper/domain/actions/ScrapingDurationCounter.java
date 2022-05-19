@@ -45,12 +45,13 @@ public class ScrapingDurationCounter implements CounterProvider, ScrapingHandler
     public void onTerminate() {
         lastInstant.set(clock.instant().toString());
         lastDuration.set(getCurrentDuration());
+        startNanoTime.set(null);
         ScrapingHandler.super.onTerminate();
     }
 
     private String getCurrentDuration() {
         long endTime = clock.millis();
-        Long startTime = startNanoTime.getAndSet(null);
+        Long startTime = startNanoTime.get();
         return Optional.ofNullable(startTime).map(st -> {
             Duration d = Duration.ofMillis(endTime - st);
             return String.format("%02ds %02dms", d.toSecondsPart(), d.toMillisPart());
