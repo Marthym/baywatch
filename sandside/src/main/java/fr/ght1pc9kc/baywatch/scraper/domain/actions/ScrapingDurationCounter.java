@@ -1,8 +1,9 @@
 package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
 import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
+import fr.ght1pc9kc.baywatch.admin.api.model.CounterGroup;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
-import fr.ght1pc9kc.baywatch.admin.api.model.CounterType;
+import fr.ght1pc9kc.baywatch.common.api.HeroIcons;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapingHandler;
 import lombok.AccessLevel;
 import lombok.Setter;
@@ -57,14 +58,15 @@ public class ScrapingDurationCounter implements CounterProvider, ScrapingHandler
     }
 
     @Override
-    public CounterType name() {
-        return CounterType.SCRAPING_DURATION;
+    public CounterGroup group() {
+        return CounterGroup.TECHWATCH;
     }
 
     @Override
     public Mono<Counter> computeCounter() {
-        return Mono.just(new Counter(
+        return Mono.just(Counter.create(
                 "Scraping Duration",
+                HeroIcons.CloudUploadIcon,
                 lastDuration.get(),
                 lastInstant.get()));
     }
