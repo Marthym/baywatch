@@ -3,7 +3,6 @@ package fr.ght1pc9kc.baywatch.admin.domain;
 import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterGroup;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
-import fr.ght1pc9kc.baywatch.admin.api.model.CounterType;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import org.junit.jupiter.api.BeforeEach;
