@@ -70,6 +70,7 @@
                             <jvmFlag>-server</jvmFlag>
                             <jvmFlag>-Xms256m</jvmFlag>
                             <jvmFlag>-Xmx512m</jvmFlag>
+                            <jvmFlag>-XX:-UsePerfData</jvmFlag>
                         </jvmFlags>
                     </container>
                 </configuration>
