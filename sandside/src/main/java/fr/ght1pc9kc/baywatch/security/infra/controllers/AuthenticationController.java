@@ -1,10 +1,10 @@
 package fr.ght1pc9kc.baywatch.security.infra.controllers;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.SecurityException;
-import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.domain.ports.JwtTokenProvider;
 import fr.ght1pc9kc.baywatch.security.infra.TokenCookieManager;
 import fr.ght1pc9kc.baywatch.security.infra.adapters.AuthenticationManagerAdapter;
@@ -21,12 +21,18 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
 import javax.validation.Valid;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 @Slf4j
@@ -59,7 +65,8 @@ public class AuthenticationController {
                     return user.getEntity();
                 })
 
-                .onErrorMap(BadCredentialsException.class, BaywatchCredentialsException::new);
+                .onErrorMap(BadCredentialsException.class, BaywatchCredentialsException::new)
+                .onErrorMap(NoSuchElementException.class, BaywatchCredentialsException::new);
     }
 
     @DeleteMapping("/logout")

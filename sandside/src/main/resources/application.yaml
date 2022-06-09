@@ -1,7 +1,7 @@
 ---
 spring:
   datasource:
-    url: jdbc:sqlite:file:${BAYWATCH_HOME:.}/.baywatch/data.db?cache=shared&journal_mode=WAL&synchronous=NORMAL
+    url: jdbc:sqlite:file:${BAYWATCH_HOME:.}/.baywatch/data.db?cache=shared&journal_mode=WAL&synchronous=NORMAL&read_uncommitted=true
     driver-class-name: org.sqlite.JDBC
     username: baywatch
     password: hasselhoff

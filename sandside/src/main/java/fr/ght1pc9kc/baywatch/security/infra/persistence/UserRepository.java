@@ -1,13 +1,13 @@
 package fr.ght1pc9kc.baywatch.security.infra.persistence;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.common.infra.PredicateSearchVisitor;
+import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
+import fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
-import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
-import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
-import fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers;
-import fr.ght1pc9kc.baywatch.common.infra.PredicateSearchVisitor;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
 import lombok.RequiredArgsConstructor;
@@ -27,10 +27,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers.USER_PROPERTIES_MAPPING;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Users.USERS;
-import static fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers.USER_PROPERTIES_MAPPING;
 
 @Slf4j
 @Repository
@@ -59,7 +59,7 @@ public class UserRepository implements UserPersistencePort {
         return Flux.<UsersRecord>create(sink -> {
                     Cursor<UsersRecord> cursor = select.fetchLazy();
                     sink.onRequest(n -> {
-                        int count = Long.valueOf(n).intValue();
+                        int count = (int) n;
                         Result<UsersRecord> rs = cursor.fetchNext(count);
                         rs.forEach(sink::next);
                         if (rs.size() < count) {
