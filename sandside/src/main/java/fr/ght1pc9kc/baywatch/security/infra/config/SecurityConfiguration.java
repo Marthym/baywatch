@@ -50,6 +50,8 @@ public class SecurityConfiguration {
                 .pathMatchers(HttpMethod.DELETE, baseRoute + "/auth/logout").authenticated()
                 .pathMatchers("/*").permitAll()
                 .pathMatchers("/assets/*").permitAll()
+                .pathMatchers("/graphiql/*").permitAll()
+                .pathMatchers("/graphql/*").permitAll()
                 .pathMatchers(baseRoute + "/**").hasAnyRole(
                         Role.USER.name(), Role.MANAGER.name(), Role.ADMIN.name())
                 .anyExchange().denyAll()

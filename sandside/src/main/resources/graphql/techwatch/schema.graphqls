@@ -1,0 +1,19 @@
+type Popularity {
+    id: String
+    popularity: Int
+    fans: [String]
+}
+
+type Feed {
+    id: String!
+    name: String
+    url: String!
+    lastWatch: String
+    tags: [String]
+}
+
+type Query {
+    popularity(ids: [String]): Popularity
+    getFeed(id: String): Feed
+}
+
