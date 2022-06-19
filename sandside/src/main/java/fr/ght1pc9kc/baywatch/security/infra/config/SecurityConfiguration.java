@@ -51,7 +51,7 @@ public class SecurityConfiguration {
                 .pathMatchers("/*").permitAll()
                 .pathMatchers("/assets/*").permitAll()
                 .pathMatchers("/graphiql/*").permitAll()
-                .pathMatchers("/graphql/*").permitAll()
+                .pathMatchers("/api/g").permitAll()
                 .pathMatchers(baseRoute + "/**").hasAnyRole(
                         Role.USER.name(), Role.MANAGER.name(), Role.ADMIN.name())
                 .anyExchange().denyAll()

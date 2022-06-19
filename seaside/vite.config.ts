@@ -24,7 +24,7 @@ export default defineConfig({
         toProxy: true,
         timeout: 0,
       },
-      '^/graphql': {
+      '^/gpi': {
         target: 'http://localhost:8081',
         toProxy: true,
         timeout: 0,

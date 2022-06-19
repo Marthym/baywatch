@@ -9,7 +9,8 @@ spring:
     sql-dialect: sqlite
   graphql:
     graphiql:
-      enabled: true
+      enabled: ${BAYWATCH_GRAPHIQL_ENABLE:false}
+    path: /api/g
 
 server:
   port: ${BAYWATCH_SERVER_PORT:8081}

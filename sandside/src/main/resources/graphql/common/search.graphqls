@@ -1,0 +1,11 @@
+enum SortOrder {
+    ASC, DESC
+}
+
+input SearchRequest {
+    _p: Int
+    _pp: Int
+    _from: Int
+    _to: Int
+    _s: String
+}

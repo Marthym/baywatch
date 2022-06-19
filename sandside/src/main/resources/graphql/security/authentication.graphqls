@@ -1,0 +1,21 @@
+extend type Mutation {
+    login(username: String!, password: String!, remember: Boolean): User
+    logout: Void
+}
+
+extend type Query {
+    currentUser: User
+}
+
+type User {
+    _id: ID
+    _createdAt: String
+    login: String
+    name: String
+    mail: String
+    role: Role
+}
+
+enum Role {
+    SYSTEM, ADMIN, MANAGER, USER, ANONYMOUS
+}
