@@ -5,20 +5,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public record SearchNewsRequest(
+public record SearchFeedsRequest(
         Integer _p,
         Integer _pp,
         Integer _from,
         Integer _to,
         String _s,
         String id,
-        String title,
-        String description,
-        String publication,
-        List<String> tags,
-        Boolean read,
-        Boolean shared,
-        Boolean popular
+        String name,
+        String url,
+        String lastWatch,
+        List<String> tags
 ) {
     public Map<String, List<String>> toPageRequest() {
         Map<String, List<String>> params = new HashMap<>();
@@ -28,13 +25,10 @@ public record SearchNewsRequest(
         if (!Objects.isNull(_to)) params.put("_to", List.of(Integer.toString(_to)));
         if (!Objects.isNull(_s)) params.put("_s", List.of(_s));
         if (!Objects.isNull(id)) params.put("id", List.of(id));
-        if (!Objects.isNull(title)) params.put("title", List.of(title));
-        if (!Objects.isNull(description)) params.put("description", List.of(description));
-        if (!Objects.isNull(publication)) params.put("publication", List.of(publication));
+        if (!Objects.isNull(name)) params.put("name", List.of(name));
+        if (!Objects.isNull(url)) params.put("url", List.of(url));
+        if (!Objects.isNull(lastWatch)) params.put("lastWatch", List.of(lastWatch));
         if (!Objects.isNull(tags)) params.put("tags", tags);
-        if (!Objects.isNull(read)) params.put("read", List.of(Boolean.toString(read)));
-        if (!Objects.isNull(shared)) params.put("shared", List.of(Boolean.toString(shared)));
-        if (!Objects.isNull(popular)) params.put("popular", List.of(Boolean.toString(popular)));
         return Map.copyOf(params);
     }
 }

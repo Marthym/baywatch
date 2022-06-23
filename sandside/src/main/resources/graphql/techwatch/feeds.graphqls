@@ -1,11 +1,28 @@
 type Feed {
-    id: String!
+    id: ID!
     name: String
     url: String!
     lastWatch: String
     tags: [String]
 }
 
+type SearchFeedsResponse {
+    entities: [Feed]
+    totalCount: Int
+}
+
 extend type Query {
-    getFeed(id: String): Feed
+    getFeed(id: ID): Feed
+    searchFeeds(
+        _p: Int
+        _pp: Int
+        _from: Int
+        _to: Int
+        _s: String
+        id: ID!
+        name: String
+        url: String!
+        lastWatch: String
+        tags: [String]
+    ): SearchFeedsResponse
 }
