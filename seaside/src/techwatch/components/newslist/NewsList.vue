@@ -171,14 +171,14 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     ).subscribe({
       next: ns => {
         this.$nextTick(() => {
-          const feeds = new Map<string, string[]>();
+          const newsIdToNews = new Map<string, string[]>();
           ns.forEach(n => {
-            feeds.set(n.data.id, n.data.feeds);
+            newsIdToNews.set(n.data.id, n.data.feeds);
             return elements.next(this.getRefElement(n.data.id));
           });
           elements.complete();
-          this.loadPopularity(lastIndex, Array.from(feeds.keys()));
-          this.loadFeeds(lastIndex, feeds);
+          this.loadPopularity(lastIndex, Array.from(newsIdToNews.keys()));
+          this.loadFeeds(lastIndex, newsIdToNews);
         });
       },
       error: e => elements.next(e)
@@ -198,7 +198,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
         for (let i = Math.max(fromIdx, 0); i < this.news.length; i++) {
           let popularity: Popularity | undefined = pops.find(p => p.id === this.news[i].data.id);
           if (popularity !== undefined) {
-            this.news[i].popularity = popularity.popularity;
+            this.news[i].popularity = popularity.score;
           }
         }
       }
