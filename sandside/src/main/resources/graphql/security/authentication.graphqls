@@ -1,6 +1,7 @@
 extend type Mutation {
     login(username: String!, password: String!, remember: Boolean): User
     logout: Void
+    refreshSession: Session
 }
 
 extend type Query {
@@ -14,6 +15,11 @@ type User {
     name: String
     mail: String
     role: Role
+}
+
+type Session {
+    user: User
+    maxAge: Int
 }
 
 enum Role {

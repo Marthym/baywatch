@@ -8,16 +8,17 @@ import fr.ght1pc9kc.baywatch.security.domain.ports.JwtTokenProvider;
 import fr.ght1pc9kc.baywatch.security.infra.TokenCookieManager;
 import fr.ght1pc9kc.baywatch.security.infra.adapters.AuthenticationManagerAdapter;
 import fr.ght1pc9kc.baywatch.security.infra.exceptions.BaywatchCredentialsException;
-import fr.ght1pc9kc.baywatch.security.infra.exceptions.NoSessionException;
 import fr.ght1pc9kc.baywatch.security.infra.model.AuthenticationRequest;
 import fr.ght1pc9kc.baywatch.security.infra.model.BaywatchUserDetails;
 import fr.ght1pc9kc.baywatch.security.infra.model.Session;
 import graphql.GraphQLContext;
+import graphql.GraphqlErrorException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Arguments;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.execution.ErrorType;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,7 +37,6 @@ import java.util.Set;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
-@PreAuthorize("isAuthenticated()")
 public class AuthenticationGqlController {
 
     private final JwtTokenProvider tokenProvider;
@@ -96,25 +96,38 @@ public class AuthenticationGqlController {
                 }));
     }
 
+    @MutationMapping
     @PreAuthorize("permitAll()")
-    public Mono<Session> refresh(ServerWebExchange exchange) {
-        String token = cookieManager.getTokenCookie(exchange.getRequest())
-                .map(HttpCookie::getValue)
-                .orElseThrow(() -> new NoSessionException("User not login on !"));
-
-        return authenticationManager.refresh(token)
-                .map(auth -> {
-                    ResponseCookie tokenCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), auth);
-                    exchange.getResponse().addCookie(tokenCookie);
-                    return Session.builder()
-                            .user(auth.user.self)
-                            .maxAge(-1)
-                            .build();
+    public Mono<Session> refreshSession(GraphQLContext env) {
+        return env.stream()
+                .filter(e -> (e.getValue() instanceof Context ctx && ctx.hasKey(ServerWebExchange.class)))
+                .map(e -> (Context) e.getValue())
+                .findAny().flatMap(c -> {
+                    ServerWebExchange exchange = c.get(ServerWebExchange.class);
+                    return cookieManager.getTokenCookie(exchange.getRequest())
+                            .map(HttpCookie::getValue)
+                            .map(authenticationManager::refresh)
+                            .map(mauth -> mauth.map(auth -> {
+                                ResponseCookie tokenCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), auth);
+                                exchange.getResponse().addCookie(tokenCookie);
+                                return Session.builder()
+                                        .user(auth.user.self)
+                                        .maxAge(-1)
+                                        .build();
+                            }).onErrorMap(SecurityException.class, e -> GraphqlErrorException.newErrorException()
+                                    .message("User token has expired !")
+                                    .errorClassification(ErrorType.UNAUTHORIZED)
+                                    .cause(e)
+                                    .build()));
                 })
-                .onErrorMap(SecurityException.class, BaywatchCredentialsException::new);
+                .orElseGet(() -> Mono.error(GraphqlErrorException.newErrorException()
+                        .message("User is not logged on !")
+                        .errorClassification(ErrorType.NOT_FOUND)
+                        .build()));
     }
 
     @QueryMapping
+    @PreAuthorize("isAuthenticated()")
     public Mono<Object> currentUser() {
         return authFacade.getConnectedUser().map(u -> jsonMapper.convertValue(u, Object.class));
     }
