@@ -1,6 +1,6 @@
 import {switchMap, take} from "rxjs/operators";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
-import rest from '@/services/http/RestWrapper';
+import rest from '@/common/services/RestWrapper';
 import {Observable} from "rxjs";
 import {Counter} from "@/administration/model/Counter.type";
 

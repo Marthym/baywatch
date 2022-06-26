@@ -4,7 +4,7 @@ import {Feed} from "@/configuration/model/Feed";
 import {Page} from "@/services/model/Page";
 import {from, Observable, throwError} from "rxjs";
 import {ConstantFilters, ConstantHttpHeaders} from "@/constants";
-import rest from '@/services/http/RestWrapper';
+import rest from '@/common/services/RestWrapper';
 import {OpPatch} from "json-patch";
 
 export class FeedService {

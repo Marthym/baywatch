@@ -1,20 +1,53 @@
-import {EMPTY, from, Observable} from 'rxjs';
+import {EMPTY, Observable, of} from 'rxjs';
 import {map, switchMap, take} from "rxjs/operators";
 import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
-import {News} from "@/techwatch/model/News";
+import {News} from "@/techwatch/model/News.type";
 import {Mark} from "@/techwatch/model/Mark.enum";
-import rest from '@/services/http/RestWrapper';
-import {ConstantHttpHeaders} from "@/constants";
+import rest from '@/common/services/RestWrapper';
 import {Infinite} from "@/services/model/Infinite";
-import {NewsState} from "@/techwatch/model/NewsState";
+import {NewsState} from "@/techwatch/model/NewsState.type";
+import gql from '@/common/services/GraphqlWrapper';
+import {NewsSearchRequest} from "@/techwatch/model/NewsSearchRequest.type";
+import {SandSideError} from "@/services/model/exceptions/SandSideError";
+import {GraphqlResponse} from "@/common/model/GraphqlResponse.type";
 
 export class NewsService {
 
     public static readonly DEFAULT_PER_PAGE: number = 20;
-    /**
-     * By default, query the 20 latest published news
-     */
-    public static readonly DEFAULT_QUERY: string = `?_pp=${NewsService.DEFAULT_PER_PAGE}&_s=-publication`;
+
+    private static readonly NEWS_SEARCH_ANONYMOUS_REQUEST = `query LoadNewsListAnonPage {
+            newsSearch(_pp: ${NewsService.DEFAULT_PER_PAGE}, _s: "-publication") {
+                totalCount
+                entities {
+                    id title description publication image link
+                    feeds { id name }
+                }
+            }
+    }`
+
+    private static readonly NEWS_SEARCH_REQUEST = `query LoadNewsListPage (
+        $_p: Int, $_pp: Int = ${NewsService.DEFAULT_PER_PAGE}, $_from: Int, $_to: Int, $_s: String = "-publication",
+        $id: ID, $title: String, $description: String, $publication: String, $feeds: String, 
+        $tags: [String] $read: Boolean, $shared: Boolean, $popular: Boolean) {
+            newsSearch(_p: $_p, _pp: $_pp, _from: $_from, _to: $_to, _s: $_s,
+            id: $id, title: $title, description: $description, publication: $publication, feeds: $feeds, 
+            tags: $tags read: $read, shared: $shared, popular: $popular) {
+                totalCount
+                entities {
+                    id title description publication image link
+                    feeds { id name }
+                    state { read shared }
+                    popularity { score }
+                }
+            }
+    }`
+
+    getAnonymousNews(): Observable<Infinite<News>> {
+        return gql.send(NewsService.NEWS_SEARCH_ANONYMOUS_REQUEST).pipe(
+            map(response => NewsService.graphResponseToInfinite(response)),
+            take(1)
+        );
+    }
 
     /**
      * Get the {@link News} from backend
@@ -22,25 +55,27 @@ export class NewsService {
      * @param page The to display
      * @param query The possible query parameters
      */
-    getNews(page = 0, query: URLSearchParams = new URLSearchParams(NewsService.DEFAULT_QUERY)): Observable<Infinite<News>> {
+    getNews(query: NewsSearchRequest, page = 0): Observable<Infinite<News>> {
         if (page > 0) {
-            query.append('_p', String(page));
+            query._p = page;
         }
-        return rest.get(`/news?${query.toString()}`).pipe(
-            map(response => {
-                if (response.ok) {
-                    const totalCount = parseInt(response.headers.get(ConstantHttpHeaders.X_TOTAL_COUNT) || "-1");
-                    const data: Observable<News[]> = from(response.json());
-                    return {
-                        total: totalCount,
-                        data: data
-                    };
-                } else {
-                    throw new HttpStatusError(response.status, `Error while getting news.`);
-                }
-            }),
+        return gql.send(NewsService.NEWS_SEARCH_REQUEST, query).pipe(
+            map(response => NewsService.graphResponseToInfinite(response)),
             take(1)
         );
+    }
+
+    private static graphResponseToInfinite<G, T>(response: GraphqlResponse<G>): Infinite<T> {
+        if (!response.errors || response.errors.length === 0) {
+            const totalCount: number = response.data.newsSearch.totalCount || -1;
+            const data: Observable<T[]> = of(response.data.newsSearch.entities as T[]);
+            return {
+                total: totalCount,
+                data: data
+            };
+        } else {
+            throw new SandSideError(response.errors[0].extension[0].classification, 'Error while getting news.');
+        }
     }
 
     mark(id: string, mark: Mark): Observable<NewsState> {

@@ -1,4 +1,4 @@
-import rest from '@/services/http/RestWrapper';
+import rest from '@/common/services/RestWrapper';
 import {catchError, map, take, tap} from "rxjs/operators";
 import {Observable, of} from "rxjs";
 

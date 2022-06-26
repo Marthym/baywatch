@@ -3,8 +3,8 @@ import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
 import {User} from "@/services/model/User";
 import {catchError, map, switchMap, take} from "rxjs/operators";
 import {Session} from "@/services/model/Session";
-import rest from '@/services/http/RestWrapper';
-import gql from '@/services/http/GraphqlWrapper';
+import rest from '@/common/services/RestWrapper';
+import gql from '@/common/services/GraphqlWrapper';
 
 export class AuthenticationService {
 
@@ -17,7 +17,6 @@ export class AuthenticationService {
             }`
         ).pipe(
             map(response => {
-                console.log(response)
                 return response.data.login
             }),
             take(1)
@@ -31,17 +30,6 @@ export class AuthenticationService {
         );
     }
 
-    // logout(): Observable<void> {
-    //     return rest.delete('/auth/logout').pipe(
-    //         map(response => {
-    //             if (!response.ok) {
-    //                 throw new HttpStatusError(response.status, `Error while login out user !`);
-    //             }
-    //         }),
-    //         take(1)
-    //     );
-    // }
-
     refresh(): Observable<Session> {
         return rest.put('/auth/refresh').pipe(
             switchMap(response => {
@@ -52,7 +40,7 @@ export class AuthenticationService {
                 }
             }),
             catchError(err => {
-                return throwError(err);
+                return throwError(() => err);
             }),
             take(1)
         );

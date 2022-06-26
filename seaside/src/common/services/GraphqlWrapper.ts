@@ -9,7 +9,7 @@ import {map, switchMap} from "rxjs/operators";
 import {UnauthorizedError} from "@/services/model/exceptions/UnauthorizedError";
 import {ForbiddenError} from "@/services/model/exceptions/ForbiddenError";
 import {UnknownFetchError} from "@/services/model/exceptions/UnknownFetchError";
-import {GraphqlResponse, INVALID_SYNTAX, UNAUTHORIZED} from "@/services/http/GraphqlResponse.type";
+import {GraphqlResponse, INTERNAL_ERROR, INVALID_SYNTAX, UNAUTHORIZED} from "@/common/model/GraphqlResponse.type";
 
 export class GraphqlWrapper {
     private readonly baseUrl: string;
@@ -18,20 +18,22 @@ export class GraphqlWrapper {
         this.baseUrl = baseUrl + endpoint;
     }
 
-    send(query: string): Observable<GraphqlResponse> {
+    send<T>(query: string, vars?: any): Observable<GraphqlResponse<T>> {
         const headers = new Headers();
         headers.set(ConstantHttpHeaders.CONTENT_TYPE, ConstantMediaTypes.JSON_UTF8);
         return fromFetch(this.baseUrl, {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                query: GraphqlWrapper.gqlMinify(query)
+                query: GraphqlWrapper.gqlMinify(query),
+                variables: vars
             })
         }).pipe(
             switchMap(GraphqlWrapper.handleStatusCodeErrors),
             switchMap(r => r.json()),
             map(GraphqlWrapper.handleAuthenticationErrors),
-            map(GraphqlWrapper.handleSyntaxErrors)
+            map(GraphqlWrapper.handleSyntaxErrors),
+            map(GraphqlWrapper.handleInternalServerErrors),
         );
     }
 
@@ -47,25 +49,6 @@ export class GraphqlWrapper {
             // remove all whitespace between everything except for word and word boundaries
             .replace(/(\B)\s+(\B)|(\b)\s+(\B)|(\B)\s+(\b)/gm, '')
             .trim();
-    }
-
-    private static bodyHandler(data?: unknown): { body?: BodyInit | null, headers?: HeadersInit } {
-        if (data instanceof FormData) {
-            return {
-                body: data,
-            };
-
-        } else if (data) {
-            const headers = new Headers();
-            headers.set(ConstantHttpHeaders.CONTENT_TYPE, ConstantMediaTypes.JSON_UTF8);
-            return {
-                body: JSON.stringify(data),
-                headers: headers,
-            };
-
-        } else {
-            return {};
-        }
     }
 
     private static handleStatusCodeErrors(response: Response): Observable<Response> {
@@ -92,7 +75,7 @@ export class GraphqlWrapper {
         return of(response);
     }
 
-    private static handleAuthenticationErrors(data: GraphqlResponse): GraphqlResponse {
+    private static handleAuthenticationErrors<T>(data: GraphqlResponse<T>): GraphqlResponse<T> {
         if (data.errors
             && data.errors.findIndex(e => e.extensions.classification === UNAUTHORIZED) !== -1) {
             notificationService.pushNotification({
@@ -106,7 +89,7 @@ export class GraphqlWrapper {
         }
     }
 
-    private static handleSyntaxErrors(data: GraphqlResponse): GraphqlResponse {
+    private static handleSyntaxErrors<T>(data: GraphqlResponse<T>): GraphqlResponse<T> {
         if (data.errors
             && data.errors.findIndex(e => e.extensions.classification === INVALID_SYNTAX) !== -1) {
             notificationService.pushNotification({
@@ -115,6 +98,20 @@ export class GraphqlWrapper {
                 message: 'Application fail to fetch server !'
             });
             throw new UnknownFetchError('Application fail to fetch server !');
+        } else {
+            return data;
+        }
+    }
+
+    private static handleInternalServerErrors<T>(data: GraphqlResponse<T>): GraphqlResponse<T> {
+        if (data.errors
+            && data.errors.findIndex(e => e.extensions.classification === INTERNAL_ERROR) !== -1) {
+            notificationService.pushNotification({
+                code: NotificationCode.ERROR,
+                severity: Severity.error,
+                message: 'An error occurred on the server side'
+            });
+            throw new UnknownFetchError('An error occurred on the server side !');
         } else {
             return data;
         }
