@@ -1,4 +1,4 @@
-import {Observable, of, throwError} from "rxjs";
+import {Observable} from "rxjs";
 import {fromFetch} from "rxjs/fetch";
 import {ConstantHttpHeaders, ConstantMediaTypes} from "@/constants";
 
@@ -7,9 +7,9 @@ import {Severity} from "@/services/notification/Severity.enum";
 import {NotificationCode} from "@/services/notification/NotificationCode.enum";
 import {map, switchMap} from "rxjs/operators";
 import {UnauthorizedError} from "@/common/errors/UnauthorizedError";
-import {ForbiddenError} from "@/common/errors/ForbiddenError";
 import {UnknownFetchError} from "@/common/errors/UnknownFetchError";
 import {GraphqlResponse, INTERNAL_ERROR, INVALID_SYNTAX, UNAUTHORIZED} from "@/common/model/GraphqlResponse.type";
+import {handleStatusCodeErrors} from "@/common/services/common";
 
 export class GraphqlWrapper {
     private readonly baseUrl: string;
@@ -29,7 +29,7 @@ export class GraphqlWrapper {
                 variables: vars
             })
         }).pipe(
-            switchMap(GraphqlWrapper.handleStatusCodeErrors),
+            switchMap(handleStatusCodeErrors),
             switchMap(r => r.json()),
             map(GraphqlWrapper.handleAuthenticationErrors),
             map(GraphqlWrapper.handleSyntaxErrors),
@@ -50,30 +50,6 @@ export class GraphqlWrapper {
             // remove all whitespace between everything except for word and word boundaries
             .replace(/(\B)\s+(\B)|(\b)\s+(\B)|(\B)\s+(\b)/gm, '')
             .trim();
-    }
-
-    private static handleStatusCodeErrors(response: Response): Observable<Response> {
-        if (response.ok) {
-            of(response);
-
-        } else if (response.status === 401) {
-            notificationService.pushNotification({
-                code: NotificationCode.UNAUTHORIZED,
-                severity: Severity.error,
-                message: 'You are not login on !'
-            });
-            return throwError(() => new UnauthorizedError('You are not login on !'));
-
-        } else if (response.status === 403) {
-            notificationService.pushNotification({
-                code: NotificationCode.UNAUTHORIZED,
-                severity: Severity.error,
-                message: 'You are not login on !'
-            });
-            return throwError(() => new ForbiddenError('You are not allowed for that !'));
-        }
-
-        return of(response);
     }
 
     private static handleAuthenticationErrors<T>(data: GraphqlResponse<T>): GraphqlResponse<T> {
