@@ -15,31 +15,33 @@ export class NewsService {
 
     public static readonly DEFAULT_PER_PAGE: number = 20;
 
-    private static readonly NEWS_SEARCH_ANONYMOUS_REQUEST = `query LoadNewsListAnonPage {
-            newsSearch(_pp: ${NewsService.DEFAULT_PER_PAGE}, _s: "-publication") {
-                totalCount
-                entities {
-                    id title description publication image link
-                    feeds { id name }
-                }
+    private static readonly NEWS_SEARCH_ANONYMOUS_REQUEST = `#graphql
+    query LoadNewsListAnonPage {
+        newsSearch(_pp: ${NewsService.DEFAULT_PER_PAGE}, _s: "-publication") {
+            totalCount
+            entities {
+                id title description publication image link
+                feeds { id name }
             }
+        }
     }`
 
-    private static readonly NEWS_SEARCH_REQUEST = `query LoadNewsListPage (
+    private static readonly NEWS_SEARCH_REQUEST = `#graphql
+    query LoadNewsListPage (
         $_p: Int, $_pp: Int = ${NewsService.DEFAULT_PER_PAGE}, $_from: Int, $_to: Int, $_s: String = "-publication",
-        $id: ID, $title: String, $description: String, $publication: String, $feeds: String, 
+        $id: ID, $title: String, $description: String, $publication: String, $feeds: String,
         $tags: [String] $read: Boolean, $shared: Boolean, $popular: Boolean) {
-            newsSearch(_p: $_p, _pp: $_pp, _from: $_from, _to: $_to, _s: $_s,
-            id: $id, title: $title, description: $description, publication: $publication, feeds: $feeds, 
+        newsSearch(_p: $_p, _pp: $_pp, _from: $_from, _to: $_to, _s: $_s,
+            id: $id, title: $title, description: $description, publication: $publication, feeds: $feeds,
             tags: $tags read: $read, shared: $shared, popular: $popular) {
-                totalCount
-                entities {
-                    id title description publication image link
-                    feeds { id name }
-                    state { read shared }
-                    popularity { score }
-                }
+            totalCount
+            entities {
+                id title description publication image link
+                feeds { id name }
+                state { read shared }
+                popularity { score }
             }
+        }
     }`
 
     getAnonymousNews(): Observable<Infinite<News>> {

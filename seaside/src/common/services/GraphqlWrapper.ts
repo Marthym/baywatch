@@ -44,6 +44,7 @@ export class GraphqlWrapper {
      */
     private static gqlMinify(gql: string): string {
         return gql
+            .replace('#graphql', '')
             // replace multiple whitespace with a single
             .replace(/(\b|\B)\s+(\b|\B)/gm, ' ')
             // remove all whitespace between everything except for word and word boundaries

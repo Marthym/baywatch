@@ -1,23 +1,25 @@
-import {Observable, throwError} from "rxjs";
-import {HttpStatusError} from "@/common/errors/HttpStatusError";
+import {Observable} from "rxjs";
 import {User} from "@/security/model/User";
-import {catchError, map, switchMap, take} from "rxjs/operators";
+import {map, take} from "rxjs/operators";
 import {Session} from "@/security/model/Session";
-import rest from '@/common/services/RestWrapper';
 import gql from '@/common/services/GraphqlWrapper';
+import {GraphqlResponse} from "@/common/model/GraphqlResponse.type";
 
 export class AuthenticationService {
 
-    private static readonly LOGIN_REQUEST = `mutation Login($username: String!, $password: String!) {
-        login(username: $username, password: $password) {
-            _id login name role mail
-        }
-    }`;
-    private static readonly REFRESH_REQUEST = `mutation Login($username: String!, $password: String!) {
-        login(username: $username, password: $password) {
-            _id login name role mail
-        }
-    }`;
+    private static readonly LOGIN_REQUEST = `#graphql
+        mutation Login($username: String!, $password: String!) {
+            login(username: $username, password: $password) {
+                _id login name role mail
+            }
+        }`;
+    private static readonly REFRESH_REQUEST = `#graphql
+        mutation {
+            refreshSession {
+                user { _id login mail name role }
+                maxAge
+            }
+        }`;
     private static readonly LOGOUT_REQUEST = 'mutation {logout}';
 
     login(username: string, password: string): Observable<User> {
@@ -36,16 +38,13 @@ export class AuthenticationService {
     }
 
     refresh(): Observable<Session> {
-        return rest.put('/auth/refresh').pipe(
-            switchMap(response => {
-                if (response.ok) {
-                    return response.json();
+        return gql.send(AuthenticationService.REFRESH_REQUEST).pipe(
+            map((response: GraphqlResponse<{ refreshSession: Session }>) => {
+                if (response.errors && response.errors.length !== 0) {
+                    throw response.errors[0];
                 } else {
-                    throw new HttpStatusError(response.status, `Error while refreshing token.`);
+                    return response.data.refreshSession;
                 }
-            }),
-            catchError(err => {
-                return throwError(() => err);
             }),
             take(1)
         );
