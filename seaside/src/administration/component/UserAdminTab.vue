@@ -126,12 +126,12 @@
 import {Options, Vue} from 'vue-property-decorator';
 
 import notificationService from "@/services/notification/NotificationService";
-import userService from "@/services/UserService";
+import userService from "@/security/services/UserService";
 import {Observable} from "rxjs";
 import {filter, map, switchMap, tap} from "rxjs/operators";
 import {UserView} from "@/administration/model/UserView";
 import UserEditor from "@/administration/component/UserEditor.vue";
-import {User} from "@/services/model/User";
+import {User} from "@/security/model/User";
 import {AlertResponse, AlertType} from "@/shared/components/alertdialog/AlertDialog.types";
 
 @Options({

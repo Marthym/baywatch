@@ -1,4 +1,4 @@
-import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
+import {HttpStatusError} from "@/common/errors/HttpStatusError";
 
 export class UnauthorizedError extends HttpStatusError {
     public httpStatus: number;

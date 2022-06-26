@@ -1,4 +1,4 @@
-import {SandSideError} from "@/services/model/exceptions/SandSideError";
+import {SandSideError} from "@/common/errors/SandSideError";
 
 export class HttpStatusError extends SandSideError {
     public httpStatus: number;

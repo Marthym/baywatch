@@ -6,9 +6,9 @@ import notificationService from '@/services/notification/NotificationService';
 import {Severity} from "@/services/notification/Severity.enum";
 import {NotificationCode} from "@/services/notification/NotificationCode.enum";
 import {map, switchMap} from "rxjs/operators";
-import {UnauthorizedError} from "@/services/model/exceptions/UnauthorizedError";
-import {ForbiddenError} from "@/services/model/exceptions/ForbiddenError";
-import {UnknownFetchError} from "@/services/model/exceptions/UnknownFetchError";
+import {UnauthorizedError} from "@/common/errors/UnauthorizedError";
+import {ForbiddenError} from "@/common/errors/ForbiddenError";
+import {UnknownFetchError} from "@/common/errors/UnknownFetchError";
 import {GraphqlResponse, INTERNAL_ERROR, INVALID_SYNTAX, UNAUTHORIZED} from "@/common/model/GraphqlResponse.type";
 
 export class GraphqlWrapper {

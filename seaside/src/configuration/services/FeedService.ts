@@ -1,5 +1,5 @@
 import {map, switchMap, take} from "rxjs/operators";
-import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
+import {HttpStatusError} from "@/common/errors/HttpStatusError";
 import {Feed} from "@/configuration/model/Feed";
 import {Page} from "@/services/model/Page";
 import {from, Observable, throwError} from "rxjs";

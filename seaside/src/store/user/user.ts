@@ -1,5 +1,5 @@
-import {ANONYMOUS, User} from "@/services/model/User";
-import {UserRole} from "@/services/model/UserRole.enum";
+import {ANONYMOUS, User} from "@/security/model/User";
+import {UserRole} from "@/security/model/UserRole.enum";
 import {LOGOUT, UPDATE} from "@/store/user/UserConstants";
 
 export type UserState = {

@@ -1,32 +1,37 @@
 import {Observable, throwError} from "rxjs";
-import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
-import {User} from "@/services/model/User";
+import {HttpStatusError} from "@/common/errors/HttpStatusError";
+import {User} from "@/security/model/User";
 import {catchError, map, switchMap, take} from "rxjs/operators";
-import {Session} from "@/services/model/Session";
+import {Session} from "@/security/model/Session";
 import rest from '@/common/services/RestWrapper';
 import gql from '@/common/services/GraphqlWrapper';
 
 export class AuthenticationService {
 
+    private static readonly LOGIN_REQUEST = `mutation Login($username: String!, $password: String!) {
+        login(username: $username, password: $password) {
+            _id login name role mail
+        }
+    }`;
+    private static readonly REFRESH_REQUEST = `mutation Login($username: String!, $password: String!) {
+        login(username: $username, password: $password) {
+            _id login name role mail
+        }
+    }`;
+    private static readonly LOGOUT_REQUEST = 'mutation {logout}';
+
     login(username: string, password: string): Observable<User> {
-        return gql.send(`
-            mutation {
-                login(username: "${username}", password: "${password}") {
-                    _id _createdAt login name role mail
-                }
-            }`
+        return gql.send(AuthenticationService.LOGIN_REQUEST, {username: username, password: password}
         ).pipe(
-            map(response => {
-                return response.data.login
-            }),
-            take(1)
+            map(response => response.data.login),
+            take(1),
         );
     }
 
     logout(): Observable<void> {
-        return gql.send(`mutation {logout}`).pipe(
+        return gql.send(AuthenticationService.LOGOUT_REQUEST).pipe(
             map(() => undefined),
-            take(1)
+            take(1),
         );
     }
 

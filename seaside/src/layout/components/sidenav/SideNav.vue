@@ -26,7 +26,7 @@ import {useStore} from "vuex";
 import {setup} from "vue-class-component";
 import {switchMap} from "rxjs/operators";
 import {useRouter} from "vue-router";
-import authenticationService from "@/services/AuthenticationService";
+import authenticationService from "@/security/services/AuthenticationService";
 import serverEventService from '@/techwatch/services/ServerEventService'
 
 @Options({

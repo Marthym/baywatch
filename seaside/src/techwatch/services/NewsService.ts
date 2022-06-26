@@ -1,6 +1,6 @@
 import {EMPTY, Observable, of} from 'rxjs';
 import {map, switchMap, take} from "rxjs/operators";
-import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
+import {HttpStatusError} from "@/common/errors/HttpStatusError";
 import {News} from "@/techwatch/model/News.type";
 import {Mark} from "@/techwatch/model/Mark.enum";
 import rest from '@/common/services/RestWrapper';
@@ -8,7 +8,7 @@ import {Infinite} from "@/services/model/Infinite";
 import {NewsState} from "@/techwatch/model/NewsState.type";
 import gql from '@/common/services/GraphqlWrapper';
 import {NewsSearchRequest} from "@/techwatch/model/NewsSearchRequest.type";
-import {SandSideError} from "@/services/model/exceptions/SandSideError";
+import {SandSideError} from "@/common/errors/SandSideError";
 import {GraphqlResponse} from "@/common/model/GraphqlResponse.type";
 
 export class NewsService {

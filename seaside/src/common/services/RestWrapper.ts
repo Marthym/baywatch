@@ -7,8 +7,8 @@ import {Severity} from "@/services/notification/Severity.enum";
 import {NotificationCode} from "@/services/notification/NotificationCode.enum";
 import {switchMap} from "rxjs/operators";
 import {OpPatch} from "json-patch";
-import {UnauthorizedError} from "@/services/model/exceptions/UnauthorizedError";
-import {ForbiddenError} from "@/services/model/exceptions/ForbiddenError";
+import {UnauthorizedError} from "@/common/errors/UnauthorizedError";
+import {ForbiddenError} from "@/common/errors/ForbiddenError";
 
 
 export class RestWrapper {
