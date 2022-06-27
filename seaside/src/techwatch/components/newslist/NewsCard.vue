@@ -3,7 +3,7 @@
        :class="{
         'shadow-lg lg:h-60 my-8 border border-gray-400': card.isActive,
         'lg:h-56 m-5': !card.isActive,
-        'opacity-30': card.data.read && !card.isActive,
+        'opacity-30': card.data.state?.read && !card.isActive,
        }" @click="$emit('activate')">
 
     <figure class="flex-none">
@@ -27,7 +27,7 @@
           <span class="grow"></span>
           <div class="italic text-right">
             <div class="badge badge-xs p-2 rounded"
-                 v-for="f in card.feeds">{{ f }}
+                 v-for="f in card.data.feeds">{{ f.name }}
             </div>
             <div class="self-end">{{ publication }}</div>
           </div>

@@ -1,0 +1,49 @@
+type State {
+    read: Boolean
+    shared: Boolean
+}
+
+type Popularity {
+    score: Int
+    fans: [String]
+}
+
+type News {
+    id: ID!
+    title: String
+    image: String
+    description: String
+    publication: String
+    link: String
+    feeds: [Feed]
+    tags: String
+    state: State
+    popularity: Popularity
+}
+
+type SearchNewsResponse {
+    entities: [News]
+    totalCount: Int
+}
+
+extend type Query {
+    newsSearch(
+        _p: Int
+        _pp: Int
+        _from: Int
+        _to: Int
+        _s: String
+        id: ID
+        title: String
+        description: String
+        publication: String
+        feeds: String
+        tags: [String]
+        read: Boolean
+        shared: Boolean
+        popular: Boolean
+    ): SearchNewsResponse
+
+    popularity(ids: [String]): Popularity
+}
+

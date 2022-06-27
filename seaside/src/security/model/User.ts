@@ -1,4 +1,4 @@
-import {UserRole} from "@/services/model/UserRole.enum";
+import {UserRole} from "@/security/model/UserRole.enum";
 
 export type User = {
     _id?: string;

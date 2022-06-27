@@ -3,6 +3,7 @@
     <option name="ACTIVE_PROFILES" />
     <envs>
       <env name="BAYWATCH_HOME" value="$USER_HOME$" />
+      <env name="BAYWATCH_GRAPHIQL_ENABLE" value="true" />
     </envs>
     <module name="sandside" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="fr.ght1pc9kc.baywatch.BaywatchApplication" />

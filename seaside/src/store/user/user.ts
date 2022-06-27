@@ -1,5 +1,5 @@
-import {ANONYMOUS, User} from "@/services/model/User";
-import {UserRole} from "@/services/model/UserRole.enum";
+import {ANONYMOUS, User} from "@/security/model/User";
+import {UserRole} from "@/security/model/UserRole.enum";
 import {LOGOUT, UPDATE} from "@/store/user/UserConstants";
 
 export type UserState = {
@@ -14,19 +14,19 @@ const state = (): UserState => ({
 
 // getters
 const getters = {
-    hasRoleUser(state): boolean {
+    hasRoleUser(st): boolean {
         const keys = Object.keys(UserRole);
-        const idx = keys.indexOf(state.user.role);
+        const idx = keys.indexOf(st.user.role);
         return idx >= 0 && idx <= keys.indexOf(UserRole.USER);
     },
-    hasRoleManager(state): boolean {
+    hasRoleManager(st): boolean {
         const keys = Object.keys(UserRole);
-        const idx = keys.indexOf(state.user.role);
+        const idx = keys.indexOf(st.user.role);
         return idx >= 0 && idx <= keys.indexOf(UserRole.MANAGER);
     },
-    hasRoleAdmin(state): boolean {
+    hasRoleAdmin(st): boolean {
         const keys = Object.keys(UserRole);
-        const idx = keys.indexOf(state.user.role);
+        const idx = keys.indexOf(st.user.role);
         return idx >= 0 && idx <= keys.indexOf(UserRole.ADMIN);
     },
 }
@@ -36,15 +36,15 @@ const actions = {}
 
 // mutations
 const mutations = {
-    [LOGOUT](state: UserState): void {
-        state.user = ANONYMOUS;
-        state.isAuthenticated = false;
+    [LOGOUT](st: UserState): void {
+        st.user = ANONYMOUS;
+        st.isAuthenticated = false;
     },
-    [UPDATE](state: UserState, payload: User): void {
-        state.user = payload;
+    [UPDATE](st: UserState, payload: User): void {
+        st.user = payload;
         const keys = Object.keys(UserRole);
-        const idx = keys.indexOf(state.user.role);
-        state.isAuthenticated = idx >= 0 && idx <= keys.indexOf(UserRole.USER);
+        const idx = keys.indexOf(st.user.role);
+        st.isAuthenticated = idx >= 0 && idx <= keys.indexOf(UserRole.USER);
     },
 }
 

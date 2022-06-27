@@ -1,7 +1,7 @@
 import {from, Observable, throwError} from "rxjs";
-import rest from "@/services/http/RestWrapper";
+import rest from "@/common/services/RestWrapper";
 import {map, switchMap, take} from "rxjs/operators";
-import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
+import {HttpStatusError} from "@/common/errors/HttpStatusError";
 
 const URL_PATTERN = new RegExp('^(https?:\\/\\/)?' + // protocol
     '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name

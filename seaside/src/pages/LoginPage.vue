@@ -33,7 +33,7 @@ import {setup} from "vue-class-component";
 import {useStore} from "vuex";
 import {UPDATE_MUTATION} from "@/store/user/UserConstants";
 
-import authenticationService from "@/services/AuthenticationService";
+import authenticationService from "@/security/services/AuthenticationService";
 import {useRouter} from "vue-router";
 
 @Options({name: 'LoginPage'})

@@ -78,7 +78,7 @@
 <script lang="ts">
 import {Options, Prop, Vue} from "vue-property-decorator";
 import ModalWindow from "@/shared/components/ModalWindow.vue";
-import {User} from "@/services/model/User";
+import {User} from "@/security/model/User";
 
 const CANCEL_EVENT = 'cancel';
 // const UPDATE_EVENT = 'update:modelValue';

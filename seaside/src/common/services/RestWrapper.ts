@@ -1,15 +1,9 @@
-import {Observable, of, throwError} from "rxjs";
+import {Observable} from "rxjs";
 import {fromFetch} from "rxjs/fetch";
 import {ConstantHttpHeaders, ConstantMediaTypes} from "@/constants";
-
-import notificationService from '@/services/notification/NotificationService';
-import {Severity} from "@/services/notification/Severity.enum";
-import {NotificationCode} from "@/services/notification/NotificationCode.enum";
 import {switchMap} from "rxjs/operators";
 import {OpPatch} from "json-patch";
-import {UnauthorizedError} from "@/services/model/exceptions/UnauthorizedError";
-import {ForbiddenError} from "@/services/model/exceptions/ForbiddenError";
-
+import {handleStatusCodeErrors as handleAuthenticationErrors} from "@/common/services/common";
 
 export class RestWrapper {
     private readonly baseUrl: string;
@@ -20,7 +14,7 @@ export class RestWrapper {
 
     get(uri: string): Observable<Response> {
         return fromFetch(this.baseUrl + uri).pipe(
-            switchMap(RestWrapper.handleAuthenticationErrors),
+            switchMap(handleAuthenticationErrors),
         );
     }
 
@@ -31,7 +25,7 @@ export class RestWrapper {
             method: 'POST',
             ...RestWrapper.bodyHandler(data),
         }).pipe(
-            switchMap(RestWrapper.handleAuthenticationErrors),
+            switchMap(handleAuthenticationErrors),
         );
     }
 
@@ -42,7 +36,7 @@ export class RestWrapper {
             method: 'PUT',
             ...RestWrapper.bodyHandler(data),
         }).pipe(
-            switchMap(RestWrapper.handleAuthenticationErrors),
+            switchMap(handleAuthenticationErrors),
         );
     }
 
@@ -53,7 +47,7 @@ export class RestWrapper {
             method: 'PATCH',
             ...RestWrapper.bodyHandler(data),
         }).pipe(
-            switchMap(RestWrapper.handleAuthenticationErrors),
+            switchMap(handleAuthenticationErrors),
         );
     }
 
@@ -64,7 +58,7 @@ export class RestWrapper {
             method: 'DELETE',
             ...RestWrapper.bodyHandler(data),
         }).pipe(
-            switchMap(RestWrapper.handleAuthenticationErrors),
+            switchMap(handleAuthenticationErrors),
         );
     }
 
@@ -87,29 +81,6 @@ export class RestWrapper {
         }
     }
 
-    private static handleAuthenticationErrors(response: Response): Observable<Response> {
-        if (response.ok) {
-            return of(response);
-
-        } else if (response.status === 401) {
-            notificationService.pushNotification({
-                code: NotificationCode.UNAUTHORIZED,
-                severity: Severity.error,
-                message: 'You are not login on !'
-            });
-            return throwError(() => new UnauthorizedError('You are not login on !'));
-
-        } else if (response.status === 403) {
-            notificationService.pushNotification({
-                code: NotificationCode.UNAUTHORIZED,
-                severity: Severity.error,
-                message: 'You are not login on !'
-            });
-            return throwError(() => new ForbiddenError('You are not allowed for that !'));
-        }
-
-        return of(response);
-    }
 }
 
-export default new RestWrapper(import.meta.env.VITE_API_BASE_URL as string);
+export default new RestWrapper(import.meta.env.VITE_API_BASE_URL);

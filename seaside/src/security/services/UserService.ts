@@ -1,10 +1,10 @@
 import {from, Observable, throwError} from "rxjs";
-import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
+import {HttpStatusError} from "@/common/errors/HttpStatusError";
 import {map, switchMap, take} from "rxjs/operators";
-import rest from '@/services/http/RestWrapper';
+import rest from '@/common/services/RestWrapper';
 import {Page} from "@/services/model/Page";
 import {ConstantFilters, ConstantHttpHeaders} from "@/constants";
-import {User} from "@/services/model/User";
+import {User} from "@/security/model/User";
 import {OpPatch} from "json-patch";
 
 export class UserService {
