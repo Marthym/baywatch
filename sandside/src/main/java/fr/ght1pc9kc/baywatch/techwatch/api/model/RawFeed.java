@@ -12,6 +12,7 @@ import java.time.Instant;
 public class RawFeed {
     public @NonNull String id;
     public String name;
+    public String description;
     public @NonNull URI url;
     public Instant lastWatch;
 }

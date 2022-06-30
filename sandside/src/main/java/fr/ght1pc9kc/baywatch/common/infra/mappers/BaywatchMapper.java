@@ -111,6 +111,7 @@ public interface BaywatchMapper {
                 .id(r.get(FEEDS.FEED_ID))
                 .url(URI.create(r.get(FEEDS.FEED_URL)))
                 .name(r.get(FEEDS.FEED_NAME))
+                .description(r.get(FEEDS.FEED_DESCRIPTION))
                 .lastWatch(DateUtils.toInstant(r.get(FEEDS.FEED_LAST_WATCH)))
                 .build();
     }
@@ -134,6 +135,7 @@ public interface BaywatchMapper {
     @Mapping(target = "feedId", source = "raw.id")
     @Mapping(target = "feedUrl", source = "raw.url")
     @Mapping(target = "feedName", source = "raw.name")
+    @Mapping(target = "feedDescription", source = "raw.description")
     @Mapping(target = "feedLastWatch", source = "raw.lastWatch")
     FeedsRecord feedToFeedsRecord(Feed feed);
 
