@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.scraper.domain;
 
+import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.tests.samples.FeedSamples;
 import org.junit.jupiter.api.Assertions;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import javax.xml.stream.XMLEventReader;
@@ -73,6 +75,37 @@ class RssAtomParserImplTest {
                 .verifyComplete();
     }
 
+    @ParameterizedTest(name = "{0}")
+    @CsvSource(delimiter = '|', value = {
+            "feeds/journal_du_hacker.xml | | Journal du hacker | | | https://www.journalduhacker.net/",
+            "feeds/reddit-java.xml | /r/java/top/.rss | liens vedettes : java |" +
+                    "News, Technical discussions, research papers and assorted things of interest related to the Java " +
+                    "programming language NO programming help, NO learning Java related questions, NO installing " +
+                    "or downloading Java questions, NO JVM languages - Exclusively Java!" +
+                    "| | https://www.reddit.com/r/java/top/.rss",
+            "feeds/reddit-prog.xml | /r/programming/top/.rss | liens vedettes : programming | Computer Programming | " +
+                    "| https://www.reddit.com/r/programming/top/.rss",
+            "feeds/sebosss.xml | | Le blog de Seboss666 | 'Les divagations d''un pseudo-geek curieux' " +
+                    "| Sebosss <blog@seboss66.info>" +
+                    "| https://blog.seboss666.info/feed/",
+            "feeds/spring-blog.xml | https://spring.io/blog.atom | Spring | | | https://spring.io/blog.atom",
+            "feeds/lemonde.xml | | Le Monde.fr - Actualités et Infos en France et dans le monde | " +
+                    "Le Monde.fr - 1er site d’information. Les articles du journal et toute l’actualité en continu : " +
+                    "International, France, Société, Economie, Culture, Environnement, Blogs ... | " +
+                    "| https://www.lemonde.fr/rss/une.xml",
+    })
+    void should_read_feed_headers(String resource, String expectedId, String expectedTitle, String expectedDescr,
+                                  String expectedAuthor, URI expectedLink) {
+        Mono<AtomFeed> actual = Flux.fromIterable(toXmlEventList(resource))
+                .bufferUntil(tested.firstItemEvent())
+                .next()
+                .map(tested::readFeedProperties);
+
+        StepVerifier.create(actual)
+                .expectNext(new AtomFeed(expectedId, expectedTitle, expectedDescr, expectedAuthor, expectedLink))
+                .verifyComplete();
+    }
+
     @Test
     void should_read_rss_item() {
         List<XMLEvent> xmlEvents = toXmlEventList("feeds/rss_item.xml");
@@ -104,9 +137,9 @@ class RssAtomParserImplTest {
                                 () -> assertThat(actual).extracting(RawNews::getPublication)
                                         .isEqualTo(Instant.parse("2020-11-30T08:20:58Z")),
                                 () -> assertThat(actual).extracting(RawNews::getDescription)
-                                        .isEqualTo("&amp;#32; submitted by &amp;#32; &lt;a href&#61;&#34;https://www.reddit.com/user/nonusedaccountname&#34;&gt;\n" +
-                                                "        /u/nonusedaccountname &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href&#61;&#34;https://maarten.mulders.it/2020/11/whats-new-in-maven-4/&#34;&gt;[link]&lt;/a&gt;&lt;/span&gt;\n" +
-                                                "        &amp;#32; &lt;span&gt;&lt;a href&#61;&#34;https://www.reddit.com/r/java/comments/k3rv35/whats_new_in_maven_4_maarten_on_it/&#34;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;")
+                                        .isEqualTo("&amp;#32; submitted by &amp;#32; &lt;a href&#61;&#34;https://www.reddit.com/user/nonusedaccountname&#34;&gt; " +
+                                                "/u/nonusedaccountname &lt;/a&gt; &lt;br/&gt; &lt;span&gt;&lt;a href&#61;&#34;https://maarten.mulders.it/2020/11/whats-new-in-maven-4/&#34;&gt;[link]&lt;/a&gt;&lt;/span&gt; " +
+                                                "&amp;#32; &lt;span&gt;&lt;a href&#61;&#34;https://www.reddit.com/r/java/comments/k3rv35/whats_new_in_maven_4_maarten_on_it/&#34;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;")
                         )
                 ).verifyComplete();
     }

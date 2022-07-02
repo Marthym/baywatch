@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.scraper.api;
 
+import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import reactor.core.publisher.Mono;
@@ -24,7 +25,17 @@ public interface RssAtomParser {
     Predicate<XMLEvent> itemEndEvent();
 
     /**
-     * Parsing an homogenous list of tags composing an item ou entry
+     * Parsing a homogenous list of tags composing a feed entity
+     *
+     * @param events The {@link XMLEvent} composing a feed entity
+     * @return The {@link RawNews} representing the feed entry
+     */
+    default AtomFeed readFeedProperties(List<XMLEvent> events) {
+        throw new IllegalStateException("Not implemented !");
+    }
+
+    /**
+     * Parsing a homogenous list of tags composing an item ou entry
      *
      * @param events The {@link XMLEvent} composing a feed entry
      * @param feed   The parent feed. Used for absolutize link if necessary

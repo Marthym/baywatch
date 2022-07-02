@@ -14,6 +14,15 @@
         <description>Les divagations d&#039;un pseudo-geek curieux</description>
         <lastBuildDate>Wed, 18 Nov 2020 17:00:47 +0000</lastBuildDate>
         <language>fr-FR</language>
+        <image>
+            <url>https://blog.seboss666.info/favicon.ico</url>
+            <title>Le blog de Seboss666</title>
+            <link>https://blog.seboss666.info/</link>
+        </image>
+        <author>
+            <name>Sebosss</name>
+            <email>blog@seboss66.info</email>
+        </author>
         <sy:updatePeriod>hourly</sy:updatePeriod>
         <sy:updateFrequency>1</sy:updateFrequency>
         <generator>https://wordpress.org/?v=4.9.15</generator>

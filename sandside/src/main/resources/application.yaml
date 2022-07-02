@@ -8,8 +8,8 @@ spring:
   jooq:
     sql-dialect: sqlite
   graphql:
-    graphiql:
-      enabled: ${BAYWATCH_GRAPHIQL_ENABLE:false}
+    graphiql.enabled: ${BAYWATCH_GRAPHIQL_ENABLE:false}
+    schema.introspection.enabled: ${BAYWATCH_GRAPHQL_INTROSPECTION:false}
     path: /api/g
 
 server:
