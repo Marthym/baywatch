@@ -8,11 +8,13 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
+import fr.ght1pc9kc.baywatch.techwatch.domain.ports.ScraperServicePort;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
 
 import java.util.Collection;
 import java.util.Set;
@@ -24,6 +26,7 @@ public class FeedServiceImpl implements FeedService {
     private static final Set<String> ALLOWED_PROTOCOL = Set.of("http", "https");
 
     private final FeedPersistencePort feedRepository;
+    private final ScraperServicePort scraperService;
     private final AuthenticationFacade authFacade;
 
     @Override
@@ -81,7 +84,29 @@ public class FeedServiceImpl implements FeedService {
         }
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .flatMap(u -> feedRepository.persist(toPersist, u.id));
+                .flatMap(u -> completeFeedData(toPersist).map(f -> Tuples.of(f, u)))
+                .flatMap(t -> feedRepository.persist(t.getT1(), t.getT2().id));
+    }
+
+    private Mono<? extends Collection<Feed>> completeFeedData(Collection<Feed> feeds) {
+        return Flux.fromIterable(feeds)
+                .parallel(4)
+                .flatMap(f -> scraperService.fetchFeedData(f.getUrl()).map(a -> Tuples.of(f, a)))
+                .sequential()
+                .map(t -> {
+                    Feed oldf = t.getT1();
+                    Feed newf = t.getT2();
+                    return Feed.builder()
+                            .raw(RawFeed.builder()
+                                    .id(oldf.getId())
+                                    .description(newf.getDescription())
+                                    .name(newf.getName())
+                                    .url(oldf.getUrl())
+                                    .build())
+                            .tags(oldf.getTags())
+                            .name(oldf.getName())
+                            .build();
+                }).collectList();
     }
 
     @Override
