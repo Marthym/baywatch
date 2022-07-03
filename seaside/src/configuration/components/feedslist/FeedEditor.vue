@@ -1,17 +1,28 @@
 <template v-if="isOpened">
   <ModalWindow :title="modalTitle" :is-visible="isOpened">
     <form class="form-control" @submit.prevent="onSaveFeed">
-      <label class="label">
-        <span class="label-text">Nom</span>
-      </label>
-      <input v-model="feed.name" type="text" placeholder="nom" class="input input-bordered"
-             :class="{'input-error': errors.indexOf('name') > -1}">
-      <label class="label">
-        <span class="label-text">URL</span>
-      </label>
-      <input v-model="feed.url" type="url" placeholder="https://..." class="input input-bordered"
-             :class="{'input-error': errors.indexOf('url') > -1}">
-      <TagInput v-model="feed.tags" :available-tags-handler="() => listAvailableTags()"/>
+      <fieldset :disabled="isFormLock" class="flex flex-col">
+        <legend></legend>
+        <label class="label" for="feedUrl">
+          <span class="label-text">URL</span>
+        </label>
+        <input id="feedUrl" v-model="feed.url" type="url" placeholder="https://..." class="input input-bordered"
+               :class="{'input-error': errors.indexOf('url') > -1}"
+               @blur="onUriBlur">
+        <label class="label" for="feedName">
+          <span class="label-text">Nom</span>
+        </label>
+        <input id="feedName" v-model="feed.name" type="text" placeholder="nom" class="input input-bordered"
+               :class="{'input-error': errors.indexOf('name') > -1}">
+
+        <label class="label" for="feedDescription">
+        <span class="label-text">Description</span>
+        </label>
+        <textarea id="feedDescription" v-model="feed.description" rows="3"
+                  class="textarea italic" readonly/>
+
+        <TagInput v-model="feed.tags" :available-tags-handler="() => listAvailableTags()"/>
+      </fieldset>
       <button class="hidden" type="submit"/>
     </form>
     <template v-slot:actions>
@@ -23,18 +34,12 @@
 
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
-import {Feed} from '@/configuration/model/Feed';
+import {Feed} from '@/configuration/model/Feed.type';
 import {Observable, Subject} from "rxjs";
 import ModalWindow from "@/shared/components/ModalWindow.vue";
 import TagInput from "@/shared/components/TagInput.vue";
 import tagsService from '@/techwatch/services/TagsService';
-
-const URL_PATTERN = new RegExp('^(https?:\\/\\/)?' + // protocol
-    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-    '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-    '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-    '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+import feedService, {URL_PATTERN} from "@/configuration/services/FeedService";
 
 @Options({
   name: 'FeedEditor',
@@ -49,6 +54,7 @@ export default class FeedEditor extends Vue {
   private modalTitle = 'Ajouter un fil';
   private subject?: Subject<Feed>;
   private errors: string[] = [];
+  private isFormLock = false;
 
   public openEmpty(): Observable<Feed> {
     return this.openFeed({} as Feed);
@@ -81,6 +87,18 @@ export default class FeedEditor extends Vue {
       this.subject?.next(this.feed);
       this.resetAndCloseModal();
     }
+  }
+
+  private onUriBlur(): void {
+    if (!URL_PATTERN.test(this.feed.url)) {
+      this.errors.push('url');
+      return
+    }
+    this.isFormLock = true;
+    feedService.fetchFeedInformation(this.feed.url).subscribe({
+      next: f => Object.assign(this.feed, {...f, url: this.feed.url}),
+      complete: () => this.isFormLock = false,
+    });
   }
 
   private listAvailableTags(): Observable<string[]> {

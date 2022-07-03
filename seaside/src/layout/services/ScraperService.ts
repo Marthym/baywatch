@@ -1,7 +1,6 @@
-import {from, Observable, throwError} from "rxjs";
-import rest from "@/common/services/RestWrapper";
-import {map, switchMap, take} from "rxjs/operators";
-import {HttpStatusError} from "@/common/errors/HttpStatusError";
+import {Observable, throwError} from "rxjs";
+import gql from '@/common/services/GraphqlWrapper';
+import {map, take} from "rxjs/operators";
 
 const URL_PATTERN = new RegExp('^(https?:\\/\\/)?' + // protocol
     '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
@@ -11,6 +10,13 @@ const URL_PATTERN = new RegExp('^(https?:\\/\\/)?' + // protocol
     '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
 
 export class ScraperService {
+    private static readonly SCRAP_SINGLE_NEWS_REQUEST = `#graphql
+    mutation ScrapSingleNews($newsLink: URI!) {
+        scrapSimpleNews(uri: $newsLink) {
+            id
+        }
+    }`;
+
     importStandaloneNews(link?: string): Observable<string> {
         if (link === undefined) {
             return throwError(() => new Error('Link is mandatory !'));
@@ -18,18 +24,9 @@ export class ScraperService {
             return throwError(() => new Error('Argument link must be a valid URL !'));
         }
 
-        const encodedLink = encodeURIComponent(link);
-        return rest.post(`/scrap/news/${encodedLink}`).pipe(
-            switchMap(response => {
-                if (response.ok) {
-                    return from(response.json());
-                } else {
-                    return from(response.json()).pipe(switchMap(j =>
-                        throwError(() => new HttpStatusError(response.status, j.message))));
-                }
-            }),
+        return gql.send(ScraperService.SCRAP_SINGLE_NEWS_REQUEST, {newsLink: link}).pipe(
             take(1),
-            map(n => ('_id' in n) ? n._id : n)
+            map(n => ('id' in n) ? n._id : n)
         );
     }
 }
