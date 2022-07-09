@@ -3,9 +3,11 @@ package fr.ght1pc9kc.baywatch.scraper.domain;
 import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
+import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.owasp.html.PolicyFactory;
 import org.owasp.html.Sanitizers;
 import reactor.core.publisher.Mono;
@@ -28,16 +30,25 @@ import java.util.function.Predicate;
 @Slf4j
 public final class RssAtomParserImpl implements RssAtomParser {
     private static final Set<String> ALLOWED_PROTOCOL = Set.of("http", "https");
-    private static final String ITEM = "item";
-    private static final String ENTRY = "entry";
-    private static final String TITLE = "title";
-    private static final String DESCRIPTION = "description";
+    private static final String CHANNEL = "channel";
     private static final String CONTENT = "content";
+    private static final String DESCRIPTION = "description";
+    private static final String EMAIL = "email";
+    private static final String ENTRY = "entry";
+    private static final String FEED = "feed";
+    private static final String ID = "id";
+    private static final String ITEM = "item";
     private static final String LINK = "link";
+    private static final String MANAGING_EDITOR = "managingEditor";
+    private static final String NAME = "name";
     private static final String PUB_DATE = "pubDate";
+    private static final String SUBTITLE = "subtitle";
+    private static final String TITLE = "title";
     private static final String UPDATED = "updated";
 
     private static final QName HREF = new QName("href");
+    private static final QName REL = new QName("rel");
+    private static final String SELF = "self";
     private static final PolicyFactory HTML_POLICY = Sanitizers.FORMATTING;
 
     @Override
@@ -54,6 +65,65 @@ public final class RssAtomParserImpl implements RssAtomParser {
                 ITEM.equals(e.asEndElement().getName().getLocalPart())
                         || ENTRY.equals(e.asEndElement().getName().getLocalPart())
         );
+    }
+
+    @Override
+    public AtomFeed readFeedProperties(List<XMLEvent> events) {
+        String id = null;
+        String title = null;
+        String description = null;
+        String author = null;
+        URI link = null;
+
+        int deepLevel = -1;
+
+        for (int i = 0; i < events.size(); i++) {
+            final XMLEvent nextEvent = events.get(i);
+            if (nextEvent.isStartElement()) {
+                final StartElement startElement = nextEvent.asStartElement();
+
+                final int idx = i;
+
+                switch (startElement.getName().getLocalPart()) {
+                    case CHANNEL, FEED -> deepLevel = -1;
+                    case ID -> id = readElementText(events, idx);
+                    case TITLE -> title = readElementText(events, idx);
+                    case DESCRIPTION, SUBTITLE -> {
+                        String tmpDescr = readElementText(events, idx);
+                        if (!StringUtils.isBlank(tmpDescr))
+                            description = tmpDescr;
+                    }
+                    case LINK -> link = onFeedLink(link, deepLevel, events, idx);
+                    case NAME, MANAGING_EDITOR -> author = Optional.ofNullable(author)
+                            .map(a -> readElementText(events, idx) + " " + a)
+                            .orElse(readElementText(events, idx));
+                    case EMAIL -> author = Optional.ofNullable(author)
+                            .map(a -> a + " <" + readElementText(events, idx) + ">")
+                            .orElse("<" + readElementText(events, idx) + ">");
+                    default -> {/* ignore */}
+                }
+                deepLevel++;
+
+            } else if (nextEvent.isEndElement()) {
+                deepLevel--;
+            }
+        }
+        return new AtomFeed(id, title, description, author, link);
+    }
+
+    private static URI onFeedLink(URI old, int deepLevel, List<XMLEvent> events, int idx) {
+        if (deepLevel == 0) {
+            StartElement startElement = events.get(idx).asStartElement();
+            String relAttr = Optional.ofNullable(startElement.getAttributeByName(REL))
+                    .map(Attribute::getValue).orElse(null);
+            if ((old == null && relAttr == null) || SELF.equals(relAttr)) {
+                return Optional.ofNullable(startElement.getAttributeByName(HREF))
+                        .map(Attribute::getValue)
+                        .map(URI::create)
+                        .orElseGet(Exceptions.wrap().supplier(() -> URI.create(readElementText(events, idx))));
+            }
+        }
+        return old;
     }
 
     @Override
@@ -159,7 +229,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
         return bldr.publication(datetime);
     }
 
-    private String readElementText(List<XMLEvent> events, int idx) {
+    private static String readElementText(List<XMLEvent> events, int idx) {
         StringWriter buf = new StringWriter(1024);
         for (int i = idx + 1; i < events.size() - 1; i++) {
             XMLEvent textEvent = events.get(i);
@@ -178,6 +248,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
                 break;
             }
         }
-        return buf.getBuffer().toString().trim();
+
+        return StringUtils.normalizeSpace(buf.getBuffer().toString());
     }
 }

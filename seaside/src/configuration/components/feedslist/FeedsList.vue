@@ -78,7 +78,7 @@ import FeedListItem from "@/configuration/components/feedslist/FeedsListItem.vue
 import {FeedView} from "@/configuration/components/feedslist/model/FeedView";
 import {filter, map, switchMap, take, tap} from "rxjs/operators";
 import {Observable} from "rxjs";
-import {Feed} from "@/configuration/model/Feed";
+import {Feed} from "@/configuration/model/Feed.type";
 import FeedEditor from "@/configuration/components/feedslist/FeedEditor.vue";
 import feedsService from "@/configuration/services/FeedService";
 import opmlService from "@/techwatch/services/OpmlService";

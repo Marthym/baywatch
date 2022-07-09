@@ -1,0 +1,24 @@
+type AtomFeed {
+    id: ID,
+    title: String,
+    description: String,
+    author: String,
+    link: URI!
+}
+
+type AtomEntry {
+    id: ID,
+    title: String,
+    description: String,
+    author: String,
+    link: URI!
+    feeds: [String]
+}
+
+extend type Query {
+    scrapFeedHeader(link: URI): AtomFeed
+}
+
+extend type Mutation {
+    scrapSimpleNews(uri: URI): AtomEntry
+}

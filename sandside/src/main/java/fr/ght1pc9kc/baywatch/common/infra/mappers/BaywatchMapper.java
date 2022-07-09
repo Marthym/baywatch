@@ -90,7 +90,8 @@ public interface BaywatchMapper {
                 ? State.of(r.get(NEWS_USER_STATE.NURS_STATE))
                 : State.NONE;
         Set<String> feeds = (r.indexOf(NEWS_FEEDS.NEFE_FEED_ID.getName()) >= 0)
-                ? Optional.of(r.get(NEWS_FEEDS.NEFE_FEED_ID.getName(), String.class).split(","))
+                ? Optional.ofNullable(r.get(NEWS_FEEDS.NEFE_FEED_ID.getName(), String.class))
+                .map(s -> s.split(","))
                 .map(Set::of).orElse(Set.of())
                 : Set.of();
         Set<String> tags = (r.indexOf(FEEDS_USERS.FEUS_TAGS.getName()) >= 0)
@@ -111,6 +112,7 @@ public interface BaywatchMapper {
                 .id(r.get(FEEDS.FEED_ID))
                 .url(URI.create(r.get(FEEDS.FEED_URL)))
                 .name(r.get(FEEDS.FEED_NAME))
+                .description(r.get(FEEDS.FEED_DESCRIPTION))
                 .lastWatch(DateUtils.toInstant(r.get(FEEDS.FEED_LAST_WATCH)))
                 .build();
     }
@@ -134,6 +136,7 @@ public interface BaywatchMapper {
     @Mapping(target = "feedId", source = "raw.id")
     @Mapping(target = "feedUrl", source = "raw.url")
     @Mapping(target = "feedName", source = "raw.name")
+    @Mapping(target = "feedDescription", source = "raw.description")
     @Mapping(target = "feedLastWatch", source = "raw.lastWatch")
     FeedsRecord feedToFeedsRecord(Feed feed);
 

@@ -55,7 +55,7 @@ class FeedScraperServiceTest {
 
     private final NewsEnrichmentService mockNewsEnrichmentService = mock(NewsEnrichmentService.class);
 
-    private FeedScraperService tested;
+    private FeedScraperServiceImpl tested;
     private RssAtomParser rssAtomParserMock;
     private SystemMaintenanceService systemMaintenanceMock;
     private ExchangeFunction mockExchangeFunction;
@@ -214,7 +214,7 @@ class FeedScraperServiceTest {
         when(mockNewsEnrichmentService.applyNewsFilters(any(News.class)))
                 .thenAnswer(((Answer<Mono<News>>) answer -> Mono.just(answer.getArgument(0))));
 
-        tested = new FeedScraperService(SCRAPER_PROPERTIES,
+        tested = new FeedScraperServiceImpl(SCRAPER_PROPERTIES,
                 systemMaintenanceMock, mockWebClient, rssAtomParserMock,
                 Collections.emptyList(), Map.of(), mockNewsEnrichmentService);
         tested.setClock(Clock.fixed(Instant.parse("2022-04-30T12:35:41Z"), ZoneOffset.UTC));

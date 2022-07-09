@@ -37,7 +37,8 @@
         <unbescape.version>1.1.6.RELEASE</unbescape.version>
         <ulid-creator.version>4.2.1</ulid-creator.version>
         <aalto-xml.version>1.3.2</aalto-xml.version>
-        <mapstruct.version>1.5.1.Final</mapstruct.version>
+        <mapstruct.version>1.5.2.Final</mapstruct.version>
+        <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
         <nimbus-jose-jwt.version>9.23</nimbus-jose-jwt.version>
         <findbugs.version>3.0.2</findbugs.version>
         <jetbrains.version>23.0.0</jetbrains.version>
@@ -45,6 +46,7 @@
         <testy-box.version>1.8.0</testy-box.version>
 
         <maven-clean-plugin.version>3.2.0</maven-clean-plugin.version>
+        <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
         <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
         <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>

@@ -1,7 +1,7 @@
-package fr.ght1pc9kc.baywatch.techwatch.infra.adapters;
+package fr.ght1pc9kc.baywatch.security.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.security.domain.ports.JwtTokenProvider;
 import fr.ght1pc9kc.baywatch.security.domain.JwtBaywatchAuthenticationProviderImpl;
+import fr.ght1pc9kc.baywatch.security.domain.ports.JwtTokenProvider;
 import lombok.experimental.Delegate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

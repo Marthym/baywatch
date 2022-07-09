@@ -2,9 +2,11 @@ package fr.ght1pc9kc.baywatch.scraper.domain;
 
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperPlugin;
+import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
 import fr.ght1pc9kc.baywatch.scraper.api.NewsEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapingHandler;
+import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScraperConfig;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
@@ -47,7 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
-public final class FeedScraperService implements Runnable {
+public final class FeedScraperServiceImpl implements Runnable, FeedScraperService {
 
     private static final Set<String> SUPPORTED_SCHEMES = Set.of("http", "https");
     public static final String ERROR_CLASS_MESSAGE = "{}: {}";
@@ -71,12 +73,12 @@ public final class FeedScraperService implements Runnable {
     @Setter(value = AccessLevel.PACKAGE, onMethod = @__({@VisibleForTesting}))
     private Clock clock = Clock.systemUTC();
 
-    public FeedScraperService(ScraperConfig properties,
-                              SystemMaintenanceService systemMaintenanceService,
-                              WebClient webClient, RssAtomParser feedParser,
-                              Collection<ScrapingHandler> scrapingHandlers,
-                              Map<String, FeedScraperPlugin> plugins,
-                              NewsEnrichmentService newsEnrichmentService
+    public FeedScraperServiceImpl(ScraperConfig properties,
+                                  SystemMaintenanceService systemMaintenanceService,
+                                  WebClient webClient, RssAtomParser feedParser,
+                                  Collection<ScrapingHandler> scrapingHandlers,
+                                  Map<String, FeedScraperPlugin> plugins,
+                                  NewsEnrichmentService newsEnrichmentService
     ) {
         this.properties = properties;
         this.systemMaintenanceService = systemMaintenanceService;
@@ -215,5 +217,27 @@ public final class FeedScraperService implements Runnable {
     @VisibleForTesting
     public boolean isScraping() {
         return lock.availablePermits() == 0;
+    }
+
+    @Override
+    public Mono<AtomFeed> scrapFeedHeader(URI link) {
+        return http.get()
+                .uri(link)
+                .accept(MediaType.APPLICATION_ATOM_XML)
+                .accept(MediaType.APPLICATION_RSS_XML)
+                .acceptCharset(StandardCharsets.UTF_8)
+                .exchangeToFlux(response -> {
+                    if (!response.statusCode().is2xxSuccessful()) {
+                        log.info("Host {} respond {}", link.getHost(), response.statusCode());
+                        return Flux.empty();
+                    }
+                    return this.xmlEventDecoder.decode(
+                            response.bodyToFlux(DataBuffer.class),
+                            ResolvableType.NONE, null, null);
+                })
+
+                .bufferUntil(feedParser.firstItemEvent())
+                .next()
+                .map(feedParser::readFeedProperties);
     }
 }
