@@ -63,6 +63,14 @@ public class SystemMaintenanceServiceImpl implements SystemMaintenanceService {
     }
 
     @Override
+    public Flux<String> newsIdList(PageRequest pageRequest) {
+        return authFacade.getConnectedUser()
+                .filter(user -> Role.SYSTEM == user.self.role)
+                .switchIfEmpty(Mono.error(() -> new UnauthorizedException(EXCEPTION_MESSAGE)))
+                .flatMapMany(u -> newsRepository.listId(QueryContext.from(pageRequest)));
+    }
+
+    @Override
     public Mono<Integer> newsLoad(Collection<News> toLoad) {
         return authFacade.getConnectedUser()
                 .filter(user -> Role.SYSTEM == user.self.role)

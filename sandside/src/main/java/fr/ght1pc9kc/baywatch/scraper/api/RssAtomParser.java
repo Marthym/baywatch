@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.scraper.api;
 
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import reactor.core.publisher.Mono;
 
@@ -41,5 +41,5 @@ public interface RssAtomParser {
      * @param feed   The parent feed. Used for absolutize link if necessary
      * @return The {@link RawNews} representing the feed entry
      */
-    Mono<RawNews> readEntryEvents(List<XMLEvent> events, RawFeed feed);
+    Mono<RawNews> readEntryEvents(List<XMLEvent> events, ScrapedFeed feed);
 }

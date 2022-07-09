@@ -1,18 +1,15 @@
 package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
-import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperProperties;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mapstruct.factory.Mappers;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -23,14 +20,13 @@ import java.time.Period;
 import java.time.ZoneOffset;
 import java.util.List;
 
+import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class PurgeNewsActionTest {
-
-    private static final BaywatchMapper mapper = Mappers.getMapper(BaywatchMapper.class);
 
     private PurgeNewsHandler tested;
     private NewsPersistencePort newsPersistenceMock;
@@ -46,7 +42,7 @@ class PurgeNewsActionTest {
         tested = new PurgeNewsHandler(newsPersistenceMock, statePersistenceMock, scraperProperties)
                 .clock(Clock.fixed(Instant.parse("2020-12-18T22:42:42Z"), ZoneOffset.UTC));
 
-        when(newsPersistenceMock.list(any())).thenReturn(testDataForPersistenceList());
+        when(newsPersistenceMock.listId(any())).thenReturn(testDataForPersistenceList());
         when(statePersistenceMock.list(any())).thenReturn(testDataForPersistenceListState());
         when(newsPersistenceMock.delete(any())).thenReturn(Mono.just(4));
     }
@@ -62,10 +58,10 @@ class PurgeNewsActionTest {
         ));
     }
 
-    private Flux<News> testDataForPersistenceList() {
+    private Flux<String> testDataForPersistenceList() {
         return Flux.fromStream(
                 NewsRecordSamples.SAMPLE.records().subList(0, 5).stream()
-                        .map(mapper::recordToNews)
+                        .map(r -> r.get(NEWS.NEWS_ID))
         );
     }
 

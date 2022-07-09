@@ -39,6 +39,8 @@ public interface SystemMaintenanceService {
      */
     Flux<RawNews> newsList(PageRequest pageRequest);
 
+    Flux<String> newsIdList(PageRequest pageRequest);
+
     Mono<Integer> newsLoad(Collection<News> toLoad);
 
     /**

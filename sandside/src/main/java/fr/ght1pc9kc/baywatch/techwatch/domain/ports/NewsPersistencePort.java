@@ -16,6 +16,10 @@ public interface NewsPersistencePort {
 
     Flux<News> list(QueryContext qCtx);
 
+    default Flux<String> listId(QueryContext qCtx) {
+        return list().map(News::getId);
+    }
+
     Mono<Integer> persist(Collection<News> toCreate);
 
     Mono<Integer> delete(Collection<String> ids);

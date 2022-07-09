@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jooq.Condition;
 import org.jooq.Cursor;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.JoinType;
 import org.jooq.Record;
 import org.jooq.Result;
@@ -58,7 +59,7 @@ public class NewsRepository implements NewsPersistencePort {
 
     @Override
     public Flux<News> list(QueryContext qCtx) {
-        final Select<Record> query = buildSelectQuery(qCtx, dsl);
+        final Select<Record> query = buildSelectQuery(List.of(NEWS.fields()), qCtx, dsl);
 
         return Flux.<Record>create(sink -> {
                     Cursor<Record> cursor = query.fetchLazy();
@@ -73,6 +74,24 @@ public class NewsRepository implements NewsPersistencePort {
                     });
                 }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(baywatchMapper::recordToNews);
+    }
+
+    @Override
+    public Flux<String> listId(QueryContext qCtx) {
+        final Select<Record> query = buildSelectQuery(List.of(NEWS.NEWS_ID), qCtx, dsl);
+
+        return Flux.<String>create(sink -> {
+            Cursor<Record> cursor = query.fetchLazy();
+            sink.onRequest(n -> {
+                int count = (int) n;
+                Result<Record> rs = cursor.fetchNext(count);
+                rs.forEach(r -> sink.next(r.get(NEWS.NEWS_ID)));
+                if (rs.size() < count) {
+                    sink.complete();
+                    cursor.close();
+                }
+            });
+        }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler);
     }
 
     @Override
@@ -122,23 +141,23 @@ public class NewsRepository implements NewsPersistencePort {
 
     @Override
     public Mono<Integer> count(QueryContext qCtx) {
-        SelectQuery<Record> select = buildSelectQuery(qCtx, dsl);
+        SelectQuery<Record> select = buildSelectQuery(List.of(NEWS.NEWS_ID), qCtx, dsl);
         return Mono.fromCallable(() -> dsl.fetchCount(select))
                 .subscribeOn(databaseScheduler);
     }
 
-    private static SelectQuery<Record> buildSelectQuery(QueryContext qCtx, DSLContext dsl) {
+    private static SelectQuery<Record> buildSelectQuery(Collection<Field<?>> fields, QueryContext qCtx, DSLContext dsl) {
         Condition conditions = Optional.ofNullable(qCtx.filter).map(f -> f.accept(NEWS_CONDITION_VISITOR))
                 .orElse(DSL.noCondition());
 
         SelectQuery<Record> select = dsl.selectQuery();
-        select.addSelect(NEWS.fields());
+        select.addSelect(fields);
         select.addFrom(NEWS);
         select.addConditions(conditions);
 
         select.addSelect(DSL.groupConcat(NEWS_FEEDS.NEFE_FEED_ID).as(NEWS_FEEDS.NEFE_FEED_ID));
         select.addJoin(NEWS_FEEDS, JoinType.LEFT_OUTER_JOIN, NEWS.NEWS_ID.eq(NEWS_FEEDS.NEFE_NEWS_ID));
-        select.addGroupBy(NEWS.fields());
+        select.addGroupBy(fields);
 
         if (!StringUtils.isBlank(qCtx.userId)) {
             select.addSelect(NEWS_STATE.NURS_STATE);

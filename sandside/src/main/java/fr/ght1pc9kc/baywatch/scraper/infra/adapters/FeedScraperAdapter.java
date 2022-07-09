@@ -8,6 +8,7 @@ import fr.ght1pc9kc.baywatch.scraper.api.ScrapingHandler;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.FeedScraperServiceImpl;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScraperConfig;
+import fr.ght1pc9kc.baywatch.scraper.domain.ports.NewsMaintenancePort;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperProperties;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperQualifier;
 import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
@@ -31,7 +32,7 @@ public class FeedScraperAdapter implements FeedScraperService {
     private final FeedScraperServiceImpl scraper;
     private final boolean startScraper;
 
-    public FeedScraperAdapter(SystemMaintenanceService systemMaintenanceService,
+    public FeedScraperAdapter(NewsMaintenancePort newsMaintenancePort,
                               ScraperProperties properties,
                               RssAtomParser rssAtomParser,
                               Collection<ScrapingHandler> scrappingHandlers,
@@ -44,7 +45,7 @@ public class FeedScraperAdapter implements FeedScraperService {
         this.startScraper = properties.start();
         ScraperConfig config = new ScraperConfig(properties.frequency(), properties.conservation());
         this.scraper = new FeedScraperServiceImpl(
-                config, systemMaintenanceService, webClient,
+                config, newsMaintenancePort, webClient,
                 rssAtomParser, scrappingHandlers, plugins, newsEnrichmentService);
     }
 

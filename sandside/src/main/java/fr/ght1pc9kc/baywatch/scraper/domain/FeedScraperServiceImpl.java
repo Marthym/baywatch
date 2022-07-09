@@ -7,14 +7,12 @@ import fr.ght1pc9kc.baywatch.scraper.api.NewsEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapingHandler;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScraperConfig;
+import fr.ght1pc9kc.baywatch.scraper.domain.ports.NewsMaintenancePort;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
-import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -63,7 +61,7 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
     private final WebClient http;
 
     private final ScraperConfig properties;
-    private final SystemMaintenanceService systemMaintenanceService;
+    private final NewsMaintenancePort newsMaintenance;
     private final RssAtomParser feedParser;
     private final Collection<ScrapingHandler> scrapingHandlers;
     private final Map<String, FeedScraperPlugin> plugins;
@@ -74,14 +72,14 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
     private Clock clock = Clock.systemUTC();
 
     public FeedScraperServiceImpl(ScraperConfig properties,
-                                  SystemMaintenanceService systemMaintenanceService,
+                                  NewsMaintenancePort newsMaintenance,
                                   WebClient webClient, RssAtomParser feedParser,
                                   Collection<ScrapingHandler> scrapingHandlers,
                                   Map<String, FeedScraperPlugin> plugins,
                                   NewsEnrichmentService newsEnrichmentService
     ) {
         this.properties = properties;
-        this.systemMaintenanceService = systemMaintenanceService;
+        this.newsMaintenance = newsMaintenance;
         this.feedParser = feedParser;
         this.scrapingHandlers = scrapingHandlers;
         this.plugins = plugins;
@@ -122,13 +120,12 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
                 return;
             }
             log.info("Start scraping ...");
-            Mono<Set<String>> alreadyHave = systemMaintenanceService.newsList(PageRequest.all())
-                    .map(RawNews::getId)
+            Mono<Set<String>> alreadyHave = newsMaintenance.listAllNewsId()
                     .collect(Collectors.toUnmodifiableSet())
                     .cache();
 
             Flux.concat(scrapingHandlers.stream().map(ScrapingHandler::before).toList())
-                    .thenMany(systemMaintenanceService.feedList())
+                    .thenMany(newsMaintenance.feedList())
                     .parallel(4).runOn(scraperScheduler)
                     .concatMap(this::wgetFeedNews)
                     .sequential()
@@ -140,7 +137,7 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
 
                     .filterWhen(n -> alreadyHave.map(l -> !l.contains(n.getId())))
                     .buffer(100)
-                    .flatMap(systemMaintenanceService::newsLoad)
+                    .flatMap(newsMaintenance::newsLoad)
 
                     .reduce(Integer::sum)
                     .flatMap(count -> Flux.concat(scrapingHandlers.stream().map(h -> h.after(count)).toList()).then())
@@ -163,10 +160,10 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
         }
     }
 
-    private Flux<News> wgetFeedNews(RawFeed feed) {
-        String feedHost = feed.getUrl().getHost();
+    private Flux<News> wgetFeedNews(ScrapedFeed feed) {
+        String feedHost = feed.link().getHost();
         FeedScraperPlugin hostPlugin = plugins.get(feedHost);
-        URI feedUrl = (hostPlugin != null) ? hostPlugin.uriModifier(feed.getUrl()) : feed.getUrl();
+        URI feedUrl = (hostPlugin != null) ? hostPlugin.uriModifier(feed.link()) : feed.link();
 
         if (!SUPPORTED_SCHEMES.contains(feedUrl.getScheme())) {
             log.warn("Unsupported scheme for {} !", feedUrl);
@@ -202,7 +199,7 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
                 .takeWhile(news -> news.getPublication().isAfter(maxAge))
                 .map(raw -> News.builder()
                         .raw(raw)
-                        .feeds(Set.of(feed.getId()))
+                        .feeds(Set.of(feed.id()))
                         .state(State.NONE)
                         .build())
 

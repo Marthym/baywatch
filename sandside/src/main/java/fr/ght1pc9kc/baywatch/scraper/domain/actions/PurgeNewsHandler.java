@@ -2,7 +2,6 @@ package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapingHandler;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperProperties;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
@@ -39,9 +38,7 @@ public class PurgeNewsHandler implements ScrapingHandler {
     public Mono<Void> before() {
         LocalDateTime maxPublicationPasDate = LocalDateTime.now(clock).minus(scraperProperties.conservation());
         Criteria criteria = Criteria.property(PUBLICATION).lt(maxPublicationPasDate);
-        return newsPersistence.list(QueryContext.all(criteria))
-                .map(News::getId)
-                .collectList()
+        return newsPersistence.listId(QueryContext.all(criteria)).collectList()
                 .flatMapMany(this::keepStaredNewsIds)
                 .buffer(DELETE_BUFFER_SIZE)
                 .flatMap(newsPersistence::delete)

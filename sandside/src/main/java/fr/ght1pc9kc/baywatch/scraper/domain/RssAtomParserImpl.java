@@ -4,7 +4,7 @@ import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -127,7 +127,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
     }
 
     @Override
-    public Mono<RawNews> readEntryEvents(List<XMLEvent> events, RawFeed feed) {
+    public Mono<RawNews> readEntryEvents(List<XMLEvent> events, ScrapedFeed feed) {
         RawNews.RawNewsBuilder bldr = null;
         for (int i = 0; i < events.size(); i++) {
             final XMLEvent nextEvent = events.get(i);
@@ -156,7 +156,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
         RawNews rawNews = bldr.build();
         if (rawNews.getLink().getScheme() == null
                 || !ALLOWED_PROTOCOL.contains(rawNews.getLink().getScheme())) {
-            log.warn("Illegal URL detected : {} in feed :{}", rawNews.getLink(), feed.getName());
+            log.warn("Illegal URL detected : {} in feed :{}", rawNews.getLink(), feed.id().substring(0, 10));
             return Mono.empty();
         }
 
@@ -192,7 +192,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
         }
     }
 
-    private RawNews.RawNewsBuilder onLink(RawNews.RawNewsBuilder bldr, RawFeed feed,
+    private RawNews.RawNewsBuilder onLink(RawNews.RawNewsBuilder bldr, ScrapedFeed feed,
                                           List<XMLEvent> events, int idx) {
         if (bldr == null) {
             return null;
@@ -203,7 +203,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
                 .orElseGet(Exceptions.wrap().supplier(() -> readElementText(events, idx)));
         URI link = URI.create(href.trim());
         if (!link.isAbsolute()) {
-            link = feed.getUrl().resolve(link);
+            link = feed.link().resolve(link);
         }
         return bldr.id(Hasher.identify(link)).link(link);
     }
