@@ -9,6 +9,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.FeedService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
+import fr.ght1pc9kc.baywatch.techwatch.domain.ports.ScraperServicePort;
 import fr.ght1pc9kc.baywatch.tests.samples.FeedSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
@@ -50,7 +51,10 @@ class FeedServiceImplTest {
         when(mockFeedRepository.persist(any())).thenReturn(Flux.empty().then());
         when(mockFeedRepository.persist(any(), any())).thenReturn(Flux.empty().then());
         when(mockFeedRepository.count(any())).thenReturn(Mono.just(42));
-        tested = new FeedServiceImpl(mockFeedRepository, mockAuthFacade);
+
+        ScraperServicePort mockScraperService = mock(ScraperServicePort.class);
+        when(mockScraperService.fetchFeedData(any())).thenReturn(Mono.just(FeedSamples.JEDI));
+        tested = new FeedServiceImpl(mockFeedRepository, mockScraperService, mockAuthFacade);
     }
 
     @Test
@@ -107,13 +111,12 @@ class FeedServiceImplTest {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(okenobi));
         ArgumentCaptor<List<Feed>> captor = ArgumentCaptor.forClass(List.class);
 
-        Feed feed = BAYWATCH_MAPPER.recordToFeed(FeedRecordSamples.JEDI);
-        StepVerifier.create(tested.persist(List.of(feed)))
+        StepVerifier.create(tested.persist(List.of(FeedSamples.JEDI)))
                 .verifyComplete();
 
         verify(mockFeedRepository, times(1)).persist(captor.capture(),
                 eq(UsersRecordSamples.OKENOBI.getUserId()));
-        assertThat(captor.getValue()).containsExactly(feed);
+        assertThat(captor.getValue()).containsExactly(FeedSamples.JEDI);
     }
 
     @Test
