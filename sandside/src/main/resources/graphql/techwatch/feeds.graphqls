@@ -13,15 +13,15 @@ type SearchFeedsResponse {
 
 extend type Query {
     getFeed(id: ID): Feed
-    searchFeeds(
+    feedsSearch(
         _p: Int
         _pp: Int
         _from: Int
         _to: Int
         _s: String
-        id: ID!
+        id: ID
         name: String
-        url: String!
+        url: String
         lastWatch: String
         tags: [String]
     ): SearchFeedsResponse

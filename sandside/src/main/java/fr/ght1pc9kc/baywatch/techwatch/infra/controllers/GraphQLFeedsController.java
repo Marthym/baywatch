@@ -42,7 +42,7 @@ public class GraphQLFeedsController {
     }
 
     @QueryMapping
-    public Mono<Page<Feed>> searchFeeds(@Arguments SearchFeedsRequest request) {
+    public Mono<Page<Feed>> feedsSearch(@Arguments SearchFeedsRequest request) {
         PageRequest pageRequest = qsParser.parse(request.toPageRequest());
         Flux<Feed> feeds = feedService.list(pageRequest);
 
@@ -50,12 +50,12 @@ public class GraphQLFeedsController {
                 .map(count -> Page.of(feeds, count));
     }
 
-    @SchemaMapping(typeName = "SearchFeedsRequest")
+    @SchemaMapping(typeName = "SearchFeedsResponse")
     public Flux<News> entities(Page<News> searchNewsResponse) {
         return searchNewsResponse.getBody();
     }
 
-    @SchemaMapping(typeName = "SearchFeedsRequest")
+    @SchemaMapping(typeName = "SearchFeedsResponse")
     public Mono<Integer> totalCount(Page<News> searchNewsResponse) {
         return Mono.justOrEmpty(searchNewsResponse.getHeaders().get("X-Total-Count"))
                 .map(h -> h.get(0))

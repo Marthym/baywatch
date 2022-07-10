@@ -119,8 +119,9 @@ export default class FeedsList extends Vue {
 
   loadFeedPage(page: number): Observable<FeedView[]> {
     const resolvedPage = (page > 0) ? page : 0;
-    return feedsService.list(resolvedPage).pipe(
+    return feedsService.list({_p: resolvedPage}).pipe(
         switchMap(feedPage => {
+          console.log(feedPage);
           this.pagesNumber = feedPage.totalPage;
           this.activePage = feedPage.currentPage;
           return feedPage.data;

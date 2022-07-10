@@ -2,12 +2,12 @@ import {map, switchMap, take} from "rxjs/operators";
 import {HttpStatusError} from "@/common/errors/HttpStatusError";
 import {Feed} from "@/configuration/model/Feed.type";
 import {Page} from "@/services/model/Page";
-import {from, Observable, throwError} from "rxjs";
-import {ConstantFilters, ConstantHttpHeaders} from "@/constants";
+import {from, Observable, of, throwError} from "rxjs";
 import rest from '@/common/services/RestWrapper';
 import {OpPatch} from "json-patch";
 import gql from "@/common/services/GraphqlWrapper";
 import {AtomFeed, ScrapFeedHeaderResponse} from "@/configuration/model/GraphQLScraper.type";
+import {SearchFeedsRequest, SearchFeedsResponse} from "@/configuration/model/SearchFeedsResponse.type";
 
 export const URL_PATTERN = new RegExp('^(https?:\\/\\/)?' + // protocol
     '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
@@ -19,7 +19,19 @@ export const URL_PATTERN = new RegExp('^(https?:\\/\\/)?' + // protocol
 export class FeedService {
 
     public static readonly DEFAULT_PER_PAGE: number = 20;
-    public static readonly DEFAULT_QUERY: string = `?${ConstantFilters.PER_PAGE}=${FeedService.DEFAULT_PER_PAGE}&_s=name`;
+
+    private static readonly FEEDS_SEARCH_REQUEST = `#graphql
+    query SearchFeedsQuery ($_p: Int = 0, $_pp: Int = ${FeedService.DEFAULT_PER_PAGE}, $_s: String = "name") {
+        feedsSearch(_p: $_p, _pp: $_pp, _s: $_s) {
+            totalCount
+            entities {
+                id
+                name
+                url
+                tags
+            }
+        }
+    }`
 
     private static readonly SCRAP_FEED_HEAD_REQUEST = `#graphql
     query ScrapFeedHeader($link: URI!) {
@@ -30,35 +42,23 @@ export class FeedService {
     }`;
 
     /**
-     * Get the {@link Feed} from backend
+     * Search the {@link Feed} from backend depending on query parameters
      *
-     * @param page The to display
-     * @param query The possible query parameters
+     * @param {SearchFeedsRequest} options SearchFeedsRequest The to display
+     * @return The {@link Feed} page corresponding to the options
      */
-    public list(page = 0, query: URLSearchParams = new URLSearchParams(FeedService.DEFAULT_QUERY)): Observable<Page<Feed>> {
-        const resolvedPage = (page > 0) ? page : 0;
-        query.set(ConstantFilters.PAGE, String(resolvedPage));
-        let resolvedPerPage = query.get(ConstantFilters.PER_PAGE);
-        if (resolvedPerPage === null) {
-            resolvedPerPage = String(FeedService.DEFAULT_PER_PAGE);
-            query.append(ConstantFilters.PER_PAGE, resolvedPerPage);
-        }
-
-        return rest.get(`/feeds?${query.toString()}`).pipe(
-            map(response => {
-                if (response.ok) {
-                    const totalCount = parseInt(response.headers.get(ConstantHttpHeaders.X_TOTAL_COUNT) || "-1");
-                    const data: Observable<Feed[]> = from(response.json());
-                    return {
-                        currentPage: resolvedPage,
-                        totalPage: Math.ceil(totalCount / Number(resolvedPerPage)),
-                        data: data
-                    };
-                } else {
-                    throw new HttpStatusError(response.status, `Error while getting news.`);
+    public list(options: SearchFeedsRequest): Observable<Page<Feed>> {
+        const resolvedPage = (options._p > 0) ? options._p : 0;
+        return gql.send<SearchFeedsResponse>(FeedService.FEEDS_SEARCH_REQUEST, options).pipe(
+            map(res => {
+                return {
+                    currentPage: resolvedPage,
+                    totalPage: Math.ceil(
+                        res.data.feedsSearch.totalCount / (options._pp | FeedService.DEFAULT_PER_PAGE)),
+                    data: of(res.data.feedsSearch.entities),
                 }
             }),
-            take(1)
+            take(1),
         );
     }
 
@@ -118,7 +118,7 @@ export class FeedService {
         }
     }
 
-    public fetchFeedInformation(link: string): Observable<Feed> {
+    public fetchFeedInformation(link?: string): Observable<Feed> {
         if (link === undefined) {
             return throwError(() => new Error('Link is mandatory !'));
         } else if (!URL_PATTERN.test(link)) {
