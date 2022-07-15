@@ -39,8 +39,11 @@ baywatch:
       validity: ${BAYWATCH_COOKIE_VALIDITY:24h}
     jwt.validity: ${BAYWATCH_TOKEN_VALIDITY:1h}
   scraper:
-    start: true
+    enable: ${BAYWATCH_SCRAPER_ENABLE:true}
     frequency: ${BAYWATCH_SCRAPER_FREQUENCY:1h}
     conservation: ${BAYWATCH_SCRAPER_CONSERVATION:3m}
     timeout: ${BAYWATCH_SCRAPER_TIMEOUT:2s}
     dns.timeout: ${BAYWATCH_DNS_TIMEOUT:10s}
+  indexer:
+    enable: ${BAYWATCH_INDEXER_ENABLE:true}
+    directory: ${BAYWATCH_HOME:.}/.baywatch/index
