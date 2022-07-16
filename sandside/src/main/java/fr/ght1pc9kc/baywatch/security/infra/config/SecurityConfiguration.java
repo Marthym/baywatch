@@ -27,7 +27,6 @@ import org.springframework.security.web.server.context.NoOpServerSecurityContext
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
-@EnableConfigurationProperties(SecurityParams.class)
 public class SecurityConfiguration {
     @Bean
     SecurityWebFilterChain springSecurityFilterChain(

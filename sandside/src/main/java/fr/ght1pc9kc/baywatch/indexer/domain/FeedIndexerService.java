@@ -1,10 +1,7 @@
 package fr.ght1pc9kc.baywatch.indexer.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
-import fr.ght1pc9kc.baywatch.indexer.domain.model.EntryDocument;
-import fr.ght1pc9kc.baywatch.indexer.domain.model.FeedDocument;
-import fr.ght1pc9kc.baywatch.indexer.domain.model.IndexableDocument;
-import fr.ght1pc9kc.baywatch.indexer.domain.model.IndexableFeedEntry;
+import fr.ght1pc9kc.baywatch.indexer.domain.model.Indexable;
 import fr.ght1pc9kc.baywatch.indexer.domain.ports.IndexBuilderPort;
 import fr.ght1pc9kc.baywatch.indexer.domain.ports.IndexableDataPort;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -16,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -27,22 +25,13 @@ public final class FeedIndexerService {
     private final IndexableDataPort feedRepository;
 
     public Mono<Void> buildIndex() {
-        Flux<IndexableDocument> feeds = feedRepository.listFeed().map(f -> new FeedDocument(
-                f.id(), f.title(), f.description(), String.join(" ", f.tags())));
+        Flux<Indexable> indexables = feedRepository.listFeed().flatMap(f ->
+                feedRepository.listEntries(ALL_ORDER_BY_ID.withFilter(Criteria.property(EntitiesProperties.FEED_ID).eq(f.id())))
+                        .collect(() -> Tuples.of(new StringBuilder(), new StringBuilder()), (acc, ie) -> {
+                            acc.getT1().append(' ').append(ie.title());
+                            acc.getT2().append(' ').append(ie.description());
+                        }).map(ie -> new Indexable(f.id(), f.title(), f.description(), f.link(), ie.getT1().toString(), ie.getT2().toString())));
 
-        Flux<EntryDocument> feedEntries = feedRepository.listEntries(ALL_ORDER_BY_ID)
-                .bufferUntilChanged(IndexableFeedEntry::feed)
-                .map(entries -> {
-                    String feed = entries.get(0).feed();
-                    StringBuilder titles = new StringBuilder();
-                    StringBuilder descriptions = new StringBuilder();
-                    for (IndexableFeedEntry entry : entries) {
-                        titles.append(' ').append(entry.title());
-                        descriptions.append(' ').append(entry.description());
-                    }
-                    return new EntryDocument(feed, titles.toString(), descriptions.toString());
-                });
-
-        return indexBuilder.write(Flux.concat(feeds, feedEntries));
+        return indexBuilder.write(indexables);
     }
 }

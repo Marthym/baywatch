@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.indexer.domain.model;
 
 public interface IndexableVisitor<R> {
-    R feed(IndexableFeed idxFeed);
+    R feed(FeedDocument idxFeed);
 
-    R entry(IndexableFeedEntry idxEntry);
+    R entry(EntryDocument idxEntry);
 }

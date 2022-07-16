@@ -29,7 +29,8 @@ public class FeedIndexerServiceAdapter {
     private final ExecutorService executor = Executors.newSingleThreadExecutor(
             new CustomizableThreadFactory("indexer-"));
 
-    public FeedIndexerServiceAdapter(IndexBuilderPort indexBuilderPort, IndexableDataPort indexableDataPort, IndexerProperties properties) {
+    public FeedIndexerServiceAdapter(
+            IndexBuilderPort indexBuilderPort, IndexableDataPort indexableDataPort, IndexerProperties properties) {
         this.delegate = new FeedIndexerService(indexBuilderPort, indexableDataPort);
         this.properties = properties;
     }

@@ -7,6 +7,6 @@ public record EntryDocument(
 ) implements IndexableDocument {
     @Override
     public <R> R accept(IndexableVisitor<R> visitor) {
-        return this.accept(visitor);
+        return visitor.entry(this);
     }
 }

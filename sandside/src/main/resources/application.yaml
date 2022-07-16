@@ -46,4 +46,4 @@ baywatch:
     dns.timeout: ${BAYWATCH_DNS_TIMEOUT:10s}
   indexer:
     enable: ${BAYWATCH_INDEXER_ENABLE:true}
-    directory: ${BAYWATCH_HOME:.}/.baywatch/index
+    directory: ${BAYWATCH_HOME:.}/.baywatch/feedidx
