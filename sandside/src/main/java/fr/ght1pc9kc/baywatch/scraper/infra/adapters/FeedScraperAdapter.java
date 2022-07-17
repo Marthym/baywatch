@@ -4,7 +4,7 @@ import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperPlugin;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
 import fr.ght1pc9kc.baywatch.scraper.api.NewsEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
-import fr.ght1pc9kc.baywatch.scraper.api.ScrapingHandler;
+import fr.ght1pc9kc.baywatch.common.api.EventHandler;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.FeedScraperServiceImpl;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScraperConfig;
@@ -34,7 +34,7 @@ public class FeedScraperAdapter implements FeedScraperService {
     public FeedScraperAdapter(NewsMaintenancePort newsMaintenancePort,
                               ScraperProperties properties,
                               RssAtomParser rssAtomParser,
-                              Collection<ScrapingHandler> scrappingHandlers,
+                              Collection<EventHandler> scrappingHandlers,
                               Collection<FeedScraperPlugin> scrapperPlugins,
                               @ScraperQualifier WebClient webClient,
                               NewsEnrichmentService newsEnrichmentService

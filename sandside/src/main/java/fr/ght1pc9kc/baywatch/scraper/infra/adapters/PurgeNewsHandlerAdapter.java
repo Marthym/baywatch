@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.scraper.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.scraper.api.ScrapingHandler;
+import fr.ght1pc9kc.baywatch.common.api.EventHandler;
 import fr.ght1pc9kc.baywatch.scraper.domain.actions.PurgeNewsHandler;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperProperties;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class PurgeNewsHandlerAdapter implements ScrapingHandler {
+public class PurgeNewsHandlerAdapter implements EventHandler {
     @Delegate
     private final PurgeNewsHandler delegate;
 

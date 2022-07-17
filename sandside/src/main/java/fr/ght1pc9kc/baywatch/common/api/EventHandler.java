@@ -1,11 +1,13 @@
-package fr.ght1pc9kc.baywatch.scraper.api;
+package fr.ght1pc9kc.baywatch.common.api;
 
 import reactor.core.publisher.Mono;
+
+import java.util.Set;
 
 /**
  * The Scrapping Handlers allow inserting action before and after the News Scrapping
  */
-public interface ScrapingHandler {
+public interface EventHandler {
     /**
      * This was run before News Scrapping
      *
@@ -24,5 +26,8 @@ public interface ScrapingHandler {
         return Mono.empty().then();
     }
 
-    default void onTerminate() {}
+    default void onTerminate() {
+    }
+
+    Set<String> eventTypes();
 }

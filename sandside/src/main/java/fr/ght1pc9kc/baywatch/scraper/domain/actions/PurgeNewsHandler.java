@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
-import fr.ght1pc9kc.baywatch.scraper.api.ScrapingHandler;
+import fr.ght1pc9kc.baywatch.common.api.EventHandler;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperProperties;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
@@ -17,6 +17,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.NEWS_ID;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.PUBLICATION;
@@ -24,7 +25,7 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.SHARED;
 
 @Slf4j
 @RequiredArgsConstructor
-public class PurgeNewsHandler implements ScrapingHandler {
+public class PurgeNewsHandler implements EventHandler {
     private static final int DELETE_BUFFER_SIZE = 500;
     private final NewsPersistencePort newsPersistence;
     private final StatePersistencePort statePersistence;
@@ -45,7 +46,9 @@ public class PurgeNewsHandler implements ScrapingHandler {
                 .onErrorContinue((t, o) -> {
                     log.error("{}: {}", t.getCause(), t.getLocalizedMessage());
                     log.debug("STACKTRACE", t);
-                }).then();
+                })
+                .then()
+                .doOnTerminate(() -> log.debug("PurgeNewsHandler terminated."));
     }
 
     private Flux<String> keepStaredNewsIds(Collection<String> newsIds) {
@@ -61,4 +64,8 @@ public class PurgeNewsHandler implements ScrapingHandler {
                 });
     }
 
+    @Override
+    public Set<String> eventTypes() {
+        return Set.of("FEED_SCRAPING");
+    }
 }
