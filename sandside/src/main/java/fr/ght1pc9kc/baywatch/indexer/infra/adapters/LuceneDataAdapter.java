@@ -17,6 +17,7 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -125,7 +126,7 @@ public class LuceneDataAdapter implements IndexBuilderPort, IndexSearcherPort {
 
     @Override
     public String escapeQuery(String terms) {
-        return QueryParser.escape(terms);
+        return QueryParserBase.escape(terms);
     }
 
     @Override
