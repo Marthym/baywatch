@@ -27,6 +27,7 @@ import {setup} from "vue-class-component";
 import {useStore} from "vuex";
 import {UPDATE_MUTATION as STATS_UPDATE_MUTATION} from "@/techwatch/store/statistics/StatisticsConstants";
 import {LOGOUT_MUTATION, UPDATE_MUTATION as USER_UPDATE_MUTATION} from "@/store/user/UserConstants";
+import keyboardControl from "@/common/services/KeyboardControl";
 
 @Options({
   components: {
@@ -50,11 +51,16 @@ export default class App extends Vue {
         serverEventService.unregister(EventType.NEWS, this.onServerMessage);
       }
     });
+    keyboardControl.startKeyboardControl();
   }
 
   private onServerMessage(evt: Event): void {
     const msg: MessageEvent = evt as MessageEvent;
     this.store.commit(STATS_UPDATE_MUTATION, JSON.parse(msg.data));
+  }
+
+  unmounted(): void {
+    keyboardControl.stopKeyboardControl();
   }
 }
 </script>
