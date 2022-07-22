@@ -19,7 +19,7 @@ extend type Query {
         _from: Int
         _to: Int
         _s: String
-        id: ID
+        id: [ID]
         name: String
         url: String
         lastWatch: String

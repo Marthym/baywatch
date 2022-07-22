@@ -47,6 +47,7 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.TITLE;
 @Component
 public class LuceneDataAdapter implements IndexBuilderPort, IndexSearcherPort {
 
+    private static final char FUZZY = '~';
     private static final int MAX_SEARCH_RESULT = 10;
     private static final String[] FIELDS = new String[]{TITLE, DESCRIPTION, LINK, "contentTitles", "contentSummaries"};
     private static final Map<String, Float> BOOSTERS = Map.of(
@@ -137,7 +138,7 @@ public class LuceneDataAdapter implements IndexBuilderPort, IndexSearcherPort {
             return Flux.empty();
         }
         try {
-            Query query = queryParser.parse(terms);
+            Query query = queryParser.parse(terms + FUZZY);
             TopDocs tops = searcher.search(query, MAX_SEARCH_RESULT);
             explainOnTrace(searcher, query, tops);
             return Flux.just(tops.scoreDocs)

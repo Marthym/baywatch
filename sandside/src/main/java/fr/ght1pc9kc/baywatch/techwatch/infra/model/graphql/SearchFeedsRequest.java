@@ -11,7 +11,7 @@ public record SearchFeedsRequest(
         Integer _from,
         Integer _to,
         String _s,
-        String id,
+        List<String> id,
         String name,
         String url,
         String lastWatch,
@@ -24,7 +24,7 @@ public record SearchFeedsRequest(
         if (!Objects.isNull(_from)) params.put("_from", List.of(Integer.toString(_from)));
         if (!Objects.isNull(_to)) params.put("_to", List.of(Integer.toString(_to)));
         if (!Objects.isNull(_s)) params.put("_s", List.of(_s));
-        if (!Objects.isNull(id)) params.put("id", List.of(id));
+        if (!Objects.isNull(id)) params.put("id", id);
         if (!Objects.isNull(name)) params.put("name", List.of(name));
         if (!Objects.isNull(url)) params.put("url", List.of(url));
         if (!Objects.isNull(lastWatch)) params.put("lastWatch", List.of(lastWatch));
