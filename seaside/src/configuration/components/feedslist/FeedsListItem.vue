@@ -1,25 +1,5 @@
 <template>
-  <div class="flex items-center space-x-3 md:col-span-3">
-    <div class="avatar placeholder">
-      <div class="w-8 h-8 mask mask-squircle">
-        <img class="text-center"
-             :src="view.icon" :alt="view.data.name.substring(0,1)"
-             @error.prevent.stop="iconFallback">
-      </div>
-    </div>
-    <div>
-      <div class="font-bold">
-        {{ view.data.name }}
-      </div>
-      <div class="text-sm opacity-50">
-        {{ view.data.id.substring(0, 10) }}
-      </div>
-    </div>
-  </div>
-  <div class="md:col-span-7">
-    <a class="link whitespace-normal">{{ view.data.url }}</a><br>
-    <div v-for="tag in view.data.tags" class="badge mr-1 rounded">{{ tag }}</div>
-  </div>
+  <FeedCard :view="{...view.data, icon: view.icon}"/>
   <div class="md:col-span-2 btn-group justify-self-end">
     <button class="btn btn-sm btn-square btn-ghost" @click="$emit('item-update', view.data)">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -39,13 +19,15 @@
 <script lang="ts">
 import {Options, Prop, Vue} from 'vue-property-decorator';
 import {FeedView} from "@/configuration/components/feedslist/model/FeedView";
+import FeedCard from "@/common/components/FeedCard.vue";
 
-@Options({name: 'FeedsListItem', emits: ['item-update', 'item-delete']})
+@Options({
+  name: 'FeedsListItem',
+  components: {FeedCard},
+  emits: ['item-update', 'item-delete']
+})
 export default class FeedsListItem extends Vue {
   @Prop() private view!: FeedView;
 
-  iconFallback(event: ErrorEvent): void {
-    (event.target as HTMLImageElement).src = '/favicon.ico'
-  }
 }
 </script>
