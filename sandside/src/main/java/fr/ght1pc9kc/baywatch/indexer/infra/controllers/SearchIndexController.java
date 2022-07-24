@@ -7,12 +7,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 
 @Controller
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
 public class SearchIndexController {
     private final FeedSearchService feedSearchService;
 

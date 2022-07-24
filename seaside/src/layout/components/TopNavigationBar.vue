@@ -35,7 +35,7 @@
     </div>
 
     <!-- The RIGHT side of top bar -->
-    <div class="navbar-end w-full md:w-1/2 border-b border-base-100 pr-2 mr-2 h-full">
+    <div v-if="isAuthenticated"  class="navbar-end w-full md:w-1/2 border-b border-base-100 pr-2 mr-2 h-full">
       <!-- Refresh Icon -->
       <div class="indicator mx-1">
         <div v-if="statistics.updated > 0" class="indicator-item badge badge-xs badge-accent text-2xs">
@@ -50,7 +50,7 @@
         </button>
       </div>
       <!-- Clip icon -->
-      <div v-if="isAuthenticated" class="text-sm inline-block mx-1 mr-3">
+      <div class="text-sm inline-block mx-1 mr-3">
         <button class="btn btn-square btn-ghost btn-sm" @click="toggleClipAction">
           <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd"
