@@ -11,6 +11,9 @@ server:
 baywatch:
   scrapper:
     start: false
+  indexer:
+    enable: ${BAYWATCH_INDEXER_ENABLE:true}
+    directory: ${BAYWATCH_HOME:.}/target/feedidx
 
 logging:
   # Avoid infinite stacktrace due to reactor

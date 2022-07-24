@@ -33,6 +33,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
@@ -66,10 +68,22 @@ public class LuceneDataAdapter implements IndexBuilderPort, IndexSearcherPort {
     private final Executor searchExecutor = Executors.newFixedThreadPool(5, new CustomizableThreadFactory("lucene-search-"));
 
     public LuceneDataAdapter(IndexerProperties properties) {
+        Path indexDir = Path.of(properties.directory());
         this.indexDirectory = Exceptions.log(log).get(Exceptions.sneak().supplier(() ->
-                FSDirectory.open(Path.of(properties.directory())))
+                FSDirectory.open(indexDir))
         ).orElseThrow();
         this.analyzer = new StandardAnalyzer();
+        try (DirectoryStream<Path> pathDirectoryStream = Files.newDirectoryStream(indexDir)) {
+            if (!pathDirectoryStream.iterator().hasNext()) {
+                try (IndexWriter idx = new IndexWriter(indexDirectory, new IndexWriterConfig(analyzer))) {
+                    idx.commit();
+                } catch (IOException e) {
+                    log.warn("Unable to init index dir at {}", indexDir);
+                }
+            }
+        } catch (IOException e) {
+            log.warn("Unable open path for listing {}", indexDir);
+        }
         DirectoryReader reader = Exceptions.log(log).get(Exceptions.sneak().supplier(() ->
                 DirectoryReader.open(indexDirectory))
         ).orElseThrow();
