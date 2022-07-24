@@ -17,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import {Options, Vue} from "vue-property-decorator";
+import {Options, Prop, Vue, Watch} from "vue-property-decorator";
 import scraperService from '@/layout/services/ScraperService';
 import notificationService from "@/services/notification/NotificationService";
 import {NotificationCode} from "@/services/notification/NotificationCode.enum";
@@ -25,14 +25,20 @@ import {Severity} from "@/services/notification/Severity.enum";
 
 @Options({
   name: 'AddSingleNewsAction',
-  emits: ['close']
+  emits: ['close'],
+  props: ['isTransitioning'],
 })
 export default class AddSingleNewsAction extends Vue {
+  @Prop() private isTransitioning!: boolean;
+
   private link: string = "";
   private hasError: boolean = false;
 
-  mounted(): void {
-    this.$refs.linkInput.focus();
+  @Watch('isTransitioning')
+  onAuthenticationChange(): void {
+    if (!this.isTransitioning) {
+      this.$refs.linkInput.focus();
+    }
   }
 
   private importNewsFromLink(): void {

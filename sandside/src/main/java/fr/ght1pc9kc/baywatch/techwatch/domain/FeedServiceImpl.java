@@ -11,12 +11,14 @@ import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.ScraperServicePort;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
+import fr.ght1pc9kc.juery.api.filter.CriteriaVisitor;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import static fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException.AUTHENTICATION_NOT_FOUND;
@@ -26,8 +28,10 @@ public class FeedServiceImpl implements FeedService {
     private static final Set<String> ALLOWED_PROTOCOL = Set.of("http", "https");
 
     private final FeedPersistencePort feedRepository;
+    //FIXME: On ne veut pas cette dépendence. C'est pas dans ce sens qu'il faut le faire
     private final ScraperServicePort scraperService;
     private final AuthenticationFacade authFacade;
+    private final CriteriaVisitor<List<String>> propertiesVisitor;
 
     @Override
     public Mono<Feed> get(String id) {
@@ -41,26 +45,28 @@ public class FeedServiceImpl implements FeedService {
 
     @Override
     public Flux<Feed> list(PageRequest pageRequest) {
-        return authFacade.getConnectedUser()
-                .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .map(u -> QueryContext.from(pageRequest).withUserId(u.id))
-                .onErrorResume(UnauthenticatedUser.class, e -> Mono.just(QueryContext.from(pageRequest)))
-                .flatMapMany(feedRepository::list);
+        if (pageRequest.filter().accept(propertiesVisitor).contains(EntitiesProperties.ID)) {
+            return feedRepository.list(QueryContext.from(pageRequest));
+        } else {
+            return authFacade.getConnectedUser()
+                    .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
+                    .map(u -> QueryContext.from(pageRequest).withUserId(u.id))
+                    .onErrorResume(UnauthenticatedUser.class, e -> Mono.just(QueryContext.from(pageRequest)))
+                    .flatMapMany(feedRepository::list);
+        }
     }
 
     @Override
     public Mono<Integer> count(PageRequest pageRequest) {
-        return authFacade.getConnectedUser()
-                .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .map(u -> QueryContext.all(pageRequest.filter()).withUserId(u.id))
-                .onErrorResume(UnauthenticatedUser.class, e -> Mono.just(QueryContext.all(pageRequest.filter())))
-                .flatMap(feedRepository::count);
-    }
-
-    @Override
-    public Flux<RawFeed> raw(PageRequest pageRequest) {
-        return feedRepository.list(QueryContext.from(pageRequest))
-                .map(Feed::getRaw);
+        if (pageRequest.filter().accept(propertiesVisitor).contains(EntitiesProperties.ID)) {
+            return feedRepository.count(QueryContext.from(pageRequest));
+        } else {
+            return authFacade.getConnectedUser()
+                    .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
+                    .map(u -> QueryContext.all(pageRequest.filter()).withUserId(u.id))
+                    .onErrorResume(UnauthenticatedUser.class, e -> Mono.just(QueryContext.all(pageRequest.filter())))
+                    .flatMap(feedRepository::count);
+        }
     }
 
     @Override

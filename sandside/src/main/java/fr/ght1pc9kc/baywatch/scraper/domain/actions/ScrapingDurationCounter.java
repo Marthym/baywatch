@@ -3,8 +3,8 @@ package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterGroup;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
+import fr.ght1pc9kc.baywatch.common.api.EventHandler;
 import fr.ght1pc9kc.baywatch.common.api.HeroIcons;
-import fr.ght1pc9kc.baywatch.scraper.api.ScrapingHandler;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -14,10 +14,11 @@ import reactor.core.publisher.Mono;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
-public class ScrapingDurationCounter implements CounterProvider, ScrapingHandler {
+public class ScrapingDurationCounter implements CounterProvider, EventHandler {
     private final AtomicReference<Long> startNanoTime = new AtomicReference<>(null);
     private final AtomicReference<String> lastDuration = new AtomicReference<>("...");
     private final AtomicReference<String> lastInstant = new AtomicReference<>("scraping in progress...");
@@ -29,7 +30,7 @@ public class ScrapingDurationCounter implements CounterProvider, ScrapingHandler
     @Override
     public Mono<Void> before() {
         startNanoTime.set(clock.millis());
-        return ScrapingHandler.super.before();
+        return EventHandler.super.before();
     }
 
     @Override
@@ -38,7 +39,7 @@ public class ScrapingDurationCounter implements CounterProvider, ScrapingHandler
             String duration = getCurrentDuration();
             log.debug("Scraping finished, load {} news in {}", persisted, duration);
         }
-        return ScrapingHandler.super.after(persisted);
+        return EventHandler.super.after(persisted);
     }
 
     @Override
@@ -46,7 +47,7 @@ public class ScrapingDurationCounter implements CounterProvider, ScrapingHandler
         lastInstant.set(clock.instant().toString());
         lastDuration.set(getCurrentDuration());
         startNanoTime.set(null);
-        ScrapingHandler.super.onTerminate();
+        EventHandler.super.onTerminate();
     }
 
     private String getCurrentDuration() {
@@ -70,5 +71,10 @@ public class ScrapingDurationCounter implements CounterProvider, ScrapingHandler
                 HeroIcons.CloudUploadIcon,
                 lastDuration.get(),
                 lastInstant.get()));
+    }
+
+    @Override
+    public Set<String> eventTypes() {
+        return Set.of("FEED_SCRAPING");
     }
 }

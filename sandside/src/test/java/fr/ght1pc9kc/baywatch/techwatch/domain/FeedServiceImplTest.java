@@ -16,6 +16,7 @@ import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
+import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
@@ -54,7 +55,8 @@ class FeedServiceImplTest {
 
         ScraperServicePort mockScraperService = mock(ScraperServicePort.class);
         when(mockScraperService.fetchFeedData(any())).thenReturn(Mono.just(FeedSamples.JEDI));
-        tested = new FeedServiceImpl(mockFeedRepository, mockScraperService, mockAuthFacade);
+        tested = new FeedServiceImpl(mockFeedRepository, mockScraperService, mockAuthFacade, new ListPropertiesCriteriaVisitor() {
+        });
     }
 
     @Test

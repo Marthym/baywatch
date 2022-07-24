@@ -35,7 +35,7 @@
     </div>
 
     <!-- The RIGHT side of top bar -->
-    <div class="navbar-end w-full md:w-1/2 border-b border-base-100 pr-2 mr-2 h-full">
+    <div v-if="isAuthenticated"  class="navbar-end w-full md:w-1/2 border-b border-base-100 pr-2 mr-2 h-full">
       <!-- Refresh Icon -->
       <div class="indicator mx-1">
         <div v-if="statistics.updated > 0" class="indicator-item badge badge-xs badge-accent text-2xs">
@@ -50,7 +50,7 @@
         </button>
       </div>
       <!-- Clip icon -->
-      <div v-if="isAuthenticated" class="text-sm inline-block mx-1 mr-3">
+      <div class="text-sm inline-block mx-1 mr-3">
         <button class="btn btn-square btn-ghost btn-sm" @click="toggleClipAction">
           <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd"
@@ -62,8 +62,12 @@
       </div>
       <!-- Right Search Bar -->
       <div class="relative">
-        <input type="text" placeholder="Search" class="w-full pr-16 input input-sm input-ghost input-bordered">
-        <button class="absolute top-0 right-0 rounded-l-none btn btn-ghost btn-sm">
+        <input type="text" placeholder="Search" class="w-full pr-16 input input-sm input-ghost input-bordered"
+               v-model="searchQuery" @focus.prevent="onFocus" @blur="onBlur"
+               @keydown.enter.stop="onSearchClick"
+               @keydown.esc.stop="exitOverlay">
+        <button class="absolute top-0 right-0 rounded-l-none btn btn-ghost btn-sm"
+                @click.prevent="onSearchClick">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                class="inline-block w-6 h-6 stroke-current">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -74,8 +78,11 @@
     </div>
   </header>
   <TopNavActionOverlay v-show="actionOverlayOpen" :is-open="actionOverlayOpen" @close="actionOverlayOpen = false">
-    <template v-slot:content>
-      <component :is="actionOverlayContent" @close="actionOverlayOpen = false"></component>
+    <template v-slot:content="slotProps">
+      <component :is="actionOverlayContent"
+                 v-bind="{...actionOverlayProps, ...slotProps}"
+                 @close="actionOverlayOpen = false">
+      </component>
     </template>
   </TopNavActionOverlay>
 </template>
@@ -85,21 +92,26 @@ import {Options, Vue} from 'vue-property-decorator';
 import {SidenavMutation} from "@/store/sidenav/SidenavMutation.enum";
 import {StatisticsState} from "@/techwatch/store/statistics/statistics";
 import newsService from '@/techwatch/services/NewsService';
+import searchService from '@/layout/services/SearchService';
 import {setup} from "vue-class-component";
 import {Store, useStore} from "vuex";
 import {RESET_UPDATED_MUTATION} from "@/techwatch/store/statistics/StatisticsConstants";
 import TopNavActionOverlay from "@/layout/components/TopNavActionOverlay.vue";
 import {defineAsyncComponent} from "vue";
+import keyboardControl from "@/common/services/KeyboardControl";
 
 const AddSingleNewsAction = defineAsyncComponent(() => import('@/layout/components/AddSingleNewsAction.vue'));
+const SearchResultAction = defineAsyncComponent(() => import('@/layout/components/SearchResultAction.vue'));
 
-type ActionOverlayComponent = 'AddSingleNewsAction';
+type ActionOverlayComponent = 'AddSingleNewsAction' | 'SearchResultAction';
 
+// noinspection JSMethodCanBeStatic
 @Options({
   name: 'TopNavigationBar',
   components: {
     TopNavActionOverlay,
     AddSingleNewsAction,
+    SearchResultAction,
   }
 })
 export default class TopNavigationBar extends Vue {
@@ -109,6 +121,8 @@ export default class TopNavigationBar extends Vue {
 
   private actionOverlayOpen = false;
   private actionOverlayContent: ActionOverlayComponent = 'AddSingleNewsAction';
+  private actionOverlayProps: unknown = {};
+  private searchQuery = "";
 
   get isAuthenticated(): boolean {
     return this.store.state.user.isAuthenticated || false;
@@ -124,7 +138,31 @@ export default class TopNavigationBar extends Vue {
   }
 
   private toggleClipAction(): void {
+    this.actionOverlayContent = 'AddSingleNewsAction';
     this.actionOverlayOpen = !this.actionOverlayOpen;
+  }
+
+  private onSearchClick(): void {
+    this.actionOverlayContent = 'SearchResultAction';
+    searchService.search(this.searchQuery).subscribe({
+      next: r => {
+        this.actionOverlayProps.entries = r;
+        this.actionOverlayOpen = true;
+      },
+    })
+  }
+
+  private onBlur(): void {
+    keyboardControl.startKeyboardControl();
+  }
+
+  private onFocus(): void {
+    keyboardControl.stopKeyboardControl();
+  }
+
+  private exitOverlay(): void {
+    this.actionOverlayProps = {};
+    this.actionOverlayOpen = false;
   }
 }
 </script>

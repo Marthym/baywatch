@@ -9,7 +9,7 @@ import java.time.Period;
 @ConstructorBinding
 @ConfigurationProperties(prefix = "baywatch.scraper")
 public record ScraperProperties(
-        boolean start,
+        boolean enable,
         Duration frequency,
         Period conservation,
         Duration timeout,

@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
-import fr.ght1pc9kc.baywatch.scraper.api.ScrapingHandler;
+import fr.ght1pc9kc.baywatch.common.api.EventHandler;
 import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
+
+import java.util.Set;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.COUNT;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.FEED_ID;
@@ -21,7 +23,7 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.FEED_ID;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class DeleteOrphanFeedHandler implements ScrapingHandler {
+public class DeleteOrphanFeedHandler implements EventHandler {
 
     private static final int BATCH_BUFFER_SIZE = 500;
 
@@ -56,6 +58,11 @@ public class DeleteOrphanFeedHandler implements ScrapingHandler {
                 .then(deleted)
                 .then(deletedFeeds)
                 .doOnTerminate(() -> log.debug("DeleteOrphanFeedHandler terminated."));
+    }
+
+    @Override
+    public Set<String> eventTypes() {
+        return Set.of("FEED_SCRAPING");
     }
 
 }

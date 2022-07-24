@@ -63,6 +63,7 @@ import newsService from "@/techwatch/services/NewsService";
 import {NewsStore} from "@/techwatch/store/news/news";
 import {NewsSearchRequest} from "@/techwatch/model/NewsSearchRequest.type";
 import {News} from "@/techwatch/model/News.type";
+import keyboardControl from '@/common/services/KeyboardControl';
 
 
 @Options({
@@ -100,7 +101,18 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
       this.onAuthenticationChange();
     }
 
-    window.addEventListener('keydown', this.onKeyDownListener, false);
+    keyboardControl.registerListener("n", event => {
+      event.preventDefault();
+      this.activateNewsCard(this.activeNews + 1);
+      this.scrollToActivateNews();
+    }).registerListener("k", event => {
+      event.preventDefault();
+      this.activateNewsCard(this.activeNews - 1);
+      this.scrollToActivateNews();
+    }).registerListener("m", event => {
+      event.preventDefault();
+      this.toggleRead(this.activeNews);
+    });
 
     newsService.registerReloadFunction(() => {
       this.news = [];
@@ -181,28 +193,6 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
       error: e => elements.next(e)
     });
     return elements.asObservable();
-  }
-
-  onKeyDownListener(event: KeyboardEvent): void {
-    if (event.altKey) {
-      return;
-    }
-    if (!event.altKey) {
-      if (event.key === "n") {
-        event.preventDefault();
-        this.activateNewsCard(this.activeNews + 1);
-        this.scrollToActivateNews();
-
-      } else if (event.key === "k") {
-        event.preventDefault();
-        this.activateNewsCard(this.activeNews - 1);
-        this.scrollToActivateNews();
-
-      } else if (event.key === "m") {
-        event.preventDefault();
-        this.toggleRead(this.activeNews);
-      }
-    }
   }
 
   activateElement(incr: number): Element {
@@ -316,7 +306,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   unmounted(): void {
     this.activateOnScroll.disconnect();
     this.infiniteScroll.disconnect();
-    window.removeEventListener('keydown', this.onKeyDownListener, false);
+    keyboardControl.unregisterListener("n", "m", "k");
   }
 
 }

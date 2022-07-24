@@ -2,16 +2,18 @@ package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
-import fr.ght1pc9kc.baywatch.scraper.api.ScrapingHandler;
+import fr.ght1pc9kc.baywatch.common.api.EventHandler;
 import fr.ght1pc9kc.baywatch.techwatch.api.NewsService;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
+import java.util.Set;
+
 @Slf4j
 @RequiredArgsConstructor
-public class NewsUpdateNotificationHandler implements ScrapingHandler {
+public class NewsUpdateNotificationHandler implements EventHandler {
     private final NotifyService notifyService;
     private final NewsService newsService;
 
@@ -23,5 +25,10 @@ public class NewsUpdateNotificationHandler implements ScrapingHandler {
                     notifyService.send(EventType.NEWS, newsService.count(PageRequest.all()));
                     return p;
                 }).then();
+    }
+
+    @Override
+    public Set<String> eventTypes() {
+        return Set.of("FEED_SCRAPING");
     }
 }

@@ -4,14 +4,13 @@ import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperPlugin;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
 import fr.ght1pc9kc.baywatch.scraper.api.NewsEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
-import fr.ght1pc9kc.baywatch.scraper.api.ScrapingHandler;
+import fr.ght1pc9kc.baywatch.common.api.EventHandler;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.FeedScraperServiceImpl;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScraperConfig;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.NewsMaintenancePort;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperProperties;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperQualifier;
-import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
 import lombok.SneakyThrows;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
@@ -35,14 +34,14 @@ public class FeedScraperAdapter implements FeedScraperService {
     public FeedScraperAdapter(NewsMaintenancePort newsMaintenancePort,
                               ScraperProperties properties,
                               RssAtomParser rssAtomParser,
-                              Collection<ScrapingHandler> scrappingHandlers,
+                              Collection<EventHandler> scrappingHandlers,
                               Collection<FeedScraperPlugin> scrapperPlugins,
                               @ScraperQualifier WebClient webClient,
                               NewsEnrichmentService newsEnrichmentService
     ) {
         Map<String, FeedScraperPlugin> plugins = scrapperPlugins.stream()
                 .collect(Collectors.toUnmodifiableMap(FeedScraperPlugin::pluginForDomain, Function.identity()));
-        this.startScraper = properties.start();
+        this.startScraper = properties.enable();
         ScraperConfig config = new ScraperConfig(properties.frequency(), properties.conservation());
         this.scraper = new FeedScraperServiceImpl(
                 config, newsMaintenancePort, webClient,
