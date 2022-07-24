@@ -3,8 +3,8 @@ import {
     AlertResponse,
     AlertType,
     IAlertDialog
-} from "@/shared/components/alertdialog/AlertDialog.types";
-import AlertDialog from "@/shared/components/alertdialog/AlertDialog.vue";
+} from "@/common/components/alertdialog/AlertDialog.types";
+import AlertDialog from "@/common/components/alertdialog/AlertDialog.vue";
 import {Observable, Subject} from "rxjs";
 import {reactive} from "vue";
 

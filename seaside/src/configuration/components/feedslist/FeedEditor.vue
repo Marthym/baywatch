@@ -36,8 +36,8 @@
 import {Options, Vue} from 'vue-property-decorator';
 import {Feed} from '@/configuration/model/Feed.type';
 import {Observable, Subject} from "rxjs";
-import ModalWindow from "@/shared/components/ModalWindow.vue";
-import TagInput from "@/shared/components/TagInput.vue";
+import ModalWindow from "@/common/components/ModalWindow.vue";
+import TagInput from "@/common/components/TagInput.vue";
 import tagsService from '@/techwatch/services/TagsService';
 import feedService, {URL_PATTERN} from "@/configuration/services/FeedService";
 

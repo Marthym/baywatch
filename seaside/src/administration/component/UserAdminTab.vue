@@ -132,7 +132,7 @@ import {filter, map, switchMap, tap} from "rxjs/operators";
 import {UserView} from "@/administration/model/UserView";
 import UserEditor from "@/administration/component/UserEditor.vue";
 import {User} from "@/security/model/User";
-import {AlertResponse, AlertType} from "@/shared/components/alertdialog/AlertDialog.types";
+import {AlertResponse, AlertType} from "@/common/components/alertdialog/AlertDialog.types";
 
 @Options({
   name: 'UserAdminTab',

@@ -41,7 +41,7 @@
 
 <script lang="ts">
 import {Options, Vue} from "vue-property-decorator";
-import {NotificationView} from "@/shared/components/notificationArea/NotificationView";
+import {NotificationView} from "@/common/components/notificationArea/NotificationView";
 import {Notification} from "@/services/notification/Notification.type";
 import NotificationListener from "@/services/notification/NotificationListener";
 import notificationService from '@/services/notification/NotificationService';
