@@ -14,11 +14,13 @@ import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
-import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.QueryParserBase;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.BoostQuery;
 import org.apache.lucene.search.Explanation;
+import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -47,7 +49,6 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.TITLE;
 @Component
 public class LuceneDataAdapter implements IndexBuilderPort, IndexSearcherPort {
 
-    private static final char FUZZY = '~';
     private static final int MAX_SEARCH_RESULT = 10;
     private static final String[] FIELDS = new String[]{TITLE, DESCRIPTION, LINK, "contentTitles", "contentSummaries"};
     private static final Map<String, Float> BOOSTERS = Map.of(
@@ -60,7 +61,6 @@ public class LuceneDataAdapter implements IndexBuilderPort, IndexSearcherPort {
 
     private final Directory indexDirectory;
     private final StandardAnalyzer analyzer;
-    private final QueryParser queryParser;
     private final AtomicReference<IndexSearcher> indexSearcher;
 
     private final Executor searchExecutor = Executors.newFixedThreadPool(5, new CustomizableThreadFactory("lucene-search-"));
@@ -70,7 +70,6 @@ public class LuceneDataAdapter implements IndexBuilderPort, IndexSearcherPort {
                 FSDirectory.open(Path.of(properties.directory())))
         ).orElseThrow();
         this.analyzer = new StandardAnalyzer();
-        this.queryParser = new MultiFieldQueryParser(FIELDS, analyzer, BOOSTERS);
         DirectoryReader reader = Exceptions.log(log).get(Exceptions.sneak().supplier(() ->
                 DirectoryReader.open(indexDirectory))
         ).orElseThrow();
@@ -137,14 +136,21 @@ public class LuceneDataAdapter implements IndexBuilderPort, IndexSearcherPort {
             log.debug("Index searcher not yet available !");
             return Flux.empty();
         }
+        return performFuzzySearch(searcher, terms)
+                .map(Exceptions.sneak().function(d -> searcher.getIndexReader().document(d.doc)))
+                .map(d -> d.get(ID));
+    }
+
+    private Flux<ScoreDoc> performFuzzySearch(IndexSearcher searcher, String terms) {
         try {
-            Query query = queryParser.parse(terms + FUZZY);
-            TopDocs tops = searcher.search(query, MAX_SEARCH_RESULT);
-            explainOnTrace(searcher, query, tops);
-            return Flux.just(tops.scoreDocs)
-                    .map(Exceptions.sneak().function(d -> searcher.getIndexReader().document(d.doc)))
-                    .map(d -> d.get(ID));
-        } catch (IOException | ParseException e) {
+            BooleanQuery.Builder bq = new BooleanQuery.Builder();
+            for (String field : FIELDS) {
+                bq.add(new BoostQuery(new FuzzyQuery(new Term(field, terms)), BOOSTERS.get(field)), BooleanClause.Occur.SHOULD);
+            }
+            TopDocs topDocs = searcher.search(bq.build(), MAX_SEARCH_RESULT);
+            explainOnTrace(searcher, bq.build(), topDocs);
+            return Flux.just(topDocs.scoreDocs);
+        } catch (IOException e) {
             return Flux.error(e);
         }
     }
@@ -164,6 +170,7 @@ public class LuceneDataAdapter implements IndexBuilderPort, IndexSearcherPort {
                         log.trace("{}: {}", e.getClass(), e.getLocalizedMessage());
                     }
                 }
+                log.trace("------------------------------");
             }
         }
     }
