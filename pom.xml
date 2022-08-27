@@ -43,8 +43,8 @@
         <nimbus-jose-jwt.version>9.23</nimbus-jose-jwt.version>
         <findbugs.version>3.0.2</findbugs.version>
         <jetbrains.version>23.0.0</jetbrains.version>
-        <wiremock.version>2.27.2</wiremock.version>
         <testy-box.version>1.8.0</testy-box.version>
+        <jmustache.version>1.15</jmustache.version>
 
         <maven-clean-plugin.version>3.2.0</maven-clean-plugin.version>
         <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
