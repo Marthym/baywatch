@@ -49,8 +49,8 @@ export default class AddSingleNewsAction extends Vue {
           code: NotificationCode.OK, message: 'News imported successfully !', severity: Severity.info
         });
       },
-      error: () => notificationService.pushNotification({
-        code: NotificationCode.ERROR, message: 'Unable to add this link !', severity: Severity.error
+      error: err => notificationService.pushNotification({
+        code: NotificationCode.ERROR, message: `${err.message}`, severity: Severity.error
       }),
     });
   }
