@@ -98,6 +98,7 @@ export default class FeedEditor extends Vue {
     feedService.fetchFeedInformation(this.feed.url).subscribe({
       next: f => Object.assign(this.feed, {...f, url: this.feed.url}),
       complete: () => this.isFormLock = false,
+      error: () => this.isFormLock = false,
     });
   }
 
