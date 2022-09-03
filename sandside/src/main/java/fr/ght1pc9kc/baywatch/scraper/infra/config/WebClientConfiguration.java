@@ -15,17 +15,23 @@ public class WebClientConfiguration {
 
     @Bean
     @ScraperQualifier
-    public WebClient getScraperWebClient(ScraperProperties properties) {
-        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(
-                HttpClient.create()
-                        .resolver(spec -> spec.queryTimeout(properties.dns().timeout()))
-                        .followRedirect(true)
-                        .followRedirect((req, res) -> // 303 was not in the default code
-                                Set.of(301, 302, 303, 307, 308).contains(res.status().code()))
-                        .compress(true)
-                        .secure(spec -> spec.sslContext(Http11SslContextSpec.forClient()))
-                        .responseTimeout(properties.timeout())
-                        .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) properties.timeout().toMillis())
-        )).build();
+    public HttpClient getNettyHttpClient(ScraperProperties properties) {
+        return HttpClient.create()
+                .resolver(spec -> spec.queryTimeout(properties.dns().timeout()))
+                .followRedirect(true)
+                .followRedirect((req, res) -> // 303 was not in the default code
+                        Set.of(301, 302, 303, 307, 308).contains(res.status().code()))
+                .compress(true)
+                .secure(spec -> spec.sslContext(Http11SslContextSpec.forClient()))
+                .responseTimeout(properties.timeout())
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) properties.timeout().toMillis());
+    }
+
+    @Bean
+    @ScraperQualifier
+    public WebClient getScraperWebClient(HttpClient httpClient) {
+        return WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .build();
     }
 }
