@@ -161,6 +161,7 @@ class FeedScraperIntegrationTest {
     @CsvSource({
             "feeds/132-feed-canonical.xml, entries/132-blog_devgenius_io",
             "feeds/132-http-server-incomplete.xml, entries/132-http-server-incomplete",
+            "feeds/135-invalid-feed-flux.xml, ",
     })
     @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     void should_scrap_feeds(String feed, String expected) {
@@ -180,9 +181,13 @@ class FeedScraperIntegrationTest {
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
 
-        Assertions.assertThat(actual)
-                .extracting(News::getId)
-                .containsOnly(Hasher.identify(URI.create(BASE_URI + expected)));
+        if (expected != null) {
+            Assertions.assertThat(actual)
+                    .extracting(News::getId)
+                    .containsOnly(Hasher.identify(URI.create(BASE_URI + expected)));
+        } else {
+            Assertions.assertThat(actual).isEmpty();
+        }
     }
 
     @SuppressWarnings("SameParameterValue")

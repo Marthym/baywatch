@@ -1,11 +1,11 @@
 package fr.ght1pc9kc.baywatch.scraper.domain;
 
+import fr.ght1pc9kc.baywatch.common.api.EventHandler;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperPlugin;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
 import fr.ght1pc9kc.baywatch.scraper.api.NewsEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
-import fr.ght1pc9kc.baywatch.common.api.EventHandler;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScraperConfig;
@@ -29,6 +29,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
+import javax.xml.stream.XMLEventFactory;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -189,8 +190,14 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
                         return Flux.empty();
                     }
                     return this.xmlEventDecoder.decode(
-                            response.bodyToFlux(DataBuffer.class),
-                            ResolvableType.NONE, null, null);
+                                    response.bodyToFlux(DataBuffer.class),
+                                    ResolvableType.NONE, null, null)
+                            .doOnError(t -> {
+                                log.warn("Error while decoding {}", feed.link());
+                                log.debug(ERROR_CLASS_MESSAGE,
+                                        t.getClass(), t.getLocalizedMessage().lines().findFirst().orElse(t.getLocalizedMessage()));
+                            })
+                            .onErrorReturn(RuntimeException.class, XMLEventFactory.newDefaultFactory().createEndDocument());
                 })
                 .doFirst(() -> log.trace("Receiving event from {}...", feedHost))
 
@@ -206,7 +213,7 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
 
                 .doFinally(s -> log.debug("Finish reading feed {}", feedHost))
                 .onErrorResume(e -> {
-                    log.warn(ERROR_CLASS_MESSAGE, feedHost, e.getLocalizedMessage());
+                    log.warn(ERROR_CLASS_MESSAGE, feed.link(), e.getLocalizedMessage());
                     log.debug(ERROR_STACKTRACE_MESSAGE, e);
                     return Flux.empty();
                 });

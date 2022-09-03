@@ -42,4 +42,6 @@ public interface RssAtomParser {
      * @return The {@link RawNews} representing the feed entry
      */
     Mono<RawNews> readEntryEvents(List<XMLEvent> events, ScrapedFeed feed);
+
+
 }
