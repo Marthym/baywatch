@@ -31,7 +31,7 @@
         <db.password>security</db.password>
 
         <juery.version>1.2.1</juery.version>
-        <scraphead.version>1.2.0</scraphead.version>
+        <scraphead.version>1.3.1</scraphead.version>
         <html-sanitizer.version>20220608.1</html-sanitizer.version>
         <lucene.version>9.2.0</lucene.version>
         <noexception.version>1.8.0</noexception.version>
@@ -43,8 +43,8 @@
         <nimbus-jose-jwt.version>9.23</nimbus-jose-jwt.version>
         <findbugs.version>3.0.2</findbugs.version>
         <jetbrains.version>23.0.0</jetbrains.version>
-        <wiremock.version>2.27.2</wiremock.version>
         <testy-box.version>1.8.0</testy-box.version>
+        <jmustache.version>1.15</jmustache.version>
 
         <maven-clean-plugin.version>3.2.0</maven-clean-plugin.version>
         <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>

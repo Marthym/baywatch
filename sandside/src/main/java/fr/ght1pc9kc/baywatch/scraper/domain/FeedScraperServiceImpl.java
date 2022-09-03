@@ -204,7 +204,7 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
                         .state(State.NONE)
                         .build())
 
-                .doFinally(s -> log.debug("Finish scraping feed {}", feedHost))
+                .doFinally(s -> log.debug("Finish reading feed {}", feedHost))
                 .onErrorResume(e -> {
                     log.warn(ERROR_CLASS_MESSAGE, feedHost, e.getLocalizedMessage());
                     log.debug(ERROR_STACKTRACE_MESSAGE, e);
