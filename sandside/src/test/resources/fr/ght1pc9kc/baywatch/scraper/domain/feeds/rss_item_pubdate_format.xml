@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+    <item>
+        <title>
+            <![CDATA[MySQL to MyRocks Migration in Uber&#8217;s Distributed Datastores]]>
+        </title>
+        <link>
+            <![CDATA[https://www.uber.com/blog/mysql-to-myrocks-migration-in-uber-distributed-datastores/]]>
+        </link>
+        <pubDate>
+            <![CDATA[2022-09-01 16:30:00]]>
+        </pubDate>
+        <category>
+            <![CDATA[Backend]]>
+        </category>
+        <description>
+            <![CDATA[<p>Uber&#8217;s Storage Platform team talks about the massive strategic undertaking to migrate their Distributed Databases from MySQL to MyRocks resulting in significant Storage usage reduction. The blog details the migration process and challenges faced.</p>
+]]>
+        </description>
+    </item>
+</rss>

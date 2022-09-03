@@ -21,6 +21,7 @@ import javax.xml.stream.events.XMLEvent;
 import java.io.StringWriter;
 import java.net.URI;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -50,6 +51,9 @@ public final class RssAtomParserImpl implements RssAtomParser {
     private static final QName REL = new QName("rel");
     private static final String SELF = "self";
     private static final PolicyFactory HTML_POLICY = Sanitizers.FORMATTING;
+
+    private static final DateTimeFormatter NON_STANDARD_DATETIME = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
+            .withZone(ZoneOffset.UTC);
 
     @Override
     public Predicate<XMLEvent> firstItemEvent() {
@@ -225,7 +229,8 @@ public final class RssAtomParserImpl implements RssAtomParser {
         }
         String pubDate = readElementText(events, idx);
         Instant datetime = Exceptions.silence().get(() -> DateTimeFormatter.RFC_1123_DATE_TIME.parse(pubDate, Instant::from))
-                .orElseGet(() -> DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(pubDate, Instant::from));
+                .orElseGet(Exceptions.silence().supplier(() -> DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(pubDate, Instant::from))
+                        .orElseGet(() -> NON_STANDARD_DATETIME.parse(pubDate, Instant::from)));
         return bldr.publication(datetime);
     }
 

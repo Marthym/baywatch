@@ -107,21 +107,34 @@ class RssAtomParserImplTest {
                 .verifyComplete();
     }
 
-    @Test
-    void should_read_rss_item() {
-        List<XMLEvent> xmlEvents = toXmlEventList("feeds/rss_item.xml");
+    @ParameterizedTest
+    @CsvSource({
+            "feeds/rss_item.xml, " +
+                    "DBaaS: Tout comprendre des bases de données managées, " +
+                    "https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/, " +
+                    "2020-11-30T15:58:26Z, " +
+                    "&lt;p&gt;&lt;a href&#61;&#34;https://www.journalduhacker.net/s/vzuiyr" +
+                    "/dbaas_tout_comprendre_des_bases_de_donn_es&#34;&gt;Comments&lt;/a&gt;&lt;/p&gt;",
+            "feeds/rss_item_pubdate_format.xml, " +
+                    "MySQL to MyRocks Migration in Uber’s Distributed Datastores, " +
+                    "https://www.uber.com/blog/mysql-to-myrocks-migration-in-uber-distributed-datastores/, " +
+                    "2022-09-01T16:30:00Z, " +
+                    "Uber’s Storage Platform team talks about the massive strategic undertaking to migrate their " +
+                    "Distributed Databases from MySQL to MyRocks resulting in significant Storage usage reduction. The blog details the migration process and challenges faced.",
+    })
+    void should_read_rss_item(String inputFileName, String expectedTitle, String expectedUrl, String expectedPubDate, String expectedDescription) {
+        List<XMLEvent> xmlEvents = toXmlEventList(inputFileName);
 
         ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.getRaw().id, FeedSamples.JEDI.getRaw().url);
         StepVerifier.create(tested.readEntryEvents(xmlEvents, sampleFeed))
                 .assertNext(actual -> Assertions.assertAll(
-                                () -> assertThat(actual).extracting(RawNews::getTitle)
-                                        .isEqualTo("DBaaS: Tout comprendre des bases de données managées"),
+                                () -> assertThat(actual).extracting(RawNews::getTitle).isEqualTo(expectedTitle),
                                 () -> assertThat(actual).extracting(RawNews::getLink)
-                                        .isEqualTo(URI.create("https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/")),
+                                        .isEqualTo(URI.create(expectedUrl)),
                                 () -> assertThat(actual).extracting(RawNews::getPublication)
-                                        .isEqualTo(Instant.parse("2020-11-30T15:58:26Z")),
+                                        .isEqualTo(Instant.parse(expectedPubDate)),
                                 () -> assertThat(actual).extracting(RawNews::getDescription)
-                                        .isEqualTo("&lt;p&gt;&lt;a href&#61;&#34;https://www.journalduhacker.net/s/vzuiyr/dbaas_tout_comprendre_des_bases_de_donn_es&#34;&gt;Comments&lt;/a&gt;&lt;/p&gt;")
+                                        .isEqualTo(expectedDescription)
                         )
                 ).verifyComplete();
     }
