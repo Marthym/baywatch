@@ -2,8 +2,10 @@ package fr.ght1pc9kc.baywatch.scraper.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
-import fr.ght1pc9kc.baywatch.scraper.api.NewsEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.NewsFilter;
+import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
+import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.FeedsFilter;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
@@ -23,10 +25,11 @@ import java.util.List;
 import java.util.Set;
 
 @RequiredArgsConstructor
-public class NewsEnrichmentServiceImpl implements NewsEnrichmentService {
+public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
     private static final String OPERATION_NOT_PERMITTED = "Operation not permitted !";
 
     private final List<NewsFilter> newsFilters;
+    private final List<FeedsFilter> feedsFilters;
     private final AuthenticationFacade authFacade;
     private final SystemMaintenanceService systemMaintenanceService;
 
@@ -76,5 +79,18 @@ public class NewsEnrichmentServiceImpl implements NewsEnrichmentService {
                 .filter(persisted -> persisted == 1)
                 .switchIfEmpty(Mono.error(() -> new IllegalArgumentException("Unable to persist news !")))
                 .then(Mono.just(news));
+    }
+
+    @Override
+    public Mono<AtomFeed> applyFeedsFilters(AtomFeed feed) {
+        Mono<AtomFeed> raw = authFacade.getConnectedUser()
+                .filter(u -> RoleUtils.hasRole(u.self, Role.USER))
+                .switchIfEmpty(Mono.error(() -> new UnauthorizedException(OPERATION_NOT_PERMITTED)))
+                .then(Mono.just(feed));
+
+        for (FeedsFilter filter : feedsFilters) {
+            raw = raw.flatMap(filter::filter);
+        }
+        return raw;
     }
 }

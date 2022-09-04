@@ -87,16 +87,16 @@ class RssAtomParserImplTest {
             "feeds/reddit-prog.xml | /r/programming/top/.rss | liens vedettes : programming | Computer Programming | " +
                     "| https://www.reddit.com/r/programming/top/.rss",
             "feeds/sebosss.xml | | Le blog de Seboss666 | Les divagations d'un pseudo-geek curieux " +
-                    "| Sebosss" +
+                    "| Sebosss <blog@seboss66.info>" +
                     "| https://blog.seboss666.info/feed/",
             "feeds/spring-blog.xml | https://spring.io/blog.atom | Spring | | | https://spring.io/blog.atom",
             "feeds/lemonde.xml | | Le Monde.fr - Actualités et Infos en France et dans le monde | " +
                     "Le Monde.fr - 1er site d’information. Les articles du journal et toute l’actualité en continu : " +
                     "International, France, Société, Economie, Culture, Environnement, Blogs ... | " +
                     "| https://www.lemonde.fr/rss/une.xml",
-            "feeds/feed_uber.xml | | Engineering – Uber Blog | " +
-                    "Check out the official blog from Uber to get the latest news, announcements, and things to do in US.\" /> | " +
-                    "| https://www.uber.com/",
+            "feeds/feed_uber.xml | | Engineering &#8211; Uber Blog | " +
+                    "Check out the official blog from Uber to get the latest news, announcements, and things to do in US.\" /><meta name=\"robots\" content=\"index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1\" /><link rel=\"canonical\" href=\"https://www.uber.com/blog/\" /><meta property=\"og:locale\" content=\"en_US\" /><meta property=\"og:type\" content=\"article\" /><meta property=\"og:title\" content=\"US Archives\" /><meta property=\"og:description\" content=\"Check out the official blog from Uber to get the latest news, announcements, and things to do in your community.\" /><meta property=\"og:url\" content=\"https://www.uber.com/blog/\" /><meta property=\"og:site_name\" content=\"Uber Blog\" /><meta property=\"og:image\" content=\"https://blog.uber-cdn.com/cdn-cgi/image/width=500,height=300,quality=80,onerror=redirect,format=auto/wp-content/uploads/2018/09/uber_blog_seo.png\" /><meta property=\"og:image:width\" content=\"500\" /><meta property=\"og:image:height\" content=\"300\" /><meta property=\"og:image:type\" content=\"image/png\" /><meta name=\"twitter:card\" content=\"summary_large_image\" /><meta property=\"fb:pages\" content=\"120945717945722" +
+                    "| | https://www.uber.com/",
     })
     void should_read_feed_headers(String resource, String expectedId, String expectedTitle, String expectedDescr,
                                   String expectedAuthor, URI expectedLink) {
@@ -121,13 +121,14 @@ class RssAtomParserImplTest {
                     "DBaaS: Tout comprendre des bases de données managées, " +
                     "https://practicalprogramming.fr/dbaas-la-base-de-donnees-dans-le-cloud/, " +
                     "2020-11-30T15:58:26Z, " +
-                    "Comments",
+                    "&lt;p>&lt;a href=\"https://www.journalduhacker.net/s/vzuiyr/dbaas_tout_comprendre_des_bases_de_donn_es\">Comments&lt;/a>&lt;/p>",
             "feeds/rss_item_pubdate_format.xml, " +
-                    "MySQL to MyRocks Migration in Uber’s Distributed Datastores, " +
+                    "MySQL to MyRocks Migration in Uber&#8217;s Distributed Datastores, " +
                     "https://www.uber.com/blog/mysql-to-myrocks-migration-in-uber-distributed-datastores/, " +
                     "2022-09-01T16:30:00Z, " +
-                    "Uber’s Storage Platform team talks about the massive strategic undertaking to migrate their " +
-                    "Distributed Databases from MySQL to MyRocks resulting in significant Storage usage reduction. The blog details the migration process and challenges faced.",
+                    "<p>Uber&#8217;s Storage Platform team talks about the massive strategic undertaking to migrate " +
+                    "their Distributed Databases from MySQL to MyRocks resulting in significant Storage usage reduction. " +
+                    "The blog details the migration process and challenges faced.</p>",
     })
     void should_read_rss_item(String inputFileName, String expectedTitle, String expectedUrl, String expectedPubDate, String expectedDescription) {
         List<XMLEvent> xmlEvents = toXmlEventList(inputFileName);
@@ -156,7 +157,12 @@ class RssAtomParserImplTest {
                         () -> assertThat(actual).extracting(RawNews::getPublication)
                                 .isEqualTo(Instant.parse("2020-11-30T08:20:58Z")),
                         () -> assertThat(actual).extracting(RawNews::getDescription)
-                                .isEqualTo("submitted by /u/nonusedaccountname <br /> [link] [commentaires]")
+                                .isEqualTo("&amp;#32; submitted by &amp;#32; &lt;a " +
+                                        "href=\"https://www.reddit.com/user/nonusedaccountname\"> /u/nonusedaccountname " +
+                                        "&lt;/a> &lt;br/> &lt;span>&lt;a href=\"https://maarten.mulders.it/2020/11/whats-new-in-maven-4/\">" +
+                                        "[link]&lt;/a>&lt;/span> &amp;#32; &lt;span>&lt;a " +
+                                        "href=\"https://www.reddit.com/r/java/comments/k3rv35/whats_new_in_maven_4_maarten_on_it/\">" +
+                                        "[commentaires]&lt;/a>&lt;/span>")
                 )).verifyComplete();
     }
 
@@ -174,8 +180,8 @@ class RssAtomParserImplTest {
                                 () -> assertThat(actual).extracting(RawNews::getPublication)
                                         .isEqualTo(Instant.parse("2020-11-26T14:08:50Z")),
                                 () -> assertThat(actual).extracting(RawNews::getDescription)
-                                        .asString().startsWith("Spring Data <code>2020.0.0</code> ")
-                                        .endsWith("of these accept <code>RowMapper</code>.")
+                                        .asString().startsWith("&lt;p>&lt;a href=\"https://")
+                                        .endsWith("&lt;!-- rendered by Sagan Renderer Service -->")
                         )
                 ).verifyComplete();
     }
@@ -194,7 +200,7 @@ class RssAtomParserImplTest {
                                 () -> assertThat(actual).extracting(RawNews::getPublication)
                                         .isEqualTo(Instant.parse("2020-11-18T17:00:47Z")),
                                 () -> assertThat(actual).extracting(RawNews::getDescription).asString()
-                                        .startsWith("Et dieu sait que je rageais d’être le dernier de la famille à ne pas être équipé.")
+                                        .startsWith("Et dieu sait que je rageais d&#8217;être")
                                         .endsWith("Mon propriétaire à fini par faire les travaux [...]")
                         )
                 ).verifyComplete();
@@ -233,7 +239,8 @@ class RssAtomParserImplTest {
                                 .isEqualTo(URI.create("https://www.jedi.com/dbaas-la-base-de-donnees-dans-le-cloud/")),
                         () -> assertThat(actual).extracting(RawNews::getPublication)
                                 .isEqualTo(Instant.parse("2020-11-30T15:58:26Z")),
-                        () -> assertThat(actual).extracting(RawNews::getDescription).isEqualTo("Comments")
+                        () -> assertThat(actual).extracting(RawNews::getDescription).isEqualTo(
+                                "&lt;p>&lt;a href=\"https://www.journalduhacker.net/s/vzuiyr/dbaas_tout_comprendre_des_bases_de_donn_es\">Comments&lt;/a>&lt;/p>")
                 )).verifyComplete();
     }
 

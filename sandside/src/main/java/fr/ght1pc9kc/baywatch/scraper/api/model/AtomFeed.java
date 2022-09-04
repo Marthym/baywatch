@@ -9,4 +9,7 @@ public record AtomFeed(
         String author,
         URI link
 ) {
+    public AtomFeed with(String title, String description) {
+        return new AtomFeed(id(), title, description, author(), link());
+    }
 }

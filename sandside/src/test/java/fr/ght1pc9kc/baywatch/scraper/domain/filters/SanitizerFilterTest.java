@@ -7,7 +7,7 @@ import reactor.test.StepVerifier;
 
 import java.net.URI;
 
-class NewsSanitizerFilterTest {
+class SanitizerFilterTest {
     private static final String LOREM_IPSUM = """
             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
             dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
@@ -15,43 +15,43 @@ class NewsSanitizerFilterTest {
             fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt
             mollit anim id est laborum.
             """;
-    private static final String LOREM_H1 = "<h1>Illagal tag usage</h1>";
-    private static final String LOREM_A = "<a href=\"http://www.jedi.com/\">Illagal tag usage</h1>";
+    private static final String LOREM_H1 = "<h1>Illegal H1 usage</h1>";
+    private static final String LOREM_A = "<a href=\"http://www.jedi.com/\">Illegal A usage</a>";
 
-    NewsSanitizerFilter tested = new NewsSanitizerFilter();
+    SanitizerFilter tested = new SanitizerFilter();
 
     @Test
     void should_sanitize_news_title() {
         RawNews raw = RawNews.builder().id("0").link(URI.create("https://www.jedi.com/"))
-                .title(LOREM_H1 + LOREM_A + "<p>" + LOREM_IPSUM)
+                .title(LOREM_H1 + LOREM_A + "<b>" + LOREM_IPSUM)
                 .build();
 
         StepVerifier.create(tested.filter(raw))
                 .assertNext(actual -> Assertions.assertThat(actual.getTitle()).isEqualTo(
-                        "Illagal tag usageIllagal tag usageLorem ipsum dolor sit amet, consectetur adipiscing " +
-                                "elit, sed do eiusmod tempor incididunt ut labore et\n" +
-                                "dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exerci"))
+                        "Illegal H1 usageIllegal A usageLorem ipsum dolor sit amet, consectetur adipiscing " +
+                                "elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad " +
+                                "minim veniam, quis nostrud exercitati"))
                 .verifyComplete();
     }
 
     @Test
     void should_sanitize_news_description() {
         RawNews raw = RawNews.builder().id("0").link(URI.create("https://www.jedi.com/"))
-                .description(LOREM_IPSUM + LOREM_H1 + LOREM_A + "<p>" + LOREM_IPSUM
+                .description(LOREM_IPSUM + LOREM_H1 + LOREM_A + "<b>" + LOREM_IPSUM
                         + LOREM_IPSUM + LOREM_IPSUM + LOREM_IPSUM + LOREM_IPSUM + LOREM_IPSUM + LOREM_IPSUM
                         + LOREM_IPSUM + LOREM_IPSUM + LOREM_IPSUM + LOREM_IPSUM + LOREM_IPSUM + LOREM_IPSUM)
                 .build();
 
         StepVerifier.create(tested.filter(raw))
                 .assertNext(actual -> Assertions.assertThat(actual.getDescription()).startsWith(
-                                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et\n" +
-                                        "dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex\n" +
-                                        "ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu\n" +
-                                        "fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt\n" +
-                                        "mollit anim id est laborum.\n" +
-                                        "Illagal tag usageIllagal tag usage<p>Lorem ipsum dolor sit amet")
-                        .endsWith("quis nostrud exercitation ullamco laboris nisi ut aliquip ex\n" +
-                                "ea commodo consequat. Duis aute </p>"))
+                                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor " +
+                                        "incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis " +
+                                        "nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. " +
+                                        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu " +
+                                        "fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in " +
+                                        "culpa qui officia deserunt mollit anim id est laborum. " +
+                                        "Illegal H1 usageIllegal A usage<b>Lorem ipsum dolor")
+                        .endsWith("quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irur</b>"))
                 .verifyComplete();
     }
 }

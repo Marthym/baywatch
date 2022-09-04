@@ -2,7 +2,7 @@ package fr.ght1pc9kc.baywatch.scraper.infra.config;
 
 import fr.ght1pc9kc.baywatch.scraper.api.NewsFilter;
 import fr.ght1pc9kc.baywatch.scraper.domain.filters.ImageLinkValidationFilter;
-import fr.ght1pc9kc.baywatch.scraper.domain.filters.NewsSanitizerFilter;
+import fr.ght1pc9kc.baywatch.scraper.domain.filters.SanitizerFilter;
 import fr.ght1pc9kc.baywatch.scraper.domain.filters.OpenGraphFilter;
 import fr.ght1pc9kc.baywatch.scraper.domain.filters.RedditNewsFilter;
 import fr.ght1pc9kc.scraphead.core.HeadScraper;
@@ -34,6 +34,6 @@ public class NewsFiltersConfiguration {
     @Bean
     @Order(4)
     public NewsFilter newsSanitizer() {
-        return new NewsSanitizerFilter();
+        return new SanitizerFilter();
     }
 }

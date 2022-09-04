@@ -8,10 +8,6 @@ import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.owasp.html.HtmlPolicyBuilder;
-import org.owasp.html.PolicyFactory;
-import org.owasp.html.Sanitizers;
-import org.unbescape.html.HtmlEscape;
 import reactor.core.publisher.Mono;
 
 import javax.xml.namespace.QName;
@@ -30,6 +26,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
+/**
+ * This class parses and renders data as found in news feeds. Under no circumstances is it responsible for sanitizing the data read.
+ * Depending on their use, it will be necessary to think about sanitizing them before displaying them.
+ */
 @Slf4j
 public final class RssAtomParserImpl implements RssAtomParser {
     private static final Set<String> ALLOWED_PROTOCOL = Set.of("http", "https");
@@ -52,8 +52,6 @@ public final class RssAtomParserImpl implements RssAtomParser {
     private static final QName HREF = new QName("href");
     private static final QName REL = new QName("rel");
     private static final String SELF = "self";
-    private static final PolicyFactory HTML_POLICY = Sanitizers.FORMATTING;
-    private static final PolicyFactory TEXT_POLICY = new HtmlPolicyBuilder().toFactory();
 
     private static final DateTimeFormatter NON_STANDARD_DATETIME = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
             .withZone(ZoneOffset.UTC);
@@ -116,11 +114,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
             }
         }
 
-        return new AtomFeed(id,
-                sanitizeAndUnescape(TEXT_POLICY, title),
-                sanitizeAndUnescape(HTML_POLICY, description),
-                sanitizeAndUnescape(HTML_POLICY, author),
-                link);
+        return new AtomFeed(id, title, description, author, link);
     }
 
     private static URI onFeedLink(URI old, int deepLevel, List<XMLEvent> events, int idx) {
@@ -173,8 +167,8 @@ public final class RssAtomParserImpl implements RssAtomParser {
         }
 
         return Mono.just(rawNews
-                .withTitle(sanitizeAndUnescape(HTML_POLICY, rawNews.title))
-                .withDescription(sanitizeAndUnescape(HTML_POLICY, rawNews.description)));
+                .withTitle(rawNews.title)
+                .withDescription(rawNews.description));
     }
 
     private RawNews.RawNewsBuilder onItemEntry() {
@@ -265,18 +259,4 @@ public final class RssAtomParserImpl implements RssAtomParser {
         return StringUtils.normalizeSpace(buf.getBuffer().toString());
     }
 
-    /**
-     * Need to sanitize to avoid weird html or XSS issues
-     * Need to unescape because the front escape special characters
-     * Finally normalize text to avoir multiple spaces
-     *
-     * @param html The HTML to sanitize
-     * @return Sane HTML or text or null if html was null
-     */
-    private static String sanitizeAndUnescape(PolicyFactory policy, String html) {
-        if (html == null) {
-            return null;
-        }
-        return StringUtils.normalizeSpace(HtmlEscape.unescapeHtml(policy.sanitize(HtmlEscape.unescapeHtml(html))));
-    }
 }

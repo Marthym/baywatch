@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.scraper.domain;
 
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
-import fr.ght1pc9kc.baywatch.scraper.api.NewsEnrichmentService;
+import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScraperConfig;
@@ -54,7 +54,7 @@ class FeedScraperServiceTest {
             Duration.ofDays(1), Period.ofDays(30)
     );
 
-    private final NewsEnrichmentService mockNewsEnrichmentService = mock(NewsEnrichmentService.class);
+    private final ScrapEnrichmentService mockScrapEnrichmentService = mock(ScrapEnrichmentService.class);
 
     private FeedScraperServiceImpl tested;
     private RssAtomParser rssAtomParserMock;
@@ -76,7 +76,7 @@ class FeedScraperServiceTest {
         verify(newsMaintenanceMock,
                 times(1).description("Expect only one call because of the buffer to 100")
         ).newsLoad(anyCollection());
-        verify(mockNewsEnrichmentService, times(2)).applyNewsFilters(any());
+        verify(mockScrapEnrichmentService, times(2)).applyNewsFilters(any());
     }
 
     @Test
@@ -196,12 +196,12 @@ class FeedScraperServiceTest {
                 new ScrapedFeed(springSha3, springUri)
         ));
 
-        when(mockNewsEnrichmentService.applyNewsFilters(any(News.class)))
+        when(mockScrapEnrichmentService.applyNewsFilters(any(News.class)))
                 .thenAnswer(((Answer<Mono<News>>) answer -> Mono.just(answer.getArgument(0))));
 
         tested = new FeedScraperServiceImpl(SCRAPER_PROPERTIES,
                 newsMaintenanceMock, mockWebClient, rssAtomParserMock,
-                Collections.emptyList(), Map.of(), mockNewsEnrichmentService);
+                Collections.emptyList(), Map.of(), mockScrapEnrichmentService);
         tested.setClock(Clock.fixed(Instant.parse("2022-04-30T12:35:41Z"), ZoneOffset.UTC));
     }
 

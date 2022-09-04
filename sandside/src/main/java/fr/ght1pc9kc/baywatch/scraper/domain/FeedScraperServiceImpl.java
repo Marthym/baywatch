@@ -4,8 +4,8 @@ import fr.ght1pc9kc.baywatch.common.api.EventHandler;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperPlugin;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
-import fr.ght1pc9kc.baywatch.scraper.api.NewsEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
+import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScraperConfig;
@@ -66,7 +66,7 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
     private final RssAtomParser feedParser;
     private final Collection<EventHandler> scrapingHandlers;
     private final Map<String, FeedScraperPlugin> plugins;
-    private final NewsEnrichmentService newsEnrichmentService;
+    private final ScrapEnrichmentService scrapEnrichmentService;
     private final XmlEventDecoder xmlEventDecoder;
 
     @Setter(value = AccessLevel.PACKAGE, onMethod = @__({@VisibleForTesting}))
@@ -77,7 +77,7 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
                                   WebClient webClient, RssAtomParser feedParser,
                                   Collection<EventHandler> scrapingHandlers,
                                   Map<String, FeedScraperPlugin> plugins,
-                                  NewsEnrichmentService newsEnrichmentService
+                                  ScrapEnrichmentService scrapEnrichmentService
     ) {
         this.properties = properties;
         this.newsMaintenance = newsMaintenance;
@@ -85,7 +85,7 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
         this.scrapingHandlers = scrapingHandlers.stream()
                 .filter(e -> e.eventTypes().contains("FEED_SCRAPING")).toList();
         this.plugins = plugins;
-        this.newsEnrichmentService = newsEnrichmentService;
+        this.scrapEnrichmentService = scrapEnrichmentService;
         this.http = webClient;
 
         this.xmlEventDecoder = new XmlEventDecoder();
@@ -134,7 +134,7 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
 
                     .filterWhen(n -> alreadyHave.map(l -> !l.contains(n.getId())))
                     .parallel(4).runOn(scraperScheduler)
-                    .concatMap(newsEnrichmentService::applyNewsFilters)
+                    .concatMap(scrapEnrichmentService::applyNewsFilters)
                     .sequential()
 
                     .filterWhen(n -> alreadyHave.map(l -> !l.contains(n.getId())))
@@ -243,6 +243,7 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
 
                 .bufferUntil(feedParser.firstItemEvent())
                 .next()
-                .map(feedParser::readFeedProperties);
+                .map(feedParser::readFeedProperties)
+                .flatMap(scrapEnrichmentService::applyFeedsFilters);
     }
 }

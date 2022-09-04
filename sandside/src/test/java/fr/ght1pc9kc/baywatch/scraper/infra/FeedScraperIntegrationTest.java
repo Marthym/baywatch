@@ -5,9 +5,10 @@ import com.sun.net.httpserver.HttpServer;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.scraper.domain.FeedScraperServiceImpl;
-import fr.ght1pc9kc.baywatch.scraper.domain.NewsEnrichmentServiceImpl;
 import fr.ght1pc9kc.baywatch.scraper.domain.RssAtomParserImpl;
+import fr.ght1pc9kc.baywatch.scraper.domain.ScrapEnrichmentServiceImpl;
 import fr.ght1pc9kc.baywatch.scraper.domain.filters.OpenGraphFilter;
+import fr.ght1pc9kc.baywatch.scraper.domain.filters.SanitizerFilter;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScraperConfig;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.NewsMaintenancePort;
@@ -151,8 +152,11 @@ class FeedScraperIntegrationTest {
                 new RssAtomParserImpl(),
                 Collections.emptyList(),
                 Map.of(),
-                new NewsEnrichmentServiceImpl(List.of(
-                        new OpenGraphFilter(HeadScrapers.builder(new NettyScrapClient(nettyHttpClient)).build())
+                new ScrapEnrichmentServiceImpl(List.of(
+                        new OpenGraphFilter(HeadScrapers.builder(new NettyScrapClient(nettyHttpClient)).build()),
+                        new SanitizerFilter()
+                ), List.of(
+                        new SanitizerFilter()
                 ), mockFacadeFor(UserSamples.YODA), mock(SystemMaintenanceService.class))
         );
     }

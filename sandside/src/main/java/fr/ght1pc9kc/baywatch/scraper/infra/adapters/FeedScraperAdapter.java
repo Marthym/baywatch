@@ -2,7 +2,7 @@ package fr.ght1pc9kc.baywatch.scraper.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperPlugin;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
-import fr.ght1pc9kc.baywatch.scraper.api.NewsEnrichmentService;
+import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.common.api.EventHandler;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
@@ -37,7 +37,7 @@ public class FeedScraperAdapter implements FeedScraperService {
                               Collection<EventHandler> scrappingHandlers,
                               Collection<FeedScraperPlugin> scrapperPlugins,
                               @ScraperQualifier WebClient webClient,
-                              NewsEnrichmentService newsEnrichmentService
+                              ScrapEnrichmentService scrapEnrichmentService
     ) {
         Map<String, FeedScraperPlugin> plugins = scrapperPlugins.stream()
                 .collect(Collectors.toUnmodifiableMap(FeedScraperPlugin::pluginForDomain, Function.identity()));
@@ -45,7 +45,7 @@ public class FeedScraperAdapter implements FeedScraperService {
         ScraperConfig config = new ScraperConfig(properties.frequency(), properties.conservation());
         this.scraper = new FeedScraperServiceImpl(
                 config, newsMaintenancePort, webClient,
-                rssAtomParser, scrappingHandlers, plugins, newsEnrichmentService);
+                rssAtomParser, scrappingHandlers, plugins, scrapEnrichmentService);
     }
 
     @PostConstruct
