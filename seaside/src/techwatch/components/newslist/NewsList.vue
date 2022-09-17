@@ -3,7 +3,7 @@
     <template v-for="(card, idx) in news" :key="card.data.id">
       <NewsCard :ref="card.data.id" :card="card" @activate="activateNewsCard(idx)">
         <template #actions v-if="userStore.isAuthenticated">
-          <div class="btn-group">
+          <div class="btn-group -ml-2">
             <button v-if="card.data.state.read" @click.stop="markNewsRead(idx, false)" class="btn btn-xs btn-ghost">
               <svg class="h-5 w-5 cursor-pointer" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                    stroke="currentColor">
