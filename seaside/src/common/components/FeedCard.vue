@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center space-x-3 md:col-span-3">
+  <div class="flex items-center space-x-3" :class="{'col-span-7': dense, 'col-span-3': !dense}">
     <div class="avatar placeholder">
       <div class="w-8 h-8 mask mask-squircle">
         <img class="text-center"
@@ -8,7 +8,7 @@
       </div>
     </div>
     <div>
-      <div class="font-bold">
+      <div class="font-bold text-ellipsis">
         {{ view.name }}
       </div>
       <div class="text-sm opacity-50">
@@ -16,7 +16,7 @@
       </div>
     </div>
   </div>
-  <div v-if="!dense" class="md:col-span-7">
+  <div v-if="!dense" :class="{'col-span-7': !dense}">
     <a class="link whitespace-normal">{{ view.url }}</a><br>
     <div v-for="tag in view.tags" class="badge mr-1 rounded">{{ tag }}</div>
   </div>

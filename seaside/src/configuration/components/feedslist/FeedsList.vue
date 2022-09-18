@@ -5,7 +5,7 @@
     <table class="table w-full" aria-describedby="Feeds list">
       <thead>
       <tr>
-        <th scope="col" v-if="userState.isAuthenticated">
+        <th scope="col" v-if="userState.isAuthenticated" class="w-1">
           <label>
             <input type="checkbox" class="checkbox" ref="globalCheck"
                    :checked="checkState" @change="onSelectAll()"/>
@@ -121,7 +121,6 @@ export default class FeedsList extends Vue {
     const resolvedPage = (page > 0) ? page : 0;
     return feedsService.list({_p: resolvedPage}).pipe(
         switchMap(feedPage => {
-          console.log(feedPage);
           this.pagesNumber = feedPage.totalPage;
           this.activePage = feedPage.currentPage;
           return feedPage.data;
