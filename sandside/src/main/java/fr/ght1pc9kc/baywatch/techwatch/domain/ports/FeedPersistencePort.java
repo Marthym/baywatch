@@ -30,9 +30,9 @@ public interface FeedPersistencePort {
      */
     Mono<Feed> update(Feed toUpdate, String userId);
 
-    Mono<Void> persist(Collection<Feed> toPersist);
+    Flux<Feed> persist(Collection<Feed> toPersist);
 
-    Mono<Void> persist(Collection<Feed> toPersist, String userId);
+    Flux<Feed> persistFeedUser(Collection<Feed> toPersist, String userId);
 
     /**
      * Delete {@link Feed} from `FEEDS_USERS` and `FEEDS`, depending on the filter in {@link QueryContext}.

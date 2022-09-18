@@ -87,7 +87,7 @@ public class FeedRepository implements FeedPersistencePort {
     }
 
     @Override
-    public Mono<Void> persist(Collection<Feed> toPersist) {
+    public Flux<Feed> persist(Collection<Feed> toPersist) {
 
         List<FeedsRecord> records = toPersist.stream()
                 .map(baywatchMapper::feedToFeedsRecord)
@@ -108,28 +108,28 @@ public class FeedRepository implements FeedPersistencePort {
                             loader.processed(), loader.errors().size(), loader.ignored());
                     return loader;
 
-                }).then();
+                }).thenMany(Flux.fromIterable(records))
+                .map(baywatchMapper::recordToFeed);
     }
 
     @Override
-    public Mono<Void> persist(Collection<Feed> toPersist, String userId) {
+    public Flux<Feed> persistFeedUser(Collection<String> feedIds, String userId) {
         List<FeedsUsersRecord> feedsUsersRecords = toPersist.stream()
                 .map(baywatchMapper::feedToFeedsUsersRecord)
                 .filter(Objects::nonNull)
                 .map(r -> r.setFeusUserId(userId))
                 .toList();
 
-        return persist(toPersist)
-                .then(Mono.fromCallable(() ->
-                                dsl.loadInto(FEEDS_USERS)
-                                        .batchAll()
-                                        .onDuplicateKeyUpdate()
-                                        .onErrorIgnore()
-                                        .loadRecords(feedsUsersRecords)
-                                        .fieldsCorresponding()
-                                        .execute())
-                        .subscribeOn(databaseScheduler))
-                .then();
+        return Mono.fromCallable(() ->
+                        dsl.loadInto(FEEDS_USERS)
+                                .batchAll()
+                                .onDuplicateKeyUpdate()
+                                .onErrorIgnore()
+                                .loadRecords(feedsUsersRecords)
+                                .fieldsCorresponding()
+                                .execute())
+                .subscribeOn(databaseScheduler)
+                .thenMany(Flux.fromIterable(toPersist));
     }
 
     @Override

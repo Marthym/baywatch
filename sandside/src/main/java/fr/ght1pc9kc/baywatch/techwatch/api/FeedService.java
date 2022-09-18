@@ -44,7 +44,18 @@ public interface FeedService {
 
     Mono<Feed> update(Feed toPersist);
 
-    Mono<Void> persist(Collection<Feed> toPersist);
+    /**
+     * @deprecated Use instead {@link this#add(Collection)} and {@link this#subscribe(Collection)}
+     */
+    default Mono<Void> persist(Collection<Feed> toPersist) {
+        return add(toPersist)
+                .map(Feed::getId).collectList()
+                .map(this::subscribe).then();
+    }
+
+    Flux<Feed> add(Collection<Feed> toAdd);
+
+    Flux<Feed> subscribe(Collection<String> feedIds);
 
     Mono<Integer> delete(Collection<String> toDelete);
 }

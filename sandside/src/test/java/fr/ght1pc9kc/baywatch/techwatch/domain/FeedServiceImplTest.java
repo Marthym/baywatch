@@ -50,7 +50,7 @@ class FeedServiceImplTest {
         when(mockFeedRepository.get(any())).thenReturn(Mono.just(jediFeed));
         when(mockFeedRepository.list(any())).thenReturn(Flux.just(jediFeed));
         when(mockFeedRepository.persist(any())).thenReturn(Flux.empty().then());
-        when(mockFeedRepository.persist(any(), any())).thenReturn(Flux.empty().then());
+        when(mockFeedRepository.persistFeedUser(any(), any())).thenReturn(Flux.empty().then());
         when(mockFeedRepository.count(any())).thenReturn(Mono.just(42));
 
         ScraperServicePort mockScraperService = mock(ScraperServicePort.class);
@@ -116,7 +116,7 @@ class FeedServiceImplTest {
         StepVerifier.create(tested.persist(List.of(FeedSamples.JEDI)))
                 .verifyComplete();
 
-        verify(mockFeedRepository, times(1)).persist(captor.capture(),
+        verify(mockFeedRepository, times(1)).persistFeedUser(captor.capture(),
                 eq(UsersRecordSamples.OKENOBI.getUserId()));
         assertThat(captor.getValue()).containsExactly(FeedSamples.JEDI);
     }

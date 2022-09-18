@@ -134,7 +134,7 @@ class FeedRepositoryTest {
                 .tags(Set.of("jedi", "light"))
                 .build();
 
-        tested.persist(Collections.singleton(expected), OKENOBI.getUserId()).block();
+        tested.persistFeedUser(Collections.singleton(expected), OKENOBI.getUserId()).block();
 
         {
             FeedsRecord actual = dsl.selectFrom(FEEDS).where(FEEDS.FEED_ID.eq(expected.getId())).fetchOne();

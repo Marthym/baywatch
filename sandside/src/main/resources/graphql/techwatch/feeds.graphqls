@@ -26,3 +26,7 @@ extend type Query {
         tags: [String]
     ): SearchFeedsResponse
 }
+
+extend type Mutation {
+    subscribe(id: ID, name: String, url: String, tags: [String]): Feed
+}
