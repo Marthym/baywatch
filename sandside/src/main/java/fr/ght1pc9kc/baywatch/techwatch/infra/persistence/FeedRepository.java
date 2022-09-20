@@ -88,7 +88,6 @@ public class FeedRepository implements FeedPersistencePort {
 
     @Override
     public Flux<Feed> persist(Collection<Feed> toPersist) {
-
         List<FeedsRecord> records = toPersist.stream()
                 .map(baywatchMapper::feedToFeedsRecord)
                 .toList();
@@ -105,16 +104,15 @@ public class FeedRepository implements FeedPersistencePort {
 
                 .map(loader -> {
                     log.debug("Load {} Feeds with {} error(s) and {} ignored",
-                            loader.processed(), loader.errors().size(), loader.ignored());
+                            loader.stored(), loader.errors().size(), loader.ignored());
                     return loader;
 
-                }).thenMany(Flux.fromIterable(records))
-                .map(baywatchMapper::recordToFeed);
+                }).thenMany(Flux.fromIterable(toPersist));
     }
 
     @Override
-    public Flux<Feed> persistFeedUser(Collection<String> feedIds, String userId) {
-        List<FeedsUsersRecord> feedsUsersRecords = toPersist.stream()
+    public Flux<Feed> persistUserRelation(Collection<Feed> feeds, String userId) {
+        List<FeedsUsersRecord> feedsUsersRecords = feeds.stream()
                 .map(baywatchMapper::feedToFeedsUsersRecord)
                 .filter(Objects::nonNull)
                 .map(r -> r.setFeusUserId(userId))
@@ -129,7 +127,7 @@ public class FeedRepository implements FeedPersistencePort {
                                 .fieldsCorresponding()
                                 .execute())
                 .subscribeOn(databaseScheduler)
-                .thenMany(Flux.fromIterable(toPersist));
+                .thenMany(Flux.fromIterable(feeds));
     }
 
     @Override

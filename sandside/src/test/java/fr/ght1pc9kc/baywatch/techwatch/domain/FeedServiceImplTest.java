@@ -28,6 +28,8 @@ import reactor.test.StepVerifier;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.eq;
@@ -44,13 +46,14 @@ class FeedServiceImplTest {
 
     private FeedService tested;
 
+    @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @BeforeEach
     void setUp() {
         Feed jediFeed = BAYWATCH_MAPPER.recordToFeed(FeedRecordSamples.JEDI);
         when(mockFeedRepository.get(any())).thenReturn(Mono.just(jediFeed));
         when(mockFeedRepository.list(any())).thenReturn(Flux.just(jediFeed));
-        when(mockFeedRepository.persist(any())).thenReturn(Flux.empty().then());
-        when(mockFeedRepository.persistFeedUser(any(), any())).thenReturn(Flux.empty().then());
+        when(mockFeedRepository.persist(any())).thenAnswer(a -> Flux.fromIterable(a.getArgument(0, List.class)));
+        when(mockFeedRepository.persistUserRelation(anyCollection(), anyString())).thenAnswer(a -> Flux.fromIterable(a.getArgument(0, List.class)));
         when(mockFeedRepository.count(any())).thenReturn(Mono.just(42));
 
         ScraperServicePort mockScraperService = mock(ScraperServicePort.class);
@@ -101,30 +104,53 @@ class FeedServiceImplTest {
     }
 
     @Test
-    void should_persist_feeds_for_anonymous() {
+    void should_add_feed_by_anonymous() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.empty());
-        StepVerifier.create(tested.persist(List.of())).verifyError(UnauthenticatedUser.class);
+        StepVerifier.create(tested.add(List.of())).verifyError(UnauthenticatedUser.class);
+    }
+
+    @Test
+    void should_subscribe_feeds_for_anonymous() {
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.empty());
+        StepVerifier.create(tested.subscribe(List.of())).verifyError(UnauthenticatedUser.class);
     }
 
     @Test
     @SuppressWarnings("unchecked")
-    void should_persist_feeds_for_user() {
+    void should_add_feed_from_user() {
         Entity<User> okenobi = BAYWATCH_MAPPER.recordToUserEntity(UsersRecordSamples.OKENOBI);
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(okenobi));
         ArgumentCaptor<List<Feed>> captor = ArgumentCaptor.forClass(List.class);
 
-        StepVerifier.create(tested.persist(List.of(FeedSamples.JEDI)))
+        StepVerifier.create(tested.add(List.of(FeedSamples.JEDI)))
+                .expectNext(FeedSamples.JEDI)
                 .verifyComplete();
 
-        verify(mockFeedRepository, times(1)).persistFeedUser(captor.capture(),
-                eq(UsersRecordSamples.OKENOBI.getUserId()));
+        verify(mockFeedRepository, times(1)).persist(captor.capture());
         assertThat(captor.getValue()).containsExactly(FeedSamples.JEDI);
     }
 
     @Test
-    void should_persist_unsecured_url() {
+    @SuppressWarnings("unchecked")
+    void should_subscribe_feeds_for_user() {
+        Entity<User> okenobi = BAYWATCH_MAPPER.recordToUserEntity(UsersRecordSamples.OKENOBI);
+        Feed jediFeed = BAYWATCH_MAPPER.recordToFeed(FeedRecordSamples.JEDI);
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(okenobi));
+        ArgumentCaptor<List<Feed>> captor = ArgumentCaptor.forClass(List.class);
+
+        StepVerifier.create(tested.subscribe(List.of(jediFeed)))
+                .expectNext(jediFeed)
+                .verifyComplete();
+
+        verify(mockFeedRepository, times(1)).persistUserRelation(captor.capture(),
+                eq(UsersRecordSamples.OKENOBI.getUserId()));
+        assertThat(captor.getValue()).containsExactly(jediFeed);
+    }
+
+    @Test
+    void should_add_unsecured_url() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
-        StepVerifier.create(tested.persist(List.of(FeedSamples.UNSECURE_PROTOCOL)))
+        StepVerifier.create(tested.add(List.of(FeedSamples.UNSECURE_PROTOCOL)))
                 .verifyError(IllegalArgumentException.class);
 
         StepVerifier.create(tested.update(FeedSamples.UNSECURE_PROTOCOL))

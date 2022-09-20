@@ -2,11 +2,11 @@ package fr.ght1pc9kc.baywatch.opml.domain;
 
 import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.opml.api.OpmlService;
+import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
-import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.infra.persistence.FeedRepository;
 import lombok.RequiredArgsConstructor;
@@ -64,7 +64,8 @@ public class OpmlServiceImpl implements OpmlService {
                             .then(Mono.empty());
                     return Flux.merge(db, feeds)
                             .buffer(100)
-                            .flatMap(f -> feedRepository.persistFeedUser(f, owner.id));
+                            .flatMap(f -> feedRepository.persist(f).collectList())
+                            .flatMap(f -> feedRepository.persistUserRelation(f, owner.id));
                 })).then();
     }
 

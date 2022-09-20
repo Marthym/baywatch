@@ -157,7 +157,7 @@ public class FeedController {
                             .name(form.name)
                             .build();
                 })
-                .flatMap(feed -> feedService.persist(Collections.singleton(feed)).thenReturn(feed))
+                .flatMap(feed -> feedService.addAndSubscribe(Collections.singleton(feed)).next())
                 .map(feed -> ResponseEntity.created(URI.create("/api/feeds/" + feed.getId())).body(feed))
                 .onErrorMap(WebExchangeBindException.class, e -> {
                     String message = e.getFieldErrors().stream().map(err -> err.getField() + " " + err.getDefaultMessage()).collect(Collectors.joining("\n"));
@@ -185,6 +185,6 @@ public class FeedController {
                             .tags(Set.of(form.tags))
                             .build();
                 }).collectList()
-                .flatMapMany(feeds -> feedService.persist(feeds).thenMany(Flux.fromIterable(feeds)));
+                .flatMapMany(feedService::addAndSubscribe);
     }
 }

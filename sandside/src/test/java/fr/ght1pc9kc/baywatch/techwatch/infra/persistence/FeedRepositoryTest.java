@@ -40,6 +40,7 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples.OKENOBI;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SuppressWarnings("resource")
 class FeedRepositoryTest {
     private static final WithInMemoryDatasource wDs = WithInMemoryDatasource.builder().build();
     private static final WithDatabaseLoaded wBaywatchDb = WithDatabaseLoaded.builder()
@@ -115,7 +116,9 @@ class FeedRepositoryTest {
                 .tags(Set.of("jedi", "light"))
                 .build();
 
-        tested.persist(Collections.singleton(expected)).block();
+        StepVerifier.create(tested.persist(Collections.singleton(expected)))
+                .expectNext(expected)
+                .verifyComplete();
 
         FeedsRecord actual = dsl.selectFrom(FEEDS).where(FEEDS.FEED_ID.eq(expected.getId())).fetchOne();
         assertThat(actual).isNotNull();
@@ -124,17 +127,16 @@ class FeedRepositoryTest {
 
     @Test
     void should_persist_feeds_to_user(DSLContext dsl) {
-        URI uri = URI.create("https://obiwan.kenobi.jedi/.rss");
+        RawFeed expectedRawFeed = Mappers.getMapper(BaywatchMapper.class).recordToRawFeed(FeedRecordSamples.JEDI);
         Feed expected = Feed.builder()
-                .raw(RawFeed.builder()
-                        .id(Hasher.identify(uri))
-                        .url(uri)
-                        .name("Obiwan Kenobi")
-                        .build())
-                .tags(Set.of("jedi", "light"))
+                .raw(expectedRawFeed)
+                .name(expectedRawFeed.getName() + " of Obiwan")
+                .tags(Set.of("jedi", "saber"))
                 .build();
 
-        tested.persistFeedUser(Collections.singleton(expected), OKENOBI.getUserId()).block();
+        StepVerifier.create(tested.persistUserRelation(Collections.singleton(expected), OKENOBI.getUserId()))
+                .expectNext(expected)
+                .verifyComplete();
 
         {
             FeedsRecord actual = dsl.selectFrom(FEEDS).where(FEEDS.FEED_ID.eq(expected.getId())).fetchOne();

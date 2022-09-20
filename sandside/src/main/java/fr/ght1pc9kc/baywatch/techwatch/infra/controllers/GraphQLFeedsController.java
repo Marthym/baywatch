@@ -1,7 +1,6 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.controllers;
 
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
-import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.common.infra.model.Page;
 import fr.ght1pc9kc.baywatch.techwatch.api.FeedService;
@@ -9,7 +8,6 @@ import fr.ght1pc9kc.baywatch.techwatch.api.PopularNewsService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Popularity;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.graphql.SearchFeedsRequest;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
@@ -21,21 +19,15 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -103,30 +95,30 @@ public class GraphQLFeedsController {
 
     @MutationMapping
     public Mono<Feed> subscribe(String id, String name, URI url, Collection<String> tags) {
-        if (Objects.nonNull(id)) {
-
-        } else {
-
-        }
-        feedForm.map(form -> {
-                    URI uri = URI.create(form.url);
-                    Set<String> tags = Optional.ofNullable(form.tags).map(Set::of).orElseGet(Set::of);
-                    return Feed.builder()
-                            .raw(RawFeed.builder()
-                                    .id(Hasher.identify(uri))
-                                    .url(uri)
-                                    .name(form.name)
-                                    .build())
-                            .tags(tags)
-                            .name(form.name)
-                            .build();
-                })
-                .flatMap(feed -> feedService.persist(Collections.singleton(feed)).thenReturn(feed))
-                .map(feed -> ResponseEntity.created(URI.create("/api/feeds/" + feed.getId())).body(feed))
-                .onErrorMap(WebExchangeBindException.class, e -> {
-                    String message = e.getFieldErrors().stream().map(err -> err.getField() + " " + err.getDefaultMessage()).collect(Collectors.joining("\n"));
-                    return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
-                });
+//        if (Objects.nonNull(id)) {
+//
+//        } else {
+//
+//        }
+//        feedForm.map(form -> {
+//                    URI uri = URI.create(form.url);
+//                    Set<String> tags = Optional.ofNullable(form.tags).map(Set::of).orElseGet(Set::of);
+//                    return Feed.builder()
+//                            .raw(RawFeed.builder()
+//                                    .id(Hasher.identify(uri))
+//                                    .url(uri)
+//                                    .name(form.name)
+//                                    .build())
+//                            .tags(tags)
+//                            .name(form.name)
+//                            .build();
+//                })
+//                .flatMap(feed -> feedService.persist(Collections.singleton(feed)).thenReturn(feed))
+//                .map(feed -> ResponseEntity.created(URI.create("/api/feeds/" + feed.getId())).body(feed))
+//                .onErrorMap(WebExchangeBindException.class, e -> {
+//                    String message = e.getFieldErrors().stream().map(err -> err.getField() + " " + err.getDefaultMessage()).collect(Collectors.joining("\n"));
+//                    return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
+//                });
         return null;
     }
 }

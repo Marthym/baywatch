@@ -30,18 +30,33 @@ public interface FeedPersistencePort {
      */
     Mono<Feed> update(Feed toUpdate, String userId);
 
+    /**
+     * Persist one or more {@link Feed}s into {@code FEED} table
+     *
+     * @param toPersist the list of Feed to persist
+     * @return The persisted Feed
+     */
     Flux<Feed> persist(Collection<Feed> toPersist);
 
-    Flux<Feed> persistFeedUser(Collection<Feed> toPersist, String userId);
+    /**
+     * <p>Link a {@link Feed} to a {@link fr.ght1pc9kc.baywatch.security.api.model.User} by add lines into
+     * {@code FEEDS_USERS} relation table.</p>
+     * <p>The {@link Feed} object was used to override the Feed Name or Tags if necessary.</p>
+     *
+     * @param feedsIds The list of Feed to link with user
+     * @param userId   The user ID
+     * @return The list of Feeds IDs linked to the User
+     */
+    Flux<Feed> persistUserRelation(Collection<Feed> feedsIds, String userId);
 
     /**
-     * Delete {@link Feed} from `FEEDS_USERS` and `FEEDS`, depending on the filter in {@link QueryContext}.
+     * Delete {@link Feed} from {@code FEEDS_USERS} and {@code FEEDS}, depending on the filter in {@link QueryContext}.
      * The deletion was scoped to the {@link fr.ght1pc9kc.baywatch.security.api.model.User} is provided in
      * {@link QueryContext}.
      * <p>Allowed properties was:</p>
      * <ul>
-     *    <li>{@link EntitiesProperties#ID}: For the table `FEEDS`</li>
-     *    <li>{@link EntitiesProperties#FEED_ID}: For the table `FEEDS_USERS`</li>
+     *    <li>{@link EntitiesProperties#ID}: For the table {@code FEEDS}</li>
+     *    <li>{@link EntitiesProperties#FEED_ID}: For the table {@code FEEDS_USERS}</li>
      * </ul>
      * <p>Deletion was apply only if a filter was present for a table.</p>
      * <p>If no other {@link fr.ght1pc9kc.baywatch.security.api.model.User} was subscribing this {@link Feed},

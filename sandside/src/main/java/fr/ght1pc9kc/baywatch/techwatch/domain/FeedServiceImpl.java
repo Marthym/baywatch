@@ -95,11 +95,16 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public Flux<Feed> subscribe(Collection<String> feedIds) {
+    public Flux<Feed> subscribe(Collection<Feed> feeds) {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .flatMap(u -> completeFeedData(toAdd))
-                .flatMapMany(feedRepository::persist);
+                .map(u -> Tuples.of(feeds, u.id))
+                .flatMapMany(t -> feedRepository.persistUserRelation(t.getT1(), t.getT2()));
+    }
+
+    @Override
+    public Flux<Feed> addAndSubscribe(Collection<Feed> feeds) {
+        return add(feeds).thenMany(subscribe(feeds));
     }
 
     private Mono<? extends Collection<Feed>> completeFeedData(Collection<Feed> feeds) {
