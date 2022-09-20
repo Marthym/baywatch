@@ -6,6 +6,7 @@ import lombok.Value;
 import lombok.With;
 import lombok.experimental.Delegate;
 
+import java.util.Optional;
 import java.util.Set;
 
 @Value
@@ -15,4 +16,8 @@ public class Feed {
     @With @NonNull RawFeed raw;
     String name;
     Set<String> tags;
+
+    public String getName() {
+        return Optional.ofNullable(this.name).orElse(raw.getName());
+    }
 }

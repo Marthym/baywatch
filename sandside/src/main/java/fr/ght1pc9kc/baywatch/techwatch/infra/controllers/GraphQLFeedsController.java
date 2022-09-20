@@ -19,15 +19,18 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.net.URI;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -94,31 +97,11 @@ public class GraphQLFeedsController {
     }
 
     @MutationMapping
-    public Mono<Feed> subscribe(String id, String name, URI url, Collection<String> tags) {
-//        if (Objects.nonNull(id)) {
-//
-//        } else {
-//
-//        }
-//        feedForm.map(form -> {
-//                    URI uri = URI.create(form.url);
-//                    Set<String> tags = Optional.ofNullable(form.tags).map(Set::of).orElseGet(Set::of);
-//                    return Feed.builder()
-//                            .raw(RawFeed.builder()
-//                                    .id(Hasher.identify(uri))
-//                                    .url(uri)
-//                                    .name(form.name)
-//                                    .build())
-//                            .tags(tags)
-//                            .name(form.name)
-//                            .build();
-//                })
-//                .flatMap(feed -> feedService.persist(Collections.singleton(feed)).thenReturn(feed))
-//                .map(feed -> ResponseEntity.created(URI.create("/api/feeds/" + feed.getId())).body(feed))
-//                .onErrorMap(WebExchangeBindException.class, e -> {
-//                    String message = e.getFieldErrors().stream().map(err -> err.getField() + " " + err.getDefaultMessage()).collect(Collectors.joining("\n"));
-//                    return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
-//                });
-        return null;
+    @PreAuthorize("isAuthenticated()")
+    public Mono<Feed> subscribe(@Argument String id, @Argument String name, @Argument Collection<String> tags) {
+        Set<String> tagsSet = Optional.ofNullable(tags).map(Set::copyOf).orElse(Set.of());
+        return feedService.get(id).map(f -> Feed.builder().raw(f.getRaw()).name(name).tags(tagsSet).build())
+                .flatMapMany(f -> feedService.subscribe(Collections.singleton(f)))
+                .next();
     }
 }
