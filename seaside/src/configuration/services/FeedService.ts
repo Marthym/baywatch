@@ -41,6 +41,11 @@ export class FeedService {
         }
     }`;
 
+    private static readonly FEED_SUBSCRIBE = `#graphql
+    mutation Subscription($feedId: ID) {
+        subscribe(id: $feedId) {id name}
+    }`;
+
     /**
      * Search the {@link Feed} from backend depending on query parameters
      *
@@ -131,6 +136,17 @@ export class FeedService {
                 name: atom.title,
                 description: atom.description,
             } as Feed)),
+            take(1),
+        );
+    }
+
+    public subscribe(id: string): Observable<Feed> {
+        if (id === undefined) {
+            return throwError(() => new Error('Feed id is mandatory !'));
+        }
+
+        return gql.send<{subscribe:Feed}>(FeedService.FEED_SUBSCRIBE, {feedId: id}).pipe(
+            map(data => data.data.subscribe),
             take(1),
         );
     }

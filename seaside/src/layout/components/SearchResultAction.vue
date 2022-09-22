@@ -6,10 +6,10 @@
     <li v-for="e in entries" class="grid grid-cols-10 px-2 hover:bg-neutral">
       <FeedCard :view="{...e, icon: toIcon(e)}" :dense="true"/>
       <div class="btn-group justify-self-end content-center col-span-3">
-        <button class="btn btn-sm btn-square btn-ghost" @click="$emit('item-update', view.data)">
+        <button class="btn btn-sm btn-square btn-ghost" @click="$emit('item-view', e.id)">
           <EyeIcon class="h-6 w-6"/>
         </button>
-        <button class="btn btn-sm btn-square btn-ghost" @click="$emit('item-delete', view.data.id)">
+        <button class="btn btn-sm btn-square btn-ghost" @click="subscribeFeed(e.id)">
           <PlusCircleIcon class="h-6 w-6"/>
         </button>
       </div>
@@ -22,6 +22,8 @@ import {Options, Prop, Vue} from "vue-property-decorator";
 import {SearchEntry} from "@/layout/model/SearchResult.type";
 import FeedCard from "@/common/components/FeedCard.vue";
 import {EyeIcon, PlusCircleIcon} from '@heroicons/vue/24/outline'
+import feedsService from "@/configuration/services/FeedService";
+import notificationService from "@/services/notification/NotificationService";
 
 @Options({
   name: 'SearchResultAction',
@@ -35,6 +37,13 @@ export default class SearchResultAction extends Vue {
   // noinspection JSMethodCanBeStatic
   private toIcon(entry: SearchEntry): string {
     return new URL(entry.url).origin + '/favicon.ico';
+  }
+
+  private subscribeFeed(feedId: string): void {
+    feedsService.subscribe(feedId).subscribe({
+      next: f => notificationService.pushSimpleOk(`Subscribe ${f.name} successfully !`),
+      error: err => notificationService.pushSimpleError(`Fail to subscribe ${err}`)
+    })
   }
 }
 </script>
