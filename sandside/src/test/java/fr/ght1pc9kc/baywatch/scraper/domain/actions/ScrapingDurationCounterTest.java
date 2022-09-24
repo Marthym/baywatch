@@ -22,7 +22,7 @@ class ScrapingDurationCounterTest {
         tested.onTerminate();
 
         StepVerifier.create(tested.computeCounter())
-                .expectNext(Counter.create("Scraping Duration", HeroIcons.CloudUploadIcon, "42s 220ms", "2022-04-20T17:19:24.784650Z"))
+                .expectNext(Counter.create("Scraping Duration", HeroIcons.CloudArrowUpIcon, "42s 220ms", "2022-04-20T17:19:24.784650Z"))
                 .verifyComplete();
     }
 }

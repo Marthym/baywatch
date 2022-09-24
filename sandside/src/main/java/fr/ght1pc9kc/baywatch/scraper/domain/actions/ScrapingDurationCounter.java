@@ -68,7 +68,7 @@ public class ScrapingDurationCounter implements CounterProvider, EventHandler {
     public Mono<Counter> computeCounter() {
         return Mono.just(Counter.create(
                 "Scraping Duration",
-                HeroIcons.CloudUploadIcon,
+                HeroIcons.CloudArrowUpIcon,
                 lastDuration.get(),
                 lastInstant.get()));
     }

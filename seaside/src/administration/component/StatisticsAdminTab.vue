@@ -2,7 +2,7 @@
   <div class="flex justify-center flex-wrap">
     <div v-for="counter in counters" class="stat bg-secondary-content rounded-xl shadow m-2 grow w-fit">
       <div v-if="counter.icon" class="stat-figure text-secondary">
-        <component :is="counter.icon" class="inline-block w-10 h-10" />
+        <component :is="counter.icon" class="inline-block w-10 h-10"/>
       </div>
       <div class="stat-title">{{ counter.name }}</div>
       <div class="stat-value">{{ counter.value }}</div>
@@ -16,12 +16,12 @@ import {Options, Vue} from 'vue-property-decorator';
 
 import statisticsService from '@/administration/services/StatisticsService';
 import {Counter} from "@/administration/model/Counter.type";
-import {ClockIcon, CloudUploadIcon, UserGroupIcon, NewspaperIcon, RssIcon} from '@heroicons/vue/solid';
+import {ClockIcon, CloudArrowUpIcon, NewspaperIcon, RssIcon, UserGroupIcon} from '@heroicons/vue/24/outline';
 
 @Options({
   name: 'StatisticsAdminTab',
   components: {
-    ClockIcon, CloudUploadIcon, UserGroupIcon, NewspaperIcon, RssIcon
+    ClockIcon, CloudArrowUpIcon, UserGroupIcon, NewspaperIcon, RssIcon
   },
 })
 export default class StatisticsAdminTab extends Vue {
