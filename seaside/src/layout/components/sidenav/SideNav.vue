@@ -8,7 +8,7 @@
 
     <SideNavFilters v-if="user.isAuthenticated"/>
     <SideNavManagement @logout="logoutUser()"/>
-    <span class="text-xs text-neutral font-bold mx-auto -mb-3">{{ VERSION }}</span>
+    <span class="text-xs text-neutral font-bold mx-auto -mb-3">{{ VERSION }} • {{ COMMIT }}</span>
   </aside>
 </template>
 
@@ -40,6 +40,7 @@ import serverEventService from '@/techwatch/services/ServerEventService'
 })
 export default class SideNav extends Vue {
   private readonly VERSION = import.meta.env.VITE_BW_VERSION;
+  private readonly COMMIT = import.meta.env.VITE_BW_COMMIT;
 
   private router = setup(() => useRouter());
   private store = setup(() => useStore());
