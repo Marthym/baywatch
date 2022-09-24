@@ -24,12 +24,7 @@ export class FeedService {
     query SearchFeedsQuery ($_p: Int = 0, $_pp: Int = ${FeedService.DEFAULT_PER_PAGE}, $_s: String = "name") {
         feedsSearch(_p: $_p, _pp: $_pp, _s: $_s) {
             totalCount
-            entities {
-                id
-                name
-                url
-                tags
-            }
+            entities {id name url tags}
         }
     }`
 
@@ -145,7 +140,7 @@ export class FeedService {
             return throwError(() => new Error('Feed id is mandatory !'));
         }
 
-        return gql.send<{subscribe:Feed}>(FeedService.FEED_SUBSCRIBE, {feedId: id}).pipe(
+        return gql.send<{ subscribe: Feed }>(FeedService.FEED_SUBSCRIBE, {feedId: id}).pipe(
             map(data => data.data.subscribe),
             take(1),
         );
