@@ -42,9 +42,31 @@ public interface FeedService {
      */
     Mono<Integer> count(PageRequest pageRequest);
 
+    /**
+     * Update the subscription to a {@link Feed}
+     *
+     * @param toPersist the Feed of the subscription to update
+     * @return The new Feed of the subscription
+     */
     Mono<Feed> update(Feed toPersist);
 
-    Mono<Void> persist(Collection<Feed> toPersist);
+    /**
+     * Add a {@link Feed} to the available Feed list in database
+     *
+     * @param toAdd The list of {@link Feed} to add
+     * @return The list of  {@link Feed} added
+     */
+    Flux<Feed> add(Collection<Feed> toAdd);
+
+    /**
+     * Subscribe to a {@link Feed} present in database
+     *
+     * @param feeds The list of feed IDs the current user want to subscribe
+     * @return The {@link Feed} the user have effectively subscribed
+     */
+    Flux<Feed> subscribe(Collection<Feed> feeds);
+
+    Flux<Feed> addAndSubscribe(Collection<Feed> feeds);
 
     Mono<Integer> delete(Collection<String> toDelete);
 }

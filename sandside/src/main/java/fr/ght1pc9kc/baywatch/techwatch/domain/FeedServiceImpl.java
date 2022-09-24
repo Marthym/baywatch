@@ -82,16 +82,29 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public Mono<Void> persist(Collection<Feed> toPersist) {
-        if (toPersist.stream().anyMatch(f -> (f == null
+    public Flux<Feed> add(Collection<Feed> toAdd) {
+        if (toAdd.stream().anyMatch(f -> (f == null
                 || f.getUrl().getScheme() == null
                 || !ALLOWED_PROTOCOL.contains(f.getUrl().getScheme().toLowerCase())))) {
-            return Mono.error(() -> new IllegalArgumentException("Illegal URL for Feed !"));
+            return Flux.error(() -> new IllegalArgumentException("Illegal URL for Feed !"));
         }
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .flatMap(u -> completeFeedData(toPersist).map(f -> Tuples.of(f, u)))
-                .flatMap(t -> feedRepository.persist(t.getT1(), t.getT2().id));
+                .flatMap(u -> completeFeedData(toAdd))
+                .flatMapMany(feedRepository::persist);
+    }
+
+    @Override
+    public Flux<Feed> subscribe(Collection<Feed> feeds) {
+        return authFacade.getConnectedUser()
+                .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
+                .map(u -> Tuples.of(feeds, u.id))
+                .flatMapMany(t -> feedRepository.persistUserRelation(t.getT1(), t.getT2()));
+    }
+
+    @Override
+    public Flux<Feed> addAndSubscribe(Collection<Feed> feeds) {
+        return add(feeds).thenMany(subscribe(feeds));
     }
 
     private Mono<? extends Collection<Feed>> completeFeedData(Collection<Feed> feeds) {

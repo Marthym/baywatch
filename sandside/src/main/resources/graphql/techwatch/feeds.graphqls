@@ -1,6 +1,7 @@
 type Feed {
     id: ID!
     name: String
+    description: String
     url: String!
     lastWatch: String
     tags: [String]
@@ -25,4 +26,8 @@ extend type Query {
         lastWatch: String
         tags: [String]
     ): SearchFeedsResponse
+}
+
+extend type Mutation {
+    subscribe(id: ID, name: String, tags: [String]): Feed
 }

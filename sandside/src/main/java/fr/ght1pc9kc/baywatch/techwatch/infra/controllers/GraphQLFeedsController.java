@@ -15,16 +15,22 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.Arguments;
 import org.springframework.graphql.data.method.annotation.BatchMapping;
+import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -88,5 +94,14 @@ public class GraphQLFeedsController {
                 .map(pops -> news.stream()
                         .filter(n -> pops.containsKey(n.getId()))
                         .collect(Collectors.toUnmodifiableMap(Function.identity(), n -> pops.get(n.getId()))));
+    }
+
+    @MutationMapping
+    @PreAuthorize("isAuthenticated()")
+    public Mono<Feed> subscribe(@Argument String id, @Argument String name, @Argument Collection<String> tags) {
+        Set<String> tagsSet = Optional.ofNullable(tags).map(Set::copyOf).orElse(Set.of());
+        return feedService.get(id).map(f -> Feed.builder().raw(f.getRaw()).name(name).tags(tagsSet).build())
+                .flatMapMany(f -> feedService.subscribe(Collections.singleton(f)))
+                .next();
     }
 }
