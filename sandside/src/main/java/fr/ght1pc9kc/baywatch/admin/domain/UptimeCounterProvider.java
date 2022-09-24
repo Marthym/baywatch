@@ -23,6 +23,6 @@ public class UptimeCounterProvider implements CounterProvider {
                 ? String.format("%dh %02dm %02ds", d.toHoursPart(), d.toMinutesPart(), d.toSecondsPart())
                 : String.format("%dd %dh %02dm", d.toDaysPart(), d.toHoursPart(), d.toMinutesPart());
         String description = String.format("%s %s", rb.getVmVendor(), rb.getVmVersion());
-        return Mono.just(Counter.create("Uptime", HeroIcons.ClockIcon, value, description));
+        return Mono.just(Counter.create("Uptime", HeroIcons.CLOCK_ICON, value, description));
     }
 }

@@ -26,7 +26,7 @@ public class UsersCounterProvider implements CounterProvider {
         return userRepository.count(QueryContext.empty())
                 .map(r -> Counter.create(
                         "User Count",
-                        HeroIcons.UserGroupIcon,
+                        HeroIcons.USER_GROUP_ICON,
                         Integer.toString(r),
                         "Users in database")
                 );

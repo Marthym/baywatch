@@ -34,6 +34,6 @@ public class NewsCounterProvider implements CounterProvider {
                 .build()).next();
         Mono<Integer> count = newsRepository.count(QueryContext.empty());
         return Mono.zip(lastNews, count)
-                .map(r -> Counter.create("News Count", HeroIcons.RssIcon, Integer.toString(r.getT2()), "last at " + r.getT1().getPublication()));
+                .map(r -> Counter.create("News Count", HeroIcons.RSS_ICON, Integer.toString(r.getT2()), "last at " + r.getT1().getPublication()));
     }
 }

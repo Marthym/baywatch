@@ -3,21 +3,19 @@ package fr.ght1pc9kc.baywatch.admin.infra.controllers;
 import fr.ght1pc9kc.baywatch.admin.api.StatisticsService;
 import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
 import reactor.core.publisher.Flux;
 
-@RestController
+@Controller
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
-@RequestMapping("${baywatch.base-route}/stats")
 public class StatisticsController {
     private final StatisticsService statService;
 
-    @GetMapping()
-    public Flux<Counter> stats() {
+    @QueryMapping
+    public Flux<Counter> statistics() {
         return statService.compute();
     }
 }

@@ -24,6 +24,6 @@ public class FeedsCounterProvider implements CounterProvider {
     @Override
     public Mono<Counter> computeCounter() {
         return feedRepository.count(QueryContext.empty())
-                .map(r -> Counter.create("Feed Count", HeroIcons.NewspaperIcon, Integer.toString(r), "total feeds in database"));
+                .map(r -> Counter.create("Feed Count", HeroIcons.NEWSPAPER_ICON, Integer.toString(r), "total feeds in database"));
     }
 }
