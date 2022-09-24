@@ -105,26 +105,6 @@ export class NewsService {
             take(1)
         );
     }
-
-    private reloadFunction: VoidFunction = () => {
-        console.warn('no reload function!')
-    };
-
-    /**
-     * Register the function call on reload
-     * This allows others components to reload news list
-     *
-     * @param apply [VoidFunction] The call function
-     */
-    registerReloadFunction(apply: VoidFunction): void {
-        this.reloadFunction = apply;
-    }
-
-    reload(): void {
-        if (this.reloadFunction) {
-            this.reloadFunction();
-        }
-    }
 }
 
 export default new NewsService();

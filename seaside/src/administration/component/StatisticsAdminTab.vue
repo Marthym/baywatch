@@ -15,8 +15,11 @@
 import {Options, Vue} from 'vue-property-decorator';
 
 import statisticsService from '@/administration/services/StatisticsService';
+import reloadActionService from "@/common/services/ReloadActionService";
 import {Counter} from "@/administration/model/Counter.type";
 import {ClockIcon, CloudArrowUpIcon, NewspaperIcon, RssIcon, UserGroupIcon} from '@heroicons/vue/24/outline';
+import {Observable} from "rxjs";
+import {map} from "rxjs/operators";
 
 @Options({
   name: 'StatisticsAdminTab',
@@ -29,19 +32,34 @@ export default class StatisticsAdminTab extends Vue {
   private counters: Counter[] = [];
 
   public mounted(): void {
-    statisticsService.get().subscribe({
-      next: cs => {
-        this.counters = [...cs];
-        this.counters.forEach(c => {
-          if (!isNaN(Date.parse(c.description))) {
-            c.description = new Date(c.description).toLocaleDateString(navigator.languages, {
-              timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-              year: 'numeric', month: 'short', day: '2-digit', hour: "2-digit", minute: "2-digit"
-            });
-          }
-        })
-      }
+    this.loadStatistics().subscribe({
+      next: () => reloadActionService.registerReloadFunction(context => {
+        if (context === '' || context === 'stats') {
+          this.loadStatistics().subscribe();
+        }
+      }),
     })
+  }
+
+  private loadStatistics(): Observable<void> {
+    return statisticsService.get().pipe(
+        map(cs => {
+          this.counters = [...cs];
+          this.counters.forEach(c => {
+            if (!isNaN(Date.parse(c.description))) {
+              c.description = new Date(c.description).toLocaleDateString(navigator.languages, {
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                year: 'numeric', month: 'short', day: '2-digit', hour: "2-digit", minute: "2-digit"
+              });
+            }
+          });
+        }),
+    );
+  }
+
+  // noinspection JSUnusedGlobalSymbols
+  public unmounted(): void {
+    reloadActionService.unregisterReloadFunction();
   }
 }
 </script>

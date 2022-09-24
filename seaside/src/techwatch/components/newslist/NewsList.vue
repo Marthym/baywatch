@@ -60,6 +60,7 @@ import {
 } from "@/techwatch/store/statistics/StatisticsConstants";
 import {UserState} from "@/store/user/user";
 import newsService from "@/techwatch/services/NewsService";
+import reloadActionService from "@/common/services/ReloadActionService";
 import {NewsStore} from "@/techwatch/store/news/news";
 import {NewsSearchRequest} from "@/techwatch/model/NewsSearchRequest.type";
 import {News} from "@/techwatch/model/News.type";
@@ -114,10 +115,12 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
       this.toggleRead(this.activeNews);
     });
 
-    newsService.registerReloadFunction(() => {
-      this.news = [];
-      this.activeNews = -1;
-      this.loadNextPage().pipe(take(1)).subscribe(el => this.observeFirst(el))
+    reloadActionService.registerReloadFunction((context) => {
+      if (context === 'news' || context === '') {
+        this.news = [];
+        this.activeNews = -1;
+        this.loadNextPage().pipe(take(1)).subscribe(el => this.observeFirst(el))
+      }
     });
   }
 
@@ -307,6 +310,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     this.activateOnScroll.disconnect();
     this.infiniteScroll.disconnect();
     keyboardControl.unregisterListener("n", "m", "k");
+    reloadActionService.unregisterReloadFunction();
   }
 
 }

@@ -52,7 +52,7 @@
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
 import tagsService from "@/techwatch/services/TagsService";
-import newsService from '@/techwatch/services/NewsService';
+import reloadActionService from '@/common/services/ReloadActionService';
 import {setup} from "vue-class-component";
 import {useRouter} from "vue-router";
 import {useStore} from "vuex";
@@ -84,22 +84,22 @@ export default class SideNavFilters extends Vue {
     if (currentTags.indexOf(selected) >= 0) {
       this.store.commit(NEWS_REPLACE_TAGS_MUTATION, []);
       this.router.replace({path: this.router.currentRoute.path});
-      newsService.reload();
+      reloadActionService.reload('news');
     } else if (this.tags.indexOf(selected) >= 0) {
       this.store.commit(NEWS_REPLACE_TAGS_MUTATION, [selected]);
       this.router.replace({path: this.router.currentRoute.path, query: {tag: selected}});
-      newsService.reload();
+      reloadActionService.reload('news');
     }
   }
 
   private onChangeUnread(): void {
     this.store.commit(NEWS_TOGGLE_UNREAD_MUTATION);
-    newsService.reload();
+    reloadActionService.reload('news');
   }
 
   private onChangePopular(): void {
     this.store.commit(NEWS_TOGGLE_POPULAR_MUTATION);
-    newsService.reload();
+    reloadActionService.reload('news');
   }
 }
 </script>

@@ -83,6 +83,7 @@ import FeedEditor from "@/configuration/components/feedslist/FeedEditor.vue";
 import feedsService from "@/configuration/services/FeedService";
 import opmlService from "@/techwatch/services/OpmlService";
 import notificationService from "@/services/notification/NotificationService";
+import reloadActionService from "@/common/services/ReloadActionService";
 import {defineAsyncComponent} from "vue";
 import {AlertResponse, AlertType} from "@/common/components/alertdialog/AlertDialog.types";
 import FeedActions from "@/configuration/components/feedslist/FeedActions.vue";
@@ -113,7 +114,13 @@ export default class FeedsList extends Vue {
   }
 
   mounted(): void {
-    this.loadFeedPage(0).subscribe();
+    this.loadFeedPage(0).subscribe({
+      next: () => reloadActionService.registerReloadFunction(context => {
+        if (context === '' || context === 'feed') {
+          this.loadFeedPage(this.activePage).subscribe();
+        }
+      })
+    });
     this.feedEditor = this.$refs.feedEditor as FeedEditor;
   }
 
@@ -229,6 +236,11 @@ export default class FeedsList extends Vue {
         notificationService.pushSimpleError('Impossible de charger le fichier');
       },
     });
+  }
+
+  // noinspection JSUnusedGlobalSymbols
+  unmounted(): void {
+    reloadActionService.unregisterReloadFunction();
   }
 }
 </script>

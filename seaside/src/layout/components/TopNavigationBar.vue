@@ -35,7 +35,7 @@
     </div>
 
     <!-- The RIGHT side of top bar -->
-    <div v-if="isAuthenticated"  class="navbar-end w-full md:w-1/2 border-b border-base-100 pr-2 mr-2 h-full">
+    <div v-if="isAuthenticated" class="navbar-end w-full md:w-1/2 border-b border-base-100 pr-2 mr-2 h-full">
       <!-- Refresh Icon -->
       <div class="indicator mx-1">
         <div v-if="statistics.updated > 0" class="indicator-item badge badge-xs badge-accent text-2xs">
@@ -91,7 +91,7 @@
 import {Options, Vue} from 'vue-property-decorator';
 import {SidenavMutation} from "@/store/sidenav/SidenavMutation.enum";
 import {StatisticsState} from "@/techwatch/store/statistics/statistics";
-import newsService from '@/techwatch/services/NewsService';
+import reloadActionService from '@/common/services/ReloadActionService';
 import searchService from '@/layout/services/SearchService';
 import {setup} from "vue-class-component";
 import {Store, useStore} from "vuex";
@@ -134,7 +134,7 @@ export default class TopNavigationBar extends Vue {
 
   private reload(): void {
     this.store.commit(RESET_UPDATED_MUTATION);
-    newsService.reload();
+    reloadActionService.reload();
   }
 
   private toggleClipAction(): void {
