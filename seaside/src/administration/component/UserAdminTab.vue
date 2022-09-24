@@ -127,6 +127,7 @@ import {Options, Vue} from 'vue-property-decorator';
 
 import notificationService from "@/services/notification/NotificationService";
 import userService from "@/security/services/UserService";
+import reloadActionService from "@/common/services/ReloadActionService";
 import {Observable} from "rxjs";
 import {filter, map, switchMap, tap} from "rxjs/operators";
 import {UserView} from "@/administration/model/UserView";
@@ -146,7 +147,13 @@ export default class UserAdminTab extends Vue {
   private activeUser: User;
 
   mounted(): void {
-    this.loadUserPage(0).subscribe();
+    this.loadUserPage(0).subscribe({
+      next: () => reloadActionService.registerReloadFunction(context => {
+        if (context === '' || context === 'users') {
+          this.loadUserPage(this.activePage).subscribe();
+        }
+      })
+    });
   }
 
   get checkState(): boolean {
@@ -256,6 +263,11 @@ export default class UserAdminTab extends Vue {
         notificationService.pushSimpleError('Unable to delete all selected users !');
       }
     });
+  }
+
+  // noinspection JSUnusedGlobalSymbols
+  public unmounted(): void {
+    reloadActionService.unregisterReloadFunction();
   }
 }
 </script>
