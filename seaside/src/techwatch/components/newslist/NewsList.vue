@@ -61,10 +61,10 @@ import {
 import {UserState} from "@/store/user/user";
 import newsService from "@/techwatch/services/NewsService";
 import reloadActionService from "@/common/services/ReloadActionService";
-import {NewsStore} from "@/techwatch/store/news/news";
 import {NewsSearchRequest} from "@/techwatch/model/NewsSearchRequest.type";
 import {News} from "@/techwatch/model/News.type";
 import keyboardControl from '@/common/services/KeyboardControl';
+import {NewsStore} from "@/common/model/store/NewsStore.type";
 
 
 @Options({
@@ -145,6 +145,9 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
       if (this.newsStore.tags.length > 0) {
         query.tags = [];
         this.newsStore.tags.forEach(tag => query.tags?.push(`∋${tag}`));
+      }
+      if (this.newsStore.feed) {
+        query.feeds = [this.newsStore.feed.id];
       }
     }
     return query;
