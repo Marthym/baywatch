@@ -37,7 +37,7 @@ extend type Query {
         title: String
         description: String
         publication: String
-        feeds: String
+        feeds: [String]
         tags: [String]
         read: Boolean
         shared: Boolean

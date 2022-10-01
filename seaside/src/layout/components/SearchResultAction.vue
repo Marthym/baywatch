@@ -9,7 +9,7 @@
     <li v-for="e in entries" class="grid grid-cols-10 px-2 hover:bg-neutral">
       <FeedCard :view="{...e, icon: toIcon(e)}" :dense="true"/>
       <div class="btn-group justify-self-end place-self-center col-span-3">
-        <button class="btn btn-sm btn-square btn-ghost">
+        <button class="btn btn-sm btn-square btn-ghost" @click.stop="displayFeed(e.id, e.name)">
           <EyeIcon class="h-6 w-6"/>
         </button>
         <button class="btn btn-sm btn-square btn-ghost" @click.stop="subscribeFeed(e.id)">
@@ -27,6 +27,10 @@ import FeedCard from "@/common/components/FeedCard.vue";
 import {EyeIcon, PlusCircleIcon, XMarkIcon} from '@heroicons/vue/24/outline'
 import feedsService from "@/configuration/services/FeedService";
 import notificationService from "@/services/notification/NotificationService";
+import {NEWS_FILTER_FEED_MUTATION} from "@/common/model/store/NewsStore.type";
+import {setup} from "vue-class-component";
+import {useStore} from "vuex";
+import reloadActionService from "@/common/services/ReloadActionService";
 
 @Options({
   name: 'SearchResultAction',
@@ -36,6 +40,7 @@ import notificationService from "@/services/notification/NotificationService";
 })
 export default class SearchResultAction extends Vue {
   @Prop() private entries!: SearchEntry[];
+  private store = setup(() => useStore());
 
   // noinspection JSMethodCanBeStatic
   private toIcon(entry: SearchEntry): string {
@@ -47,6 +52,12 @@ export default class SearchResultAction extends Vue {
       next: f => notificationService.pushSimpleOk(`Subscribe ${f.name} successfully !`),
       error: err => notificationService.pushSimpleError(`Fail to subscribe ${err}`)
     })
+  }
+
+  private displayFeed(feedId: string, label: string): void {
+    this.store.commit(NEWS_FILTER_FEED_MUTATION, {id: feedId, label: label});
+    reloadActionService.reload('news');
+    this.$emit('close');
   }
 }
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen overflow-y-hidden">
+  <div class="flex h-screen">
     <SideNavOverlay/>
     <SideNav/>
     <div class="flex flex-col flex-1 h-full overflow-hidden">

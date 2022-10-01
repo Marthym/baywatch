@@ -5,7 +5,7 @@ export interface NewsSearchRequest extends SearchRequest {
     title?: string
     description?: string
     publication?: string
-    feeds?: string
+    feeds?: string[]
     tags?: string[]
     read?: boolean
     shared?: boolean
