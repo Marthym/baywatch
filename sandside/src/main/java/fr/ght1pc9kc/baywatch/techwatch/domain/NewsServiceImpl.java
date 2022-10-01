@@ -90,7 +90,7 @@ public class NewsServiceImpl implements NewsService {
             return Mono.just(qCtx);
         }
         Mono<List<String>> states = getStateQueryContext(qCtx);
-        Mono<List<String>> feeds = getFeedFor(qCtx);
+        Mono<List<String>> feeds = getFeedFor(qCtx, props);
 
         return Mono.zip(states, feeds).map(contexts -> {
             Criteria filters = Criteria.property(FEED_ID).in(contexts.getT2());
@@ -107,12 +107,23 @@ public class NewsServiceImpl implements NewsService {
         });
     }
 
-    public Mono<List<String>> getFeedFor(QueryContext qCtx) {
-        return feedRepository.list(qCtx)
+    /**
+     * <p>Return the list of {@link Feed#getId()} corresponding to the {@link QueryContext}.</p>
+     * <p>The User ID was concat to the list because User ID was the ID of the Feed containing orphan News</p>
+     *
+     * @param qCtx  The query context
+     * @param props The list of properties used in query context
+     * @return The list of Feed IDs
+     */
+    public Mono<List<String>> getFeedFor(QueryContext qCtx, List<String> props) {
+        QueryContext feedQCtx = (props.contains(FEED_ID)) ? qCtx.withUserId(null) : qCtx;
+        return feedRepository.list(feedQCtx)
                 .map(Feed::getId)
                 .collectList()
                 .map(feeds -> {
-                    feeds.add(qCtx.getUserId());
+                    if (feedQCtx.isScoped()) {
+                        feeds.add(feedQCtx.getUserId());
+                    }
                     return feeds;
                 });
     }
