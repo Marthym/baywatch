@@ -195,7 +195,6 @@
         <dependency>
             <groupId>com.samskivert</groupId>
             <artifactId>jmustache</artifactId>
-            <version>${jmustache.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
