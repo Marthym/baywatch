@@ -25,9 +25,7 @@
     <div v-if="isAuthenticated" class="navbar-end w-full md:w-1/2 border-b border-base-100 pr-2 mr-2 h-full">
       <!-- Refresh Icon -->
       <div class="indicator mx-1">
-        <div v-if="statistics.updated > 0" class="indicator-item badge badge-xs badge-accent text-2xs">
-          {{ statistics.updated }}
-        </div>
+        <span v-if="statistics.updated > 0" class="indicator-item badge badge-xs badge-accent text-2xs animate-pulse"></span>
         <button class="btn btn-square btn-ghost btn-sm" @click="reload()">
           <ArrowPathIcon class="h-6 w-6"/>
         </button>

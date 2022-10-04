@@ -2,10 +2,8 @@ package fr.ght1pc9kc.baywatch.notify.infra;
 
 import fr.ght1pc9kc.baywatch.notify.api.NotifyManager;
 import fr.ght1pc9kc.baywatch.notify.api.model.BasicEvent;
-import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.model.ReactiveEvent;
 import fr.ght1pc9kc.baywatch.notify.api.model.ServerEventVisitor;
-import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -15,7 +13,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -27,7 +24,6 @@ import reactor.core.publisher.Mono;
 @RequestMapping("${baywatch.base-route}/sse")
 public class NotificationController {
     private final NotifyManager notifyManager;
-    private final AuthenticationFacade facade;
 
     @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<Object>> sse() {
@@ -55,15 +51,5 @@ public class NotificationController {
                 .map(ignore -> ResponseEntity.noContent().build())
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
 
-    }
-
-    @GetMapping("/test")
-    @PreAuthorize("hasRole('ADMIN')")
-    public Mono<Void> test(@RequestParam("msg") String msg) {
-        return facade.getConnectedUser().map(user -> {
-            notifyManager.broadcast(EventType.NEWS, "UPDATE");
-            notifyManager.send(user.id, EventType.NEWS, "PERSO");
-            return user;
-        }).then();
     }
 }

@@ -36,11 +36,7 @@ const mutations = {
         ++st.unread_filtered;
     },
     [UPDATE](st: StatisticsState, payload: Statistics): void {
-        const unread = st.unread;
-        Object.assign(st, payload);
-        if (unread != 0 && st.unread > unread) {
-            st.updated += st.unread - unread;
-        }
+        st.updated = 1;
     },
     [RESET_UPDATED](st: StatisticsState): void {
         st.updated = 0;

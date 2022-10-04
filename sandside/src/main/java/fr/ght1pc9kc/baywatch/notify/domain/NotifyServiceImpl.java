@@ -9,6 +9,7 @@ import fr.ght1pc9kc.baywatch.notify.api.model.BasicEvent;
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.model.ReactiveEvent;
 import fr.ght1pc9kc.baywatch.notify.api.model.ServerEvent;
+import fr.ght1pc9kc.baywatch.notify.domain.model.ByUserEventPublisherCacheEntry;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
@@ -18,14 +19,14 @@ import reactor.core.publisher.Sinks;
 import reactor.core.publisher.Sinks.EmitResult;
 
 import java.time.Duration;
+import java.util.Objects;
 
 @Slf4j
 public class NotifyServiceImpl implements NotifyService, NotifyManager {
     private final AuthenticationFacade authFacade;
 
     private final Sinks.Many<ServerEvent<Object>> multicast;
-    private final Cache<String, Flux<ServerEvent<Object>>> cache;
-    private final Cache<String, Sinks.Many<ServerEvent<Object>>> sinks;
+    private final Cache<String, ByUserEventPublisherCacheEntry> cache;
 
     public NotifyServiceImpl(AuthenticationFacade authenticationFacade) {
         this.authFacade = authenticationFacade;
@@ -33,24 +34,27 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         this.cache = Caffeine.newBuilder()
                 .expireAfterAccess(Duration.ofMinutes(30))
                 .maximumSize(1000)
-                .build();
-        this.sinks = Caffeine.newBuilder()
-                .expireAfterAccess(Duration.ofMinutes(30))
-                .maximumSize(1000)
+                .<String, ByUserEventPublisherCacheEntry>removalListener((key, value, cause) -> {
+                    if (value != null) {
+                        value.sink().tryEmitComplete();
+                    }
+                })
                 .build();
     }
 
     @Override
-    @SuppressWarnings("ReactiveStreamsNullableInLambdaInTransform")
     public Flux<ServerEvent<Object>> subscribe() {
         return authFacade.getConnectedUser().flatMapMany(u ->
-                cache.get(u.id, id -> Flux.merge(sinks.get(id, sinkId -> Sinks.many().unicast().onBackpressureBuffer()).asFlux(), this.multicast.asFlux())
-                        .takeWhile(e -> cache.asMap().containsKey(id))
-                        .map(e -> {
-                            log.debug("Event: {}", e);
-                            return e;
-                        }).cache(0)
-                ));
+                Objects.requireNonNull(cache.get(u.id, id -> {
+                    Sinks.Many<ServerEvent<Object>> sink = Sinks.many().multicast().directBestEffort();
+                    Flux<ServerEvent<Object>> eventPublisher = Flux.merge(sink.asFlux(), this.multicast.asFlux())
+                            .takeWhile(e -> cache.asMap().containsKey(id))
+                            .map(e -> {
+                                log.debug("Event: {}", e);
+                                return e;
+                            }).cache(0);
+                    return new ByUserEventPublisherCacheEntry(sink, eventPublisher);
+                })).flux());
     }
 
     @Override
@@ -75,7 +79,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
     @SuppressWarnings("unchecked")
     public <T> BasicEvent<T> send(String userId, EventType type, T data) {
         BasicEvent<T> event = new BasicEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
-        Sinks.Many<ServerEvent<Object>> sink = sinks.getIfPresent(userId);
+        Sinks.Many<ServerEvent<Object>> sink = Objects.requireNonNull(cache.getIfPresent(userId)).sink();
         emit(sink, (ServerEvent<Object>) event);
         return event;
     }

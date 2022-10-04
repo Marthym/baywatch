@@ -56,7 +56,8 @@ export default class App extends Vue {
 
   private onServerMessage(evt: Event): void {
     const msg: MessageEvent = evt as MessageEvent;
-    this.store.commit(STATS_UPDATE_MUTATION, JSON.parse(msg.data));
+    console.debug(msg);
+    this.store.commit(STATS_UPDATE_MUTATION);
   }
 
   unmounted(): void {
