@@ -33,7 +33,7 @@ class NewsUpdateNotificationHandlerTest {
     void should_call_after() {
         tested.after(1).block();
         ArgumentCaptor<Mono<Object>> captor = ArgumentCaptor.forClass(Mono.class);
-        verify(notifyServiceMock).send(eq(EventType.NEWS), captor.capture());
+        verify(notifyServiceMock).broadcast(eq(EventType.NEWS), captor.capture());
 
         captor.getValue().block();
 

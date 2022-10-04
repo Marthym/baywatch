@@ -38,9 +38,9 @@ class NotifyServiceImplTest {
                 actual::add, errors::add,
                 () -> isComplete.set(true)
         );
-        ServerEvent<Object> event1 = tested.send(EventType.NEWS, 42);
+        ServerEvent<Object> event1 = tested.broadcast(EventType.NEWS, 42);
         tested.unsubscribe().block();
-        tested.send(EventType.NEWS, Mono.just(66));
+        tested.broadcast(EventType.NEWS, Mono.just(66));
         tested.close();
 
         Assertions.assertThat(actual).containsExactly(event1);
@@ -50,7 +50,7 @@ class NotifyServiceImplTest {
 
     @Test
     void should_send_notification_without_subscriber() {
-        tested.send(EventType.NEWS, Mono.just(42));
+        tested.broadcast(EventType.NEWS, Mono.just(42));
         tested.close();
 
         StepVerifier.create(tested.subscribe()).verifyComplete();
