@@ -3,7 +3,8 @@ enum HeroIcons {
     CLOUD_ARROWUP_ICON,
     NEWSPAPER_ICON,
     RSS_ICON,
-    USER_GROUP_ICON
+    USERS_ICON,
+    USER_GROUP_ICON,
 }
 
 type Counter {

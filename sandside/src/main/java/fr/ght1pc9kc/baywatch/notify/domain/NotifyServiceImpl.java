@@ -100,6 +100,10 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         return event;
     }
 
+    public long countCacheEntries() {
+        return cache.estimatedSize();
+    }
+
     private void emit(@Nullable Sinks.Many<ServerEvent<Object>> sink, ServerEvent<Object> event) {
         if (sink == null) {
             log.debug("No subscriber listening the SSE entry point.");

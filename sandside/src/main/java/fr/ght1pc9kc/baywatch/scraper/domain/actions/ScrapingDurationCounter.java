@@ -4,7 +4,7 @@ import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterGroup;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
 import fr.ght1pc9kc.baywatch.common.api.EventHandler;
-import fr.ght1pc9kc.baywatch.common.api.HeroIcons;
+import fr.ght1pc9kc.baywatch.common.api.model.HeroIcons;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

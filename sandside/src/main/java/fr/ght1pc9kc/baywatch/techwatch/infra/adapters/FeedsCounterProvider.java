@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.techwatch.infra.adapters;
 import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterGroup;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
-import fr.ght1pc9kc.baywatch.common.api.HeroIcons;
+import fr.ght1pc9kc.baywatch.common.api.model.HeroIcons;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.infra.persistence.FeedRepository;
 import lombok.RequiredArgsConstructor;
