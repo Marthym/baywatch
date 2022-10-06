@@ -19,7 +19,7 @@ public class NewsUpdateNotificationHandler implements EventHandler {
         return Mono.just(persisted)
                 .filter(p -> p > 0)
                 .map(p -> {
-                    notifyService.broadcast(EventType.NEWS, "UPDATED");
+                    notifyService.broadcast(EventType.NEWS_UPDATE, "UPDATED");
                     return p;
                 }).then();
     }

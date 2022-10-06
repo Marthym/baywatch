@@ -44,19 +44,17 @@ export default class App extends Vue {
     authenticationService.refresh().subscribe({
       next: session => {
         this.store.commit(USER_UPDATE_MUTATION, session.user);
-        serverEventService.registerListener(EventType.NEWS, this.onServerMessage);
+        serverEventService.registerListener(EventType.NEWS_UPDATE, this.onServerMessage);
       },
       error: () => {
         this.store.commit(LOGOUT_MUTATION);
-        serverEventService.unregister(EventType.NEWS, this.onServerMessage);
+        serverEventService.unregister(EventType.NEWS_UPDATE, this.onServerMessage);
       }
     });
     keyboardControl.startKeyboardControl();
   }
 
   private onServerMessage(evt: Event): void {
-    const msg: MessageEvent = evt as MessageEvent;
-    console.debug(msg);
     this.store.commit(STATS_UPDATE_MUTATION);
   }
 

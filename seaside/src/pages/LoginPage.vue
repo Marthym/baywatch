@@ -35,6 +35,8 @@ import {UPDATE_MUTATION} from "@/store/user/UserConstants";
 
 import authenticationService from "@/security/services/AuthenticationService";
 import {useRouter} from "vue-router";
+import serverEventService from "@/techwatch/services/ServerEventService";
+import {EventType} from "@/techwatch/model/EventType.enum";
 
 @Options({name: 'LoginPage'})
 export default class LoginPage extends Vue {
@@ -51,9 +53,11 @@ export default class LoginPage extends Vue {
 
   onLogin(): void {
     if (this.username !== '' && this.password !== '') {
-      authenticationService.login(this.username, this.password).subscribe(user => {
-        this.store.commit(UPDATE_MUTATION, user);
-        this.router.back();
+      authenticationService.login(this.username, this.password).subscribe({
+        next: user => {
+          this.store.commit(UPDATE_MUTATION, user);
+          this.router.back();
+        }
       });
     } else {
       this.formValidation = true;

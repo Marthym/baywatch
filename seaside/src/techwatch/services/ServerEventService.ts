@@ -11,14 +11,14 @@ class ServerEventService {
     public registerListener(eventType: string, listener: EventListener): void {
         if (!this.source) {
             this.source = new EventSource('/api/sse');
-            console.log(`[${this.id}] Create SSE Connection ...`)
-            this.source.addEventListener('open', () => console.debug(`[${this.id}] Connected to SSE.`))
+            console.debug(`[${this.id}] Create SSE Connection ...`)
+            this.source.addEventListener('open', () => console.info(`[${this.id}] Connected to SSE.`))
         }
         this.source.addEventListener(eventType, listener);
     }
 
     public unregister(eventType: string, listener: EventListener): void {
-        console.log(`[${this.id}] Unregister SSE`, this.source);
+        console.info(`[${this.id}] Unregister SSE`, this.source);
         if (this.source) {
             this.source.removeEventListener(eventType, listener);
             const idx = this.listeners.indexOf(listener);
