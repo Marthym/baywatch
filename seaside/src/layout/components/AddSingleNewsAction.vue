@@ -44,11 +44,7 @@ export default class AddSingleNewsAction extends Vue {
   private importNewsFromLink(): void {
     this.$emit('close');
     scraperService.importStandaloneNews(this.link).subscribe({
-      next: () => {
-        notificationService.pushNotification({
-          code: NotificationCode.OK, message: 'News imported successfully !', severity: Severity.info
-        });
-      },
+      next: () => console.debug("Scraping request send successfully."),
       error: err => notificationService.pushNotification({
         code: NotificationCode.ERROR, message: `${err.message}`, severity: Severity.error
       }),
