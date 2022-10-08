@@ -23,7 +23,8 @@ import {
   NewspaperIcon,
   QuestionMarkCircleIcon,
   RssIcon,
-  UserGroupIcon
+  UserGroupIcon,
+  UsersIcon
 } from '@heroicons/vue/24/outline';
 import {Observable} from "rxjs";
 import {map} from "rxjs/operators";
@@ -31,7 +32,13 @@ import {map} from "rxjs/operators";
 @Options({
   name: 'StatisticsAdminTab',
   components: {
-    ClockIcon, CloudArrowUpIcon, UserGroupIcon, NewspaperIcon, RssIcon, QuestionMarkCircleIcon,
+    ClockIcon,
+    CloudArrowUpIcon,
+    NewspaperIcon,
+    QuestionMarkCircleIcon,
+    RssIcon,
+    UserGroupIcon,
+    UsersIcon,
   },
 })
 export default class StatisticsAdminTab extends Vue {
@@ -76,6 +83,8 @@ export default class StatisticsAdminTab extends Vue {
         return 'RssIcon';
       case 'USER_GROUP_ICON':
         return 'UserGroupIcon';
+      case 'USERS_ICON':
+        return 'UsersIcon';
       default:
         return 'QuestionMarkCircleIcon';
     }

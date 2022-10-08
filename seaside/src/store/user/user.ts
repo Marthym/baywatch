@@ -1,6 +1,6 @@
 import {ANONYMOUS, User} from "@/security/model/User";
 import {UserRole} from "@/security/model/UserRole.enum";
-import {LOGOUT, UPDATE} from "@/store/user/UserConstants";
+import {HAS_ROLE_ADMIN, HAS_ROLE_MANAGER, HAS_ROLE_USER, LOGOUT, UPDATE} from "@/store/user/UserConstants";
 
 export type UserState = {
     user: User;
@@ -14,17 +14,17 @@ const state = (): UserState => ({
 
 // getters
 const getters = {
-    hasRoleUser(st): boolean {
+    [HAS_ROLE_USER](st): boolean {
         const keys = Object.keys(UserRole);
         const idx = keys.indexOf(st.user.role);
         return idx >= 0 && idx <= keys.indexOf(UserRole.USER);
     },
-    hasRoleManager(st): boolean {
+    [HAS_ROLE_MANAGER](st): boolean {
         const keys = Object.keys(UserRole);
         const idx = keys.indexOf(st.user.role);
         return idx >= 0 && idx <= keys.indexOf(UserRole.MANAGER);
     },
-    hasRoleAdmin(st): boolean {
+    [HAS_ROLE_ADMIN](st): boolean {
         const keys = Object.keys(UserRole);
         const idx = keys.indexOf(st.user.role);
         return idx >= 0 && idx <= keys.indexOf(UserRole.ADMIN);

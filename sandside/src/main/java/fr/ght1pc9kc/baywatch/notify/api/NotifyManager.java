@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 /**
  * The service to use for Notification Flux manipulation
  */
-public interface NotifyManager {
+public interface NotifyManager extends NotifyService {
     /**
      * This allows Service or whatever to subscribe to notifications
      *

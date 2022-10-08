@@ -21,13 +21,19 @@ import SideNav from '@/layout/components/sidenav/SideNav.vue';
 import SideNavOverlay from '@/layout/components/sidenav/SideNavOverlay.vue';
 import NotificationArea from "@/common/components/notificationArea/NotificationArea.vue";
 import {EventType} from "@/techwatch/model/EventType.enum";
+import {Notification} from "@/services/notification/Notification.type";
+import {registerNotificationListener, unregisterNotificationListener} from "@/layout/services/ServerEventService";
 import authenticationService from '@/security/services/AuthenticationService'
-import serverEventService from '@/techwatch/services/ServerEventService'
+import notificationService from '@/services/notification/NotificationService'
+import keyboardControl from "@/common/services/KeyboardControl";
 import {setup} from "vue-class-component";
 import {useStore} from "vuex";
 import {UPDATE_MUTATION as STATS_UPDATE_MUTATION} from "@/techwatch/store/statistics/StatisticsConstants";
-import {LOGOUT_MUTATION, UPDATE_MUTATION as USER_UPDATE_MUTATION} from "@/store/user/UserConstants";
-import keyboardControl from "@/common/services/KeyboardControl";
+import {
+  HAS_ROLE_USER_GETTER,
+  LOGOUT_MUTATION,
+  UPDATE_MUTATION as USER_UPDATE_MUTATION
+} from "@/store/user/UserConstants";
 
 @Options({
   components: {
@@ -44,21 +50,39 @@ export default class App extends Vue {
     authenticationService.refresh().subscribe({
       next: session => {
         this.store.commit(USER_UPDATE_MUTATION, session.user);
-        serverEventService.registerListener(EventType.NEWS, this.onServerMessage);
+        this.registerSessionNotifications();
       },
       error: () => {
         this.store.commit(LOGOUT_MUTATION);
-        serverEventService.unregister(EventType.NEWS, this.onServerMessage);
+        unregisterNotificationListener(EventType.NEWS_UPDATE, this.onServerMessage);
+        const unwatch = this.store.watch(
+            (state, getters) => getters[HAS_ROLE_USER_GETTER],
+            newValue => {
+              unwatch();
+              if (newValue) {
+                this.registerSessionNotifications();
+              }
+            });
       }
     });
     keyboardControl.startKeyboardControl();
   }
 
-  private onServerMessage(evt: Event): void {
-    const msg: MessageEvent = evt as MessageEvent;
-    this.store.commit(STATS_UPDATE_MUTATION, JSON.parse(msg.data));
+  private registerSessionNotifications(): void {
+    registerNotificationListener(EventType.NEWS_UPDATE, this.onServerMessage);
+    registerNotificationListener(EventType.USER_NOTIFICATION, this.onUserMessage);
   }
 
+  private onServerMessage(): void {
+    this.store.commit(STATS_UPDATE_MUTATION);
+  }
+
+  private onUserMessage(evt: Event): void {
+    const userNotif: Notification = (evt as MessageEvent).data;
+    notificationService.pushNotification(userNotif);
+  }
+
+  // noinspection JSUnusedGlobalSymbols
   unmounted(): void {
     keyboardControl.stopKeyboardControl();
   }

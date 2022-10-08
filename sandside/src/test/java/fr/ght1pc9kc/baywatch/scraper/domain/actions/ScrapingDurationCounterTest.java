@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
 import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
-import fr.ght1pc9kc.baywatch.common.api.HeroIcons;
+import fr.ght1pc9kc.baywatch.common.api.model.HeroIcons;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 

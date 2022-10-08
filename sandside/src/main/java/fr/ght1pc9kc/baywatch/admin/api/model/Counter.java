@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.admin.api.model;
 
-import fr.ght1pc9kc.baywatch.common.api.HeroIcons;
+import fr.ght1pc9kc.baywatch.common.api.model.HeroIcons;
 import org.jetbrains.annotations.Nullable;
 
 public record Counter(

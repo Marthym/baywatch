@@ -26,8 +26,8 @@ import {useStore} from "vuex";
 import {setup} from "vue-class-component";
 import {switchMap} from "rxjs/operators";
 import {useRouter} from "vue-router";
+import {closeNotificationListeners} from "@/layout/services/ServerEventService";
 import authenticationService from "@/security/services/AuthenticationService";
-import serverEventService from '@/techwatch/services/ServerEventService'
 
 @Options({
   name: 'SideNav',
@@ -48,7 +48,7 @@ export default class SideNav extends Vue {
   private user: UserState = setup(() => useStore().state.user);
 
   logoutUser(): void {
-    serverEventService.close().pipe(
+    closeNotificationListeners().pipe(
         switchMap(() => authenticationService.logout())
     ).subscribe(() => {
       this.store.commit(LOGOUT_MUTATION);

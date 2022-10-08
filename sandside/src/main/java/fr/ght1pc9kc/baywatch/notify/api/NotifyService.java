@@ -17,7 +17,9 @@ public interface NotifyService {
      * @param <T>  The Class of the payload
      * @return The final pushed event with ID
      */
-    <T> BasicEvent<T> send(EventType type, T data);
+    <T> BasicEvent<T> broadcast(EventType type, T data);
+
+    <T> BasicEvent<T> send(String userId, EventType type, T data);
 
     /**
      * Push notification with Reactive payload, into the multicasted Flux to all the subscribers
@@ -27,5 +29,5 @@ public interface NotifyService {
      * @param <T>  The Class of the payload
      * @return The final pushed event with ID
      */
-    <T> ReactiveEvent<T> send(EventType type, Mono<T> data);
+    <T> ReactiveEvent<T> broadcast(EventType type, Mono<T> data);
 }

@@ -51,9 +51,11 @@ export default class LoginPage extends Vue {
 
   onLogin(): void {
     if (this.username !== '' && this.password !== '') {
-      authenticationService.login(this.username, this.password).subscribe(user => {
-        this.store.commit(UPDATE_MUTATION, user);
-        this.router.back();
+      authenticationService.login(this.username, this.password).subscribe({
+        next: user => {
+          this.store.commit(UPDATE_MUTATION, user);
+          this.router.back();
+        }
       });
     } else {
       this.formValidation = true;

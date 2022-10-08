@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.admin.domain;
 import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterGroup;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
-import fr.ght1pc9kc.baywatch.common.api.HeroIcons;
+import fr.ght1pc9kc.baywatch.common.api.model.HeroIcons;
 import reactor.core.publisher.Mono;
 
 import java.lang.management.ManagementFactory;

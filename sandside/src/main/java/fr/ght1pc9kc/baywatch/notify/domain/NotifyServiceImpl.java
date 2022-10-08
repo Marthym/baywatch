@@ -9,42 +9,57 @@ import fr.ght1pc9kc.baywatch.notify.api.model.BasicEvent;
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.model.ReactiveEvent;
 import fr.ght1pc9kc.baywatch.notify.api.model.ServerEvent;
+import fr.ght1pc9kc.baywatch.notify.domain.model.ByUserEventPublisherCacheEntry;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Nullable;
+import reactor.core.Scannable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.core.publisher.Sinks.EmitResult;
 
 import java.time.Duration;
+import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 public class NotifyServiceImpl implements NotifyService, NotifyManager {
     private final AuthenticationFacade authFacade;
 
-    private final Sinks.Many<ServerEvent<Object>> sink;
-    private final Cache<String, Flux<ServerEvent<Object>>> cache;
+    private final Sinks.Many<ServerEvent<Object>> multicast;
+    private final Cache<String, ByUserEventPublisherCacheEntry> cache;
 
     public NotifyServiceImpl(AuthenticationFacade authenticationFacade) {
         this.authFacade = authenticationFacade;
-        this.sink = Sinks.many().multicast().directBestEffort();
+        this.multicast = Sinks.many().multicast().directBestEffort();
         this.cache = Caffeine.newBuilder()
                 .expireAfterAccess(Duration.ofMinutes(30))
                 .maximumSize(1000)
+                .<String, ByUserEventPublisherCacheEntry>removalListener((key, value, cause) -> {
+                    if (value != null) {
+                        value.sink().tryEmitComplete();
+                    }
+                })
                 .build();
     }
 
     @Override
-    @SuppressWarnings("ReactiveStreamsNullableInLambdaInTransform")
     public Flux<ServerEvent<Object>> subscribe() {
-        return authFacade.getConnectedUser().flatMapMany(u -> cache.get(u.id, id ->
-                this.sink.asFlux()
-                        .takeWhile(e -> cache.asMap().containsKey(id))
-                        .map(e -> {
-                            log.debug("Event: {}", e);
-                            return e;
-                        }).cache(0)
-        ));
+        if (multicast.isScanAvailable() && Boolean.TRUE.equals(multicast.scan(Scannable.Attr.TERMINATED))) {
+            return Flux.error(() -> new IllegalStateException("Publisher was closed !"));
+        }
+        return authFacade.getConnectedUser().flatMapMany(u ->
+                Objects.requireNonNull(cache.get(u.id, id -> {
+                    Sinks.Many<ServerEvent<Object>> sink = Sinks.many().multicast().directBestEffort();
+                    Flux<ServerEvent<Object>> eventPublisher = Flux.merge(sink.asFlux(), this.multicast.asFlux())
+                            .takeWhile(e -> cache.asMap().containsKey(id))
+                            .map(e -> {
+                                log.debug("Event: {}", e);
+                                return e;
+                            }).cache(0);
+                    return new ByUserEventPublisherCacheEntry(sink, eventPublisher);
+                })).flux());
     }
 
     @Override
@@ -61,28 +76,46 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
     @Override
     public void close() {
         this.cache.invalidateAll();
-        this.sink.tryEmitComplete();
+        this.multicast.tryEmitComplete();
         this.cache.cleanUp();
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> BasicEvent<T> send(EventType type, T data) {
+    public <T> BasicEvent<T> send(String userId, EventType type, T data) {
         BasicEvent<T> event = new BasicEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
-        send((ServerEvent<Object>) event);
+        Optional.ofNullable(cache.getIfPresent(userId))
+                .map(ByUserEventPublisherCacheEntry::sink)
+                .ifPresent(sk -> emit(sk, (ServerEvent<Object>) event));
         return event;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> ReactiveEvent<T> send(EventType type, Mono<T> data) {
-        ReactiveEvent<T> event = new ReactiveEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
-        send((ServerEvent<Object>) event);
+    public <T> BasicEvent<T> broadcast(EventType type, T data) {
+        BasicEvent<T> event = new BasicEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
+        emit(this.multicast, (ServerEvent<Object>) event);
         return event;
     }
 
-    private void send(ServerEvent<Object> event) {
-        EmitResult result = this.sink.tryEmitNext(event);
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> ReactiveEvent<T> broadcast(EventType type, Mono<T> data) {
+        ReactiveEvent<T> event = new ReactiveEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
+        emit(this.multicast, (ServerEvent<Object>) event);
+        return event;
+    }
+
+    public long countCacheEntries() {
+        return cache.estimatedSize();
+    }
+
+    private void emit(@Nullable Sinks.Many<ServerEvent<Object>> sink, ServerEvent<Object> event) {
+        if (sink == null) {
+            log.debug("No subscriber listening the SSE entry point.");
+            return;
+        }
+        EmitResult result = sink.tryEmitNext(event);
         if (result.isFailure()) {
             if (result == EmitResult.FAIL_ZERO_SUBSCRIBER) {
                 log.debug("No subscriber listening the SSE entry point.");
