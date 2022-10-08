@@ -7,6 +7,8 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 
 public interface ScrapEnrichmentService {
+    Mono<Void> scrapSingleNews(URI uri);
+
     Mono<News> buildStandaloneNews(URI uri);
 
     Mono<News> applyNewsFilters(News news);

@@ -1,10 +1,10 @@
 package fr.ght1pc9kc.baywatch.scraper.domain;
 
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
-import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
+import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
-import fr.ght1pc9kc.baywatch.scraper.domain.model.ScraperConfig;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ScraperProperties;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.NewsMaintenancePort;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
@@ -50,9 +50,17 @@ import static org.mockito.Mockito.when;
 
 class FeedScraperServiceTest {
 
-    static final ScraperConfig SCRAPER_PROPERTIES = new ScraperConfig(
-            Duration.ofDays(1), Period.ofDays(30)
-    );
+    static final ScraperProperties SCRAPER_PROPERTIES = new ScraperProperties() {
+        @Override
+        public Duration frequency() {
+            return Duration.ofDays(1);
+        }
+
+        @Override
+        public Period conservation() {
+            return Period.ofDays(30);
+        }
+    };
 
     private final ScrapEnrichmentService mockScrapEnrichmentService = mock(ScrapEnrichmentService.class);
 
@@ -199,8 +207,7 @@ class FeedScraperServiceTest {
         when(mockScrapEnrichmentService.applyNewsFilters(any(News.class)))
                 .thenAnswer(((Answer<Mono<News>>) answer -> Mono.just(answer.getArgument(0))));
 
-        tested = new FeedScraperServiceImpl(SCRAPER_PROPERTIES,
-                newsMaintenanceMock, mockWebClient, rssAtomParserMock,
+        tested = new FeedScraperServiceImpl(SCRAPER_PROPERTIES, newsMaintenanceMock, mockWebClient, rssAtomParserMock,
                 Collections.emptyList(), Map.of(), mockScrapEnrichmentService);
         tested.setClock(Clock.fixed(Instant.parse("2022-04-30T12:35:41Z"), ZoneOffset.UTC));
     }

@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.scraper.infra.adapters;
 
+import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.scraper.api.NewsFilter;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.domain.ScrapEnrichmentServiceImpl;
@@ -20,7 +21,8 @@ public class ScrapEnrichmentAdapter implements ScrapEnrichmentService {
 
     @Autowired
     public ScrapEnrichmentAdapter(
-            List<NewsFilter> newsFilters, List<FeedsFilter> feedsFilters, AuthenticationFacade facade, SystemMaintenanceService maintenanceService) {
-        this.delegate = new ScrapEnrichmentServiceImpl(newsFilters, feedsFilters, facade, maintenanceService);
+            List<NewsFilter> newsFilters, List<FeedsFilter> feedsFilters, AuthenticationFacade facade, SystemMaintenanceService maintenanceService,
+            NotifyService notifyService) {
+        this.delegate = new ScrapEnrichmentServiceImpl(newsFilters, feedsFilters, facade, maintenanceService, notifyService);
     }
 }

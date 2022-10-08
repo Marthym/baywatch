@@ -8,7 +8,7 @@ import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
-import fr.ght1pc9kc.baywatch.scraper.domain.model.ScraperConfig;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ScraperProperties;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.NewsMaintenancePort;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
@@ -61,7 +61,7 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
     private final Semaphore lock = new Semaphore(1);
     private final WebClient http;
 
-    private final ScraperConfig properties;
+    private final ScraperProperties properties;
     private final NewsMaintenancePort newsMaintenance;
     private final RssAtomParser feedParser;
     private final Collection<EventHandler> scrapingHandlers;
@@ -72,7 +72,7 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
     @Setter(value = AccessLevel.PACKAGE, onMethod = @__({@VisibleForTesting}))
     private Clock clock = Clock.systemUTC();
 
-    public FeedScraperServiceImpl(ScraperConfig properties,
+    public FeedScraperServiceImpl(ScraperProperties properties,
                                   NewsMaintenancePort newsMaintenance,
                                   WebClient webClient, RssAtomParser feedParser,
                                   Collection<EventHandler> scrapingHandlers,

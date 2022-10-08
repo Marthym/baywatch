@@ -92,6 +92,16 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
 
     @Override
     @SuppressWarnings("unchecked")
+    public <T> ReactiveEvent<T> send(String userId, EventType type, Mono<T> data) {
+        ReactiveEvent<T> event = new ReactiveEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
+        Optional.ofNullable(cache.getIfPresent(userId))
+                .map(ByUserEventPublisherCacheEntry::sink)
+                .ifPresent(sk -> emit(sk, (ServerEvent<Object>) event));
+        return event;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
     public <T> BasicEvent<T> broadcast(EventType type, T data) {
         BasicEvent<T> event = new BasicEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
         emit(this.multicast, (ServerEvent<Object>) event);

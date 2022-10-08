@@ -15,7 +15,7 @@ public class WebClientConfiguration {
 
     @Bean
     @ScraperQualifier
-    public HttpClient getNettyHttpClient(ScraperProperties properties) {
+    public HttpClient getNettyHttpClient(ScraperApplicationProperties properties) {
         return HttpClient.create()
                 .resolver(spec -> spec.queryTimeout(properties.dns().timeout()))
                 .followRedirect(true)
