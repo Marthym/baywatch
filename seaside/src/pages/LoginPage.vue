@@ -35,8 +35,6 @@ import {UPDATE_MUTATION} from "@/store/user/UserConstants";
 
 import authenticationService from "@/security/services/AuthenticationService";
 import {useRouter} from "vue-router";
-import serverEventService from "@/techwatch/services/ServerEventService";
-import {EventType} from "@/techwatch/model/EventType.enum";
 
 @Options({name: 'LoginPage'})
 export default class LoginPage extends Vue {
