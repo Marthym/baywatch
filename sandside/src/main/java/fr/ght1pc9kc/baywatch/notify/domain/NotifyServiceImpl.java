@@ -13,6 +13,7 @@ import fr.ght1pc9kc.baywatch.notify.domain.model.ByUserEventPublisherCacheEntry;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
+import org.reactivestreams.Subscription;
 import reactor.core.Scannable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -22,6 +23,7 @@ import reactor.core.publisher.Sinks.EmitResult;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class NotifyServiceImpl implements NotifyService, NotifyManager {
@@ -36,9 +38,13 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         this.cache = Caffeine.newBuilder()
                 .expireAfterAccess(Duration.ofMinutes(30))
                 .maximumSize(1000)
-                .<String, ByUserEventPublisherCacheEntry>removalListener((key, value, cause) -> {
+                .<String, ByUserEventPublisherCacheEntry>evictionListener((key, value, cause) -> {
                     if (value != null) {
                         value.sink().tryEmitComplete();
+                        Subscription subscription = value.subscription().getAndSet(null);
+                        if (subscription != null) {
+                            subscription.cancel();
+                        }
                     }
                 })
                 .build();
@@ -52,13 +58,15 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         return authFacade.getConnectedUser().flatMapMany(u ->
                 Objects.requireNonNull(cache.get(u.id, id -> {
                     Sinks.Many<ServerEvent<Object>> sink = Sinks.many().multicast().directBestEffort();
-                    Flux<ServerEvent<Object>> eventPublisher = Flux.merge(sink.asFlux(), this.multicast.asFlux())
+                    AtomicReference<Subscription> subscription = new AtomicReference<>();
+                    Flux<ServerEvent<Object>> multicastFlux = this.multicast.asFlux().doOnSubscribe(subscription::set);
+                    Flux<ServerEvent<Object>> eventPublisher = Flux.merge(sink.asFlux(), multicastFlux)
                             .takeWhile(e -> cache.asMap().containsKey(id))
                             .map(e -> {
                                 log.debug("Event: {}", e);
                                 return e;
                             }).cache(0);
-                    return new ByUserEventPublisherCacheEntry(sink, eventPublisher);
+                    return new ByUserEventPublisherCacheEntry(subscription, sink, eventPublisher);
                 })).flux());
     }
 
@@ -67,7 +75,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         return authFacade.getConnectedUser()
                 .filter(u -> cache.asMap().containsKey(u.id))
                 .map(u -> {
-                    log.debug("Dispose SSE Subscription for {}", u.id);
+                    log.debug("Dispose SSE Subscription for {}", u.self.login);
                     cache.invalidate(u.id);
                     return true;
                 });
@@ -75,8 +83,8 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
 
     @Override
     public void close() {
-        this.cache.invalidateAll();
         this.multicast.tryEmitComplete();
+        this.cache.invalidateAll();
         this.cache.cleanUp();
     }
 

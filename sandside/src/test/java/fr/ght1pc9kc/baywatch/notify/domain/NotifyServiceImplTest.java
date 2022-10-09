@@ -29,6 +29,8 @@ class NotifyServiceImplTest {
                 Mono.just(UserSamples.OBIWAN),
                 Mono.just(UserSamples.LUKE),
                 Mono.just(UserSamples.OBIWAN),
+                Mono.just(UserSamples.LUKE),
+                Mono.just(UserSamples.OBIWAN),
                 Mono.just(UserSamples.LUKE));
         tested = new NotifyServiceImpl(authFacadeMock);
     }
@@ -42,11 +44,11 @@ class NotifyServiceImplTest {
         AtomicBoolean isObiwanComplete = new AtomicBoolean(false);
         AtomicBoolean isLukeComplete = new AtomicBoolean(false);
 
-        tested.subscribe().subscribe(
+        tested.subscribe().doOnTerminate(() -> isObiwanComplete.set(true)).subscribe(
                 actualObiwan::add, errorsObiwan::add,
                 () -> isObiwanComplete.set(true)
         );
-        tested.subscribe().subscribe(
+        tested.subscribe().doOnCancel(() -> isLukeComplete.set(true)).subscribe(
                 actualLuke::add, errorsLuke::add,
                 () -> isLukeComplete.set(true)
         );
