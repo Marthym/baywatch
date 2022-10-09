@@ -8,7 +8,7 @@ let listeners: EventListener[] = [];
 
 export function registerNotificationListener(eventType: string, listener: EventListener): void {
     if (!source) {
-        source = new EventSource('/api/sse');
+        source = new EventSource('/api/sse', {withCredentials: true});
         console.info(`Create SSE Connection ...`)
         source.addEventListener('open', () => console.debug(`Connected to SSE.`))
     }
