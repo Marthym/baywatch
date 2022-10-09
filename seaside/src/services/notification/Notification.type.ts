@@ -5,4 +5,5 @@ export type Notification = {
     code: NotificationCode;
     severity: Severity;
     message: string;
+    delay?: number;
 }

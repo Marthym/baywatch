@@ -4,15 +4,16 @@ import com.samskivert.mustache.Mustache;
 import com.sun.net.httpserver.HttpServer;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
+import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.scraper.domain.FeedScraperServiceImpl;
 import fr.ght1pc9kc.baywatch.scraper.domain.RssAtomParserImpl;
 import fr.ght1pc9kc.baywatch.scraper.domain.ScrapEnrichmentServiceImpl;
 import fr.ght1pc9kc.baywatch.scraper.domain.filters.OpenGraphFilter;
 import fr.ght1pc9kc.baywatch.scraper.domain.filters.SanitizerFilter;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
-import fr.ght1pc9kc.baywatch.scraper.domain.model.ScraperConfig;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.NewsMaintenancePort;
-import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperProperties;
+import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperApplicationProperties;
+import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperConfiguration;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.WebClientConfiguration;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
@@ -137,27 +138,29 @@ class FeedScraperIntegrationTest {
 
     @BeforeEach
     void setUp() {
-
-        ScraperProperties scraperProperties = new ScraperProperties(
-                true, Duration.ofDays(1), Period.ofDays(1), Duration.ofSeconds(1), new ScraperProperties.DnsProperties(Duration.ofSeconds(2)));
+        ScraperConfiguration scraperConfiguration = new ScraperConfiguration();
+        ScraperApplicationProperties scraperProperties = new ScraperApplicationProperties(
+                true, Duration.ofDays(1), Period.ofDays(1), Duration.ofSeconds(1), new ScraperApplicationProperties.DnsProperties(Duration.ofSeconds(2)));
         WebClientConfiguration webClientConfiguration = new WebClientConfiguration();
         HttpClient nettyHttpClient = webClientConfiguration.getNettyHttpClient(scraperProperties);
         WebClient webClientMock = webClientConfiguration.getScraperWebClient(nettyHttpClient);
 
         when(mockMaintenancePort.listAllNewsId()).thenReturn(Flux.empty());
         tested = new FeedScraperServiceImpl(
-                new ScraperConfig(Duration.ofDays(1), Period.ofDays(1)),
+                scraperProperties,
+                scraperConfiguration.getScraperScheduler(),
                 mockMaintenancePort,
                 webClientMock,
                 new RssAtomParserImpl(),
                 Collections.emptyList(),
                 Map.of(),
-                new ScrapEnrichmentServiceImpl(List.of(
-                        new OpenGraphFilter(HeadScrapers.builder(new NettyScrapClient(nettyHttpClient)).build()),
-                        new SanitizerFilter()
-                ), List.of(
-                        new SanitizerFilter()
-                ), mockFacadeFor(UserSamples.YODA), mock(SystemMaintenanceService.class))
+                new ScrapEnrichmentServiceImpl(
+                        List.of(
+                                new OpenGraphFilter(HeadScrapers.builder(new NettyScrapClient(nettyHttpClient)).build()),
+                                new SanitizerFilter()),
+                        List.of(new SanitizerFilter()),
+                        mockFacadeFor(UserSamples.YODA), mock(SystemMaintenanceService.class), mock(NotifyService.class),
+                        scraperConfiguration.getScraperScheduler())
         );
     }
 

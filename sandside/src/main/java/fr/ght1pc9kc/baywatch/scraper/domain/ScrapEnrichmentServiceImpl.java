@@ -2,6 +2,9 @@ package fr.ght1pc9kc.baywatch.scraper.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
+import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
+import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
+import fr.ght1pc9kc.baywatch.notify.api.model.UserNotification;
 import fr.ght1pc9kc.baywatch.scraper.api.NewsFilter;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
@@ -18,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.jetbrains.annotations.VisibleForTesting;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
 
 import java.net.URI;
 import java.time.Clock;
@@ -32,9 +36,27 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
     private final List<FeedsFilter> feedsFilters;
     private final AuthenticationFacade authFacade;
     private final SystemMaintenanceService systemMaintenanceService;
+    private final NotifyService notifyService;
+    private final Scheduler scraperScheduler;
 
     @Setter(value = AccessLevel.PACKAGE, onMethod = @__({@VisibleForTesting}))
     private Clock clock = Clock.systemUTC();
+
+    @Override
+    public Mono<Void> scrapSingleNews(URI uri) {
+        return authFacade.getConnectedUser()
+                .transformDeferredContextual((original, context) -> original.doOnNext(user -> buildStandaloneNews(uri)
+                        .flatMap(this::applyNewsFilters)
+                        .flatMap(this::saveAndShare)
+                        .contextWrite(context)
+                        .subscribeOn(scraperScheduler)
+                        .subscribe(n -> notifyService.send(user.id, EventType.USER_NOTIFICATION,
+                                        UserNotification.info("New " + n.getTitle() + " add successfully !")),
+                                t -> notifyService.send(user.id, EventType.USER_NOTIFICATION,
+                                        UserNotification.error(t.getLocalizedMessage())))
+                ))
+                .then();
+    }
 
     @Override
     public Mono<News> buildStandaloneNews(URI link) {

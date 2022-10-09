@@ -19,8 +19,4 @@ public class BaywatchApplication {
         SpringApplication.run(BaywatchApplication.class, args);
     }
 
-    @Bean
-    Scheduler getDatabaseScheduler() {
-        return Schedulers.newBoundedElastic(5, Integer.MAX_VALUE, "database");
-    }
 }

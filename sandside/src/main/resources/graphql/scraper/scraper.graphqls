@@ -20,5 +20,5 @@ extend type Query {
 }
 
 extend type Mutation {
-    scrapSimpleNews(uri: URI): AtomEntry
+    scrapSimpleNews(uri: URI): Void
 }

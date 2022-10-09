@@ -78,8 +78,12 @@ export default class App extends Vue {
   }
 
   private onUserMessage(evt: Event): void {
-    const userNotif: Notification = (evt as MessageEvent).data;
-    notificationService.pushNotification(userNotif);
+    try {
+      const userNotif: Notification = JSON.parse((evt as MessageEvent).data);
+      notificationService.pushNotification(userNotif);
+    } catch (err: Error) {
+      console.error('Unable to parse JSON notification', err);
+    }
   }
 
   // noinspection JSUnusedGlobalSymbols

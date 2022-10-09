@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
 import com.machinezoo.noexception.Exceptions;
+import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
@@ -48,7 +49,7 @@ public class NewsRepository implements NewsPersistencePort {
     public static final JooqConditionVisitor NEWS_CONDITION_VISITOR =
             new JooqConditionVisitor(NEWS_PROPERTIES_MAPPING);
 
-    private final Scheduler databaseScheduler;
+    private final @DatabaseQualifier Scheduler databaseScheduler;
     private final DSLContext dsl;
     private final BaywatchMapper baywatchMapper;
 

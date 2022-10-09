@@ -2,7 +2,6 @@ package fr.ght1pc9kc.baywatch.scraper.infra.controllers;
 
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
-import fr.ght1pc9kc.baywatch.scraper.api.model.AtomEntry;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperMapper;
 import lombok.RequiredArgsConstructor;
@@ -24,11 +23,8 @@ public class ScraperGqlController {
 
     @MutationMapping
     @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
-    public Mono<AtomEntry> scrapSimpleNews(@Argument URI uri) {
-        return scrapEnrichmentService.buildStandaloneNews(uri)
-                .flatMap(scrapEnrichmentService::applyNewsFilters)
-                .flatMap(scrapEnrichmentService::saveAndShare)
-                .map(mapper::getAtomFromNews);
+    public Mono<Void> scrapSimpleNews(@Argument URI uri) {
+        return scrapEnrichmentService.scrapSingleNews(uri);
     }
 
     @QueryMapping

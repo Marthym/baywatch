@@ -12,12 +12,10 @@ const URL_PATTERN = new RegExp('^(https?:\\/\\/)?' + // protocol
 export class ScraperService {
     private static readonly SCRAP_SINGLE_NEWS_REQUEST = `#graphql
     mutation ScrapSingleNews($newsLink: URI!) {
-        scrapSimpleNews(uri: $newsLink) {
-            id
-        }
+        scrapSimpleNews(uri: $newsLink)
     }`;
 
-    importStandaloneNews(link?: string): Observable<string> {
+    importStandaloneNews(link?: string): Observable<void> {
         if (link === undefined) {
             return throwError(() => new Error('Link is mandatory !'));
         } else if (!URL_PATTERN.test(link)) {
@@ -26,7 +24,7 @@ export class ScraperService {
 
         return gql.send(ScraperService.SCRAP_SINGLE_NEWS_REQUEST, {newsLink: link}).pipe(
             take(1),
-            map(n => ('id' in n) ? n._id : n)
+            map(() => undefined)
         );
     }
 }

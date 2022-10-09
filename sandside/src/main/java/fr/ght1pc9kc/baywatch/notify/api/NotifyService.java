@@ -30,4 +30,6 @@ public interface NotifyService {
      * @return The final pushed event with ID
      */
     <T> ReactiveEvent<T> broadcast(EventType type, Mono<T> data);
+
+    <T> ReactiveEvent<T> send(String userId, EventType type, Mono<T> data);
 }
