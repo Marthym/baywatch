@@ -25,6 +25,7 @@ import org.springframework.web.reactive.function.client.ExchangeFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import javax.xml.stream.events.XMLEvent;
 import java.net.URI;
@@ -207,7 +208,7 @@ class FeedScraperServiceTest {
         when(mockScrapEnrichmentService.applyNewsFilters(any(News.class)))
                 .thenAnswer(((Answer<Mono<News>>) answer -> Mono.just(answer.getArgument(0))));
 
-        tested = new FeedScraperServiceImpl(SCRAPER_PROPERTIES, newsMaintenanceMock, mockWebClient, rssAtomParserMock,
+        tested = new FeedScraperServiceImpl(SCRAPER_PROPERTIES, Schedulers.immediate(), newsMaintenanceMock, mockWebClient, rssAtomParserMock,
                 Collections.emptyList(), Map.of(), mockScrapEnrichmentService);
         tested.setClock(Clock.fixed(Instant.parse("2022-04-30T12:35:41Z"), ZoneOffset.UTC));
     }

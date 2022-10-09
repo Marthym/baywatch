@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.security.infra.persistence;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.common.infra.PredicateSearchVisitor;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers;
@@ -40,7 +41,7 @@ public class UserRepository implements UserPersistencePort {
             new JooqConditionVisitor(PropertiesMappers.USER_PROPERTIES_MAPPING::get);
     private static final PredicateSearchVisitor<Entity<User>> USER_PREDICATE_VISITOR = new PredicateSearchVisitor<>();
 
-    private final Scheduler databaseScheduler;
+    private final @DatabaseQualifier Scheduler databaseScheduler;
     private final DSLContext dsl;
     private final BaywatchMapper baywatchConverter;
 

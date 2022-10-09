@@ -4,6 +4,7 @@ import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
+import fr.ght1pc9kc.baywatch.notify.api.model.UserNotification;
 import fr.ght1pc9kc.baywatch.scraper.api.NewsFilter;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
@@ -20,12 +21,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.jetbrains.annotations.VisibleForTesting;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
+import reactor.core.scheduler.Scheduler;
 
 import java.net.URI;
 import java.time.Clock;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 @RequiredArgsConstructor
@@ -37,6 +37,7 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
     private final AuthenticationFacade authFacade;
     private final SystemMaintenanceService systemMaintenanceService;
     private final NotifyService notifyService;
+    private final Scheduler scraperScheduler;
 
     @Setter(value = AccessLevel.PACKAGE, onMethod = @__({@VisibleForTesting}))
     private Clock clock = Clock.systemUTC();
@@ -48,17 +49,11 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
                         .flatMap(this::applyNewsFilters)
                         .flatMap(this::saveAndShare)
                         .contextWrite(context)
-                        .subscribeOn(Schedulers.boundedElastic()) //FIXME: Use Scraper Scheduler
-                        .subscribe(n -> notifyService.send(user.id, EventType.USER_NOTIFICATION, Map.of(
-                                        "code", "OK",
-                                        "severity", "info",
-                                        "message", "New " + n.getTitle() + " add successfully !"
-                                )),
-                                t -> notifyService.send(user.id, EventType.USER_NOTIFICATION, Map.of(
-                                        "code", "ERROR",
-                                        "severity", "error",
-                                        "message", t.getLocalizedMessage()
-                                )))
+                        .subscribeOn(scraperScheduler)
+                        .subscribe(n -> notifyService.send(user.id, EventType.USER_NOTIFICATION,
+                                        UserNotification.info("New " + n.getTitle() + " add successfully !")),
+                                t -> notifyService.send(user.id, EventType.USER_NOTIFICATION,
+                                        UserNotification.error(t.getLocalizedMessage())))
                 ))
                 .then();
     }

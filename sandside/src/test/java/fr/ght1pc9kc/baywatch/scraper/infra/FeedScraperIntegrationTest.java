@@ -148,17 +148,19 @@ class FeedScraperIntegrationTest {
         when(mockMaintenancePort.listAllNewsId()).thenReturn(Flux.empty());
         tested = new FeedScraperServiceImpl(
                 scraperProperties,
+                scraperConfiguration.getScraperScheduler(),
                 mockMaintenancePort,
                 webClientMock,
                 new RssAtomParserImpl(),
                 Collections.emptyList(),
                 Map.of(),
-                new ScrapEnrichmentServiceImpl(List.of(
-                        new OpenGraphFilter(HeadScrapers.builder(new NettyScrapClient(nettyHttpClient)).build()),
-                        new SanitizerFilter()
-                ), List.of(
-                        new SanitizerFilter()
-                ), mockFacadeFor(UserSamples.YODA), mock(SystemMaintenanceService.class), mock(NotifyService.class))
+                new ScrapEnrichmentServiceImpl(
+                        List.of(
+                                new OpenGraphFilter(HeadScrapers.builder(new NettyScrapClient(nettyHttpClient)).build()),
+                                new SanitizerFilter()),
+                        List.of(new SanitizerFilter()),
+                        mockFacadeFor(UserSamples.YODA), mock(SystemMaintenanceService.class), mock(NotifyService.class),
+                        scraperConfiguration.getScraperScheduler())
         );
     }
 

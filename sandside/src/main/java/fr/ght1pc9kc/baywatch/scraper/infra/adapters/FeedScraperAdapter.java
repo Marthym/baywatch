@@ -15,6 +15,7 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -32,6 +33,7 @@ public class FeedScraperAdapter implements FeedScraperService {
 
     public FeedScraperAdapter(NewsMaintenancePort newsMaintenancePort,
                               ScraperApplicationProperties properties,
+                              @ScraperQualifier Scheduler scraperScheduler,
                               RssAtomParser rssAtomParser,
                               Collection<EventHandler> scrappingHandlers,
                               Collection<FeedScraperPlugin> scrapperPlugins,
@@ -42,7 +44,7 @@ public class FeedScraperAdapter implements FeedScraperService {
                 .collect(Collectors.toUnmodifiableMap(FeedScraperPlugin::pluginForDomain, Function.identity()));
         this.startScraper = properties.enable();
         this.scraper = new FeedScraperServiceImpl(
-                properties, newsMaintenancePort, webClient,
+                properties, scraperScheduler, newsMaintenancePort, webClient,
                 rssAtomParser, scrappingHandlers, plugins, scrapEnrichmentService);
     }
 
