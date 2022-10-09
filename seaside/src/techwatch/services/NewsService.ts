@@ -6,10 +6,10 @@ import {Mark} from "@/techwatch/model/Mark.enum";
 import rest from '@/common/services/RestWrapper';
 import {Infinite} from "@/services/model/Infinite";
 import {NewsState} from "@/techwatch/model/NewsState.type";
-import gql from '@/common/services/GraphqlWrapper';
 import {NewsSearchRequest} from "@/techwatch/model/NewsSearchRequest.type";
 import {SandSideError} from "@/common/errors/SandSideError";
 import {GraphqlResponse} from "@/common/model/GraphqlResponse.type";
+import {send} from "@/common/services/GraphQLClient";
 
 export class NewsService {
 
@@ -45,7 +45,7 @@ export class NewsService {
     }`
 
     getAnonymousNews(): Observable<Infinite<News>> {
-        return gql.send(NewsService.NEWS_SEARCH_ANONYMOUS_REQUEST).pipe(
+        return send(NewsService.NEWS_SEARCH_ANONYMOUS_REQUEST).pipe(
             map(response => NewsService.graphResponseToInfinite(response)),
             take(1)
         );
@@ -61,7 +61,7 @@ export class NewsService {
         if (page > 0) {
             query._p = page;
         }
-        return gql.send(NewsService.NEWS_SEARCH_REQUEST, query).pipe(
+        return send(NewsService.NEWS_SEARCH_REQUEST, query).pipe(
             map(response => NewsService.graphResponseToInfinite(response)),
             take(1)
         );

@@ -1,6 +1,6 @@
 import {Observable, throwError} from "rxjs";
-import gql from '@/common/services/GraphqlWrapper';
 import {map, take} from "rxjs/operators";
+import {send} from "@/common/services/GraphQLClient";
 
 const URL_PATTERN = new RegExp('^(https?:\\/\\/)?' + // protocol
     '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
@@ -22,7 +22,7 @@ export class ScraperService {
             return throwError(() => new Error('Argument link must be a valid URL !'));
         }
 
-        return gql.send(ScraperService.SCRAP_SINGLE_NEWS_REQUEST, {newsLink: link}).pipe(
+        return send(ScraperService.SCRAP_SINGLE_NEWS_REQUEST, {newsLink: link}).pipe(
             take(1),
             map(() => undefined)
         );

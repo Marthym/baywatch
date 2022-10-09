@@ -5,9 +5,9 @@ import {Page} from "@/services/model/Page";
 import {from, Observable, of, throwError} from "rxjs";
 import rest from '@/common/services/RestWrapper';
 import {OpPatch} from "json-patch";
-import gql from "@/common/services/GraphqlWrapper";
 import {AtomFeed, ScrapFeedHeaderResponse} from "@/configuration/model/GraphQLScraper.type";
 import {SearchFeedsRequest, SearchFeedsResponse} from "@/configuration/model/SearchFeedsResponse.type";
+import {send} from "@/common/services/GraphQLClient";
 
 export const URL_PATTERN = new RegExp('^(https?:\\/\\/)?' + // protocol
     '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
@@ -49,7 +49,7 @@ export class FeedService {
      */
     public list(options: SearchFeedsRequest): Observable<Page<Feed>> {
         const resolvedPage = (options._p > 0) ? options._p : 0;
-        return gql.send<SearchFeedsResponse>(FeedService.FEEDS_SEARCH_REQUEST, options).pipe(
+        return send<SearchFeedsResponse>(FeedService.FEEDS_SEARCH_REQUEST, options).pipe(
             map(res => {
                 return {
                     currentPage: resolvedPage,
@@ -125,7 +125,7 @@ export class FeedService {
             return throwError(() => new Error('Argument link must be a valid URL !'));
         }
 
-        return gql.send<ScrapFeedHeaderResponse>(FeedService.SCRAP_FEED_HEAD_REQUEST, {link: link}).pipe(
+        return send<ScrapFeedHeaderResponse>(FeedService.SCRAP_FEED_HEAD_REQUEST, {link: link}).pipe(
             map(data => data.data.scrapFeedHeader),
             map((atom: AtomFeed) => ({
                 name: atom.title,
@@ -140,7 +140,7 @@ export class FeedService {
             return throwError(() => new Error('Feed id is mandatory !'));
         }
 
-        return gql.send<{ subscribe: Feed }>(FeedService.FEED_SUBSCRIBE, {feedId: id}).pipe(
+        return send<{ subscribe: Feed }>(FeedService.FEED_SUBSCRIBE, {feedId: id}).pipe(
             map(data => data.data.subscribe),
             take(1),
         );
