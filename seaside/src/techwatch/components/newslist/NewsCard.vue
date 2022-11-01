@@ -19,7 +19,7 @@
 
     <div :class="{ 'm-6': card.isActive, 'm-4': !card.isActive}" class="flex-grow">
       <div class="flex flex-col h-full">
-        <a class="font-semibold text-xl" target="_blank" :href="card.data.link" :title="card.data.link"
+        <a class="font-semibold text-xl overflow-hidden" target="_blank" :href="card.data.link" :title="card.data.link"
            v-html="card.data.title"></a>
         <span v-html="card.data.description" class="mt-2 text-base flex-grow overflow-hidden"></span>
 
