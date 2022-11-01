@@ -12,6 +12,7 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexUpgrader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
@@ -84,11 +85,17 @@ public class LuceneDataAdapter implements IndexBuilderPort, IndexSearcherPort {
         } catch (IOException e) {
             log.warn("Unable open path for listing {}", indexDir);
         }
-        DirectoryReader reader = Exceptions.log(log).get(Exceptions.sneak().supplier(() ->
-                DirectoryReader.open(indexDirectory))
-        ).orElseThrow();
-        this.indexSearcher = new AtomicReference<>(new IndexSearcher(reader, searchExecutor));
-
+        this.indexSearcher = new AtomicReference<>();
+        try {
+            new IndexUpgrader(this.indexDirectory).upgrade();
+            DirectoryReader reader = Exceptions.propagate().get(Exceptions.sneak().supplier(() ->
+                    DirectoryReader.open(indexDirectory))
+            ).orElseThrow();
+            this.indexSearcher.set(new IndexSearcher(reader, searchExecutor));
+        } catch (Exception e) {
+            log.error("Unable to read index !");
+            log.debug("STACKTRACE", e);
+        }
     }
 
     @Override
