@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.controllers;
 
 import fr.ght1pc9kc.baywatch.common.infra.model.Page;
+import fr.ght1pc9kc.baywatch.techwatch.api.ImageProxyService;
 import fr.ght1pc9kc.baywatch.techwatch.api.NewsService;
 import fr.ght1pc9kc.baywatch.techwatch.api.PopularNewsService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
@@ -25,13 +26,14 @@ import java.util.Set;
 public class GraphQLNewsController {
     private final NewsService newsService;
     private final PopularNewsService popularService;
+    private final ImageProxyService imageProxyService;
     private static final QueryStringParser qsParser = QueryStringParser.withDefaultConfig();
 
     @QueryMapping
     @PreAuthorize("permitAll()")
     public Mono<Page<News>> newsSearch(@Arguments SearchNewsRequest request) {
         PageRequest pageRequest = qsParser.parse(request.toPageRequest());
-        Flux<News> news = newsService.list(pageRequest);
+        Flux<News> news = newsService.list(pageRequest).map(n -> n.withRaw(n.withImage(imageProxyService.proxify(n.getImage()))));
 
         return newsService.count(pageRequest)
                 .map(count -> Page.of(news, count));
