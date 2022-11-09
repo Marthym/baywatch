@@ -12,6 +12,7 @@ import fr.ght1pc9kc.juery.basic.QueryStringParser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.Arguments;
+import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,7 +20,13 @@ import org.springframework.stereotype.Controller;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -33,7 +40,7 @@ public class GraphQLNewsController {
     @PreAuthorize("permitAll()")
     public Mono<Page<News>> newsSearch(@Arguments SearchNewsRequest request) {
         PageRequest pageRequest = qsParser.parse(request.toPageRequest());
-        Flux<News> news = newsService.list(pageRequest).map(n -> n.withRaw(n.withImage(imageProxyService.proxify(n.getImage()))));
+        Flux<News> news = newsService.list(pageRequest);
 
         return newsService.count(pageRequest)
                 .map(count -> Page.of(news, count));
@@ -55,5 +62,11 @@ public class GraphQLNewsController {
     @QueryMapping
     public Flux<Popularity> getNewsPopularity(@Argument("ids") Set<String> newsIds) {
         return popularService.get(newsIds);
+    }
+
+    @BatchMapping
+    public Mono<Map<News, Optional<URI>>> image(List<News> news) {
+        return Mono.fromCallable(() -> news.stream()
+                .collect(Collectors.toUnmodifiableMap(Function.identity(), n -> Optional.ofNullable(imageProxyService.proxify(n.getImage())))));
     }
 }
