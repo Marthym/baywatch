@@ -69,7 +69,7 @@ public class GraphQLFeedsController {
                 .switchIfEmpty(Mono.just(0));
     }
 
-    @BatchMapping()
+    @BatchMapping
     public Mono<Map<News, List<Feed>>> feeds(List<News> news) {
         if (news.isEmpty()) {
             return Mono.just(Map.of());
