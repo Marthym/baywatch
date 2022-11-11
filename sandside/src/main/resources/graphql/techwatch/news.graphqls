@@ -12,6 +12,8 @@ type News {
     id: ID!
     title: String
     image: String
+    imgm: String
+    imgd: String
     description: String
     publication: String
     link: String

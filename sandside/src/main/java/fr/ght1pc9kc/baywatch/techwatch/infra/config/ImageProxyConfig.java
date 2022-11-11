@@ -9,7 +9,6 @@ public record ImageProxyConfig(
         String signingKey,
         String signingSalt,
         String pathBase,
-        String processing,
         String extension
 ) {
 }

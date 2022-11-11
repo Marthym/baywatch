@@ -1,18 +1,17 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
 import fr.ght1pc9kc.baywatch.techwatch.api.ImageProxyService;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.ImagePresets;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.ImageProxyProperties;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.net.URI;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-import java.util.HexFormat;
 import java.util.Objects;
 
 @Slf4j
@@ -24,14 +23,12 @@ public class ImageProxyServiceImpl implements ImageProxyService {
     }
 
     @Override
-    public URI proxify(URI image) {
+    public URI proxify(URI image, ImagePresets preset) {
         if (Objects.isNull(image)) {
             return null;
         }
-        String imgPath = "" +
-                properties.processing() +
-                "/" + Base64.getUrlEncoder().encodeToString(image.toString().getBytes(StandardCharsets.UTF_8)) +
-                properties.extension();
+        String imgPath = "/pr:" + preset.name().toLowerCase() + '/'
+                + Base64.getUrlEncoder().encodeToString(image.toString().getBytes(StandardCharsets.UTF_8));
 
         return URI.create(properties.pathBase() + signPath(imgPath));
     }
@@ -47,7 +44,7 @@ public class ImageProxyServiceImpl implements ImageProxyService {
 
             String hash = Base64.getUrlEncoder().withoutPadding().encodeToString(sha256HMAC.doFinal(path.getBytes()));
 
-            return "/" + hash + path;
+            return '/' + hash + path;
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             log.debug("Unable to sign proxy URL !");
             log.debug("STACKTRACE", e);

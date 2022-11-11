@@ -49,8 +49,7 @@ baywatch:
     enable: ${BAYWATCH_INDEXER_ENABLE:true}
     directory: ${BAYWATCH_HOME:.}/.baywatch/feedidx
   imgproxy:
-    signingKey: "***REMOVED***"
-    signingSalt: "0123ea7db64b6008dcbcdeb9c07915ca6dfc8818d882963ed50faa27d1cf6f29"
-    pathBase: "/img"
-    processing: "/resize:fill:240:238/ex:1/gravity:ce"
-    extension: ".avif"
+    enable: ${BAYWATCH_IMGPROXY_ENABLE:false}
+    signingKey: ${BAYWATCH_IMGPROXY_SIGNKEY}
+    signingSalt: ${BAYWATCH_IMGPROXY_SALT}
+    pathBase: ${BAYWATCH_IMGPROXY_BASEPATH:"/img"}
