@@ -20,7 +20,7 @@ export class NewsService {
         newsSearch(_pp: ${NewsService.DEFAULT_PER_PAGE}, _s: "-publication") {
             totalCount
             entities {
-                id title description publication image link
+                id title description publication image imgd imgm link
                 feeds { id name }
             }
         }
@@ -36,7 +36,7 @@ export class NewsService {
             tags: $tags read: $read, shared: $shared, popular: $popular) {
             totalCount
             entities {
-                id title description publication image link
+                id title description publication image imgd imgm link
                 feeds { id name }
                 state { read shared }
                 popularity { score }
@@ -63,7 +63,7 @@ export class NewsService {
         }
         return send(NewsService.NEWS_SEARCH_REQUEST, query).pipe(
             map(response => NewsService.graphResponseToInfinite(response)),
-            take(1)
+            take(1),
         );
     }
 

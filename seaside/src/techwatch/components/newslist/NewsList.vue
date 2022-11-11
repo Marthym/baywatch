@@ -171,7 +171,9 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
         map((ns: News[]) => ns.map(n => ({
           data: n,
           isActive: false,
-          keepMark: false
+          keepMark: false,
+          sizes: n.imgm ? '(max-width: 1024px) 268px, 240px' : '',
+          srcset: n.imgm ? `${n.imgm} 268w, ${n.imgd} 240w` : '',
         }) as NewsView)),
         tap(ns => this.news.push(...ns))
     ).subscribe({
