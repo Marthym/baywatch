@@ -5,11 +5,11 @@ import fr.ght1pc9kc.baywatch.techwatch.domain.ImageProxyServiceImpl;
 import fr.ght1pc9kc.baywatch.techwatch.infra.config.ImageProxyConfig;
 import fr.ght1pc9kc.baywatch.techwatch.infra.config.TechwatchMapper;
 import lombok.experimental.Delegate;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Service
-@ConditionalOnBean(ImageProxyConfig.class)
+@ConditionalOnProperty(prefix = "baywatch.imgproxy", name = "enable", havingValue = "true")
 public class ImageProxyAdapter implements ImageProxyService {
     @Delegate
     private final ImageProxyService delegate;
