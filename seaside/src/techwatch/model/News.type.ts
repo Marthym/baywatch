@@ -6,6 +6,8 @@ export type News = {
     id: string
     title: string
     image: string
+    imgm: string
+    imgd: string
     description: string
     publication: string
     link: string

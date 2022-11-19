@@ -9,7 +9,10 @@
     <figure class="flex-none">
       <img v-if="card.data.image"
            :src="card.data.image"
+           :srcset="card.srcset"
+           :sizes="card.sizes"
            class="w-full h-24 lg:h-full lg:w-60 object-cover rounded-t-lg lg:rounded-none lg:rounded-l-lg"
+           loading="lazy"
            :alt="card.data.title"/>
       <img v-else
            class="w-full h-24 lg:w-60 lg:h-full object-contain rounded-t-lg lg:rounded-none lg:rounded-l-lg opacity-10"
