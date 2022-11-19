@@ -29,6 +29,12 @@ export default defineConfig({
         toProxy: true,
         timeout: 0,
       },
+      '^/img': {
+        target: 'http://localhost:8082',
+        toProxy: true,
+        timeout: 0,
+        rewrite: (path) => path.replace(/^\/img/, '')
+      },
     },
   }
 })
