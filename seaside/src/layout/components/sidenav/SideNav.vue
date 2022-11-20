@@ -1,7 +1,9 @@
 <template>
   <aside class="fixed md:w-64 px-10 pt-4 pb-6 inset-y-0 z-30 flex flex-col flex-shrink-0 w-4/5 h-full overflow-y-auto
   transition-all transform bg-base-200 shadow-lg lg:z-auto lg:static lg:shadow-none"
-         :class="{'-translate-x-full lg:translate-x-0': !state.open}">
+         :class="{'-translate-x-full lg:translate-x-0': !state.open}"
+         aria-label="Main Menu"
+         :aria-expanded="state.open">
     <SideNavHeader/>
 
     <SideNavUserInfo/>

@@ -1,6 +1,7 @@
 <template>
   <header class="navbar min-h-0 bg-neutral text-neutral-content">
-    <button @click="toggleSidenav" class="btn btn-square btn-sm btn-ghost -mr-2 lg:hidden">
+    <button @click="toggleSidenav" class="btn btn-square btn-sm btn-ghost -mr-2 lg:hidden"
+      aria-label="Open Side Menu">
       <ChevronDoubleRightIcon class="h-6 w-6"/>
     </button>
     <!-- The left side of top bar -->
@@ -8,7 +9,8 @@
       <!-- The NEWS Tab-->
       <router-link to="/news"
                    active-class="border-b-2 text-accent border-accent"
-                   class="py-2 font-medium capitalize focus:outline-none transition duration-500 ease-in-out">
+                   class="py-2 font-medium capitalize focus:outline-none transition duration-500 ease-in-out"
+                   aria-label="display news list">
         <NewspaperIcon class="w-8 h-8 sm:w-6 sm:h-6 inline-block -mt-2"/>
         <span class="hidden sm:inline-block">news</span>
       </router-link>

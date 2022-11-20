@@ -2,7 +2,7 @@
   <span class="mt-auto"></span>
   <ul class="menu -mx-4">
     <li v-if="user.isAuthenticated && store.getters['user/hasRoleAdmin']">
-      <router-link to="/admin">
+      <router-link to="/admin" @click="sideNavToggle">
         <AcademicCapIcon class="fill-current w-6 h-6 mr-2"/>
         Administration
       </router-link>
@@ -14,7 +14,7 @@
       </a>
     </li>
     <li v-if="user.isAuthenticated && store.getters['user/hasRoleUser']">
-      <router-link to="/config">
+      <router-link to="/config" @click="sideNavToggle">
         <AdjustmentsVerticalIcon class="fill-current w-6 h-6 mr-2"/>
         Configuration
       </router-link>
@@ -44,6 +44,7 @@ import {
   ArrowRightOnRectangleIcon,
   UserGroupIcon
 } from '@heroicons/vue/20/solid';
+import {SidenavMutation} from "@/store/sidenav/SidenavMutation.enum";
 
 @Options({
   name: 'SideNavManagement',
@@ -59,5 +60,9 @@ import {
 export default class SideNavManagement extends Vue {
   private store = setup(() => useStore());
   private user: UserState = setup(() => useStore().state.user);
+
+  public sideNavToggle(): void {
+    this.store.commit(SidenavMutation.TOGGLE);
+  }
 }
 </script>
