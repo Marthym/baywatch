@@ -45,9 +45,9 @@ public class ImageProxyServiceImpl implements ImageProxyService {
             String hash = Base64.getUrlEncoder().withoutPadding().encodeToString(sha256HMAC.doFinal(path.getBytes()));
 
             return '/' + hash + path;
-        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+        } catch (IllegalArgumentException | NoSuchAlgorithmException | InvalidKeyException e) {
             log.debug("Unable to sign proxy URL !");
-            log.debug("STACKTRACE", e);
+            log.trace("STACKTRACE", e);
             return "/insecure/" + path;
         }
     }

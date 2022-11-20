@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
-//@ConditionalOnBean(ImageProxyService.class)
 @ConditionalOnProperty(prefix = "baywatch.imgproxy", name = "enable", havingValue = "true")
 public class ImageProxyGqlMapper {
     private final ImageProxyService imageProxyService;
