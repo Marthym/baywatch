@@ -48,7 +48,7 @@ public class ImageProxyServiceImpl implements ImageProxyService {
         } catch (IllegalArgumentException | NoSuchAlgorithmException | InvalidKeyException e) {
             log.debug("Unable to sign proxy URL !");
             log.trace("STACKTRACE", e);
-            return "/insecure/" + path;
+            return "/insecure" + path;
         }
     }
 }
