@@ -11,7 +11,7 @@
            :srcset="card.srcset"
            :sizes="card.sizes"
            class="w-full h-24 lg:h-full lg:w-60 object-cover rounded-t-lg lg:rounded-none lg:rounded-l-lg
-              bg-no-repeat bg-contain bg-center
+              bg-no-repeat bg-cover lg:bg-contain bg-center
               bg-[url('/placeholder.svg')] text-transparent"
            loading="lazy"
            :alt="card.data.title"/>
