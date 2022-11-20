@@ -7,14 +7,16 @@
        }" @click="$emit('activate')">
 
     <figure class="flex-none">
-      <img :src="card.data.image"
+      <img :src="cardImage"
            :srcset="card.srcset"
            :sizes="card.sizes"
            class="w-full h-24 lg:h-full lg:w-60 object-cover rounded-t-lg lg:rounded-none lg:rounded-l-lg
               bg-no-repeat bg-cover lg:bg-contain bg-center
               bg-[url('/placeholder.svg')] text-transparent"
            loading="lazy"
-           :alt="card.data.title"/>
+           :alt="card.data.title"
+           @error.stop.prevent="onImageError"
+      />
     </figure>
 
     <div :class="{ 'm-6': card.isActive, 'm-4': !card.isActive}" class="flex-grow">
@@ -41,10 +43,17 @@
 <script lang="ts">
 import {Options, Prop, Vue} from 'vue-property-decorator';
 import {NewsView} from "@/techwatch/components/newslist/model/NewsView";
+import {ImgHTMLAttributes} from "vue";
+
+const EMPTY_IMAGE_DATA: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
 @Options({name: 'NewsCard', emits: ['addFilter']})
 export default class NewsCard extends Vue {
   @Prop() card?: NewsView;
+
+  get cardImage() {
+    return this.card?.data?.image ?? EMPTY_IMAGE_DATA;
+  }
 
   get publication(): string | undefined {
     if (this.card) {
@@ -55,6 +64,15 @@ export default class NewsCard extends Vue {
     } else {
       return undefined;
     }
+  }
+
+  private onImageError(e: Event) {
+    const img = e.target as ImgHTMLAttributes;
+    if (img.srcset) {
+      img.srcset = '';
+      return;
+    }
+    img.src = EMPTY_IMAGE_DATA;
   }
 }
 </script>
