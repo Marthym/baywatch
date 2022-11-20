@@ -50,6 +50,6 @@ baywatch:
     directory: ${BAYWATCH_HOME:.}/.baywatch/feedidx
   imgproxy:
     enable: ${BAYWATCH_IMGPROXY_ENABLE:false}
-    signingKey: ${BAYWATCH_IMGPROXY_SIGNKEY}
-    signingSalt: ${BAYWATCH_IMGPROXY_SALT}
+    signingKey: ${BAYWATCH_IMGPROXY_SIGNKEY:}
+    signingSalt: ${BAYWATCH_IMGPROXY_SALT:}
     pathBase: ${BAYWATCH_IMGPROXY_BASEPATH:/img}
