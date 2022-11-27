@@ -110,13 +110,17 @@ public class NewsServiceImpl implements NewsService {
     /**
      * <p>Return the list of {@link Feed#getId()} corresponding to the {@link QueryContext}.</p>
      * <p>The User ID was concat to the list because User ID was the ID of the Feed containing orphan News</p>
+     * <p>{@link Pagination} was removed from {@link QueryContext} because it must only impact the main query, Feed
+     * query must not be impacted by the offset</p>
      *
      * @param qCtx  The query context
      * @param props The list of properties used in query context
      * @return The list of Feed IDs
      */
     public Mono<List<String>> getFeedFor(QueryContext qCtx, List<String> props) {
-        QueryContext feedQCtx = (props.contains(FEED_ID)) ? qCtx.withUserId(null) : qCtx;
+        QueryContext feedQCtx = (props.contains(FEED_ID))
+                ? QueryContext.all(qCtx.filter)
+                : QueryContext.all(qCtx.filter).withUserId(qCtx.userId);
         return feedRepository.list(feedQCtx)
                 .map(Feed::getId)
                 .collectList()
