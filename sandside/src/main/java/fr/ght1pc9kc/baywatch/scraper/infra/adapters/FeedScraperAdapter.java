@@ -10,6 +10,8 @@ import fr.ght1pc9kc.baywatch.scraper.domain.FeedScraperServiceImpl;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.NewsMaintenancePort;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperApplicationProperties;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperQualifier;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.SneakyThrows;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
@@ -17,8 +19,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Map;

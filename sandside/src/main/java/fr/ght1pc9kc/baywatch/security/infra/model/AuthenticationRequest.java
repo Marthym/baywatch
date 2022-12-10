@@ -1,8 +1,7 @@
 package fr.ght1pc9kc.baywatch.security.infra.model;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Value;
-
-import javax.validation.constraints.NotBlank;
 
 @Value
 public class AuthenticationRequest {

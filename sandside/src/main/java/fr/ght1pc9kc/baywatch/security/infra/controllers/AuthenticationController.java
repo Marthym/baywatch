@@ -13,6 +13,7 @@ import fr.ght1pc9kc.baywatch.security.infra.exceptions.NoSessionException;
 import fr.ght1pc9kc.baywatch.security.infra.model.AuthenticationRequest;
 import fr.ght1pc9kc.baywatch.security.infra.model.BaywatchUserDetails;
 import fr.ght1pc9kc.baywatch.security.infra.model.Session;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpCookie;
@@ -31,7 +32,6 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
-import javax.validation.Valid;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
