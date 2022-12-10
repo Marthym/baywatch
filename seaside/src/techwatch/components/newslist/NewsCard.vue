@@ -23,7 +23,7 @@
       <div class="flex flex-col h-full overflow-hidden">
         <a class="font-semibold text-xl" target="_blank" :href="card.data.link" :title="card.data.link"
            v-html="card.data.title"></a>
-        <span v-html="card.data.description" class="mt-2 text-base flex-grow overflow-hidden"></span>
+        <span v-html="card.data.description" class="mt-2 text-base flex-grow max-h-80 overflow-hidden"></span>
 
         <div class="flex flex-row flex-wrap-reverse items-center justify-end items-end text-xs mt-2">
           <slot name="actions"></slot>
