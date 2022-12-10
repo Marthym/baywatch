@@ -23,13 +23,13 @@
       <div class="flex flex-col h-full overflow-hidden">
         <a class="font-semibold text-xl" target="_blank" :href="card.data.link" :title="card.data.link"
            v-html="card.data.title"></a>
-        <span v-html="card.data.description" class="mt-2 text-base flex-grow overflow-hidden"></span>
+        <span v-html="card.data.description" class="mt-2 text-base flex-grow max-h-80 overflow-hidden"></span>
 
         <div class="flex flex-row flex-wrap-reverse items-center justify-end items-end text-xs mt-2">
           <slot name="actions"></slot>
           <span class="grow"></span>
-          <div class="italic text-right whitespace-nowrap">
-            <button class="badge badge-xs p-2 rounded" @click.stop="$emit('addFilter', {type: 'feed', entity: f})"
+          <div class="italic text-right lg:whitespace-nowrap">
+            <button class="badge badge-xs m-px p-2 rounded" @click.stop="$emit('addFilter', {type: 'feed', entity: f})"
                     v-for="f in card.data.feeds">{{ f.name }}
             </button>
             <div class="self-end">{{ publication }}</div>
