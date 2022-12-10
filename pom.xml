@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.5</version>
+        <version>2.7.6</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -33,8 +33,8 @@
         <juery.version>1.2.2</juery.version>
         <scraphead.version>1.3.3</scraphead.version>
         <html-sanitizer.version>20220608.1</html-sanitizer.version>
-        <lucene.version>9.4.1</lucene.version>
-        <noexception.version>1.8.0</noexception.version>
+        <lucene.version>9.4.2</lucene.version>
+        <noexception.version>1.9.0</noexception.version>
         <unbescape.version>1.1.6.RELEASE</unbescape.version>
         <ulid-creator.version>5.1.0</ulid-creator.version>
         <aalto-xml.version>1.3.2</aalto-xml.version>
@@ -42,7 +42,7 @@
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
         <nimbus-jose-jwt.version>9.25.6</nimbus-jose-jwt.version>
         <findbugs.version>3.0.2</findbugs.version>
-        <jetbrains.version>23.0.0</jetbrains.version>
+        <jetbrains.version>23.1.0</jetbrains.version>
         <testy-box.version>1.8.0</testy-box.version>
 
         <maven-clean-plugin.version>3.2.0</maven-clean-plugin.version>
