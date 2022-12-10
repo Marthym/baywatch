@@ -8,12 +8,11 @@ import fr.ght1pc9kc.baywatch.notify.api.NotifyManager;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.notify.domain.NotifyServiceImpl;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
+import jakarta.annotation.PreDestroy;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-
-import javax.annotation.PreDestroy;
 
 @Slf4j
 @Service

@@ -13,6 +13,7 @@ import fr.ght1pc9kc.baywatch.security.infra.exceptions.AlreadyExistsException;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserForm;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -34,7 +35,6 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.validation.Valid;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.NoSuchElementException;

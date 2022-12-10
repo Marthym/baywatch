@@ -4,13 +4,12 @@ import fr.ght1pc9kc.baywatch.indexer.api.FeedIndexerService;
 import fr.ght1pc9kc.baywatch.indexer.domain.FeedIndexerServiceImpl;
 import fr.ght1pc9kc.baywatch.indexer.domain.ports.IndexBuilderPort;
 import fr.ght1pc9kc.baywatch.indexer.domain.ports.IndexableDataPort;
+import jakarta.annotation.PreDestroy;
 import lombok.SneakyThrows;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PreDestroy;
 
 @Slf4j
 @Service
