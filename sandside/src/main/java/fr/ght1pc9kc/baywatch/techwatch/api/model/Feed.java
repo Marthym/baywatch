@@ -4,20 +4,36 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
-import lombok.experimental.Delegate;
 
+import java.net.URI;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 
 @Value
 @Builder
 public class Feed {
-    @Delegate(types = RawFeed.class)
     @With @NonNull RawFeed raw;
     String name;
     Set<String> tags;
 
     public String getName() {
-        return Optional.ofNullable(this.name).orElse(raw.getName());
+        return Optional.ofNullable(this.name).orElse(raw.name);
+    }
+
+    public String getId() {
+        return raw.getId();
+    }
+
+    public String getDescription() {
+        return raw.getDescription();
+    }
+
+    public URI getUrl() {
+        return raw.getUrl();
+    }
+
+    public Instant getLastWatch() {
+        return raw.getLastWatch();
     }
 }

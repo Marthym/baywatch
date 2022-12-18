@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.tests.samples.infra;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
-import fr.irun.testy.jooq.model.RelationalDataSet;
+import fr.ght1pc9kc.testy.jooq.model.RelationalDataSet;
 
 import java.util.List;
 import java.util.stream.Collectors;
