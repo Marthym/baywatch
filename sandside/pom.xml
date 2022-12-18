@@ -188,7 +188,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>fr.irun</groupId>
+            <groupId>fr.ght1pc9kc</groupId>
             <artifactId>testy-jooq-box</artifactId>
             <version>${testy-box.version}</version>
             <scope>test</scope>
