@@ -3,7 +3,7 @@
     <template v-for="(card, idx) in news" :key="card.data.id">
       <NewsCard :ref="card.data.id" :card="card" @activate="activateNewsCard(idx)" @addFilter="onAddFilter">
         <template #actions v-if="userStore.isAuthenticated">
-          <div class="btn-group -ml-2">
+          <div class="btn-group -ml-2 lg:ml-0">
             <button v-if="card.data.state.read" @click.stop="markNewsRead(idx, false)" class="btn btn-xs btn-ghost">
               <EnvelopeOpenIcon class="h-5 w-5 cursor-pointer stroke-2"/>
             </button>
