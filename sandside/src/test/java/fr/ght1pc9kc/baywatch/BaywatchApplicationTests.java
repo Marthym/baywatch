@@ -11,7 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,8 +31,9 @@ class BaywatchApplicationTests {
 
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         ContextInitializer ci = new ContextInitializer(loggerContext);
-        URL url = ci.findURLOfDefaultConfigurationFile(true);
         loggerContext.reset();
-        ci.configureByResource(url);
+        ci.autoConfig();
+//        URL url = ci.findURLOfDefaultConfigurationFile(true);
+//        ci.configureByResource(url);
     }
 }
