@@ -1,9 +1,9 @@
 package fr.ght1pc9kc.baywatch.tests.samples.infra;
 
-import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.dsl.tables.Users;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
-import fr.irun.testy.jooq.model.RelationalDataSet;
+import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
+import fr.ght1pc9kc.testy.jooq.model.RelationalDataSet;
 
 import java.time.ZoneOffset;
 import java.util.List;
