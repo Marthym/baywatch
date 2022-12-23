@@ -32,6 +32,7 @@ import reactor.util.context.Context;
 import reactor.util.function.Tuples;
 
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 
 @Slf4j
@@ -56,16 +57,13 @@ public class AuthenticationGqlController {
                 .map(auth -> {
                     BaywatchUserDetails user = (BaywatchUserDetails) auth.getT2().getPrincipal();
 
-                    env.stream()
-                            .filter(e -> (e.getValue() instanceof Context ctx && ctx.hasKey(ServerWebExchange.class)))
-                            .map(e -> (Context) e.getValue())
-                            .findAny().ifPresent(c -> {
-                                ServerWebExchange exchange = c.get(ServerWebExchange.class);
-                                Set<String> authorities = AuthorityUtils.authorityListToSet(auth.getT2().getAuthorities());
-                                BaywatchAuthentication bwAuth = tokenProvider.createToken(user.getEntity(), auth.getT1(), authorities);
-                                ResponseCookie authCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), bwAuth);
-                                exchange.getResponse().addCookie(authCookie);
-                            });
+                    Optional<ServerWebExchange> orEmpty = env.getOrEmpty(ServerWebExchange.class);
+                    orEmpty.ifPresent(exchange -> {
+                        Set<String> authorities = AuthorityUtils.authorityListToSet(auth.getT2().getAuthorities());
+                        BaywatchAuthentication bwAuth = tokenProvider.createToken(user.getEntity(), auth.getT1(), authorities);
+                        ResponseCookie authCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), bwAuth);
+                        exchange.getResponse().addCookie(authCookie);
+                    });
 
                     log.debug("Login to {}.", user.getUsername());
                     return jsonMapper.convertValue(user.getEntity(), Object.class);
