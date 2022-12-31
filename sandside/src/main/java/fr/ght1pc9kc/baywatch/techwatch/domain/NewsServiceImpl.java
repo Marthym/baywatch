@@ -168,7 +168,7 @@ public class NewsServiceImpl implements NewsService {
     @Override
     public Mono<Integer> delete(Collection<String> toDelete) {
         return authFacade.getConnectedUser()
-                .filter(user -> Role.SYSTEM == user.self.role)
+                .filter(user -> Role.SYSTEM == user.self.roles)
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedOperation("Deleting news not permitted for user !")))
                 .flatMap(user -> newsRepository.delete(toDelete));
     }

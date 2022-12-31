@@ -47,7 +47,7 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
     @Override
     public BaywatchAuthentication createToken(Entity<User> user, boolean remember, Collection<String> authorities) {
         List<String> auth = new ArrayList<>(authorities);
-        auth.add(user.self.role.authority());
+        auth.add(user.self.roles.authority());
         String auths = String.join(",", auth);
 
         try {
@@ -104,7 +104,7 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
                     .login(claims.getStringClaim("login"))
                     .name(claims.getStringClaim("name"))
                     .mail(claims.getStringClaim("mail"))
-                    .role(role)
+                    .roles(role)
                     .build());
 
             boolean rememberMe = Optional.ofNullable(claims.getBooleanClaim("remember")).orElse(false);

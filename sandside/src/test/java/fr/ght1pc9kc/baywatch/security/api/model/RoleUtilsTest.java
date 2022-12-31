@@ -15,10 +15,10 @@ class RoleUtilsTest {
     void should_check_user_has_role() {
         Entity<User> okenobi = MAPPER.recordToUserEntity(UsersRecordSamples.OKENOBI);
 
-        assertThat(RoleUtils.hasRole(okenobi.self.withRole(Role.ANONYMOUS), Role.MANAGER)).isFalse();
-        assertThat(RoleUtils.hasRole(okenobi.self.withRole(Role.USER), Role.MANAGER)).isFalse();
-        assertThat(RoleUtils.hasRole(okenobi.self.withRole(Role.MANAGER), Role.MANAGER)).isTrue();
-        assertThat(RoleUtils.hasRole(okenobi.self.withRole(Role.ADMIN), Role.MANAGER)).isTrue();
-        assertThat(RoleUtils.hasRole(okenobi.self.withRole(Role.SYSTEM), Role.MANAGER)).isTrue();
+        assertThat(RoleUtils.hasRole(okenobi.self.withRoles(Role.ANONYMOUS), Role.MANAGER)).isFalse();
+        assertThat(RoleUtils.hasRole(okenobi.self.withRoles(Role.USER), Role.MANAGER)).isFalse();
+        assertThat(RoleUtils.hasRole(okenobi.self.withRoles(Role.MANAGER), Role.MANAGER)).isTrue();
+        assertThat(RoleUtils.hasRole(okenobi.self.withRoles(Role.ADMIN), Role.MANAGER)).isTrue();
+        assertThat(RoleUtils.hasRole(okenobi.self.withRoles(Role.SYSTEM), Role.MANAGER)).isTrue();
     }
 }

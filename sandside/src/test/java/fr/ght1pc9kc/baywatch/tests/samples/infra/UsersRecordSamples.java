@@ -18,7 +18,7 @@ public class UsersRecordSamples implements RelationalDataSet<UsersRecord> {
             .setUserName(UserSamples.OBIWAN.self.name)
             .setUserPassword(UserSamples.OBIWAN.self.password)
             .setUserEmail(UserSamples.OBIWAN.self.mail)
-            .setUserRole(UserSamples.OBIWAN.self.role.name());
+            .setUserRole(UserSamples.OBIWAN.self.roles.name());
 
     public static final UsersRecord LSKYWALKER = Users.USERS.newRecord()
             .setUserId(UserSamples.LUKE.id)
@@ -27,7 +27,7 @@ public class UsersRecordSamples implements RelationalDataSet<UsersRecord> {
             .setUserName(UserSamples.LUKE.self.name)
             .setUserPassword(UserSamples.LUKE.self.password)
             .setUserEmail(UserSamples.LUKE.self.mail)
-            .setUserRole(UserSamples.LUKE.self.role.name());
+            .setUserRole(UserSamples.LUKE.self.roles.name());
 
     @Override
     public List<UsersRecord> records() {
