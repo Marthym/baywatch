@@ -13,6 +13,9 @@ import java.util.stream.Collectors;
  */
 @UtilityClass
 public final class RoleUtils {
+
+    private static final String SPRING_ROLE_PREFIX = "ROLE_";
+
     /**
      * Check if {@link User} has an expected {@link Role} or higher.
      *
@@ -52,5 +55,40 @@ public final class RoleUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * Return the {@link Role} prefixed by {@code "ROLE"} for Spring authority
+     * or the Role Entity authority if the role string contains a entity ID
+     *
+     * @param role The role or the entity authority
+     * @return The Spring authority string
+     */
+    public String toSpringAuthority(String role) {
+        try {
+            String[] roleEntity = role.split(":");
+            Role verifiedRole = Role.valueOf(roleEntity[0]);
+            if (roleEntity.length == 2) {
+                return role;
+            } else {
+                return SPRING_ROLE_PREFIX + verifiedRole.name();
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException(role + " is not a valid Role", e);
+        }
+    }
+
+    /**
+     * Return the {@link Role} for application without Spring prefix if authority was role
+     * return authorities if not
+     *
+     * @param authority The spring authority
+     * @return The application role
+     */
+    public String fromSpringAuthority(String authority) {
+        if (authority.startsWith(SPRING_ROLE_PREFIX)) {
+            return authority.substring(SPRING_ROLE_PREFIX.length());
+        }
+        return authority;
     }
 }
