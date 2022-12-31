@@ -37,7 +37,7 @@ public class SystemMaintenanceServiceImpl implements SystemMaintenanceService {
     @Override
     public Flux<RawFeed> feedList(PageRequest pageRequest) {
         return authFacade.getConnectedUser()
-                .filter(user -> Role.SYSTEM == user.self.role)
+                .filter(user -> Role.SYSTEM == user.self.roles)
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(EXCEPTION_MESSAGE)))
                 .flatMapMany(u -> feedRepository.list(QueryContext.from(pageRequest)))
                 .map(Feed::getRaw);
@@ -46,7 +46,7 @@ public class SystemMaintenanceServiceImpl implements SystemMaintenanceService {
     @Override
     public Mono<Integer> feedDelete(Collection<String> toDelete) {
         return authFacade.getConnectedUser()
-                .filter(user -> Role.SYSTEM == user.self.role)
+                .filter(user -> Role.SYSTEM == user.self.roles)
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(EXCEPTION_MESSAGE)))
                 .map(u -> QueryContext.all(Criteria.property(FEED_ID).in(toDelete)))
                 .flatMap(feedRepository::delete)
@@ -56,7 +56,7 @@ public class SystemMaintenanceServiceImpl implements SystemMaintenanceService {
     @Override
     public Flux<RawNews> newsList(PageRequest pageRequest) {
         return authFacade.getConnectedUser()
-                .filter(user -> Role.SYSTEM == user.self.role)
+                .filter(user -> Role.SYSTEM == user.self.roles)
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(EXCEPTION_MESSAGE)))
                 .flatMapMany(u -> newsRepository.list(QueryContext.from(pageRequest)))
                 .map(News::getRaw);
@@ -65,7 +65,7 @@ public class SystemMaintenanceServiceImpl implements SystemMaintenanceService {
     @Override
     public Flux<String> newsIdList(PageRequest pageRequest) {
         return authFacade.getConnectedUser()
-                .filter(user -> Role.SYSTEM == user.self.role)
+                .filter(user -> Role.SYSTEM == user.self.roles)
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(EXCEPTION_MESSAGE)))
                 .flatMapMany(u -> newsRepository.listId(QueryContext.from(pageRequest)));
     }
@@ -73,7 +73,7 @@ public class SystemMaintenanceServiceImpl implements SystemMaintenanceService {
     @Override
     public Mono<Integer> newsLoad(Collection<News> toLoad) {
         return authFacade.getConnectedUser()
-                .filter(user -> Role.SYSTEM == user.self.role)
+                .filter(user -> Role.SYSTEM == user.self.roles)
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(EXCEPTION_MESSAGE)))
                 .flatMap(user -> newsRepository.persist(toLoad));
     }
@@ -81,7 +81,7 @@ public class SystemMaintenanceServiceImpl implements SystemMaintenanceService {
     @Override
     public Mono<Integer> newsDelete(Collection<String> toDelete) {
         return authFacade.getConnectedUser()
-                .filter(user -> Role.SYSTEM == user.self.role)
+                .filter(user -> Role.SYSTEM == user.self.roles)
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(EXCEPTION_MESSAGE)))
                 .flatMap(user -> newsRepository.delete(toDelete));
     }

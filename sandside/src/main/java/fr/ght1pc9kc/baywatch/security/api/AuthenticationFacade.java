@@ -36,7 +36,7 @@ public interface AuthenticationFacade {
         Entity<User> principal = new Entity<>(Role.SYSTEM.name(), Entity.NO_ONE, Instant.EPOCH, User.builder()
                 .name(Role.SYSTEM.name())
                 .login(Role.SYSTEM.name().toLowerCase())
-                .role(Role.SYSTEM).build());
+                .roles(Role.SYSTEM).build());
         Authentication authentication = new PreAuthenticatedAuthenticationToken(principal, null,
                 AuthorityUtils.createAuthorityList(Role.SYSTEM.name()));
         return ReactiveSecurityContextHolder.withAuthentication(authentication);

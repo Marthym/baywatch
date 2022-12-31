@@ -112,6 +112,6 @@ public final class UserServiceImpl implements UserService {
     }
 
     private static boolean hasRole(User user, Role expected) {
-        return user.role.ordinal() <= expected.ordinal();
+        return user.roles.ordinal() <= expected.ordinal();
     }
 }

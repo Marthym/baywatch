@@ -81,7 +81,7 @@ class UserRepositoryTest {
                         () -> assertThat(actual.self.login).isEqualTo("okenobi"),
                         () -> assertThat(actual.self.mail).isEqualTo("obiwan.kenobi@jedi.com"),
                         () -> assertThat(actual.self.password).isEqualTo(UserSamples.OBIWAN.self.password),
-                        () -> assertThat(actual.self.role).isEqualTo(Role.MANAGER)
+                        () -> assertThat(actual.self.roles).isEqualTo(Role.MANAGER)
                 )).verifyComplete();
     }
 
@@ -111,9 +111,9 @@ class UserRepositoryTest {
         }
 
         Entity<User> dvader = new Entity<>((Hasher.sha3("darth.vader@sith.fr")), Entity.NO_ONE, Instant.EPOCH,
-                User.builder().login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur").role(Role.USER).build());
+                User.builder().login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur").roles(Role.USER).build());
         Entity<User> dsidious = new Entity<>((Hasher.sha3("darth.sidious@sith.fr")), Entity.NO_ONE, Instant.EPOCH,
-                User.builder().login("dsidious").name("Darth Sidious").mail("darth.sidious@sith.fr").password("obscur").role(Role.MANAGER).build());
+                User.builder().login("dsidious").name("Darth Sidious").mail("darth.sidious@sith.fr").password("obscur").roles(Role.MANAGER).build());
 
         StepVerifier.create(
                         tested.persist(List.of(dvader, dsidious)))
@@ -134,7 +134,7 @@ class UserRepositoryTest {
         }
 
         Entity<User> dvader = new Entity<>((Hasher.sha3("darth.vader@sith.fr")), Entity.NO_ONE, Instant.EPOCH,
-                User.builder().login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur").role(Role.USER).build());
+                User.builder().login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur").roles(Role.USER).build());
         StepVerifier.create(
                         tested.persist(List.of(dvader, UserSamples.LUKE, UserSamples.OBIWAN, UserSamples.YODA)))
                 .verifyError(DataAccessException.class);

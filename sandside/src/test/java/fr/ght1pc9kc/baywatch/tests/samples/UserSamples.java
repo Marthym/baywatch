@@ -17,7 +17,7 @@ public final class UserSamples {
                     .login("yoda")
                     .name("Yoda Master")
                     .mail("yoda@jedi.com")
-                    .role(Role.ADMIN)
+                    .roles(Role.ADMIN)
                     .password("adoy")
                     .build());
 
@@ -30,7 +30,7 @@ public final class UserSamples {
                     .login("okenobi")
                     .name("Obiwan Kenobi")
                     .mail("obiwan.kenobi@jedi.com")
-                    .role(Role.MANAGER)
+                    .roles(Role.MANAGER)
                     .password("nawibo")
                     .build());
 
@@ -43,7 +43,7 @@ public final class UserSamples {
                     .login("lskywalker")
                     .name("Luke Skywalker")
                     .mail("luke.skywalker@jedi.com")
-                    .role(Role.USER)
+                    .roles(Role.USER)
                     .password("ekul")
                     .build());
 
@@ -55,7 +55,7 @@ public final class UserSamples {
             User.builder()
                     .name(Role.SYSTEM.name())
                     .login(Role.SYSTEM.name().toLowerCase())
-                    .role(Role.SYSTEM).build());
+                    .roles(Role.SYSTEM).build());
 
     public static final List<Entity<User>> SAMPLES = List.of(OBIWAN, LUKE);
 }
