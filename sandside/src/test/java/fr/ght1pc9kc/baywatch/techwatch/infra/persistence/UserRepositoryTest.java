@@ -13,6 +13,7 @@ import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsUsersRecordSample;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
+import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRolesSamples;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;
 import fr.ght1pc9kc.testy.jooq.WithDatabaseLoaded;
@@ -46,6 +47,7 @@ class UserRepositoryTest {
             .setDatasourceExtension(wDs).build();
     private static final WithSampleDataLoaded wSamples = WithSampleDataLoaded.builder(wDslContext)
             .addDataset(UsersRecordSamples.SAMPLE)
+            .addDataset(UsersRolesSamples.SAMPLE)
             .addDataset(FeedRecordSamples.SAMPLE)
             .addDataset(NewsRecordSamples.SAMPLE)
             .addDataset(FeedsUsersRecordSample.SAMPLE)
@@ -81,7 +83,7 @@ class UserRepositoryTest {
                         () -> assertThat(actual.self.login).isEqualTo("okenobi"),
                         () -> assertThat(actual.self.mail).isEqualTo("obiwan.kenobi@jedi.com"),
                         () -> assertThat(actual.self.password).isEqualTo(UserSamples.OBIWAN.self.password),
-                        () -> assertThat(actual.self.roles).isEqualTo(Role.MANAGER)
+                        () -> assertThat(actual.self.roles).containsOnly(Role.MANAGER.name())
                 )).verifyComplete();
     }
 
