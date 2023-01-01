@@ -5,10 +5,6 @@ public enum Role {
 
     public static final String FORMAT = "%s:%s";
 
-    public String authority() {
-        return "ROLE_" + name();
-    }
-
     public static String manager(String id) {
         if (id.length() > 28) {
             throw new IllegalArgumentException("Illegal entity ID !");

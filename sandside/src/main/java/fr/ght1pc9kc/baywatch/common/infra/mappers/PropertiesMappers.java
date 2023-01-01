@@ -57,7 +57,6 @@ public final class PropertiesMappers {
             EntitiesProperties.CREATED_AT, USERS.USER_CREATED_AT,
             EntitiesProperties.LOGIN, USERS.USER_LOGIN,
             EntitiesProperties.NAME, USERS.USER_NAME,
-            EntitiesProperties.MAIL, USERS.USER_EMAIL,
-            EntitiesProperties.ROLE, USERS.USER_ROLE
+            EntitiesProperties.MAIL, USERS.USER_EMAIL
     );
 }

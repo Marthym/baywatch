@@ -6,9 +6,9 @@ import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.Users;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
-import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.security.infra.persistence.UserRepository;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
+import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsUsersRecordSample;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
@@ -111,9 +111,9 @@ class UserRepositoryTest {
         }
 
         Entity<User> dvader = new Entity<>((Hasher.sha3("darth.vader@sith.fr")), Entity.NO_ONE, Instant.EPOCH,
-                User.builder().login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur").roles(Role.USER).build());
+                User.builder().login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur").role(Role.USER.name()).build());
         Entity<User> dsidious = new Entity<>((Hasher.sha3("darth.sidious@sith.fr")), Entity.NO_ONE, Instant.EPOCH,
-                User.builder().login("dsidious").name("Darth Sidious").mail("darth.sidious@sith.fr").password("obscur").roles(Role.MANAGER).build());
+                User.builder().login("dsidious").name("Darth Sidious").mail("darth.sidious@sith.fr").password("obscur").role(Role.MANAGER.name()).build());
 
         StepVerifier.create(
                         tested.persist(List.of(dvader, dsidious)))
@@ -134,7 +134,7 @@ class UserRepositoryTest {
         }
 
         Entity<User> dvader = new Entity<>((Hasher.sha3("darth.vader@sith.fr")), Entity.NO_ONE, Instant.EPOCH,
-                User.builder().login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur").roles(Role.USER).build());
+                User.builder().login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur").role(Role.USER.name()).build());
         StepVerifier.create(
                         tested.persist(List.of(dvader, UserSamples.LUKE, UserSamples.OBIWAN, UserSamples.YODA)))
                 .verifyError(DataAccessException.class);

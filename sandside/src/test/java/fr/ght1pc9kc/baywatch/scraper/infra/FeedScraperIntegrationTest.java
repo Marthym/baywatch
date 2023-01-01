@@ -16,6 +16,7 @@ import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperApplicationProperties;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperConfiguration;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.WebClientConfiguration;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
@@ -208,7 +209,7 @@ class FeedScraperIntegrationTest {
             @Override
             public Context withAuthentication(Entity<User> user) {
                 Authentication authentication = new PreAuthenticatedAuthenticationToken(user, null,
-                        AuthorityUtils.createAuthorityList(user.self.roles.name()));
+                        AuthorityUtils.createAuthorityList(user.self.roles.stream().map(RoleUtils::toSpringAuthority).toArray(String[]::new)));
                 return ReactiveSecurityContextHolder.withAuthentication(authentication);
             }
         };
