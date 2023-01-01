@@ -27,7 +27,7 @@ class AuthenticationServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        Entity<User> user = new Entity<>("42", Entity.NO_ONE, Instant.EPOCH, User.builder().login("okenobi").roles(Role.USER).build());
+        Entity<User> user = new Entity<>("42", Entity.NO_ONE, Instant.EPOCH, User.builder().login("okenobi").role(Role.USER.name()).build());
         tokenProviderMock = spy(new JwtTokenProvider() {
             @Override
             public BaywatchAuthentication createToken(Entity<User> userId, boolean rememberMe, Collection<String> authorities) {

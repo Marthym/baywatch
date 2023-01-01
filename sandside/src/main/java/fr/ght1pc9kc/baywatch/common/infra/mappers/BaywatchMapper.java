@@ -49,7 +49,6 @@ public interface BaywatchMapper {
     @Mapping(source = "self.password", target = "userPassword",
             nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
             nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(source = "self.role", target = "userRole")
     UsersRecord entityUserToRecord(Entity<User> user);
 
     @InheritInverseConfiguration

@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.api.model;
 
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,6 +16,14 @@ import java.util.stream.Collectors;
 public final class RoleUtils {
 
     private static final String SPRING_ROLE_PREFIX = "ROLE_";
+    private static final Entity<User> SYSTEM = Entity.identify(Role.SYSTEM.name(), User.builder()
+            .name(Role.SYSTEM.name())
+            .login(Role.SYSTEM.name().toLowerCase())
+            .roles(Set.of(Role.SYSTEM.name())).build());
+
+    public static Entity<User> getSystemUser() {
+        return SYSTEM;
+    }
 
     /**
      * Check if {@link User} has an expected {@link Role} or higher.
@@ -33,7 +42,7 @@ public final class RoleUtils {
      * @param user         The user to test
      * @param expectedRole The minimal expected role without the entity ID
      * @param entity       The entity id
-     * @return {@code TRUE} if the user a the role for all entity or for the specified entity
+     * @return {@code TRUE} if the user has the role for all entity or for the specified entity
      */
     public static boolean hasRole(User user, @NotNull Role expectedRole, @Nullable String entity) {
         Objects.requireNonNull(expectedRole);
@@ -59,7 +68,7 @@ public final class RoleUtils {
 
     /**
      * Return the {@link Role} prefixed by {@code "ROLE"} for Spring authority
-     * or the Role Entity authority if the role string contains a entity ID
+     * or the Role Entity authority if the role string contains an entity ID
      *
      * @param role The role or the entity authority
      * @return The Spring authority string
@@ -86,9 +95,20 @@ public final class RoleUtils {
      * @return The application role
      */
     public String fromSpringAuthority(String authority) {
-        if (authority.startsWith(SPRING_ROLE_PREFIX)) {
-            return authority.substring(SPRING_ROLE_PREFIX.length());
+        try {
+            String[] roleEntity = authority.split(":");
+            String role = (roleEntity[0].startsWith(SPRING_ROLE_PREFIX))
+                    ? roleEntity[0].substring(SPRING_ROLE_PREFIX.length())
+                    : roleEntity[0];
+            Role verifiedRole = Role.valueOf(role);
+
+            if (roleEntity.length == 2) {
+                return String.format(Role.FORMAT, verifiedRole.name(), roleEntity[1]);
+            } else {
+                return verifiedRole.name();
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException(authority + " is not a valid Authority", e);
         }
-        return authority;
     }
 }
