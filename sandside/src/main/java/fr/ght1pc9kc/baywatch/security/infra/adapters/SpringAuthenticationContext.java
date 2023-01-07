@@ -31,7 +31,7 @@ public class SpringAuthenticationContext implements AuthenticationFacade {
     @Override
     public Context withAuthentication(Entity<User> user) {
         Authentication authentication = new PreAuthenticatedAuthenticationToken(user, null,
-                AuthorityUtils.createAuthorityList(user.self.role.name()));
+                AuthorityUtils.createAuthorityList(user.self.roles.toArray(String[]::new)));
         return ReactiveSecurityContextHolder.withAuthentication(authentication);
     }
 }

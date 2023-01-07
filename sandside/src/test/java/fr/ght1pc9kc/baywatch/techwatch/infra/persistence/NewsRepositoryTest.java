@@ -14,6 +14,7 @@ import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
+import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRolesSamples;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;
 import fr.ght1pc9kc.testy.jooq.WithDatabaseLoaded;
@@ -53,6 +54,7 @@ class NewsRepositoryTest {
             .setDatasourceExtension(wDs).build();
     private static final WithSampleDataLoaded wSamples = WithSampleDataLoaded.builder(wDslContext)
             .addDataset(UsersRecordSamples.SAMPLE)
+            .addDataset(UsersRolesSamples.SAMPLE)
             .addDataset(FeedRecordSamples.SAMPLE)
             .addDataset(NewsRecordSamples.SAMPLE)
             .addDataset(NewsRecordSamples.NewsFeedsRecordSample.SAMPLE)
