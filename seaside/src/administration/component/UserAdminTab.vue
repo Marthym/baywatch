@@ -73,7 +73,7 @@
         <td>{{ vUser.data.login }}</td>
         <td>{{ vUser.data.name }}</td>
         <td>{{ vUser.data.mail }}</td>
-        <td>{{ vUser.data.role }}</td>
+        <td>{{ vUser.data.roles.join(', ') }}</td>
         <td>{{ dateToString(vUser.data._createdAt) }}</td>
         <td>
           <div class="btn-group justify-end">
