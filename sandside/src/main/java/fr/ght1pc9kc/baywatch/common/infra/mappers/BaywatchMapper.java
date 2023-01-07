@@ -15,7 +15,6 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import org.jooq.Record;
 import org.jooq.tools.StringUtils;
-import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValueCheckStrategy;
@@ -24,6 +23,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -34,6 +34,8 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
+import static fr.ght1pc9kc.baywatch.dsl.tables.Users.USERS;
+import static fr.ght1pc9kc.baywatch.dsl.tables.UsersRoles.USERS_ROLES;
 import static java.util.function.Predicate.not;
 
 @Mapper(componentModel = "spring", imports = {
@@ -49,12 +51,19 @@ public interface BaywatchMapper {
     @Mapping(source = "self.password", target = "userPassword",
             nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
             nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(source = "self.role", target = "userRole")
     UsersRecord entityUserToRecord(Entity<User> user);
 
-    @InheritInverseConfiguration
-    @Mapping(constant = Entity.NO_ONE, target = "createdBy")
-    Entity<User> recordToUserEntity(UsersRecord usersRecord);
+    default Entity<User> recordToUserEntity(Record usersRecord) {
+        Set<String> roles = Arrays.stream(usersRecord.get(USERS_ROLES.USRO_ROLE).split(",")).collect(Collectors.toUnmodifiableSet());
+        return Entity.identify(usersRecord.get(USERS.USER_ID), DateUtils.toInstant(usersRecord.get(USERS.USER_CREATED_AT)),
+                User.builder()
+                        .login(usersRecord.get(USERS.USER_LOGIN))
+                        .mail(usersRecord.get(USERS.USER_EMAIL))
+                        .name(usersRecord.get(USERS.USER_NAME))
+                        .password(usersRecord.get(USERS.USER_PASSWORD))
+                        .roles(roles)
+                        .build());
+    }
 
     default LocalDateTime map(Instant value) {
         return DateUtils.toLocalDateTime(value);

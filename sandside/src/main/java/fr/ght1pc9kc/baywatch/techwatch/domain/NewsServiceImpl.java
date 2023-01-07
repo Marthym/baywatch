@@ -4,6 +4,7 @@ import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
+import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
 import fr.ght1pc9kc.baywatch.techwatch.api.NewsService;
@@ -168,7 +169,7 @@ public class NewsServiceImpl implements NewsService {
     @Override
     public Mono<Integer> delete(Collection<String> toDelete) {
         return authFacade.getConnectedUser()
-                .filter(user -> Role.SYSTEM == user.self.role)
+                .filter(user -> RoleUtils.hasRole(user.self, Role.SYSTEM))
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedOperation("Deleting news not permitted for user !")))
                 .flatMap(user -> newsRepository.delete(toDelete));
     }

@@ -1,16 +1,16 @@
 package fr.ght1pc9kc.baywatch.security.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.common.domain.Hasher;
+import fr.ght1pc9kc.baywatch.common.domain.MailAddress;
+import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
-import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
-import fr.ght1pc9kc.baywatch.common.domain.Hasher;
-import fr.ght1pc9kc.baywatch.common.domain.MailAddress;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.AllArgsConstructor;
@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
+import static fr.ght1pc9kc.baywatch.security.api.model.RoleUtils.hasRole;
 
 @AllArgsConstructor
 public final class UserServiceImpl implements UserService {
@@ -91,9 +92,8 @@ public final class UserServiceImpl implements UserService {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
                 .map(u -> {
-                    if (hasRole(u.self, Role.ADMIN)) {
-                        return u;
-                    } else if (hasRole(u.self, Role.USER) && ids.size() == 1 && ids.contains(u.id)) {
+                    if (hasRole(u.self, Role.ADMIN)
+                            || (hasRole(u.self, Role.USER) && ids.size() == 1 && ids.contains(u.id))) {
                         return u;
                     }
                     throw new UnauthorizedOperation("User unauthorized for the operation !");
@@ -109,9 +109,5 @@ public final class UserServiceImpl implements UserService {
                     }
                     throw new UnauthorizedOperation("User unauthorized for the operation !");
                 });
-    }
-
-    private static boolean hasRole(User user, Role expected) {
-        return user.role.ordinal() <= expected.ordinal();
     }
 }

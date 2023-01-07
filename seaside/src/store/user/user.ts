@@ -14,20 +14,14 @@ const state = (): UserState => ({
 
 // getters
 const getters = {
-    [HAS_ROLE_USER](st): boolean {
-        const keys = Object.keys(UserRole);
-        const idx = keys.indexOf(st.user.role);
-        return idx >= 0 && idx <= keys.indexOf(UserRole.USER);
+    [HAS_ROLE_USER](st: UserState): boolean {
+        return hasRole(st.user, UserRole.USER);
     },
-    [HAS_ROLE_MANAGER](st): boolean {
-        const keys = Object.keys(UserRole);
-        const idx = keys.indexOf(st.user.role);
-        return idx >= 0 && idx <= keys.indexOf(UserRole.MANAGER);
+    [HAS_ROLE_MANAGER](st: UserState): boolean {
+        return hasRole(st.user, UserRole.MANAGER);
     },
-    [HAS_ROLE_ADMIN](st): boolean {
-        const keys = Object.keys(UserRole);
-        const idx = keys.indexOf(st.user.role);
-        return idx >= 0 && idx <= keys.indexOf(UserRole.ADMIN);
+    [HAS_ROLE_ADMIN](st: UserState): boolean {
+        return hasRole(st.user, UserRole.ADMIN);
     },
 }
 
@@ -42,10 +36,32 @@ const mutations = {
     },
     [UPDATE](st: UserState, payload: User): void {
         st.user = payload;
-        const keys = Object.keys(UserRole);
-        const idx = keys.indexOf(st.user.role);
-        st.isAuthenticated = idx >= 0 && idx <= keys.indexOf(UserRole.USER);
+        st.isAuthenticated = hasRole(st.user, UserRole.USER);
     },
+}
+
+const hasRole = (user: User, expectedRole: UserRole, entity?: string): boolean => {
+    if (!expectedRole) {
+        throw new Error();
+    }
+    if (!user && user === null) {
+        return false
+    }
+    let hasRole = false;
+    let userRoles: string[] = (entity)
+        ? user.roles.map(r => r.split(':')[0])
+        : user.roles;
+
+    for (let role of Object.keys(UserRole)) {
+        if (userRoles.indexOf(role) >= 0 ||
+            ((entity) && userRoles.indexOf(`${role}:${entity}`))) {
+            hasRole = true;
+        }
+        if (role == expectedRole) {
+            return hasRole;
+        }
+    }
+    return false;
 }
 
 export default {
