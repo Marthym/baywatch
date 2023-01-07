@@ -10,13 +10,13 @@ export class AuthenticationService {
     private static readonly LOGIN_REQUEST = `#graphql
     mutation Login($username: String!, $password: String!) {
         login(username: $username, password: $password) {
-            _id login name role mail
+            _id login name roles mail
         }
     }`;
     private static readonly REFRESH_REQUEST = `#graphql
     mutation {
         refreshSession {
-            user { _id login mail name role }
+            user { _id login mail name roles }
             maxAge
         }
     }`;
