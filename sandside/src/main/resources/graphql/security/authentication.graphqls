@@ -14,14 +14,10 @@ type User {
     login: String
     name: String
     mail: String
-    role: Role
+    roles: [String]
 }
 
 type Session {
     user: User
     maxAge: Int
-}
-
-enum Role {
-    SYSTEM, ADMIN, MANAGER, USER, ANONYMOUS
 }

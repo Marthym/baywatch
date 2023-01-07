@@ -28,7 +28,6 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-import reactor.util.context.Context;
 import reactor.util.function.Tuples;
 
 import java.util.NoSuchElementException;
@@ -76,48 +75,39 @@ public class AuthenticationGqlController {
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
     public Mono<Void> logout(GraphQLContext env) {
-        return Mono.fromRunnable(() -> env.stream()
-                .filter(e -> (e.getValue() instanceof Context ctx && ctx.hasKey(ServerWebExchange.class)))
-                .map(e -> (Context) e.getValue())
-                .findAny().ifPresent(c -> {
-                    ServerWebExchange exchange = c.get(ServerWebExchange.class);
-                    if (log.isDebugEnabled()) {
-                        String user = cookieManager.getTokenCookie(exchange.getRequest())
-                                .map(HttpCookie::getValue)
-                                .map(tokenProvider::getAuthentication)
-                                .map(a -> String.format("%s (%s)", a.user.self.login, a.user.id))
-                                .orElse("Unknown User");
-                        log.debug("Logout for {}.", user);
-                    }
-                    exchange.getResponse().addCookie(
-                            cookieManager.buildTokenCookieDeletion(exchange.getRequest().getURI().getScheme()));
-                }));
+        return Mono.fromRunnable(() -> env.<ServerWebExchange>getOrEmpty(ServerWebExchange.class).ifPresent(exchange -> {
+            if (log.isDebugEnabled()) {
+                String user = cookieManager.getTokenCookie(exchange.getRequest())
+                        .map(HttpCookie::getValue)
+                        .map(tokenProvider::getAuthentication)
+                        .map(a -> String.format("%s (%s)", a.user.self.login, a.user.id))
+                        .orElse("Unknown User");
+                log.debug("Logout for {}.", user);
+            }
+            exchange.getResponse().addCookie(
+                    cookieManager.buildTokenCookieDeletion(exchange.getRequest().getURI().getScheme()));
+        }));
     }
 
     @MutationMapping
     @PreAuthorize("permitAll()")
     public Mono<Session> refreshSession(GraphQLContext env) {
-        return env.stream()
-                .filter(e -> (e.getValue() instanceof Context ctx && ctx.hasKey(ServerWebExchange.class)))
-                .map(e -> (Context) e.getValue())
-                .findAny().flatMap(c -> {
-                    ServerWebExchange exchange = c.get(ServerWebExchange.class);
-                    return cookieManager.getTokenCookie(exchange.getRequest())
-                            .map(HttpCookie::getValue)
-                            .map(authenticationManager::refresh)
-                            .map(mauth -> mauth.map(auth -> {
-                                ResponseCookie tokenCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), auth);
-                                exchange.getResponse().addCookie(tokenCookie);
-                                return Session.builder()
-                                        .user(auth.user.self)
-                                        .maxAge(-1)
-                                        .build();
-                            }).onErrorMap(SecurityException.class, e -> GraphqlErrorException.newErrorException()
-                                    .message("User token has expired !")
-                                    .errorClassification(ErrorType.UNAUTHORIZED)
-                                    .cause(e)
-                                    .build()));
-                })
+        return env.<ServerWebExchange>getOrEmpty(ServerWebExchange.class).flatMap(exchange ->
+                        cookieManager.getTokenCookie(exchange.getRequest())
+                                .map(HttpCookie::getValue)
+                                .map(authenticationManager::refresh)
+                                .map(mauth -> mauth.map(auth -> {
+                                    ResponseCookie tokenCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), auth);
+                                    exchange.getResponse().addCookie(tokenCookie);
+                                    return Session.builder()
+                                            .user(auth.user.self)
+                                            .maxAge(-1)
+                                            .build();
+                                }).onErrorMap(SecurityException.class, e -> GraphqlErrorException.newErrorException()
+                                        .message("User token has expired !")
+                                        .errorClassification(ErrorType.UNAUTHORIZED)
+                                        .cause(e)
+                                        .build())))
                 .orElseGet(() -> Mono.error(GraphqlErrorException.newErrorException()
                         .message("User is not logged on !")
                         .errorClassification(ErrorType.NOT_FOUND)
