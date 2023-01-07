@@ -12,6 +12,7 @@ import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
+import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRolesSamples;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;
 import fr.ght1pc9kc.testy.jooq.WithDatabaseLoaded;
@@ -40,7 +41,6 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples.OKENOBI;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings("resource")
 class FeedRepositoryTest {
     private static final WithInMemoryDatasource wDs = WithInMemoryDatasource.builder().build();
     private static final WithDatabaseLoaded wBaywatchDb = WithDatabaseLoaded.builder()
@@ -52,6 +52,7 @@ class FeedRepositoryTest {
     private static final WithSampleDataLoaded wSamples = WithSampleDataLoaded.builder(wDslContext)
             .addDataset(FeedRecordSamples.SAMPLE)
             .addDataset(UsersRecordSamples.SAMPLE)
+            .addDataset(UsersRolesSamples.SAMPLE)
             .addDataset(NewsRecordSamples.SAMPLE)
             .addDataset(NewsRecordSamples.NewsFeedsRecordSample.SAMPLE)
             .addDataset(FeedRecordSamples.FeedUserRecordSamples.SAMPLE)

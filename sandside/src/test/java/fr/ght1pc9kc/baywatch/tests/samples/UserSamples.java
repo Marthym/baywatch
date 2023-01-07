@@ -44,6 +44,7 @@ public final class UserSamples {
                     .name("Luke Skywalker")
                     .mail("luke.skywalker@jedi.com")
                     .role(Role.USER.name())
+                    .role(Role.manager("TM01GP696RFPTY32WD79CVB0KDTF"))
                     .password("ekul")
                     .build());
 
