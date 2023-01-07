@@ -10,6 +10,7 @@ import lombok.Value;
 import lombok.With;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,16 +25,22 @@ public class User {
     public String name;
     public String mail;
     public @With String password;
-    public @Singular @NonNull Set<String> roles;
+    public @Singular
+    @NonNull Set<String> roles;
 
     public User withRoles(String... roles) {
+        if (Objects.isNull(roles) || roles.length == 0) {
+            return this.toBuilder().clearRoles().build();
+        }
         Set<String> verifiedRoles = Arrays.stream(roles)
+                .filter(Objects::nonNull)
                 .filter(Exceptions.silence().<String>predicate(role -> {
                     Role.valueOf(role.split(":")[0]);
                     return true;
                 }).orElse(false))
                 .collect(Collectors.toUnmodifiableSet());
         return this.toBuilder()
+                .clearRoles()
                 .roles(verifiedRoles)
                 .build();
     }
