@@ -1,9 +1,9 @@
 create table TEAMS
 (
-    TEAM_ID         VARCHAR(28) not null primary key,
-    TEAM_NAME       VARCHAR(100),
+    TEAM_ID         VARCHAR(28)  not null primary key,
+    TEAM_NAME       VARCHAR(100) not null,
     TEAM_TOPIC      VARCHAR(500),
-    TEAM_CREATED_BY VARCHAR(64) not null,
+    TEAM_CREATED_BY VARCHAR(64)  not null,
     TEAM_CREATED_AT DATETIME
 );
 

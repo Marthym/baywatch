@@ -2,17 +2,25 @@ package fr.ght1pc9kc.baywatch.teams.domain.ports;
 
 import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.security.api.model.Role;
+import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.teams.api.TeamsService;
+import fr.ght1pc9kc.baywatch.teams.api.exceptions.TeamPermissionDenied;
 import fr.ght1pc9kc.baywatch.teams.api.model.Team;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
+import org.jetbrains.annotations.VisibleForTesting;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+import java.time.Clock;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +40,10 @@ public class TeamServiceImpl implements TeamsService {
 
     private final UlidFactory idGenerator = UlidFactory.newMonotonicInstance();
 
+    @Accessors(fluent = true)
+    @Getter(value = AccessLevel.PRIVATE, onMethod = @__(@VisibleForTesting))
+    private final Clock clock = Clock.systemUTC();
+
     @Override
     public Mono<Entity<Team>> get(String id) {
         return list(PageRequest.one(Criteria.property(ID).eq(id)))
@@ -42,7 +54,12 @@ public class TeamServiceImpl implements TeamsService {
     public Mono<Entity<Team>> create(String name, String topic) {
         return authFacade.getConnectedUser().flatMap(manager -> {
             String id = PREFIX + idGenerator.create().toString();
-            return teamPersistence.persist(id, Team.of(name, topic))
+            return teamPersistence.persist(Entity.<Team>builder()
+                            .id(id)
+                            .self(Team.of(name, topic))
+                            .createdAt(clock().instant())
+                            .createdBy(manager.id)
+                            .build())
                     .thenReturn(id);
         }).flatMap(this::get);
     }
@@ -91,21 +108,46 @@ public class TeamServiceImpl implements TeamsService {
 
     @Override
     public Mono<Entity<Team>> update(String id, String name, String topic) {
-        return null;
+        return authFacade.getConnectedUser()
+                .filter(user -> RoleUtils.hasRole(user.self, Role.MANAGER, id))
+                .switchIfEmpty(Mono.error(() -> new TeamPermissionDenied("You must be manager of the team to update it !")))
+                .flatMap(manager ->
+                        teamPersistence.persist(Entity.<Team>builder()
+                                .id(id)
+                                .self(Team.of(name, topic))
+                                .createdAt(clock().instant())
+                                .createdBy(manager.id)
+                                .build()))
+                .then(teamPersistence.list(QueryContext.id(id)).next());
     }
 
     @Override
     public Flux<String> addMembers(String id, Collection<String> membersIds) {
-        return null;
+        return authFacade.getConnectedUser()
+                .map(user -> RoleUtils.hasRole(user.self, Role.MANAGER, id) ? Role.MANAGER : Role.USER)
+                .flatMap(role -> teamMemberPersistence.add(id, role, membersIds))
+                .thenMany(teamMemberPersistence.list(QueryContext.id(id)).map(Map.Entry::getValue));
     }
 
     @Override
     public Flux<String> removeMembers(String id, Collection<String> membersIds) {
-        return null;
+        return authFacade.getConnectedUser()
+                .filter(user -> RoleUtils.hasRole(user.self, Role.MANAGER, id))
+                .switchIfEmpty(Mono.error(() -> new TeamPermissionDenied("You must be manager of the team to remove users !")))
+                .flatMap(ignore -> teamMemberPersistence.remove(id, membersIds))
+                .thenMany(teamMemberPersistence.list(QueryContext.id(id)).map(Map.Entry::getValue));
     }
 
     @Override
-    public Flux<Entity<Team>> delete(Collection<String> ids) {
-        return null;
+    public Flux<String> delete(Collection<String> ids) {
+        return authFacade.getConnectedUser()
+                .flatMapMany(user -> Flux.fromIterable(ids).filter(id -> RoleUtils.hasRole(user.self, Role.MANAGER, id)))
+                .switchIfEmpty(Mono.error(() -> new TeamPermissionDenied("You must be manager of the team to delete it !")))
+                .collectList()
+                .flatMap(teamsIds ->
+                        teamMemberPersistence.clear(teamsIds)
+                                .then(teamPersistence.delete(ids))
+                                .thenReturn(teamsIds))
+                .flatMapMany(Flux::fromIterable);
     }
 }
