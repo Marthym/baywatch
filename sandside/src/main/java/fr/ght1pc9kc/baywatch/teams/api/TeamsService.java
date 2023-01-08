@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.teams.api;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.teams.api.model.Team;
+import fr.ght1pc9kc.baywatch.teams.api.model.TeamMember;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -62,6 +63,8 @@ public interface TeamsService {
      */
     Mono<Entity<Team>> update(String id, String name, String topic);
 
+    Flux<Entity<TeamMember>> members(String id);
+
     /**
      * Add new members to the team
      *
@@ -69,7 +72,7 @@ public interface TeamsService {
      * @param membersIds The {@link fr.ght1pc9kc.baywatch.security.api.model.User} IDs to add in the team
      * @return The complete updates list of members IDs
      */
-    Flux<String> addMembers(String id, Collection<String> membersIds);
+    Flux<Entity<TeamMember>> addMembers(String id, Collection<String> membersIds);
 
     /**
      * Add members to remove from the team
@@ -78,7 +81,7 @@ public interface TeamsService {
      * @param membersIds The {@link fr.ght1pc9kc.baywatch.security.api.model.User} IDs to remove from the team
      * @return The complete updated list of members IDs
      */
-    Flux<String> removeMembers(String id, Collection<String> membersIds);
+    Flux<Entity<TeamMember>> removeMembers(String id, Collection<String> membersIds);
 
     /**
      * Allow a {@code MANAGER} to drop one or more {@link Team}s.

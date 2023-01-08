@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.teams.infra.adapters;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.TeamsMembersRecord;
+import fr.ght1pc9kc.baywatch.teams.api.model.TeamMember;
 import fr.ght1pc9kc.baywatch.teams.domain.model.PendingFor;
 import fr.ght1pc9kc.baywatch.teams.domain.ports.TeamMemberPersistencePort;
 import fr.ght1pc9kc.baywatch.teams.infra.mappers.TeamsMapper;
@@ -22,7 +23,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
 import java.util.Collection;
-import java.util.Map;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.TeamsMembers.TEAMS_MEMBERS;
 import static fr.ght1pc9kc.baywatch.teams.infra.mappers.PropertiesMapper.TEAMS_MEMBERS_PROPERTIES_MAPPING;
@@ -40,8 +40,9 @@ public class MembersPersistenceAdapter implements TeamMemberPersistencePort {
 
     @Override
     @SuppressWarnings("resource")
-    public Flux<Map.Entry<String, String>> list(QueryContext qCtx) {
+    public Flux<Entity<TeamMember>> list(QueryContext qCtx) {
         Condition conditions = qCtx.filter.accept(JOOQ_CONDITION_VISITOR);
+
         Select<TeamsMembersRecord> select = JooqPagination.apply(
                 qCtx.pagination, TEAMS_MEMBERS_PROPERTIES_MAPPING,
                 dsl.selectFrom(TEAMS_MEMBERS)
@@ -58,7 +59,7 @@ public class MembersPersistenceAdapter implements TeamMemberPersistencePort {
                         }
                     }).onDispose(cursor::close);
                 }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
-                .map(teamsMapper::recordToMemberEntry);
+                .map(teamsMapper::getMemberEntity);
     }
 
     @Override
