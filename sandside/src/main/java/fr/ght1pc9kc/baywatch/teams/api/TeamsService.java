@@ -90,5 +90,5 @@ public interface TeamsService {
      * @throws fr.ght1pc9kc.baywatch.teams.api.exceptions.TeamPermissionDenied when one or more ids was not managed by
      *                                                                         current {@link fr.ght1pc9kc.baywatch.security.api.model.User}
      */
-    Flux<Entity<Team>> delete(Collection<String> ids);
+    Flux<String> delete(Collection<String> ids);
 }

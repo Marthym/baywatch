@@ -1,7 +1,9 @@
 package fr.ght1pc9kc.baywatch.teams.domain.ports;
 
+import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Collection;
 import java.util.Map.Entry;
@@ -9,7 +11,9 @@ import java.util.Map.Entry;
 public interface TeamMemberPersistencePort {
     Flux<Entry<String, String>> list(QueryContext qCtx);
 
-    void add(String teamId, String memberId);
+    Mono<Void> add(String teamId, Role pendingFor, Collection<String> usersIds);
 
-    void remove(String teamId, Collection<String> membersIds);
+    Mono<Void> remove(String teamId, Collection<String> membersIds);
+
+    Mono<Void> clear(Collection<String> teamsIds);
 }
