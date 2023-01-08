@@ -16,6 +16,7 @@ public final class EntitiesProperties {
     public static final String MAIL = "mail";
     public static final String NAME = "name";
     public static final String NEWS_ID = "newsId";
+    public static final String PENDING_FOR = "pendingFor";
     public static final String POPULAR = "popular";
     public static final String PUBLICATION = "publication";
     public static final String READ = "read";
