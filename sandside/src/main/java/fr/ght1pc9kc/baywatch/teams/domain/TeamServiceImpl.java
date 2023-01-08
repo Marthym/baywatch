@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.teams.domain.ports;
+package fr.ght1pc9kc.baywatch.teams.domain;
 
 import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
@@ -7,6 +7,10 @@ import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.teams.api.TeamsService;
 import fr.ght1pc9kc.baywatch.teams.api.exceptions.TeamPermissionDenied;
 import fr.ght1pc9kc.baywatch.teams.api.model.Team;
+import fr.ght1pc9kc.baywatch.teams.domain.model.PendingFor;
+import fr.ght1pc9kc.baywatch.teams.domain.ports.TeamAuthFacade;
+import fr.ght1pc9kc.baywatch.teams.domain.ports.TeamMemberPersistencePort;
+import fr.ght1pc9kc.baywatch.teams.domain.ports.TeamPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
@@ -21,6 +25,7 @@ import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -123,9 +128,18 @@ public class TeamServiceImpl implements TeamsService {
 
     @Override
     public Flux<String> addMembers(String id, Collection<String> membersIds) {
+        Instant now = clock().instant();
         return authFacade.getConnectedUser()
-                .map(user -> RoleUtils.hasRole(user.self, Role.MANAGER, id) ? Role.MANAGER : Role.USER)
-                .flatMap(role -> teamMemberPersistence.add(id, role, membersIds))
+                .flatMapMany(user -> {
+                    PendingFor pending = RoleUtils.hasRole(user.self, Role.MANAGER, id) ? PendingFor.USER : PendingFor.MANAGER;
+                    return Flux.fromStream(membersIds.stream()
+                            .map(mId -> Entity.<PendingFor>builder().id(id + ":" + mId)
+                                    .self(pending)
+                                    .createdBy(user.id)
+                                    .createdAt(now)
+                                    .build()));
+                }).collectList()
+                .flatMap(teamMemberPersistence::add)
                 .thenMany(teamMemberPersistence.list(QueryContext.id(id)).map(Map.Entry::getValue));
     }
 

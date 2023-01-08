@@ -23,7 +23,6 @@ import reactor.core.scheduler.Scheduler;
 import java.util.Collection;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.Teams.TEAMS;
-import static fr.ght1pc9kc.baywatch.dsl.tables.Users.USERS;
 import static fr.ght1pc9kc.baywatch.teams.infra.mappers.PropertiesMapper.TEAMS_PROPERTIES_MAPPING;
 
 @Repository
@@ -44,8 +43,7 @@ public class TeamPersistenceAdapter implements TeamPersistencePort {
         Select<TeamsRecord> select = JooqPagination.apply(
                 qCtx.pagination, TEAMS_PROPERTIES_MAPPING,
                 dsl.selectFrom(TEAMS)
-                        .where(conditions)
-                        .groupBy(USERS.fields()));
+                        .where(conditions));
 
         return Flux.<TeamsRecord>create(sink -> {
                     Cursor<TeamsRecord> cursor = select.fetchLazy();
@@ -86,7 +84,8 @@ public class TeamPersistenceAdapter implements TeamPersistencePort {
     @Override
     public Mono<Void> delete(Collection<String> ids) {
         return Mono.fromCallable(() ->
-                dsl.deleteFrom(TEAMS).where(TEAMS.TEAM_ID.in(ids)).execute()
-        ).then();
+                        dsl.deleteFrom(TEAMS).where(TEAMS.TEAM_ID.in(ids)).execute()
+                ).subscribeOn(databaseScheduler)
+                .then();
     }
 }
