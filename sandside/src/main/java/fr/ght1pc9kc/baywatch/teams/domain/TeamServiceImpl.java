@@ -7,6 +7,7 @@ import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.teams.api.TeamsService;
 import fr.ght1pc9kc.baywatch.teams.api.exceptions.TeamPermissionDenied;
 import fr.ght1pc9kc.baywatch.teams.api.model.Team;
+import fr.ght1pc9kc.baywatch.teams.api.model.TeamMember;
 import fr.ght1pc9kc.baywatch.teams.domain.model.PendingFor;
 import fr.ght1pc9kc.baywatch.teams.domain.ports.TeamAuthFacade;
 import fr.ght1pc9kc.baywatch.teams.domain.ports.TeamMemberPersistencePort;
@@ -21,17 +22,10 @@ import lombok.experimental.Accessors;
 import org.jetbrains.annotations.VisibleForTesting;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 
@@ -72,43 +66,15 @@ public class TeamServiceImpl implements TeamsService {
     @Override
     public Flux<Entity<Team>> list(PageRequest pageRequest) {
         QueryContext qCtx = QueryContext.from(pageRequest);
-        return teamPersistence.list(qCtx)
-                .buffer(20)
-                .flatMap(rawTeams -> {
-                    Map<String, Entity<Team>> teams = rawTeams.stream().collect(Collectors.toUnmodifiableMap(e -> e.id, Function.identity()));
-                    return listMembersFrom(QueryContext.all(qCtx.getFilter().and(Criteria.property(ID).in(teams.keySet()))))
-                            .filter(t -> teams.containsKey(t.getT1()))
-                            .map(t -> {
-                                Entity<Team> entity = teams.get(t.getT1());
-                                return Entity.<Team>builder()
-                                        .self(Team.of(entity.self, t.getT2()))
-                                        .createdBy(entity.createdBy)
-                                        .createdAt(entity.createdAt)
-                                        .build();
-                            });
-                });
-    }
-
-    private Flux<Tuple2<String, Set<String>>> listMembersFrom(QueryContext qCtx) {
         return authFacade.getConnectedUser().flatMapMany(manager ->
-                        teamMemberPersistence.list(qCtx.withUserId(manager.id)))
-                .bufferUntilChanged(Map.Entry::getKey)
-                .map(this::unFlattenTeamMembers);
-    }
-
-    private Tuple2<String, Set<String>> unFlattenTeamMembers(List<Map.Entry<String, String>> teams) {
-        return Tuples.of(teams.get(0).getKey(), teams.stream().map(Map.Entry::getValue).collect(Collectors.toUnmodifiableSet()));
+                teamPersistence.list(qCtx.withUserId(manager.id)));
     }
 
     @Override
     public Mono<Integer> count(PageRequest pageRequest) {
+        QueryContext qCtx = QueryContext.from(pageRequest);
         return authFacade.getConnectedUser().flatMap(manager ->
-                teamMemberPersistence.list(
-                                QueryContext.all(pageRequest.filter()).withUserId(manager.id))
-                        .map(Map.Entry::getKey)
-                        .flatMap(ids -> teamPersistence.count(
-                                QueryContext.all(pageRequest.filter().and(Criteria.property(ID).in(ids)))
-                        )).reduce(Integer::sum));
+                teamPersistence.count(qCtx.withUserId(manager.id)));
     }
 
     @Override
@@ -127,7 +93,13 @@ public class TeamServiceImpl implements TeamsService {
     }
 
     @Override
-    public Flux<String> addMembers(String id, Collection<String> membersIds) {
+    public Flux<Entity<TeamMember>> members(String id) {
+        return authFacade.getConnectedUser().flatMapMany(manager ->
+                teamMemberPersistence.list(QueryContext.id(id)));
+    }
+
+    @Override
+    public Flux<Entity<TeamMember>> addMembers(String id, Collection<String> membersIds) {
         Instant now = clock().instant();
         return authFacade.getConnectedUser()
                 .flatMapMany(user -> {
@@ -140,16 +112,16 @@ public class TeamServiceImpl implements TeamsService {
                                     .build()));
                 }).collectList()
                 .flatMap(teamMemberPersistence::add)
-                .thenMany(teamMemberPersistence.list(QueryContext.id(id)).map(Map.Entry::getValue));
+                .thenMany(teamMemberPersistence.list(QueryContext.id(id)));
     }
 
     @Override
-    public Flux<String> removeMembers(String id, Collection<String> membersIds) {
+    public Flux<Entity<TeamMember>> removeMembers(String id, Collection<String> membersIds) {
         return authFacade.getConnectedUser()
                 .filter(user -> RoleUtils.hasRole(user.self, Role.MANAGER, id))
                 .switchIfEmpty(Mono.error(() -> new TeamPermissionDenied("You must be manager of the team to remove users !")))
                 .flatMap(ignore -> teamMemberPersistence.remove(id, membersIds))
-                .thenMany(teamMemberPersistence.list(QueryContext.id(id)).map(Map.Entry::getValue));
+                .thenMany(teamMemberPersistence.list(QueryContext.id(id)));
     }
 
     @Override
