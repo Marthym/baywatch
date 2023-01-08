@@ -26,10 +26,11 @@ public interface TeamsService {
      * Create a new {@link Team} from a simple name. The created Team
      * has for unique member the creator.
      *
-     * @param name The name of the team
+     * @param name  The name of the team
+     * @param topic The topic or description of the team
      * @return The new created Team with its only member
      */
-    Mono<Entity<Team>> create(String name);
+    Mono<Entity<Team>> create(String name, String topic);
 
     /**
      * List all teh {@link Team} depending on the {@link PageRequest}
@@ -52,13 +53,32 @@ public interface TeamsService {
      * Update a {@link Team} or the members of the team
      * Only {@code MANAGER}s of the given Team are authorized to update
      *
-     * @param id     The ULID of the team to update
-     * @param entity The new Team Entity
+     * @param id    The ULID of the {@link Team} to update
+     * @param name  The name of the team
+     * @param topic The topic or description of the team
      * @return The updated Team with its members
      * @throws fr.ght1pc9kc.baywatch.teams.api.exceptions.TeamPermissionDenied if Team ULID is not managed by the
      *                                                                         current {@link fr.ght1pc9kc.baywatch.security.api.model.User}
      */
-    Mono<Entity<Team>> update(String id, Team entity);
+    Mono<Entity<Team>> update(String id, String name, String topic);
+
+    /**
+     * Add new members to the team
+     *
+     * @param id         The ULID of the {@link Team} to update
+     * @param membersIds The {@link fr.ght1pc9kc.baywatch.security.api.model.User} IDs to add in the team
+     * @return The complete updates list of members IDs
+     */
+    Flux<String> addMembers(String id, Collection<String> membersIds);
+
+    /**
+     * Add members to remove from the team
+     *
+     * @param id         The ULID of the {@link Team} to update
+     * @param membersIds The {@link fr.ght1pc9kc.baywatch.security.api.model.User} IDs to remove from the team
+     * @return The complete updated list of members IDs
+     */
+    Flux<String> removeMembers(String id, Collection<String> membersIds);
 
     /**
      * Allow a {@code MANAGER} to drop one or more {@link Team}s.

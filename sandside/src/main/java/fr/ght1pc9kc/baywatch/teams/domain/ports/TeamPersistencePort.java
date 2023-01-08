@@ -7,7 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface TeamPersistencePort {
-    Flux<Entity<String>> list(QueryContext qCtx);
+    Flux<Entity<Team>> list(QueryContext qCtx);
 
     Mono<Integer> count(QueryContext qCtx);
 
