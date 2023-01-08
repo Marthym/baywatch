@@ -39,12 +39,11 @@ public class TeamServiceImpl implements TeamsService {
     }
 
     @Override
-    public Mono<Entity<Team>> create(String name) {
+    public Mono<Entity<Team>> create(String name, String topic) {
         return authFacade.getConnectedUser().flatMap(manager -> {
             String id = PREFIX + idGenerator.create().toString();
-            return teamPersistence.persist(
-                    id, new Team(name, Set.of())
-            ).thenReturn(id);
+            return teamPersistence.persist(id, Team.of(name, topic))
+                    .thenReturn(id);
         }).flatMap(this::get);
     }
 
@@ -54,13 +53,13 @@ public class TeamServiceImpl implements TeamsService {
         return teamPersistence.list(qCtx)
                 .buffer(20)
                 .flatMap(rawTeams -> {
-                    Map<String, Entity<String>> teams = rawTeams.stream().collect(Collectors.toUnmodifiableMap(e -> e.id, Function.identity()));
+                    Map<String, Entity<Team>> teams = rawTeams.stream().collect(Collectors.toUnmodifiableMap(e -> e.id, Function.identity()));
                     return listMembersFrom(QueryContext.all(qCtx.getFilter().and(Criteria.property(ID).in(teams.keySet()))))
                             .filter(t -> teams.containsKey(t.getT1()))
                             .map(t -> {
-                                Entity<String> entity = teams.get(t.getT1());
+                                Entity<Team> entity = teams.get(t.getT1());
                                 return Entity.<Team>builder()
-                                        .self(new Team(entity.self, t.getT2()))
+                                        .self(Team.of(entity.self, t.getT2()))
                                         .createdBy(entity.createdBy)
                                         .createdAt(entity.createdAt)
                                         .build();
@@ -91,7 +90,17 @@ public class TeamServiceImpl implements TeamsService {
     }
 
     @Override
-    public Mono<Entity<Team>> update(String id, Team entity) {
+    public Mono<Entity<Team>> update(String id, String name, String topic) {
+        return null;
+    }
+
+    @Override
+    public Flux<String> addMembers(String id, Collection<String> membersIds) {
+        return null;
+    }
+
+    @Override
+    public Flux<String> removeMembers(String id, Collection<String> membersIds) {
         return null;
     }
 
