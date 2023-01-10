@@ -13,4 +13,16 @@ public enum PendingFor {
     PendingFor(int value) {
         this.value = value;
     }
+
+    public static PendingFor from(int value) {
+        if (value == MANAGER.value) {
+            return MANAGER;
+        } else if (value == USER.value) {
+            return USER;
+        } else if (value == NONE.value) {
+            return NONE;
+        } else {
+            throw new IllegalArgumentException("No PendingFor value for " + value);
+        }
+    }
 }

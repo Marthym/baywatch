@@ -12,7 +12,8 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 @Value
 @Builder
 public final class QueryContext {
-    public final Pagination pagination;
+    @Builder.Default
+    public final Pagination pagination = Pagination.ALL;
     public final Criteria filter;
     @With
     public final String userId;
