@@ -55,7 +55,7 @@ public class TeamServiceImpl implements TeamsService {
             String id = PREFIX + idGenerator.create().toString();
             return teamPersistence.persist(Entity.<Team>builder()
                             .id(id)
-                            .self(Team.of(name, topic))
+                            .self(new Team(name, topic))
                             .createdAt(clock().instant())
                             .createdBy(manager.id)
                             .build())
@@ -85,7 +85,7 @@ public class TeamServiceImpl implements TeamsService {
                 .flatMap(manager ->
                         teamPersistence.persist(Entity.<Team>builder()
                                 .id(id)
-                                .self(Team.of(name, topic))
+                                .self(new Team(name, topic))
                                 .createdAt(clock().instant())
                                 .createdBy(manager.id)
                                 .build()))
