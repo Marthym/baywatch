@@ -56,7 +56,7 @@ public class TeamPersistenceAdapter implements TeamPersistencePort {
                         }
                     }).onDispose(cursor::close);
                 }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
-                .map(teamsMapper::recordToTeam);
+                .map(teamsMapper::getTeamEntity);
     }
 
     @Override
