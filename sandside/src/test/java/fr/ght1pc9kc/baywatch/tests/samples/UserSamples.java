@@ -35,7 +35,8 @@ public final class UserSamples {
                     .build());
 
     /**
-     * The {@link Role#USER} role {@link User}
+     * The {@link Role#USER} role {@link User} and
+     * {@link Role#MANAGER} for {@code TM01GP696RFPTY32WD79CVB0KDTF}
      */
     public static final Entity<User> LUKE = Entity.identify(
             Hasher.sha3("luke.skywalker@jedi.com"),

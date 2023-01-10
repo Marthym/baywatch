@@ -42,7 +42,9 @@ public class MembersPersistenceAdapter implements TeamMemberPersistencePort {
     @SuppressWarnings("resource")
     public Flux<Entity<TeamMember>> list(QueryContext qCtx) {
         Condition conditions = qCtx.filter.accept(JOOQ_CONDITION_VISITOR);
-
+        if (qCtx.isScoped()) {
+            conditions = conditions.and(TEAMS_MEMBERS.TEME_USER_ID.eq(qCtx.getUserId()));
+        }
         Select<TeamsMembersRecord> select = JooqPagination.apply(
                 qCtx.pagination, TEAMS_MEMBERS_PROPERTIES_MAPPING,
                 dsl.selectFrom(TEAMS_MEMBERS)

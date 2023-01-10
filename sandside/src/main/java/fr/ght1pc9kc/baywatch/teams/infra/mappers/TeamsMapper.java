@@ -24,7 +24,12 @@ public interface TeamsMapper {
 
     TeamsRecord teamToRecord(Entity<Team> team);
 
-    Entity<TeamMember> getMemberEntity(TeamsMembersRecord memberRecord);
+    @Mapping(source = "temeTeamId", target = "id")
+    @Mapping(source = "temeCreatedAt", target = "createdAt")
+    @Mapping(source = "temeCreatedBy", target = "createdBy")
+    @Mapping(source = "temeUserId", target = "self.userId")
+    @Mapping(target = "self.pending", expression = "java( PendingFor.from(teamsMembersRecord.getTemePendingFor()) )")
+    Entity<TeamMember> getMemberEntity(TeamsMembersRecord teamsMembersRecord);
 
     TeamsMembersRecord getTeamsMemberRecord(Entity<PendingFor> request);
 
