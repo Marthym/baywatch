@@ -28,6 +28,7 @@ import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -97,5 +98,17 @@ class TeamServiceImplTest {
         StepVerifier.create(tested.count(PageRequest.all()))
                 .assertNext(next -> Assertions.assertThat(next).isEqualTo(1))
                 .verifyComplete();
+    }
+
+    @Test
+    void should_create_team() {
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
+        StepVerifier.create(tested.create("Jedi council team", "May the Force be with you"))
+                .assertNext(actual -> assertAll(
+                        () -> Assertions.assertThat(actual.id).isNotBlank(),
+                        () -> Assertions.assertThat(actual.createdBy).isEqualTo(UserSamples.OBIWAN.id),
+                        () -> Assertions.assertThat(actual.self.name()).isEqualTo("Jedi council team")
+                )).verifyComplete();
+
     }
 }
