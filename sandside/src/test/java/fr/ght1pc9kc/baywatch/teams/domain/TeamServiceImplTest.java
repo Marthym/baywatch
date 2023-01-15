@@ -80,22 +80,22 @@ class TeamServiceImplTest {
     }
 
     @Test
-    void should_list_team_as_admin(Tracker dbTracker) {
-        dbTracker.skipNextSampleLoad();
-
-        StepVerifier.create(tested.list(PageRequest.all()))
-                .assertNext(next -> Assertions.assertThat(next.id).isEqualTo("TM01GP696RFPTY32WD79CVB0KDTF"))
-                .assertNext(next -> Assertions.assertThat(next.id).isEqualTo("TM01GPETWVATJ968SJ717NRHYSEZ"))
-                .verifyComplete();
-    }
-
-    @Test
-    void should_list_teams_as_user(Tracker dbTracker) {
+    void should_list_teams(Tracker dbTracker) {
         dbTracker.skipNextSampleLoad();
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
 
         StepVerifier.create(tested.list(PageRequest.all()))
                 .assertNext(next -> Assertions.assertThat(next.id).isEqualTo("TM01GP696RFPTY32WD79CVB0KDTF"))
+                .verifyComplete();
+    }
+
+    @Test
+    void should_count_teams(Tracker dbTracker) {
+        dbTracker.skipNextSampleLoad();
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
+
+        StepVerifier.create(tested.count(PageRequest.all()))
+                .assertNext(next -> Assertions.assertThat(next).isEqualTo(1))
                 .verifyComplete();
     }
 }

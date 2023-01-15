@@ -10,9 +10,12 @@ import reactor.core.publisher.Mono;
 import java.util.Collection;
 
 /**
- * TeamService allow user to manage teams and team members
- * A {@link Team} is a set of {@link fr.ght1pc9kc.baywatch.security.api.model.User}
- * aka members who can share {@link fr.ght1pc9kc.baywatch.techwatch.api.model.News}.
+ * TeamService allow user to manage teams and team members as
+ * {@code Role#MANAGER} or {@code Role#USER}
+ * A {@link Team} is a set of {@code User}
+ * aka members who can share {@code News}.
+ * <p>
+ * {@see TeamsAdminService} for {@link Team} administration
  */
 public interface TeamsService {
     /**
