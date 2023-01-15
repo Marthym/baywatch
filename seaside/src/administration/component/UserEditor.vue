@@ -56,7 +56,7 @@
       <label class="label -mt-6">
         <span class="label-text">Role</span>
       </label>
-      <select v-model="modelValue.role" class="select select-bordered w-full"
+      <select v-model="modelValue.roles[0]" class="select select-bordered w-full"
               :class="{'select-error': errors.has('role')}" @change="onFieldChange('role')">
         <option :value="undefined" disabled selected hidden>Choose the user role</option>
         <option>USER</option>

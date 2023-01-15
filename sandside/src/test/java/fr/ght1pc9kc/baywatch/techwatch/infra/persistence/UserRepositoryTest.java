@@ -4,7 +4,6 @@ import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.Users;
-import fr.ght1pc9kc.baywatch.dsl.tables.UsersRoles;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.infra.persistence.UserRepository;
@@ -36,6 +35,7 @@ import java.util.List;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
+import static fr.ght1pc9kc.baywatch.dsl.tables.UsersRoles.USERS_ROLES;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class UserRepositoryTest {
@@ -125,7 +125,7 @@ class UserRepositoryTest {
     @Test
     void should_persist_users(DSLContext dsl) {
         {
-            var actual = List.of(dsl.fetchCount(Users.USERS), dsl.fetchCount(UsersRoles.USERS_ROLES));
+            var actual = List.of(dsl.fetchCount(Users.USERS), dsl.fetchCount(USERS_ROLES));
             assertThat(actual).containsExactly(2, 3);
         }
 
@@ -141,8 +141,10 @@ class UserRepositoryTest {
                 .verifyComplete();
 
         {
-            var actual = List.of(dsl.fetchCount(Users.USERS), dsl.fetchCount(UsersRoles.USERS_ROLES));
-            assertThat(actual).containsExactly(4, 6);
+            var actual = List.of(dsl.fetchCount(Users.USERS), dsl.fetchCount(USERS_ROLES));
+            assertThat(actual)
+                    .describedAs("function must persist only user not roles")
+                    .containsExactly(4, 3);
         }
     }
 
@@ -165,7 +167,6 @@ class UserRepositoryTest {
         }
     }
 
-
     @Test
     void should_delete_users(DSLContext dsl) {
         Assertions.assertAll(
@@ -181,5 +182,45 @@ class UserRepositoryTest {
                 () -> assertThat(dsl.fetchCount(NEWS_USER_STATE)).isEqualTo(25),
                 () -> assertThat(dsl.fetchCount(FEEDS_USERS)).isEqualTo(2)
         );
+    }
+
+    @Test
+    void should_persist_roles(DSLContext dsl) {
+        assertThat(
+                dsl.select().from(USERS_ROLES)
+                        .where(USERS_ROLES.USRO_USER_ID.eq(UsersRecordSamples.LSKYWALKER.getUserId()))
+                        .fetch(USERS_ROLES.USRO_ROLE))
+                .containsOnly("MANAGER:TM01GP696RFPTY32WD79CVB0KDTF", "USER");
+
+        StepVerifier.create(tested.persist(UsersRecordSamples.LSKYWALKER.getUserId(), List.of("MANAGER:42"))
+                        .map(e -> e.self))
+                .expectNext(UserSamples.LUKE.self.withRoles("MANAGER:TM01GP696RFPTY32WD79CVB0KDTF", "USER", "MANAGER:42"))
+                .verifyComplete();
+
+        assertThat(
+                dsl.select().from(USERS_ROLES)
+                        .where(USERS_ROLES.USRO_USER_ID.eq(UsersRecordSamples.LSKYWALKER.getUserId()))
+                        .fetch(USERS_ROLES.USRO_ROLE))
+                .containsOnly("MANAGER:TM01GP696RFPTY32WD79CVB0KDTF", "USER", "MANAGER:42");
+    }
+
+    @Test
+    void should_delete_roles(DSLContext dsl) {
+        assertThat(
+                dsl.select().from(USERS_ROLES)
+                        .where(USERS_ROLES.USRO_USER_ID.eq(UsersRecordSamples.LSKYWALKER.getUserId()))
+                        .fetch(USERS_ROLES.USRO_ROLE))
+                .containsOnly("MANAGER:TM01GP696RFPTY32WD79CVB0KDTF", "USER");
+
+        StepVerifier.create(tested.delete(UsersRecordSamples.LSKYWALKER.getUserId(), List.of("MANAGER:TM01GP696RFPTY32WD79CVB0KDTF"))
+                        .map(e -> e.self))
+                .expectNext(UserSamples.LUKE.self.withRoles("USER"))
+                .verifyComplete();
+
+        assertThat(
+                dsl.select().from(USERS_ROLES)
+                        .where(USERS_ROLES.USRO_USER_ID.eq(UsersRecordSamples.LSKYWALKER.getUserId()))
+                        .fetch(USERS_ROLES.USRO_ROLE))
+                .containsOnly("USER");
     }
 }
