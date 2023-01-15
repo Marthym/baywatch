@@ -64,7 +64,8 @@ public final class UserServiceImpl implements UserService {
         User withPassword = user.withPassword(passwordEncoder.encode(user.password));
         Entity<User> entity = Entity.identify(userId, clock.instant(), withPassword);
         return authorizeAllData()
-                .flatMap(u -> userRepository.persist(List.of(entity)).single());
+                .flatMap(u -> userRepository.persist(List.of(entity)).single())
+                .then(userRepository.persist(userId, user.roles));
     }
 
     @Override
@@ -112,7 +113,7 @@ public final class UserServiceImpl implements UserService {
             } else {
                 return role.name();
             }
-        }).flatMap(roleRepresentation -> userRepository.persist(id, List.of(roleRepresentation)));
+        }).flatMap(roleRepresentation -> userRepository.delete(id, List.of(roleRepresentation)));
     }
 
     private Mono<Entity<User>> authorizeSelfData(String id) {

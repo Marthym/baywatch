@@ -6,7 +6,6 @@ import fr.ght1pc9kc.baywatch.common.infra.PredicateSearchVisitor;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
-import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRolesRecord;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
@@ -99,19 +98,9 @@ public class UserRepository implements UserPersistencePort {
         List<UsersRecord> usersRecords = toPersist.stream()
                 .map(baywatchConverter::entityUserToRecord)
                 .toList();
-        List<UsersRolesRecord> usersRolesRecords = toPersist.stream()
-                .flatMap(e -> e.self.roles.stream()
-                        .map(r -> USERS_ROLES.newRecord()
-                                .setUsroUserId(e.id)
-                                .setUsroRole(r))
-                ).toList();
 
-        return Mono.fromCallable(() -> dsl.transactionResult(tx -> {
-                    int[] inserted = tx.dsl().batchInsert(usersRecords).execute();
-                    tx.dsl().batchInsert(usersRolesRecords).execute();
-                    return inserted;
-                })).subscribeOn(databaseScheduler)
-
+        return Mono.fromCallable(() -> dsl.transactionResult(tx -> tx.dsl().batchInsert(usersRecords).execute()))
+                .subscribeOn(databaseScheduler)
                 .flatMapMany(insertedCount -> {
                     log.debug("{} user(s) inserted successfully.", Arrays.stream(insertedCount).sum());
                     return Flux.fromIterable(toPersist);
