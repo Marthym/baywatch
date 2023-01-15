@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jooq.Condition;
 import org.jooq.Cursor;
 import org.jooq.DSLContext;
+import org.jooq.Query;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.Select;
@@ -98,9 +99,12 @@ public class UserRepository implements UserPersistencePort {
         List<UsersRecord> usersRecords = toPersist.stream()
                 .map(baywatchConverter::entityUserToRecord)
                 .toList();
-        List<UsersRolesRecord> usersRolesRecords = toPersist.stream().flatMap(e -> e.self.roles.stream()
-                        .map(r -> USERS_ROLES.newRecord().setUsroUserId(e.id).setUsroRole(r)))
-                .toList();
+        List<UsersRolesRecord> usersRolesRecords = toPersist.stream()
+                .flatMap(e -> e.self.roles.stream()
+                        .map(r -> USERS_ROLES.newRecord()
+                                .setUsroUserId(e.id)
+                                .setUsroRole(r))
+                ).toList();
 
         return Mono.fromCallable(() -> dsl.transactionResult(tx -> {
                     int[] inserted = tx.dsl().batchInsert(usersRecords).execute();
@@ -132,5 +136,25 @@ public class UserRepository implements UserPersistencePort {
                     txDsl.deleteFrom(USERS_ROLES).where(USERS_ROLES.USRO_USER_ID.in(ids)).execute();
                     return txDsl.deleteFrom(USERS).where(USERS.USER_ID.in(ids)).execute();
                 })).subscribeOn(databaseScheduler);
+    }
+
+    @Override
+    public Mono<Entity<User>> persist(String userId, Collection<String> roles) {
+        Query[] queries = roles.stream().map(role ->
+                        dsl.insertInto(USERS_ROLES).columns(USERS_ROLES.USRO_USER_ID, USERS_ROLES.USRO_ROLE).values(userId, role))
+                .toArray(Query[]::new);
+        return Mono.fromCallable(() -> dsl.batch(queries).execute())
+                .subscribeOn(databaseScheduler)
+                .then(get(userId));
+    }
+
+    @Override
+    public Mono<Entity<User>> delete(String userId, Collection<String> roles) {
+        Query[] queries = roles.stream().map(role ->
+                        dsl.deleteFrom(USERS_ROLES).where(USERS_ROLES.USRO_USER_ID.eq(userId).and(USERS_ROLES.USRO_ROLE.in(roles))))
+                .toArray(Query[]::new);
+        return Mono.fromCallable(() -> dsl.batch(queries).execute())
+                .subscribeOn(databaseScheduler)
+                .then(get(userId));
     }
 }
