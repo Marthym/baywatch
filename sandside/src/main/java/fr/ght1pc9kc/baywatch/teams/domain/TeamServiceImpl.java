@@ -50,6 +50,46 @@ public class TeamServiceImpl implements TeamsService {
     }
 
     @Override
+    public Flux<Entity<Team>> list(PageRequest pageRequest) {
+        return authFacade.getConnectedUser().flatMapMany(member -> {
+            QueryContext qCtx = QueryContext.builder()
+                    .filter(pageRequest.filter())
+                    .userId(member.id)
+                    .build();
+            return teamMemberPersistence.list(qCtx)
+                    .map(e -> e.id)
+                    .concatWith(Flux.fromIterable(RoleUtils.getEntitiesFor(member.self, Role.MANAGER)));
+
+        }).collectList().flatMapMany(ids -> {
+            QueryContext qCtx2 = QueryContext.builder()
+                    .filter(pageRequest.filter().and(Criteria.property(ID).in(ids)))
+                    .pagination(pageRequest.pagination())
+                    .build();
+            return teamPersistence.list(qCtx2);
+        });
+    }
+
+    @Override
+    public Mono<Integer> count(PageRequest pageRequest) {
+        return authFacade.getConnectedUser().flatMapMany(member -> {
+            QueryContext qCtx = QueryContext.builder()
+                    .filter(pageRequest.filter())
+                    .userId(member.id)
+                    .build();
+            return teamMemberPersistence.list(qCtx)
+                    .map(e -> e.id)
+                    .concatWith(Flux.fromIterable(RoleUtils.getEntitiesFor(member.self, Role.MANAGER)));
+
+        }).collectList().flatMap(ids -> {
+            QueryContext qCtx2 = QueryContext.builder()
+                    .filter(pageRequest.filter().and(Criteria.property(ID).in(ids)))
+                    .pagination(pageRequest.pagination())
+                    .build();
+            return teamPersistence.count(qCtx2);
+        });
+    }
+
+    @Override
     public Mono<Entity<Team>> create(String name, String topic) {
         return authFacade.getConnectedUser().flatMap(manager -> {
             String id = PREFIX + idGenerator.create().toString();
@@ -61,36 +101,6 @@ public class TeamServiceImpl implements TeamsService {
                             .build())
                     .thenReturn(id);
         }).flatMap(this::get);
-    }
-
-    @Override
-    public Flux<Entity<Team>> list(PageRequest pageRequest) {
-        return authFacade.getConnectedUser().flatMapMany(member -> {
-            if (RoleUtils.hasRole(member.self, Role.ADMIN)) {
-                return teamPersistence.list(QueryContext.from(pageRequest));
-            }
-            QueryContext qCtx = QueryContext.builder()
-                    .filter(pageRequest.filter())
-                    .userId(member.id)
-                    .build();
-            return teamMemberPersistence.list(qCtx).map(e -> e.id)
-                    .collectList()
-                    .flatMapMany(ids -> {
-                                QueryContext qCtx2 = QueryContext.builder()
-                                        .filter(pageRequest.filter().and(Criteria.property(ID).in(ids)))
-                                        .pagination(pageRequest.pagination())
-                                        .build();
-                                return teamPersistence.list(qCtx2);
-                            }
-                    );
-        });
-    }
-
-    @Override
-    public Mono<Integer> count(PageRequest pageRequest) {
-        QueryContext qCtx = QueryContext.from(pageRequest);
-        return authFacade.getConnectedUser().flatMap(manager ->
-                teamPersistence.count(qCtx.withUserId(manager.id)));
     }
 
     @Override

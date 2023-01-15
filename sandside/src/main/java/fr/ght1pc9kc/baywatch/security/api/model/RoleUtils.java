@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 public final class RoleUtils {
 
     private static final String SPRING_ROLE_PREFIX = "ROLE_";
+    private static final String ROLE_ENTITY_SEPARATOR = ":";
     private static final Entity<User> SYSTEM = Entity.identify(Role.SYSTEM.name(), User.builder()
             .name(Role.SYSTEM.name())
             .login(Role.SYSTEM.name().toLowerCase())
@@ -51,7 +52,7 @@ public final class RoleUtils {
         }
         boolean hasRole = false;
         Set<String> userRoles = Objects.isNull(entity)
-                ? user.roles.stream().map(r -> r.split(":")[0]).collect(Collectors.toUnmodifiableSet())
+                ? user.roles.stream().map(r -> r.split(ROLE_ENTITY_SEPARATOR)[0]).collect(Collectors.toUnmodifiableSet())
                 : user.roles;
 
         for (Role role : Role.values()) {
@@ -64,6 +65,25 @@ public final class RoleUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * returns the set of {@link Entity#id} for which the {@link User} has the given {@link Role}
+     *
+     * @param user The user to inspect
+     * @param role The checked role
+     * @return The list of entities
+     */
+    public static Set<String> getEntitiesFor(User user, Role role) {
+        if (Objects.isNull(user) || Objects.isNull(role)) {
+            return Set.of();
+        }
+
+        return user.roles.stream()
+                .map(r -> r.split(ROLE_ENTITY_SEPARATOR))
+                .filter(r -> role.name().equals(r[0]) && r.length == 2)
+                .map(r -> r[1])
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     /**
