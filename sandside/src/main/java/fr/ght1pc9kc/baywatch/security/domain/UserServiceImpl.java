@@ -6,6 +6,7 @@ import fr.ght1pc9kc.baywatch.common.domain.MailAddress;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
+import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
@@ -14,6 +15,7 @@ import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.security.api.model.RoleUtils.hasRole;
@@ -67,8 +70,11 @@ public final class UserServiceImpl implements UserService {
     @Override
     public Mono<Entity<User>> update(String id, User user) {
         return authorizeSelfData(id).flatMap(u -> {
-            User withPassword = (user.password != null) ? user.withPassword(passwordEncoder.encode(user.password)) : user;
-            return userRepository.update(id, withPassword);
+            User checkedUser = user.toBuilder()
+                    .clearRoles()
+                    .password(Objects.nonNull(user.password) ? passwordEncoder.encode(user.password) : null)
+                    .build();
+            return userRepository.update(id, checkedUser);
         });
     }
 
@@ -82,6 +88,31 @@ public final class UserServiceImpl implements UserService {
                         .collectList()
                         .flatMap(userRepository::delete)
                         .thenReturn(users));
+    }
+
+    @Override
+    public Mono<Entity<User>> grantRole(String id, Role role, String entity) {
+        return authorizeSelfData(id).map(u -> {
+            if (role != Role.MANAGER && !RoleUtils.hasRole(u.self, role)) {
+                throw new UnauthorizedOperation("User unauthorized for this operation !");
+            }
+            if (Objects.nonNull(entity)) {
+                return String.format(Role.FORMAT, role.name(), entity);
+            } else {
+                return role.name();
+            }
+        }).flatMap(roleRepresentation -> userRepository.persist(id, List.of(roleRepresentation)));
+    }
+
+    @Override
+    public Mono<Entity<User>> revokeRole(String id, Role role, @Nullable String entity) {
+        return authorizeSelfData(id).map(u -> {
+            if (Objects.nonNull(entity)) {
+                return String.format(Role.FORMAT, role.name(), entity);
+            } else {
+                return role.name();
+            }
+        }).flatMap(roleRepresentation -> userRepository.persist(id, List.of(roleRepresentation)));
     }
 
     private Mono<Entity<User>> authorizeSelfData(String id) {

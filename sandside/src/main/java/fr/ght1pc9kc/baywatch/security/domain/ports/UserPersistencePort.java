@@ -19,12 +19,30 @@ public interface UserPersistencePort {
 
     /**
      * Persist all {@link Entity} given as argument.
-     * If error throw during insert, all the transaction was rollback and nothinh was persisted
+     * If error throw during insert, all the transaction was rollback and nothing was persisted
      *
      * @param users A collection af {@link User} {@link Entity}
      * @return the persisted {@link User} {@link Entity}
      */
     Flux<Entity<User>> persist(Collection<Entity<User>> users);
+
+    /**
+     * Persist new roles line for user id in roles tables
+     *
+     * @param userId The user ID
+     * @param roles  The role string representation
+     * @return The new list of roles for the user ID
+     */
+    Mono<Entity<User>> persist(String userId, Collection<String> roles);
+
+    /**
+     * Delete roles line for user id in roles tables
+     *
+     * @param userId The user ID
+     * @param roles  The role string representation
+     * @return The new list of roles for the user ID
+     */
+    Mono<Entity<User>> delete(String userId, Collection<String> roles);
 
     Mono<Entity<User>> update(String id, User user);
 
