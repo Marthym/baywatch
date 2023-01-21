@@ -93,6 +93,7 @@ public final class UserServiceImpl implements UserService {
 
     @Override
     public Mono<Entity<User>> grantRole(String id, Role role, String entity) {
+        //FIXME: Un utilisateur ne doit pouvoir se mettre MANAGER d'une équipe que s'il n'y as pas déjà un manager
         return authorizeSelfData(id).map(u -> {
             if (role != Role.MANAGER && !RoleUtils.hasRole(u.self, role)) {
                 throw new UnauthorizedOperation("User unauthorized for this operation !");

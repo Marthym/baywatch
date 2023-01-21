@@ -26,6 +26,7 @@ import reactor.core.publisher.Mono;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.List;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 
@@ -91,14 +92,21 @@ public class TeamServiceImpl implements TeamsService {
 
     @Override
     public Mono<Entity<Team>> create(String name, String topic) {
+        Instant now = clock().instant();
         return authFacade.getConnectedUser().flatMap(manager -> {
             String id = PREFIX + idGenerator.create().toString();
             return teamPersistence.persist(Entity.<Team>builder()
                             .id(id)
                             .self(new Team(name, topic))
-                            .createdAt(clock().instant())
+                            .createdAt(now)
                             .createdBy(manager.id)
                             .build())
+                    .then(teamMemberPersistence.add(List.of(Entity.<TeamMember>builder().id(id)
+                            .self(new TeamMember(manager.id, PendingFor.NONE))
+                            .createdBy(manager.id)
+                            .createdAt(now)
+                            .build())))
+                    .then(authFacade.grantAuthorization(Role.manager(id)))
                     .thenReturn(id);
         }).flatMap(this::get);
     }
@@ -131,8 +139,8 @@ public class TeamServiceImpl implements TeamsService {
                 .flatMapMany(user -> {
                     PendingFor pending = RoleUtils.hasRole(user.self, Role.MANAGER, id) ? PendingFor.USER : PendingFor.MANAGER;
                     return Flux.fromStream(membersIds.stream()
-                            .map(mId -> Entity.<PendingFor>builder().id(id + ":" + mId)
-                                    .self(pending)
+                            .map(mId -> Entity.<TeamMember>builder().id(id)
+                                    .self(new TeamMember(mId, pending))
                                     .createdBy(user.id)
                                     .createdAt(now)
                                     .build()));

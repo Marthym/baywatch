@@ -29,7 +29,9 @@ import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class TeamServiceImplTest {
@@ -62,6 +64,7 @@ class TeamServiceImplTest {
     @BeforeEach
     void setUp(DSLContext dsl) {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
+        when(mockAuthFacade.grantAuthorization(any())).thenReturn(Mono.empty().then());
 
         Scheduler immediate = Schedulers.immediate();
         TeamsMapper mapper = Mappers.getMapper(TeamsMapper.class);
@@ -107,8 +110,8 @@ class TeamServiceImplTest {
                 .assertNext(actual -> assertAll(
                         () -> Assertions.assertThat(actual.id).isNotBlank(),
                         () -> Assertions.assertThat(actual.createdBy).isEqualTo(UserSamples.OBIWAN.id),
-                        () -> Assertions.assertThat(actual.self.name()).isEqualTo("Jedi council team")
+                        () -> Assertions.assertThat(actual.self.name()).isEqualTo("Jedi council team"),
+                        () -> verify(mockAuthFacade).grantAuthorization("MANAGER:" + actual.id)
                 )).verifyComplete();
-
     }
 }
