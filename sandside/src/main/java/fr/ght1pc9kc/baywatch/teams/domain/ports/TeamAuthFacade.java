@@ -11,4 +11,13 @@ public interface TeamAuthFacade {
      * @return The connected user.
      */
     Mono<Entity<User>> getConnectedUser();
+
+    /**
+     * Grant a {@code MANAGER} permission for et team to the current user
+     *
+     * @param authorization The permission
+     * @return {@code Void} when operation was finished
+     * @throws IllegalArgumentException if authorization does not contain entity ID or if the role is unknown
+     */
+    Mono<Void> grantAuthorization(String authorization);
 }

@@ -4,7 +4,6 @@ import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.TeamsMembersRecord;
 import fr.ght1pc9kc.baywatch.teams.api.model.TeamMember;
-import fr.ght1pc9kc.baywatch.teams.domain.model.PendingFor;
 import fr.ght1pc9kc.baywatch.teams.domain.ports.TeamMemberPersistencePort;
 import fr.ght1pc9kc.baywatch.teams.infra.mappers.TeamsMapper;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
@@ -65,7 +64,7 @@ public class MembersPersistenceAdapter implements TeamMemberPersistencePort {
     }
 
     @Override
-    public Mono<Void> add(Collection<Entity<PendingFor>> requests) {
+    public Mono<Void> add(Collection<Entity<TeamMember>> requests) {
         Query[] queries = requests.stream()
                 .map(teamsMapper::getTeamsMemberRecord)
                 .map(r -> dsl.insertInto(TEAMS_MEMBERS).set(r)

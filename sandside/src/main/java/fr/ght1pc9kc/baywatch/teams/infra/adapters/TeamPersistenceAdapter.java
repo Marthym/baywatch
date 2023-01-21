@@ -68,7 +68,7 @@ public class TeamPersistenceAdapter implements TeamPersistencePort {
 
     @Override
     public Mono<Void> persist(Entity<Team> toPersist) {
-        TeamsRecord teamsRecord = teamsMapper.teamToRecord(toPersist);
+        TeamsRecord teamsRecord = teamsMapper.getTeamRecord(toPersist);
         TeamsRecord update = teamsRecord.copy();
         update.reset(TEAMS.TEAM_CREATED_AT);
         update.reset(TEAMS.TEAM_CREATED_BY);
