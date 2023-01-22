@@ -5,7 +5,9 @@ import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -43,28 +45,51 @@ public final class RoleUtils {
      * @param user         The user to test
      * @param expectedRole The minimal expected role without the entity ID
      * @param entity       The entity id
-     * @return {@code TRUE} if the user has the role for all entity or for the specified entity
+     * @return {@code TRUE} if the user entity or for the specified entity
      */
     public static boolean hasRole(User user, @NotNull Role expectedRole, @Nullable String entity) {
         Objects.requireNonNull(expectedRole);
         if (Objects.isNull(user)) {
             return false;
         }
-        boolean hasRole = false;
-        Set<String> userRoles = Objects.isNull(entity)
-                ? user.roles.stream().map(r -> r.split(ROLE_ENTITY_SEPARATOR)[0]).collect(Collectors.toUnmodifiableSet())
-                : user.roles;
 
-        for (Role role : Role.values()) {
-            if (userRoles.contains(role.name()) ||
-                    (Objects.nonNull(entity) && userRoles.contains(String.format(Role.FORMAT, role.name(), entity)))) {
-                hasRole = true;
-            }
-            if (role == expectedRole) {
-                return hasRole;
-            }
-        }
-        return false;
+        return user.roles.stream()
+                .map(r -> {
+                    String[] split = r.split(String.valueOf(Role.ENTITY_SEPARATOR));
+                    return Map.entry(Role.valueOf(split[0]),
+                            Optional.ofNullable((split.length > 1) ? split[1] : null));
+                })
+                .anyMatch(t -> {
+                    if (t.getKey().ordinal() < expectedRole.ordinal()) {
+                        return true;
+                    }
+                    if (t.getKey().ordinal() > expectedRole.ordinal()) {
+                        return false;
+                    }
+                    if (entity == null) {
+                        return true;
+                    }
+                    if (t.getValue().isPresent()) {
+                        return t.getValue().get().equals(entity);
+                    }
+                    return false;
+                });
+
+//        boolean hasRole = false;
+//        Set<String> userRoles = Objects.isNull(entity)
+//                ? user.roles.stream().map(r -> r.split(ROLE_ENTITY_SEPARATOR)[0]).collect(Collectors.toUnmodifiableSet())
+//                : user.roles;
+//
+//        for (Role role : Role.values()) {
+//            if (userRoles.contains(role.name()) ||
+//                    (Objects.nonNull(entity) && userRoles.contains(String.format(Role.FORMAT, role.name(), entity)))) {
+//                hasRole = true;
+//            }
+//            if (role == expectedRole) {
+//                return hasRole;
+//            }
+//        }
+//        return false;
     }
 
     /**

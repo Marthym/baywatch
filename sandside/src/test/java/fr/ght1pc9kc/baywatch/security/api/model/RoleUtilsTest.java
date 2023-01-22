@@ -15,12 +15,14 @@ class RoleUtilsTest {
     @CsvSource(delimiter = '|', textBlock = """
                                                         | MANAGER |                                 | false
                 USER                                    | MANAGER |                                 | false
+                USER                                    | USER    |                                 | true
                 MANAGER                                 | MANAGER |                                 | true
                 ADMIN                                   | MANAGER |                                 | true
                 SYSTEM                                  | MANAGER |                                 | true
                 MANAGER:TM01GNPWYV8Z0W96J0DA8FG1TM18    | MANAGER |                                 | true
                 MANAGER:TM01GNPWYV8Z0W96J0DA8FG1TM18    | MANAGER | TM01GNPWYV8Z0W96J0DA8FG1TM16    | false
                 ADMIN                                   | MANAGER | TM01GNPWYV8Z0W96J0DA8FG1TM16    | true
+                MANAGER                                 | MANAGER | TM01GNPWYV8Z0W96J0DA8FG1TM16    | false
                 NOT_A_ROLE                              | USER    |                                 | false
             """)
     void should_check_user_has_role(String role, Role compare, String entity, boolean expected) {
