@@ -1,10 +1,10 @@
 package fr.ght1pc9kc.baywatch.security.api;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.juery.api.PageRequest;
-import org.jetbrains.annotations.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -53,44 +53,24 @@ public interface UserService {
     Flux<Entity<User>> delete(Collection<String> ids);
 
     /**
-     * Grant {@link User} to a new {@link Role}
+     * Grant a set of {@link Permission} to a {@link User}.
+     * A {@code Connected User} can grant permission only if he always have the permission himself
+     * or if the {@link Permission} is an {@code Authorization} on entity and if no other user have the same permission.
      *
-     * @param id   The User ID
-     * @param role The role to grant the user
-     * @return The user with the current updated roles
+     * @param userId      The user ID to grant
+     * @param permissions The set of permission to grant to the user
+     * @return The granted user with the new set of permission.
      */
-    default Mono<Entity<User>> grantRole(String id, Role role) {
-        return grantRole(id, role, null);
-    }
+    Mono<Entity<User>> grants(String userId, Collection<Permission> permissions);
 
     /**
-     * Grant {@link User} to a new {@link Role}
+     * Revoke a set of {@link Permission} from a {@link User}.
+     * An {@link Role#ADMIN} user can revoke any permissions to any user.
+     * A standard user can only revoke its own permissions
      *
-     * @param id     The User ID
-     * @param role   The role to grant the user
-     * @param entity The entity ID if the role is limited to an entity
-     * @return The user with the current updated roles
+     * @param userId      The user ID to revoke
+     * @param permissions The set of permission to revoke to the user
+     * @return The revoked user with the new set of permission.
      */
-    Mono<Entity<User>> grantRole(String id, Role role, @Nullable String entity);
-
-    /**
-     * Revoke a {@link Role} accès for a {@link User}
-     *
-     * @param id   The User ID to revoke accès
-     * @param role The revoked role
-     * @return The User with the new updated role set
-     */
-    default Mono<Entity<User>> revokeRole(String id, Role role) {
-        return revokeRole(id, role, null);
-    }
-
-    /**
-     * Revoke a {@link Role} accès for a {@link User}
-     *
-     * @param id     The User ID to revoke accès
-     * @param role   The revoked role
-     * @param entity The entity ID to revoke the role limited to
-     * @return The User with the new updated role set
-     */
-    Mono<Entity<User>> revokeRole(String id, Role role, @Nullable String entity);
+    Mono<Entity<User>> revokes(String userId, Collection<Permission> permissions);
 }

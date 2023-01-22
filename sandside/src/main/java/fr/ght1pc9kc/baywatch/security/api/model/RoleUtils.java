@@ -3,7 +3,6 @@ package fr.ght1pc9kc.baywatch.security.api.model;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Set;
@@ -33,57 +32,76 @@ public final class RoleUtils {
      * @return {@code TRUE} if the user has the role
      */
     public static boolean hasRole(User user, @NotNull Role expectedRole) {
-        return hasRole(user, expectedRole, null);
+        return hasPermission(user, expectedRole);
     }
 
     /**
-     * Check if {@link User} has an expected {@link Role} or higher for a specified entity ID.
+     * Check if {@link User} has an expected {@link Permission} or higher for a specified entity ID.
      *
-     * @param user         The user to test
-     * @param expectedRole The minimal expected role without the entity ID
-     * @param entity       The entity id
-     * @return {@code TRUE} if the user has the role for all entity or for the specified entity
+     * @param user       The user to test
+     * @param permission The permission check for the user
+     * @return {@code TRUE} if the user entity or for the specified entity
      */
-    public static boolean hasRole(User user, @NotNull Role expectedRole, @Nullable String entity) {
-        Objects.requireNonNull(expectedRole);
-        if (Objects.isNull(user)) {
+    public static boolean hasPermission(User user, @NotNull Permission permission) {
+        if (Objects.isNull(user) || user.roles.isEmpty()) {
             return false;
         }
-        boolean hasRole = false;
-        Set<String> userRoles = Objects.isNull(entity)
-                ? user.roles.stream().map(r -> r.split(":")[0]).collect(Collectors.toUnmodifiableSet())
-                : user.roles;
 
-        for (Role role : Role.values()) {
-            if (userRoles.contains(role.name()) ||
-                    (Objects.nonNull(entity) && userRoles.contains(String.format(Role.FORMAT, role.name(), entity)))) {
-                hasRole = true;
-            }
-            if (role == expectedRole) {
-                return hasRole;
-            }
-        }
-        return false;
+        return user.roles.stream()
+                .map(Permission::from)
+                .anyMatch(perm -> {
+                    if (perm.equals(permission) || perm.role().ordinal() < permission.role().ordinal()) {
+                        return true;
+                    }
+                    if (perm.role().ordinal() > permission.role().ordinal()) {
+                        return false;
+                    }
+                    if (permission.entity().isEmpty()) {
+                        return true;
+                    }
+                    if (perm.entity().isPresent()) {
+                        return perm.entity().equals(permission.entity());
+                    }
+                    return false;
+                });
     }
 
     /**
-     * Return the {@link Role} prefixed by {@code "ROLE"} for Spring authority
-     * or the Role Entity authority if the role string contains an entity ID
+     * returns the set of {@link Entity#id} for which the {@link User} has the given {@link Role}
      *
-     * @param role The role or the entity authority
+     * @param user The user to inspect
+     * @param role The checked role
+     * @return The list of entities
+     */
+    public static Set<String> getEntitiesFor(User user, Role role) {
+        if (Objects.isNull(user) || Objects.isNull(role)) {
+            return Set.of();
+        }
+
+        return user.roles.stream()
+                .map(Permission::from)
+                .filter(perm -> role == perm.role() && perm.entity().isPresent())
+                .map(perm -> perm.entity().orElse(""))
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    /**
+     * Return the {@link Role} prefixed by {@code "ROLE_"} for Spring authority
+     * or the Permission authority if the role string contains an entity ID
+     *
+     * @param permission The permission to change into Spring Authority
      * @return The Spring authority string
      */
-    public String toSpringAuthority(String role) {
+    public String toSpringAuthority(String permission) {
         try {
-            String[] roleEntity = role.split(":");
-            Role verifiedRole = Role.valueOf(roleEntity[0]);
-            if (roleEntity.length == 2) {
-                return role;
+            Permission perm = Permission.from(permission);
+            if (perm.entity().isPresent()) {
+                return permission;
             } else {
-                return SPRING_ROLE_PREFIX + verifiedRole.name();
+                return SPRING_ROLE_PREFIX + perm.role().name();
             }
         } catch (Exception e) {
-            throw new IllegalArgumentException(role + " is not a valid Role", e);
+            throw new IllegalArgumentException(permission + " is not a valid Role", e);
         }
     }
 
@@ -96,17 +114,8 @@ public final class RoleUtils {
      */
     public String fromSpringAuthority(String authority) {
         try {
-            String[] roleEntity = authority.split(":");
-            String role = (roleEntity[0].startsWith(SPRING_ROLE_PREFIX))
-                    ? roleEntity[0].substring(SPRING_ROLE_PREFIX.length())
-                    : roleEntity[0];
-            Role verifiedRole = Role.valueOf(role);
-
-            if (roleEntity.length == 2) {
-                return String.format(Role.FORMAT, verifiedRole.name(), roleEntity[1]);
-            } else {
-                return verifiedRole.name();
-            }
+            String[] withoutPrefix = authority.split(SPRING_ROLE_PREFIX);
+            return Permission.from(withoutPrefix[withoutPrefix.length - 1]).toString();
         } catch (Exception e) {
             throw new IllegalArgumentException(authority + " is not a valid Authority", e);
         }

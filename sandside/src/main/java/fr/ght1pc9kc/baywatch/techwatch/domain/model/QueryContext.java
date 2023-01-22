@@ -12,7 +12,8 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 @Value
 @Builder
 public final class QueryContext {
-    public final Pagination pagination;
+    @Builder.Default
+    public final Pagination pagination = Pagination.ALL;
     public final Criteria filter;
     @With
     public final String userId;
@@ -33,6 +34,12 @@ public final class QueryContext {
         return new QueryContext(Pagination.FIRST, qCtx.filter, qCtx.userId);
     }
 
+    /**
+     * Build a context to retrieve <b>only ONE element</b> by its ID.
+     *
+     * @param id The ID of the wanted element
+     * @return A context for ONE and only ONE element
+     */
     public static QueryContext id(String id) {
         return new QueryContext(Pagination.FIRST, Criteria.property(ID).eq(id), null);
     }

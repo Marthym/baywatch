@@ -94,6 +94,14 @@ public class UserRepository implements UserPersistencePort {
     }
 
     @Override
+    public Mono<Integer> countPermission(Collection<String> permissions) {
+        if (permissions.isEmpty()) {
+            return Mono.just(0);
+        }
+        return Mono.fromCallable(() -> dsl.fetchCount(USERS_ROLES, USERS_ROLES.USRO_ROLE.in(permissions)));
+    }
+
+    @Override
     public Flux<Entity<User>> persist(Collection<Entity<User>> toPersist) {
         List<UsersRecord> usersRecords = toPersist.stream()
                 .map(baywatchConverter::entityUserToRecord)
