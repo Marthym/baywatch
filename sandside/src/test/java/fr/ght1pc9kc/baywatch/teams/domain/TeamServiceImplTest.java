@@ -1,6 +1,11 @@
 package fr.ght1pc9kc.baywatch.teams.domain;
 
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.dsl.tables.Teams;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.TeamsRecord;
+import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.teams.api.TeamsService;
+import fr.ght1pc9kc.baywatch.teams.api.exceptions.TeamPermissionDenied;
 import fr.ght1pc9kc.baywatch.teams.domain.ports.TeamAuthFacade;
 import fr.ght1pc9kc.baywatch.teams.infra.adapters.MembersPersistenceAdapter;
 import fr.ght1pc9kc.baywatch.teams.infra.adapters.TeamPersistenceAdapter;
@@ -22,13 +27,21 @@ import org.jooq.DSLContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mapstruct.factory.Mappers;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 
+import java.util.stream.Stream;
+
+import static fr.ght1pc9kc.baywatch.teams.infra.samples.TeamsRecordSamples.JEDI_TEAM;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Named.named;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -63,7 +76,7 @@ class TeamServiceImplTest {
 
     @BeforeEach
     void setUp(DSLContext dsl) {
-        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
         when(mockAuthFacade.grantAuthorization(any())).thenReturn(Mono.empty().then());
 
         Scheduler immediate = Schedulers.immediate();
@@ -112,6 +125,52 @@ class TeamServiceImplTest {
                         () -> Assertions.assertThat(actual.createdBy).isEqualTo(UserSamples.OBIWAN.id),
                         () -> Assertions.assertThat(actual.self.name()).isEqualTo("Jedi council team"),
                         () -> verify(mockAuthFacade).grantAuthorization("MANAGER:" + actual.id)
+                )).verifyComplete();
+    }
+
+    @ParameterizedTest
+    @MethodSource({"allowedTeamModificationUsers"})
+    void should_update_managed_team(Entity<User> manager, DSLContext dsl) {
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(manager));
+
+        StepVerifier.create(tested.update(JEDI_TEAM.getTeamId(), "Luke Skywalker Team", "The new topic for Skywalker"))
+                .assertNext(actual -> assertAll(
+                        () -> Assertions.assertThat(actual.id).isEqualTo(JEDI_TEAM.getTeamId()),
+                        () -> Assertions.assertThat(actual.self.name()).isEqualTo("Luke Skywalker Team"),
+                        () -> Assertions.assertThat(actual.self.topic()).isEqualTo("The new topic for Skywalker")
+                )).verifyComplete();
+
+        TeamsRecord actual = dsl.selectFrom(Teams.TEAMS).where(Teams.TEAMS.TEAM_ID.eq(JEDI_TEAM.getTeamId()))
+                .fetchOne();
+        assertAll(
+                () -> Assertions.assertThat(actual).isNotNull(),
+                () -> Assertions.assertThat(actual).isNotNull().extracting(TeamsRecord::getTeamId).isEqualTo(JEDI_TEAM.getTeamId()),
+                () -> Assertions.assertThat(actual).isNotNull().extracting(TeamsRecord::getTeamName).isEqualTo("Luke Skywalker Team"),
+                () -> Assertions.assertThat(actual).isNotNull().extracting(TeamsRecord::getTeamTopic).isEqualTo("The new topic for Skywalker")
+        );
+    }
+
+    static Stream<Arguments> allowedTeamModificationUsers() {
+        return Stream.of(
+                arguments(named(UserSamples.LUKE.self.name, UserSamples.LUKE)),
+                arguments(named(UserSamples.YODA.self.name, UserSamples.YODA))
+        );
+    }
+
+    @Test
+    void should_fail_to_update_unmanaged_team() {
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
+
+        StepVerifier.create(tested.update(JEDI_TEAM.getTeamId(), "Luke Skywalker Team", "The new topic for Skywalker"))
+                .verifyError(TeamPermissionDenied.class);
+    }
+
+    @Test
+    void should_list_team_members() {
+        StepVerifier.create(tested.members(JEDI_TEAM.getTeamId()).map(e -> e.self.userId()).collectList())
+                .assertNext(actual -> Assertions.assertThat(actual).containsOnly(
+                        UserSamples.LUKE.id,
+                        UserSamples.OBIWAN.id
                 )).verifyComplete();
     }
 }

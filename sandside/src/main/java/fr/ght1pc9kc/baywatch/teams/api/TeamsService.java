@@ -66,6 +66,12 @@ public interface TeamsService {
      */
     Mono<Entity<Team>> update(String id, String name, String topic);
 
+    /**
+     * List the members of a specified {@link Team}
+     *
+     * @param id The ID of the Team
+     * @return A flux of TeamMember as Entity
+     */
     Flux<Entity<TeamMember>> members(String id);
 
     /**

@@ -3,7 +3,6 @@ package fr.ght1pc9kc.baywatch.teams.infra.samples;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.TeamsMembersRecord;
 import fr.ght1pc9kc.baywatch.teams.domain.model.PendingFor;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
-import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
 import fr.ght1pc9kc.testy.jooq.model.RelationalDataSet;
 
 import java.time.LocalDateTime;
@@ -26,14 +25,8 @@ public class TeamsMembersRecordSamples implements RelationalDataSet<TeamsMembers
                 TEAMS_MEMBERS.newRecord()
                         .setTemeTeamId(TeamsRecordSamples.JEDI_TEAM.getTeamId())
                         .setTemeUserId(UserSamples.OBIWAN.id)
-                        .setTemeCreatedBy(UserSamples.OBIWAN.id)
+                        .setTemeCreatedBy(UserSamples.LUKE.id)
                         .setTemeCreatedAt(LocalDateTime.parse("2023-01-12T22:52:42"))
-                        .setTemePendingFor(PendingFor.NONE.value()),
-                TEAMS_MEMBERS.newRecord()
-                        .setTemeTeamId(TeamsRecordSamples.JEDI_TEAM.getTeamId())
-                        .setTemeUserId(UserSamples.YODA.id)
-                        .setTemeCreatedBy(UsersRecordSamples.LSKYWALKER.getUserId())
-                        .setTemeCreatedAt(LocalDateTime.parse("2023-01-14T22:52:42"))
                         .setTemePendingFor(PendingFor.NONE.value())
         );
     }
