@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.teams.api;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.teams.api.exceptions.TeamPermissionDenied;
 import fr.ght1pc9kc.baywatch.teams.api.model.Team;
 import fr.ght1pc9kc.baywatch.teams.api.model.TeamMember;
 import fr.ght1pc9kc.juery.api.PageRequest;
@@ -61,8 +62,8 @@ public interface TeamsService {
      * @param name  The name of the team
      * @param topic The topic or description of the team
      * @return The updated Team with its members
-     * @throws fr.ght1pc9kc.baywatch.teams.api.exceptions.TeamPermissionDenied if Team ULID is not managed by the
-     *                                                                         current {@link fr.ght1pc9kc.baywatch.security.api.model.User}
+     * @throws TeamPermissionDenied if Team ULID is not managed by the
+     *                              current {@link fr.ght1pc9kc.baywatch.security.api.model.User}
      */
     Mono<Entity<Team>> update(String id, String name, String topic);
 
@@ -84,11 +85,13 @@ public interface TeamsService {
     Flux<Entity<TeamMember>> addMembers(String id, Collection<String> membersIds);
 
     /**
-     * Add members to remove from the team
+     * Remove members from the team.
      *
      * @param id         The ULID of the {@link Team} to update
      * @param membersIds The {@link fr.ght1pc9kc.baywatch.security.api.model.User} IDs to remove from the team
      * @return The complete updated list of members IDs
+     * @throws TeamPermissionDenied if current {@code User} hasn't {@code MANAGER} permission for the specified Team
+     *                              or if the current {@code User#id} is not the only element of the list
      */
     Flux<Entity<TeamMember>> removeMembers(String id, Collection<String> membersIds);
 
@@ -99,8 +102,8 @@ public interface TeamsService {
      *
      * @param ids A collection of {@link Team} ULIDs to delete
      * @return The deleted Teams ULIDs
-     * @throws fr.ght1pc9kc.baywatch.teams.api.exceptions.TeamPermissionDenied when one or more ids was not managed by
-     *                                                                         current {@link fr.ght1pc9kc.baywatch.security.api.model.User}
+     * @throws TeamPermissionDenied when one or more ids was not managed by
+     *                              current {@link fr.ght1pc9kc.baywatch.security.api.model.User}
      */
     Flux<String> delete(Collection<String> ids);
 }

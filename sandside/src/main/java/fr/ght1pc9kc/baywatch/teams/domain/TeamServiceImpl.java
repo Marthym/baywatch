@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.teams.domain;
 
 import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.teams.api.TeamsService;
@@ -27,6 +28,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 
@@ -106,7 +108,7 @@ public class TeamServiceImpl implements TeamsService {
                             .createdBy(manager.id)
                             .createdAt(now)
                             .build())))
-                    .then(authFacade.grantAuthorization(Role.manager(id)))
+                    .then(authFacade.grantAuthorization(List.of(Permission.manager(id).toString())))
                     .thenReturn(id);
         }).flatMap(this::get);
     }
@@ -114,7 +116,7 @@ public class TeamServiceImpl implements TeamsService {
     @Override
     public Mono<Entity<Team>> update(String id, String name, String topic) {
         return authFacade.getConnectedUser()
-                .filter(user -> RoleUtils.hasRole(user.self, Role.MANAGER, id))
+                .filter(user -> RoleUtils.hasPermission(user.self, Permission.manager(id)))
                 .switchIfEmpty(Mono.error(() -> new TeamPermissionDenied("You must be manager of the team to update it !")))
                 .flatMap(manager ->
                         teamPersistence.persist(Entity.<Team>builder()
@@ -137,7 +139,7 @@ public class TeamServiceImpl implements TeamsService {
         Instant now = clock().instant();
         return authFacade.getConnectedUser()
                 .flatMapMany(user -> {
-                    PendingFor pending = RoleUtils.hasRole(user.self, Role.MANAGER, id) ? PendingFor.USER : PendingFor.MANAGER;
+                    PendingFor pending = RoleUtils.hasPermission(user.self, Permission.manager(id)) ? PendingFor.USER : PendingFor.MANAGER;
                     return Flux.fromStream(membersIds.stream()
                             .map(mId -> Entity.<TeamMember>builder().id(id)
                                     .self(new TeamMember(mId, pending))
@@ -146,27 +148,31 @@ public class TeamServiceImpl implements TeamsService {
                                     .build()));
                 }).collectList()
                 .flatMap(teamMemberPersistence::add)
-                .thenMany(teamMemberPersistence.list(QueryContext.id(id)));
+                .thenMany(teamMemberPersistence.list(QueryContext.all(Criteria.property(ID).eq(id))));
     }
 
     @Override
     public Flux<Entity<TeamMember>> removeMembers(String id, Collection<String> membersIds) {
         return authFacade.getConnectedUser()
-                .filter(user -> RoleUtils.hasRole(user.self, Role.MANAGER, id))
+                .filter(user -> RoleUtils.hasPermission(user.self, Permission.manager(id)) || (membersIds.stream().allMatch(user.id::equals)))
                 .switchIfEmpty(Mono.error(() -> new TeamPermissionDenied("You must be manager of the team to remove users !")))
                 .flatMap(ignore -> teamMemberPersistence.remove(id, membersIds))
-                .thenMany(teamMemberPersistence.list(QueryContext.id(id)));
+                .thenMany(teamMemberPersistence.list(QueryContext.all(Criteria.property(ID).eq(id))));
     }
 
     @Override
     public Flux<String> delete(Collection<String> ids) {
         return authFacade.getConnectedUser()
-                .flatMapMany(user -> Flux.fromIterable(ids).filter(id -> RoleUtils.hasRole(user.self, Role.MANAGER, id)))
+                .flatMapMany(user -> Flux.fromIterable(ids).filter(id -> RoleUtils.hasPermission(user.self, Permission.manager(id))))
                 .switchIfEmpty(Mono.error(() -> new TeamPermissionDenied("You must be manager of the team to delete it !")))
                 .collectList()
                 .flatMap(teamsIds ->
                         teamMemberPersistence.clear(teamsIds)
                                 .then(teamPersistence.delete(ids))
+                                .then(authFacade.revokeAuthorization(
+                                        teamsIds.stream()
+                                                .map(id -> Permission.manager(id).toString())
+                                                .collect(Collectors.toUnmodifiableSet())))
                                 .thenReturn(teamsIds))
                 .flatMapMany(Flux::fromIterable);
     }

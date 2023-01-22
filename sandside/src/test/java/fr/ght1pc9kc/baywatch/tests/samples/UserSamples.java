@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.tests.samples;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
+import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 
@@ -35,8 +36,8 @@ public final class UserSamples {
                     .build());
 
     /**
-     * The {@link Role#USER} role {@link User} and
-     * {@link Role#MANAGER} for {@code TM01GP696RFPTY32WD79CVB0KDTF}
+     * The {@link User} role {@link Role#USER} and
+     * {@link Role#MANAGER} for {@code TM01GP696RFPTY32WD79CVB0KDTF} (JEDI_TEAM)
      */
     public static final Entity<User> LUKE = Entity.identify(
             Hasher.sha3("luke.skywalker@jedi.com"),
@@ -45,8 +46,23 @@ public final class UserSamples {
                     .name("Luke Skywalker")
                     .mail("luke.skywalker@jedi.com")
                     .role(Role.USER.name())
-                    .role(Role.manager("TM01GP696RFPTY32WD79CVB0KDTF"))
+                    .role(Permission.manager("TM01GP696RFPTY32WD79CVB0KDTF").toString())
                     .password("ekul")
+                    .build());
+
+    /**
+     * The {@link User} role {@link Role#USER} and
+     * {@link Role#MANAGER} for {@code TM01GPETWVATJ968SJ717NRHYSEZ} (SITH_TEAM)
+     */
+    public static final Entity<User> DSIDIOUS = Entity.identify(
+            Hasher.sha3("darth.sidious@sith.com"),
+            User.builder()
+                    .login("dsidious")
+                    .name("Darth Sidious")
+                    .mail("darth.sidious@sith.com")
+                    .role(Role.USER.name())
+                    .role(Permission.manager("TM01GPETWVATJ968SJ717NRHYSEZ").toString())
+                    .password("suoidis")
                     .build());
 
     /**
