@@ -5,6 +5,7 @@ import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.common.domain.MailAddress;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
+import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
@@ -15,12 +16,12 @@ import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.AllArgsConstructor;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -92,29 +93,41 @@ public final class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<Entity<User>> grantRole(String id, Role role, String entity) {
-        //FIXME: Un utilisateur ne doit pouvoir se mettre MANAGER d'une équipe que s'il n'y as pas déjà un manager
-        return authorizeSelfData(id).map(u -> {
-            if (role != Role.MANAGER && !RoleUtils.hasRole(u.self, role)) {
-                throw new UnauthorizedOperation("User unauthorized for this operation !");
+    public Mono<Entity<User>> grants(String grantedUserId, Collection<Permission> permissions) {
+        return authFacade.getConnectedUser().flatMap(currentUser -> {
+            var tobeVerified = new ArrayList<String>();
+            boolean selfGrant = currentUser.id.equals(grantedUserId);
+
+            for (Permission perm : permissions) {
+                if (!RoleUtils.hasPermission(currentUser.self, perm)) {
+                    if (perm.entity().isPresent() && selfGrant) {
+                        tobeVerified.add(perm.toString());
+                    } else {
+                        return Mono.error(() -> new UnauthorizedOperation("Unauthorized grant operation !"));
+                    }
+                }
             }
-            if (Objects.nonNull(entity)) {
-                return String.format(Role.FORMAT, role.name(), entity);
-            } else {
-                return role.name();
-            }
-        }).flatMap(roleRepresentation -> userRepository.persist(id, List.of(roleRepresentation)));
+
+            return userRepository.countPermission(tobeVerified).flatMap(count ->
+                    (count > 0)
+                            ? Mono.error(() -> new UnauthorizedOperation("Unauthorized grant operation !"))
+                            : Mono.just(currentUser));
+
+        }).flatMap(currentUser -> userRepository.persist(grantedUserId,
+                permissions.stream().map(Permission::toString).distinct().toList()));
     }
 
     @Override
-    public Mono<Entity<User>> revokeRole(String id, Role role, @Nullable String entity) {
-        return authorizeSelfData(id).map(u -> {
-            if (Objects.nonNull(entity)) {
-                return String.format(Role.FORMAT, role.name(), entity);
+    public Mono<Entity<User>> revokes(String revokedUserId, Collection<Permission> permissions) {
+        return authFacade.getConnectedUser().flatMap(currentUser -> {
+            if (currentUser.id.equals(revokedUserId) || RoleUtils.hasRole(currentUser.self, Role.ADMIN)) {
+                return Mono.just(currentUser);
             } else {
-                return role.name();
+                return Mono.error(() -> new UnauthorizedOperation("Unauthorized revoke operation !"));
             }
-        }).flatMap(roleRepresentation -> userRepository.delete(id, List.of(roleRepresentation)));
+
+        }).flatMap(currentUser -> userRepository.delete(revokedUserId,
+                permissions.stream().map(Permission::toString).distinct().toList()));
     }
 
     private Mono<Entity<User>> authorizeSelfData(String id) {

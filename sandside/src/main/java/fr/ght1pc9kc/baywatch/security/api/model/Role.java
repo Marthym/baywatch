@@ -1,15 +1,23 @@
 package fr.ght1pc9kc.baywatch.security.api.model;
 
-public enum Role {
+import java.util.Optional;
+
+public enum Role implements Permission {
     SYSTEM, ADMIN, MANAGER, USER;
 
-    public static final char ENTITY_SEPARATOR = ':';
-    public static final String FORMAT = "%s" + ENTITY_SEPARATOR + "%s";
+    @Override
+    public Role role() {
+        return this;
+    }
 
-    public static String manager(String id) {
-        if (id.length() > 28) {
-            throw new IllegalArgumentException("Illegal entity ID !");
-        }
-        return String.format(FORMAT, Role.MANAGER, id);
+    @Override
+    public Optional<String> entity() {
+        return Optional.empty();
+    }
+
+
+    @Override
+    public String toString() {
+        return this.name();
     }
 }

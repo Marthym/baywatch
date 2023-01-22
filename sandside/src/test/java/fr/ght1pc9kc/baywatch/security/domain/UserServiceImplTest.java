@@ -4,6 +4,7 @@ import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
+import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
@@ -50,6 +51,7 @@ class UserServiceImplTest {
         when(mockUserRepository.persist(anyString(), anyCollection())).thenReturn(Mono.just(UserSamples.LUKE));
         when(mockUserRepository.delete(anyString(), anyCollection())).thenReturn(Mono.just(UserSamples.LUKE));
         when(mockUserRepository.count(any())).thenReturn(Mono.just(3));
+        when(mockUserRepository.countPermission(any())).thenReturn(Mono.just(0));
         //noinspection deprecation
         tested = new UserServiceImpl(mockUserRepository, mockAuthFacade, NoOpPasswordEncoder.getInstance(),
                 Clock.fixed(CURRENT, ZoneOffset.UTC));
@@ -137,7 +139,7 @@ class UserServiceImplTest {
     void should_grant_role_as_admin() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
 
-        StepVerifier.create(tested.grantRole(UserSamples.LUKE.id, Role.MANAGER, "42"))
+        StepVerifier.create(tested.grants(UserSamples.LUKE.id, List.of(Permission.manager("42"))))
                 .expectNext(UserSamples.LUKE)
                 .verifyComplete();
 
@@ -148,7 +150,7 @@ class UserServiceImplTest {
     void should_grant_role_as_user() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
 
-        StepVerifier.create(tested.grantRole(UserSamples.LUKE.id, Role.MANAGER, "42"))
+        StepVerifier.create(tested.grants(UserSamples.LUKE.id, List.of(Permission.manager("42"))))
                 .expectNext(UserSamples.LUKE)
                 .verifyComplete();
 
@@ -159,7 +161,7 @@ class UserServiceImplTest {
     void should_fail_to_elevate_self_role() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
 
-        StepVerifier.create(tested.grantRole(UserSamples.LUKE.id, Role.ADMIN))
+        StepVerifier.create(tested.grants(UserSamples.LUKE.id, List.of(Role.ADMIN)))
                 .verifyError(UnauthorizedOperation.class);
     }
 
@@ -167,7 +169,7 @@ class UserServiceImplTest {
     void should_fail_to_grant_other_user() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
 
-        StepVerifier.create(tested.grantRole(UserSamples.OBIWAN.id, Role.MANAGER))
+        StepVerifier.create(tested.grants(UserSamples.OBIWAN.id, List.of(Permission.manager("42"))))
                 .verifyError(UnauthorizedOperation.class);
     }
 
@@ -175,7 +177,7 @@ class UserServiceImplTest {
     void should_revoke_role_as_admin() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
 
-        StepVerifier.create(tested.revokeRole(UserSamples.LUKE.id, Role.MANAGER, "42"))
+        StepVerifier.create(tested.revokes(UserSamples.LUKE.id, List.of(Permission.manager("42"))))
                 .expectNext(UserSamples.LUKE)
                 .verifyComplete();
 
@@ -186,7 +188,7 @@ class UserServiceImplTest {
     void should_revoke_role_as_user() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
 
-        StepVerifier.create(tested.revokeRole(UserSamples.LUKE.id, Role.MANAGER, "42"))
+        StepVerifier.create(tested.revokes(UserSamples.LUKE.id, List.of(Permission.manager("42"))))
                 .expectNext(UserSamples.LUKE)
                 .verifyComplete();
 
@@ -197,7 +199,7 @@ class UserServiceImplTest {
     void should_fail_to_revoke_other_user() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
 
-        StepVerifier.create(tested.revokeRole(UserSamples.OBIWAN.id, Role.MANAGER))
+        StepVerifier.create(tested.revokes(UserSamples.OBIWAN.id, List.of(Role.MANAGER)))
                 .verifyError(UnauthorizedOperation.class);
     }
 }

@@ -26,7 +26,8 @@ class RoleUtilsTest {
                 NOT_A_ROLE                              | USER    |                                 | false
             """)
     void should_check_user_has_role(String role, Role compare, String entity, boolean expected) {
-        assertThat(RoleUtils.hasRole(UserSamples.OBIWAN.self.withRoles(role), compare, entity)).isEqualTo(expected);
+        assertThat(RoleUtils.hasPermission(UserSamples.OBIWAN.self.withRoles(role), Permission.of(compare, entity)))
+                .isEqualTo(expected);
     }
 
     @Test
