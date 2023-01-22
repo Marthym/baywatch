@@ -34,6 +34,12 @@ public final class QueryContext {
         return new QueryContext(Pagination.FIRST, qCtx.filter, qCtx.userId);
     }
 
+    /**
+     * Build a context to retrieve <b>only ONE element</b> by its ID.
+     *
+     * @param id The ID of the wanted element
+     * @return A context for ONE and only ONE element
+     */
     public static QueryContext id(String id) {
         return new QueryContext(Pagination.FIRST, Criteria.property(ID).eq(id), null);
     }
