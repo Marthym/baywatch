@@ -18,6 +18,14 @@ public interface UserPersistencePort {
     Mono<Integer> count(QueryContext qCtx);
 
     /**
+     * Count the number of {@link User} having at leat one of the giving permissions
+     *
+     * @param permissions The list of permissions to count in database
+     * @return The number of users
+     */
+    Mono<Integer> countPermission(Collection<String> permissions);
+
+    /**
      * Persist all {@link Entity} given as argument.
      * If error throw during insert, all the transaction was rollback and nothing was persisted
      *

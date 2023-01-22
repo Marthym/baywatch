@@ -1,9 +1,10 @@
-package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
+package fr.ght1pc9kc.baywatch.security.infra.persistence;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.Users;
+import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.infra.persistence.UserRepository;
@@ -130,8 +131,10 @@ class UserRepositoryTest {
         }
 
         Entity<User> dvader = new Entity<>((Hasher.sha3("darth.vader@sith.fr")), Entity.NO_ONE, Instant.EPOCH,
-                User.builder().login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur")
-                        .role(Role.USER.name()).role(Role.manager("TM01GP696RFPTY32WD79CVB0KDTF")).build());
+                User.builder()
+                        .login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur")
+                        .role(Role.USER.name())
+                        .role(Permission.manager("TM01GP696RFPTY32WD79CVB0KDTF").toString()).build());
         Entity<User> dsidious = new Entity<>((Hasher.sha3("darth.sidious@sith.fr")), Entity.NO_ONE, Instant.EPOCH,
                 User.builder().login("dsidious").name("Darth Sidious").mail("darth.sidious@sith.fr").password("obscur").role(Role.MANAGER.name()).build());
 
