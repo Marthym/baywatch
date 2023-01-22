@@ -129,7 +129,7 @@ public class TeamServiceImpl implements TeamsService {
     @Override
     public Flux<Entity<TeamMember>> members(String id) {
         return authFacade.getConnectedUser().flatMapMany(manager ->
-                teamMemberPersistence.list(QueryContext.id(id)));
+                teamMemberPersistence.list(QueryContext.all(Criteria.property(ID).eq(id))));
     }
 
     @Override
