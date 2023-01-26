@@ -33,7 +33,7 @@
                 102 0V8a1 1 0 00-1-1z"
                 clip-rule="evenodd"></path>
         </svg>
-        Suprimer
+        Supprimer
       </button>
     </div>
     <table class="table w-full table-compact" aria-describedby="User List">
@@ -212,7 +212,7 @@ export default class UserAdminTab extends Vue {
   }
 
   private onUserAdd(): void {
-    this.activeUser = {} as User;
+    this.activeUser = {roles:[]} as User;
     this.editorOpened = true;
   }
 
