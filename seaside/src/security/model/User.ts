@@ -6,6 +6,7 @@ export type User = {
     mail: string;
     roles: string[];
     password?: string;
+    newPassword?: string;
     confirm?: string;
 }
 
