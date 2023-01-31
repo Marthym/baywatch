@@ -1,5 +1,5 @@
 <template>
-  <div class="grid bg-base-200 bg-opacity-60 z-30 w-full h-full absolute top-0 left-0"
+  <div class="grid bg-base-200 bg-opacity-60 z-30 w-full h-full absolute top-0 left-0 overflow-hidden"
        @click="opened = false">
     <Transition
         enter-active-class="lg:duration-300 ease-in-out"
@@ -8,8 +8,9 @@
         leave-active-class="lg:duration-300 ease-in-out"
         leave-from-class="lg:translate-x-0"
         leave-to-class="lg:transform lg:translate-x-full"
-        @after-leave="closeModal()">
-      <form v-if="opened" class="justify-self-end flex flex-col bg-base-100 text-base-content lg:w-3/4 w-full h-full overflow-auto p-2"
+        @after-leave="onTransitionLeave">
+      <form v-if="opened"
+            class="justify-self-end flex flex-col bg-base-100 text-base-content lg:w-3/4 w-full h-full overflow-auto p-2"
             @click.stop @submit.prevent="onSaveUser">
         <h2 class="font-sans text-xl border-b border-accent/40 pb-2 w-full">{{ title }}</h2>
         <div class="flex flex-wrap content-start ">
@@ -78,26 +79,13 @@
             </label>
           </div>
           <div class="grow lg:basis-1/2 h-fit p-4">
-            <label class="label -mt-6">
-              <span class="label-text">Role</span>
-            </label>
-            <select v-model="modelValue.roles[0]" class="select select-bordered w-full"
-                    :class="{'select-error': errors.has('role')}" @change="onFieldChange('role')">
-              <option :value="undefined" disabled selected hidden>Choose the user role</option>
-              <option>USER</option>
-              <option>MANAGER</option>
-              <option>ADMIN</option>
-            </select>
-            <label class="label -mt-1">
-              <span class="label-text-alt">&nbsp;</span>
-              <span v-if="errors.has('role')" class="label-text-alt">{{ errors.get('role') }}</span>
-            </label>
+            <UserRoleInput v-model="modelValue.roles"/>
           </div>
         </div>
         <span class="grow"></span>
         <div>
-          <button class="btn m-2" @click.stop="opened = false">Annuler</button>
-          <button class="btn btn-primary m-2" @click="onSaveUser">Enregistrer</button>
+          <button class="btn m-2" @click.prevent.stop="onCancel">Annuler</button>
+          <button class="btn btn-primary m-2" @click.prevent.stop="onSaveUser">Enregistrer</button>
         </div>
       </form>
     </Transition>
@@ -107,8 +95,8 @@
 
 <script lang="ts">
 import {Options, Prop, Vue} from "vue-property-decorator";
-import ModalWindow from "@/common/components/ModalWindow.vue";
 import {User} from "@/security/model/User";
+import UserRoleInput from "@/administration/component/usereditor/UserRoleInput.vue";
 
 const CANCEL_EVENT: string = 'cancel';
 const SUBMIT_EVENT: string = 'submit';
@@ -116,7 +104,7 @@ const MAIL_PATTERN = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
 
 @Options({
   name: 'UserEditor',
-  components: {ModalWindow},
+  components: {UserRoleInput},
   emits: [CANCEL_EVENT, SUBMIT_EVENT],
 })
 export default class UserEditor extends Vue {
@@ -127,7 +115,7 @@ export default class UserEditor extends Vue {
   private opened: boolean = false;
   private closeEvent: typeof SUBMIT_EVENT | typeof CANCEL_EVENT = CANCEL_EVENT;
 
-  private mounted(): void {
+  mounted(): void {
     this.isEditionMode = '_id' in this.modelValue && this.modelValue._id !== undefined;
     this.title = this.isEditionMode ? `Update user ${this.modelValue.login}` : 'Create new user';
     this.$nextTick(() => this.opened = true);
@@ -137,7 +125,13 @@ export default class UserEditor extends Vue {
     this.errors.delete(field);
   }
 
+  private onCancel(): void {
+    this.closeEvent = CANCEL_EVENT;
+    this.opened = false;
+  }
+
   private onSaveUser(): void {
+    console.debug('enter onSaveUser');
     if (!this.modelValue.login) {
       this.errors.set('login', 'Login is mandatory !');
     }
@@ -149,7 +143,7 @@ export default class UserEditor extends Vue {
     } else if (!MAIL_PATTERN.test(this.modelValue.mail)) {
       this.errors.set('mail', 'Mail address must be syntactically correct !');
     }
-    if (!this.modelValue.role) {
+    if (!this.modelValue.roles || this.modelValue.roles.length === 0) {
       this.errors.set('role', 'Role is mandatory !');
     }
     if (!this.isEditionMode) {
@@ -166,7 +160,7 @@ export default class UserEditor extends Vue {
     }
   }
 
-  private closeModal(): void {
+  private onTransitionLeave(): void {
     if (this.closeEvent === CANCEL_EVENT) {
       this.$emit(this.closeEvent);
     } else {
