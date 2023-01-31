@@ -2,37 +2,19 @@
   <div class="overflow-x-auto mt-4">
     <div class="md:btn-group mb-2">
       <button class="btn btn-sm btn-ghost mb-2 mr-2 md:m-0" @click.prevent="onUserAdd()">
-        <svg class="w-6 h-6 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-             xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
+        <PlusCircleIcon class="w-6 h-6 md:mr-2"/>
         <span>Ajouter</span>
       </button>
       <button class="btn btn-sm mb-2 mr-2 md:m-0" @click="">
-        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-             xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-        </svg>
+        <ArrowDownTrayIcon class="w-6 h-6 mr-2"/>
         Importer
       </button>
       <a class="btn btn-sm mb-2 mr-2 md:m-0">
-        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-             xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-        </svg>
+        <ArrowUpTrayIcon class="w-6 h-6 mr-2"/>
         Exporter
       </a>
       <button class="btn btn-sm btn-error mb-2 mr-2 md:m-0" :disabled="!checkState" @click="onUserBulkDelete()">
-        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-          <path fill-rule="evenodd"
-                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0
-                100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0
-                102 0V8a1 1 0 00-1-1z"
-                clip-rule="evenodd"></path>
-        </svg>
+        <TrashIcon class="w-6 h-6"/>
         Supprimer
       </button>
     </div>
@@ -78,18 +60,10 @@
         <td>
           <div class="btn-group justify-end">
             <button class="btn btn-sm btn-square btn-ghost" @click.prevent="onUserEdit(vUser.data)">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                   stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-              </svg>
+              <PencilIcon class="h-6 w-6"/>
             </button>
             <button class="btn btn-sm btn-square btn-ghost" @click.prevent="onUserDelete(vUser.data)">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                   stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-              </svg>
+              <TrashIcon class="h-6 w-6"/>
             </button>
           </div>
         </td>
@@ -131,13 +105,14 @@ import reloadActionService from "@/common/services/ReloadActionService";
 import {Observable} from "rxjs";
 import {filter, map, switchMap, tap} from "rxjs/operators";
 import {UserView} from "@/administration/model/UserView";
-import UserEditor from "@/administration/component/UserEditor.vue";
+import UserEditor from "@/administration/component/usereditor/UserEditor.vue";
 import {User} from "@/security/model/User";
 import {AlertResponse, AlertType} from "@/common/components/alertdialog/AlertDialog.types";
+import {ArrowDownTrayIcon, ArrowUpTrayIcon, PencilIcon, PlusCircleIcon, TrashIcon} from "@heroicons/vue/24/outline";
 
 @Options({
   name: 'UserAdminTab',
-  components: {UserEditor},
+  components: {ArrowDownTrayIcon, ArrowUpTrayIcon, UserEditor, PencilIcon, PlusCircleIcon, TrashIcon},
 })
 export default class UserAdminTab extends Vue {
   private users: UserView[] = [];
