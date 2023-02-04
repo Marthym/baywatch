@@ -8,16 +8,3 @@ extend type Query {
     currentUser: User
 }
 
-type User {
-    _id: ID
-    _createdAt: String
-    login: String
-    name: String
-    mail: String
-    roles: [String]
-}
-
-type Session {
-    user: User
-    maxAge: Int
-}
