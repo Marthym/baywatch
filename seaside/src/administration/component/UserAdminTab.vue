@@ -58,7 +58,7 @@
         <td>{{ vUser.data.roles.join(', ') }}</td>
         <td>{{ dateToString(vUser.data._createdAt) }}</td>
         <td>
-          <div class="btn-group justify-end">
+          <div class="btn-group justify-end w-full">
             <button class="btn btn-sm btn-square btn-ghost" @click.prevent="onUserEdit(vUser.data)">
               <PencilIcon class="h-6 w-6"/>
             </button>
@@ -100,7 +100,7 @@
 import {Options, Vue} from 'vue-property-decorator';
 
 import notificationService from "@/services/notification/NotificationService";
-import userService from "@/security/services/UserService";
+import userService, {listUsers} from "@/security/services/UserService";
 import reloadActionService from "@/common/services/ReloadActionService";
 import {Observable} from "rxjs";
 import {filter, map, switchMap, tap} from "rxjs/operators";
@@ -141,14 +141,14 @@ export default class UserAdminTab extends Vue {
 
   loadUserPage(page: number): Observable<UserView[]> {
     const resolvedPage = (page > 0) ? page : 0;
-    return userService.list(resolvedPage).pipe(
-        switchMap(page => {
+    return listUsers(resolvedPage).pipe(
+        map(page => {
           this.pagesNumber = page.totalPage;
           this.activePage = page.currentPage;
           return page.data;
         }),
-        map(fs => fs.map(f => ({isSelected: false, data: f}))),
-        tap(fs => this.users = fs)
+        map(users => users.map(user => ({isSelected: false, data: user}))),
+        tap(users => this.users = users),
     )
   }
 
@@ -187,7 +187,7 @@ export default class UserAdminTab extends Vue {
   }
 
   private onUserAdd(): void {
-    this.activeUser = {roles:[]} as User;
+    this.activeUser = {roles: []} as User;
     this.editorOpened = true;
   }
 

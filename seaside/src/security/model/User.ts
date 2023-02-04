@@ -1,6 +1,7 @@
 export type User = {
     _id?: string;
     _createdAt?: string;
+    _createdBy?: string;
     login: string;
     name: string;
     mail: string;
