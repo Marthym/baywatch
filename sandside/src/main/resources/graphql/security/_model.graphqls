@@ -1,0 +1,26 @@
+type User {
+    _id: ID
+    _createdAt: String
+    _createdBy: String
+    login: String
+    name: String
+    mail: String
+    roles: [String]
+}
+
+type Session {
+    user: User
+    maxAge: Int
+}
+
+input UserForm {
+    login: String
+    name: String
+    mail: String
+    password: String
+}
+
+type SearchUsersResponse {
+    entities: [User]
+    totalCount: Int
+}
