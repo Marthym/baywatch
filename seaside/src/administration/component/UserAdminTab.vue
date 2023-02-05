@@ -21,7 +21,7 @@
     <table class="table w-full table-compact" aria-describedby="User List">
       <thead>
       <tr>
-        <th scope="col">
+        <th scope="col" class="w-1">
           <label>
             <input type="checkbox" class="checkbox" ref="globalCheck"
                    :checked="checkState" @change="onSelectAll()"/>
@@ -46,13 +46,21 @@
       </thead>
       <tbody>
       <tr v-for="vUser in this.users" v-bind:key="vUser.data._id">
-        <th scope="row">
+        <th scope="row" class="w-1">
           <label>
             <input type="checkbox" class="checkbox" v-model="vUser.isSelected">
             <span class="checkbox-mark"></span>
           </label>
         </th>
-        <td>{{ vUser.data.login }}</td>
+        <td>
+          {{ vUser.data.login }}
+          <div class="tooltip tooltip-right" :data-tip="vUser.data._id">
+            <button class="btn btn-circle btn-xs btn-ghost -ml-2"
+                    @click.prevent.stop="onCopyToClipboard(vUser.data._id)">
+              <InformationCircleIcon class="w-3 h-3"/>
+            </button>
+          </div>
+        </td>
         <td>{{ vUser.data.name }}</td>
         <td>{{ vUser.data.mail }}</td>
         <td>{{ vUser.data.roles.join(', ') }}</td>
@@ -71,7 +79,7 @@
       </tbody>
       <tfoot>
       <tr>
-        <th scope="col"></th>
+        <th scope="col" class="w-1"></th>
         <th scope="col">Pseudo</th>
         <th scope="col">Nom</th>
         <th scope="col">Mail</th>
@@ -100,7 +108,7 @@
 import {Options, Vue} from 'vue-property-decorator';
 
 import notificationService from "@/services/notification/NotificationService";
-import userService, {userCreate, userDelete, userList} from "@/security/services/UserService";
+import {userCreate, userDelete, userList, userUpdate} from "@/security/services/UserService";
 import reloadActionService from "@/common/services/ReloadActionService";
 import {Observable} from "rxjs";
 import {filter, map, switchMap, tap} from "rxjs/operators";
@@ -108,11 +116,26 @@ import {UserView} from "@/administration/model/UserView";
 import UserEditor from "@/administration/component/usereditor/UserEditor.vue";
 import {User} from "@/security/model/User";
 import {AlertResponse, AlertType} from "@/common/components/alertdialog/AlertDialog.types";
-import {ArrowDownTrayIcon, ArrowUpTrayIcon, PencilIcon, PlusCircleIcon, TrashIcon} from "@heroicons/vue/24/outline";
+import {
+  ArrowDownTrayIcon,
+  ArrowUpTrayIcon,
+  InformationCircleIcon,
+  PencilIcon,
+  PlusCircleIcon,
+  TrashIcon
+} from "@heroicons/vue/24/outline";
 
 @Options({
   name: 'UserAdminTab',
-  components: {ArrowDownTrayIcon, ArrowUpTrayIcon, UserEditor, PencilIcon, PlusCircleIcon, TrashIcon},
+  components: {
+    ArrowDownTrayIcon,
+    ArrowUpTrayIcon,
+    InformationCircleIcon,
+    UserEditor,
+    PencilIcon,
+    PlusCircleIcon,
+    TrashIcon
+  },
 })
 export default class UserAdminTab extends Vue {
   private users: UserView[] = [];
@@ -120,6 +143,7 @@ export default class UserAdminTab extends Vue {
   private activePage = 0;
   private editorOpened: boolean = false;
   private activeUser: User;
+  private activeUserChange: UserChangement = {properties: false, roles: []};
 
   mounted(): void {
     this.loadUserPage(0).subscribe({
@@ -164,15 +188,25 @@ export default class UserAdminTab extends Vue {
     this.users.forEach(f => f.isSelected = !current);
   }
 
+  private onCopyToClipboard(value: string): void {
+    navigator.clipboard.writeText(value);
+    notificationService.pushSimpleOk(`User ID copied on clipboard !`);
+  }
+
   private onUserSubmit(): void {
     const edit = '_id' in this.activeUser && this.activeUser._id !== undefined;
     if (edit) {
-      userService.update(this.activeUser).subscribe({
+      userUpdate(this.activeUser).subscribe({
         next: user => {
+          const idx = this.users.findIndex(uv => uv.data._id === user._id);
+          this.users.splice(idx, 1, {isSelected: false, data: user})
           notificationService.pushSimpleOk(`User ${user.login} updated successfully !`);
           this.editorOpened = false;
         },
-        error: e => notificationService.pushSimpleError(e.message),
+        error: e => {
+          notificationService.pushSimpleError(e.message);
+          this.editorOpened = false;
+        }
       });
     } else {
       userCreate(this.activeUser).subscribe({
@@ -191,11 +225,13 @@ export default class UserAdminTab extends Vue {
 
   private onUserAdd(): void {
     this.activeUser = {roles: []} as User;
+    this.activeUserChange = {properties: false, roles: []};
     this.editorOpened = true;
   }
 
   private onUserEdit(user: User): void {
-    this.activeUser = user;
+    this.activeUser = {...user};
+    this.activeUserChange = {properties: false, roles: []};
     this.editorOpened = true;
   }
 
@@ -249,5 +285,10 @@ export default class UserAdminTab extends Vue {
   public unmounted(): void {
     reloadActionService.unregisterReloadFunction();
   }
+}
+
+type UserChangement = {
+  properties: boolean,
+  roles: { type: 'grant' | 'revoke', perm: string }[]
 }
 </script>
