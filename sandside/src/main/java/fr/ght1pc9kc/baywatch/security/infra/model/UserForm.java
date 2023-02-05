@@ -4,15 +4,13 @@ import fr.ght1pc9kc.baywatch.common.infra.model.CreateValidation;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.Value;
 
 import java.util.Set;
 
-@Value
-public class UserForm {
-    public @NotEmpty String login;
-    public @NotEmpty String name;
-    public @Email String mail;
-    public @NotEmpty(groups = CreateValidation.class) String password;
-    public @NotNull Set<String> roles;
+public record UserForm(
+        @NotEmpty String login,
+        @NotEmpty String name,
+        @Email String mail,
+        @NotEmpty(groups = CreateValidation.class) String password,
+        @NotNull Set<String> roles) {
 }

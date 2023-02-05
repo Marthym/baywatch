@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.DESCRIPTION;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
-import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.PUBLICATION;
-import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.TITLE;
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.LOGIN;
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.MAIL;
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.NAME;
 
 public record UserSearchRequest(
         Integer _p,
@@ -29,9 +29,9 @@ public record UserSearchRequest(
         if (!Objects.isNull(_to)) params.put("_to", List.of(Integer.toString(_to)));
         if (!Objects.isNull(_s)) params.put("_s", List.of(_s));
         if (!Objects.isNull(_id)) params.put(ID, List.of(_id));
-        if (!Objects.isNull(login)) params.put(TITLE, List.of(login));
-        if (!Objects.isNull(name)) params.put(DESCRIPTION, List.of(name));
-        if (!Objects.isNull(mail)) params.put(PUBLICATION, List.of(mail));
+        if (!Objects.isNull(login)) params.put(LOGIN, List.of(login));
+        if (!Objects.isNull(name)) params.put(NAME, List.of(name));
+        if (!Objects.isNull(mail)) params.put(MAIL, List.of(mail));
         return Map.copyOf(params);
     }
 }

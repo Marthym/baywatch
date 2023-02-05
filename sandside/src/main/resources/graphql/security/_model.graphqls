@@ -1,7 +1,6 @@
 type User {
     _id: ID
     _createdAt: String
-    _createdBy: String
     login: String
     name: String
     mail: String
@@ -18,6 +17,7 @@ input UserForm {
     name: String
     mail: String
     password: String
+    roles: [String]
 }
 
 type SearchUsersResponse {

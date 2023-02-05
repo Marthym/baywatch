@@ -85,11 +85,12 @@ public final class UserServiceImpl implements UserService {
         return authorizeSelfData(ids)
                 .flatMapMany(u -> userRepository.list(QueryContext.all(Criteria.property(ID).in(ids))))
                 .switchIfEmpty(Flux.error(new NoSuchElementException(String.format("Unable to find users %s :", ids))))
-                .flatMap(users -> Flux.just(users)
+                .collectList()
+                .flatMapMany(users -> Flux.fromIterable(users)
                         .map(u -> u.id)
                         .collectList()
                         .flatMap(userRepository::delete)
-                        .thenReturn(users));
+                        .thenMany(Flux.fromIterable(users)));
     }
 
     @Override

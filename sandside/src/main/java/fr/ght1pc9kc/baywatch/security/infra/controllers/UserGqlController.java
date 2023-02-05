@@ -4,25 +4,36 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
+import fr.ght1pc9kc.baywatch.common.infra.model.CreateValidation;
 import fr.ght1pc9kc.baywatch.common.infra.model.Page;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.baywatch.security.infra.exceptions.AlreadyExistsException;
+import fr.ght1pc9kc.baywatch.security.infra.model.UserForm;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserSearchRequest;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.Arguments;
+import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -40,6 +51,31 @@ public class UserGqlController {
 
         return userService.count(pageRequest)
                 .map(count -> Page.of(users, count));
+    }
+
+    @MutationMapping
+    public Mono<Map<String, Object>> userCreate(@Validated({CreateValidation.class}) @Argument("user") UserForm user) {
+        MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
+
+        return userService.create(mapper.convertValue(user, User.class))
+                .onErrorMap(AlreadyExistsException.class, e ->
+                        new ResponseStatusException(HttpStatus.CONFLICT, e.getLocalizedMessage()))
+                .onErrorMap(WebExchangeBindException.class, e -> {
+                    String message = e.getFieldErrors().stream().map(err ->
+                            err.getField() + " " + err.getDefaultMessage()).collect(Collectors.joining("\n"));
+                    return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
+                })
+                .map(e -> mapper.convertValue(e, gqlType));
+    }
+
+    @MutationMapping
+    public Flux<Map<String, Object>> userDelete(@Argument("ids") Collection<String> ids) {
+        if (Objects.isNull(ids) || ids.isEmpty()) {
+            return Flux.empty();
+        }
+        MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
+        return userService.delete(List.copyOf(ids))
+                .map(e -> mapper.convertValue(e, gqlType));
     }
 
     @SchemaMapping(typeName = "SearchUsersResponse")
