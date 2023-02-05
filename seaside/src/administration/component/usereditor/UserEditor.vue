@@ -59,19 +59,9 @@
             </label>
 
             <label class="label -mt-6">
-              <span class="label-text">New Password</span>
-            </label>
-            <input v-model="modelValue.newPassword" type="password" class="input input-bordered w-full"
-                   :class="{'input-error': errors.has('password')}" @change="onFieldChange('password')">
-            <label class="label -mt-1">
-              <span class="label-text-alt">&nbsp;</span>
-              <span v-if="errors.has('password')" class="label-text-alt">{{ errors.get('password') }}</span>
-            </label>
-
-            <label class="label -mt-6">
               <span class="label-text">Password Confirmation</span>
             </label>
-            <input v-model="modelValue.confirm" type="password" class="input input-bordered w-full"
+            <input v-model="passwordConfirm" type="password" class="input input-bordered w-full"
                    :class="{'input-error': errors.has('confirm')}" @change="onFieldChange('confirm')">
             <label class="label -mt-1">
               <span class="label-text-alt">&nbsp;</span>
@@ -109,6 +99,7 @@ const MAIL_PATTERN = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
 })
 export default class UserEditor extends Vue {
   @Prop() private modelValue: User;
+  private passwordConfirm: string ='';
   private title = 'Create new user';
   private isEditionMode: boolean = false;
   private errors: Map<string, string> = new Map<string, string>();
@@ -149,12 +140,12 @@ export default class UserEditor extends Vue {
     if (!this.isEditionMode) {
       if (!this.modelValue.password) {
         this.errors.set('password', 'Password is mandatory !');
-      } else if (this.modelValue.password !== this.modelValue.confirm) {
+      } else if (this.modelValue.password !== this.passwordConfirm) {
         this.errors.set('confirm', "Password confirmation doesn't match !");
       }
     }
 
-    if (this.errors.size == 0) {
+    if (this.errors.size === 0) {
       this.closeEvent = SUBMIT_EVENT;
       this.opened = false;
     }

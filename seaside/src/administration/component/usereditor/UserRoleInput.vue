@@ -59,6 +59,9 @@ export default class UserRoleInput extends Vue {
       const roleEntity = m.split(':');
       return {name: roleEntity[0], scope: roleEntity[1]};
     });
+    if (this.roles.length === 0) {
+      this.roles.push({name: ""});
+    }
   }
 
   private onAddRole(): void {

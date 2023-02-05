@@ -32,7 +32,8 @@
         <th scope="col">Nom</th>
         <th scope="col">Mail</th>
         <th scope="col">Role</th>
-        <th scope="col">Created At
+        <th scope="col">Created At</th>
+        <th scope="col">
           <div class="btn-group justify-end" v-if="pagesNumber > 1">
             <button v-for="i in pagesNumber" :key="i"
                     :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
@@ -41,7 +42,6 @@
             </button>
           </div>
         </th>
-        <th scope="col">&nbsp;</th>
       </tr>
       </thead>
       <tbody>
@@ -76,7 +76,8 @@
         <th scope="col">Nom</th>
         <th scope="col">Mail</th>
         <th scope="col">Role</th>
-        <th scope="col">Created At
+        <th scope="col">Created At</th>
+        <th scope="col">
           <div class="btn-group justify-end" v-if="pagesNumber > 1">
             <button v-for="i in pagesNumber" :key="i"
                     :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
@@ -85,7 +86,6 @@
             </button>
           </div>
         </th>
-        <th scope="col">&nbsp;</th>
       </tr>
       </tfoot>
     </table>
@@ -100,7 +100,7 @@
 import {Options, Vue} from 'vue-property-decorator';
 
 import notificationService from "@/services/notification/NotificationService";
-import userService, {listUsers} from "@/security/services/UserService";
+import userService, {userCreate, userDelete, userList} from "@/security/services/UserService";
 import reloadActionService from "@/common/services/ReloadActionService";
 import {Observable} from "rxjs";
 import {filter, map, switchMap, tap} from "rxjs/operators";
@@ -141,7 +141,7 @@ export default class UserAdminTab extends Vue {
 
   loadUserPage(page: number): Observable<UserView[]> {
     const resolvedPage = (page > 0) ? page : 0;
-    return listUsers(resolvedPage).pipe(
+    return userList(resolvedPage).pipe(
         map(page => {
           this.pagesNumber = page.totalPage;
           this.activePage = page.currentPage;
@@ -175,13 +175,16 @@ export default class UserAdminTab extends Vue {
         error: e => notificationService.pushSimpleError(e.message),
       });
     } else {
-      userService.add(this.activeUser).subscribe({
+      userCreate(this.activeUser).subscribe({
         next: user => {
           this.users.push({isSelected: false, data: user});
           notificationService.pushSimpleOk(`User ${user.login} created successfully !`);
           this.editorOpened = false;
         },
-        error: e => notificationService.pushSimpleError(e.message),
+        error: e => {
+          notificationService.pushSimpleError(e.message);
+          this.editorOpened = false;
+        },
       });
     }
   }
@@ -200,13 +203,15 @@ export default class UserAdminTab extends Vue {
     const message = `Supprimer l’utilisateur <br/> <b>${user.name}</b>`;
     this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
         filter(response => response === AlertResponse.CONFIRM),
-        switchMap(() => userService.remove(user._id as string)),
-        tap(() => {
-          const idx = this.users.findIndex(fv => fv.data._id === user._id);
-          this.users.splice(idx, 1);
+        switchMap(() => userDelete(user._id ? [user._id] : [])),
+        tap(deletedUsers => {
+          deletedUsers.forEach(user => {
+            const idx = this.users.findIndex(uv => uv.data._id === user._id);
+            this.users.splice(idx, 1);
+          })
         })
     ).subscribe({
-      next: user => notificationService.pushSimpleOk(`User ${user.name} deleted successfully !`),
+      next: () => notificationService.pushSimpleOk(`User ${user.name} deleted successfully !`),
       error: e => {
         console.error(e);
         notificationService.pushSimpleError(`Unable to delete user ${user.name} !`);
@@ -224,10 +229,10 @@ export default class UserAdminTab extends Vue {
     const message = `Delete all ${ids.length} selected users ?`;
     this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
         filter(response => response === AlertResponse.CONFIRM),
-        switchMap(() => userService.bulkRemove(ids.map(uv => uv.data._id) as string[])),
-        tap(() => {
-          ids.forEach(id => {
-            const idx = this.users.findIndex(uv => uv.data._id === id.data._id);
+        switchMap(() => userDelete(ids.map(uv => uv.data._id!))),
+        tap(deletedUsers => {
+          deletedUsers.forEach(user => {
+            const idx = this.users.findIndex(uv => uv.data._id === user._id);
             this.users.splice(idx, 1);
           })
         })
