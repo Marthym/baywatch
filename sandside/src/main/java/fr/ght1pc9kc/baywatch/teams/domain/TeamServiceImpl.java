@@ -34,13 +34,13 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 
 @RequiredArgsConstructor
 public class TeamServiceImpl implements TeamsService {
+    private static final String ID_PREFIX = "TM";
+    private static final UlidFactory idGenerator = UlidFactory.newMonotonicInstance();
 
-    public static final String PREFIX = "TM";
     private final TeamPersistencePort teamPersistence;
     private final TeamMemberPersistencePort teamMemberPersistence;
     private final TeamAuthFacade authFacade;
 
-    private final UlidFactory idGenerator = UlidFactory.newMonotonicInstance();
 
     @Accessors(fluent = true)
     @Getter(value = AccessLevel.PRIVATE, onMethod = @__(@VisibleForTesting))
@@ -96,7 +96,7 @@ public class TeamServiceImpl implements TeamsService {
     public Mono<Entity<Team>> create(String name, String topic) {
         Instant now = clock().instant();
         return authFacade.getConnectedUser().flatMap(manager -> {
-            String id = PREFIX + idGenerator.create().toString();
+            String id = String.format("%s%s", ID_PREFIX, idGenerator.create());
             return teamPersistence.persist(Entity.<Team>builder()
                             .id(id)
                             .self(new Team(name, topic))

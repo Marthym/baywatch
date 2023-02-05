@@ -1,8 +1,7 @@
 package fr.ght1pc9kc.baywatch.security.domain;
 
+import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
-import fr.ght1pc9kc.baywatch.common.domain.Hasher;
-import fr.ght1pc9kc.baywatch.common.domain.MailAddress;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
@@ -33,10 +32,14 @@ import static fr.ght1pc9kc.baywatch.security.api.model.RoleUtils.hasRole;
 
 @AllArgsConstructor
 public final class UserServiceImpl implements UserService {
+    private static final String ID_PREFIX = "US";
+    private static final UlidFactory idGenerator = UlidFactory.newMonotonicInstance();
+
     private final UserPersistencePort userRepository;
     private final AuthenticationFacade authFacade;
     private final PasswordEncoder passwordEncoder;
     private final Clock clock;
+
 
     @Override
     public Mono<Entity<User>> get(String userId) {
@@ -60,8 +63,7 @@ public final class UserServiceImpl implements UserService {
 
     @Override
     public Mono<Entity<User>> create(User user) {
-        String userMail = MailAddress.sanitize(user.mail);
-        String userId = Hasher.sha3(userMail);
+        String userId = String.format("%s%s", ID_PREFIX, idGenerator.create());
         User withPassword = user.withPassword(passwordEncoder.encode(user.password));
         Entity<User> entity = Entity.identify(userId, clock.instant(), withPassword);
         return authorizeAllData()
