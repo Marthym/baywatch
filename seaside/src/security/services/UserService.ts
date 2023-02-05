@@ -1,7 +1,5 @@
-import {from, Observable, throwError} from "rxjs";
-import {HttpStatusError} from "@/common/errors/HttpStatusError";
-import {map, switchMap, take} from "rxjs/operators";
-import rest from '@/common/services/RestWrapper';
+import {Observable} from "rxjs";
+import {map, take} from "rxjs/operators";
 import {Page} from "@/services/model/Page";
 import {ConstantFilters} from "@/constants";
 import {User} from "@/security/model/User";
@@ -63,20 +61,17 @@ export function userDelete(ids: string[]): Observable<User[]> {
     );
 }
 
-export class UserService {
-    update(user: User): Observable<User> {
-        return rest.put(`/users/${user._id}`, user).pipe(
-            switchMap(response => {
-                if (response.ok) {
-                    return from(response.json());
-                } else {
-                    return from(response.json()).pipe(switchMap(j =>
-                        throwError(() => new HttpStatusError(response.status, j.message))));
-                }
-            }),
-            take(1)
-        );
+const USER_UPGRADE_REQUEST = `#graphql
+mutation UpgradeUser ($id: ID, $user: UserForm) {
+    userUpdate(_id: $id, user: $user) {
+        _id login name mail roles
     }
-}
+}`
 
-export default new UserService();
+export function userUpdate(user: User): Observable<User> {
+    const {_id, _createdAt, roles, ...toUpdate} = user;
+    return send<{ userUpdate: User }>(USER_UPGRADE_REQUEST, {id: _id, user: {...toUpdate}}).pipe(
+        map(data => data.data.userUpdate),
+        take(1),
+    );
+}

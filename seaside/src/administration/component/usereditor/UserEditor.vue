@@ -90,12 +90,13 @@ import UserRoleInput from "@/administration/component/usereditor/UserRoleInput.v
 
 const CANCEL_EVENT: string = 'cancel';
 const SUBMIT_EVENT: string = 'submit';
+const CHANGE_EVENT: string = 'change';
 const MAIL_PATTERN = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
 
 @Options({
   name: 'UserEditor',
   components: {UserRoleInput},
-  emits: [CANCEL_EVENT, SUBMIT_EVENT],
+  emits: [CANCEL_EVENT, SUBMIT_EVENT, CHANGE_EVENT],
 })
 export default class UserEditor extends Vue {
   @Prop() private modelValue: User;
