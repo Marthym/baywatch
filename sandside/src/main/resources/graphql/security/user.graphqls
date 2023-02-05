@@ -1,8 +1,7 @@
-
 extend type Mutation {
-    createUser(user: UserForm): User
-    updateUser(_id: ID, user: UserForm): User
-    deleteUser(_id: ID): User
+    userCreate(user: UserForm): User
+    userUpdate(_id: ID, user: UserForm): User
+    userDelete(ids: [ID]): [User]
 }
 
 extend type Query {
