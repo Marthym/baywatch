@@ -6,6 +6,7 @@ import fr.ght1pc9kc.baywatch.common.infra.PredicateSearchVisitor;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRolesRecord;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
@@ -13,6 +14,7 @@ import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
 import org.jooq.Cursor;
 import org.jooq.DSLContext;
@@ -116,10 +118,17 @@ public class UserRepository implements UserPersistencePort {
     }
 
     @Override
-    public Mono<Entity<User>> update(String id, User user) {
+    public Mono<Entity<User>> update(@NotNull String id, User user) {
         UsersRecord usersRecord = baywatchConverter.entityUserToRecord(Entity.identify(id, user));
-        return Mono.fromCallable(() -> dsl.executeUpdate(usersRecord))
-                .subscribeOn(databaseScheduler)
+        List<UsersRolesRecord> usersRolesRecords = user.roles.stream().map(r -> USERS_ROLES.newRecord().setUsroUserId(id).setUsroRole(r)).toList();
+        return Mono.fromCallable(() -> dsl.transactionResult(tx -> {
+                    tx.dsl().deleteFrom(USERS_ROLES).where(USERS_ROLES.USRO_USER_ID.eq(id)).execute();
+                    if (!usersRolesRecords.isEmpty()) {
+                        tx.dsl().batchInsert(usersRolesRecords).execute();
+                    }
+                    return tx.dsl().executeUpdate(usersRecord);
+                })).subscribeOn(databaseScheduler)
+
                 .then(get(id).subscribeOn(databaseScheduler));
     }
 

@@ -81,25 +81,16 @@ public class UserGqlController {
 
         return Mono.fromCallable(() -> mapper.convertValue(toUpdate, User.class))
                 .flatMap(user -> userService.update(id, user))
-                .doOnError(e -> log.debug("{}: {}", e.getClass(), e.getLocalizedMessage()))
+                .doOnError(e -> log.warn("{}: {}", e.getClass(), e.getLocalizedMessage()))
                 .onErrorMap(NoSuchElementException.class, e ->
                         GraphqlErrorException.newErrorException()
                                 .errorClassification(ErrorType.NOT_FOUND)
                                 .message(e.getLocalizedMessage())
                                 .cause(e)
                                 .build())
-                .onErrorMap(WebExchangeBindException.class, e -> {
-                    String message = e.getFieldErrors().stream().map(err -> err.getField() + " " + err.getDefaultMessage()).collect(Collectors.joining("\n"));
-                    return GraphqlErrorException.newErrorException()
-                            .errorClassification(ErrorType.BAD_REQUEST)
-                            .message(message)
-                            .cause(e)
-                            .build();
-                })
                 .onErrorMap(e -> GraphqlErrorException.newErrorException()
-                        .errorClassification(ErrorType.BAD_REQUEST)
-                        .message(e.getLocalizedMessage())
-                        .cause(e)
+                        .errorClassification(ErrorType.INTERNAL_ERROR)
+                        .message("Unable to execute this operation !")
                         .build())
                 .map(e -> mapper.convertValue(e, gqlType));
     }

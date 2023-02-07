@@ -33,7 +33,7 @@ public interface UserService {
     Mono<Entity<User>> create(User user);
 
     /**
-     * Update {@link User} data. The {@link Role} was not updated.
+     * Update {@link User} data. The {@link Role}s are replaced by those provided in input
      * <p>
      * The current user must have {@link Role#ADMIN} or more to update a user.
      * The user himself can update its data.
