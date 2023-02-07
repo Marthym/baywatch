@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.security.api.model;
 
-import com.machinezoo.noexception.Exceptions;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,10 +33,7 @@ public class User {
         }
         Set<String> verifiedRoles = Arrays.stream(roles)
                 .filter(Objects::nonNull)
-                .filter(Exceptions.silence().<String>predicate(role -> {
-                    Role.valueOf(role.split(":")[0]);
-                    return true;
-                }).orElse(false))
+                .filter(Permission::validate)
                 .collect(Collectors.toUnmodifiableSet());
         return this.toBuilder()
                 .clearRoles()

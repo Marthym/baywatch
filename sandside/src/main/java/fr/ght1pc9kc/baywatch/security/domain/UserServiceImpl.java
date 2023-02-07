@@ -76,6 +76,7 @@ public final class UserServiceImpl implements UserService {
         return authorizeSelfData(id).flatMap(u -> {
             User checkedUser = user.toBuilder()
                     .clearRoles()
+                    .roles(user.roles.stream().filter(Permission::validate).toList())
                     .password(Objects.nonNull(user.password) ? passwordEncoder.encode(user.password) : null)
                     .build();
             return userRepository.update(id, checkedUser);

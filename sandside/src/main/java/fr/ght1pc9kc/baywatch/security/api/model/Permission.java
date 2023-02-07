@@ -33,6 +33,26 @@ public sealed interface Permission permits Role, Authorization {
         }
     }
 
+    /**
+     * Allow to validate a permission string.
+     *
+     * @param permissionRepresentation the permission string to validate
+     * @return Return {@code true} if the string starts with un existing {@link Role}, {@code false} otherwise.
+     */
+    static boolean validate(String permissionRepresentation) {
+        try {
+            String[] split = permissionRepresentation.split(String.valueOf(ENTITY_SEPARATOR));
+            Role.valueOf(split[0]);
+            if (split.length == 1) {
+                return true;
+            } else {
+                return split.length == 2 && !split[1].isBlank();
+            }
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     static Permission from(String permissionRepresentation) {
         try {
             String[] split = permissionRepresentation.split(String.valueOf(ENTITY_SEPARATOR));
