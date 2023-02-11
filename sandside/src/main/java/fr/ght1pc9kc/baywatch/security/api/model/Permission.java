@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.security.api.model;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -14,6 +15,9 @@ import java.util.Optional;
  * </ul>
  */
 public sealed interface Permission permits Role, Authorization {
+    Comparator<Permission> COMPARATOR = Comparator
+            .comparing(Permission::role)
+            .thenComparing(c -> c.entity().orElse(""));
     char ENTITY_SEPARATOR = ':';
     String PERMISSION_FORMAT = "%s" + ENTITY_SEPARATOR + "%s";
 

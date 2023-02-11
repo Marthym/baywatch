@@ -19,12 +19,12 @@ public class UsersRolesSamples implements RelationalDataSet<UsersRolesRecord> {
         records.addAll(UserSamples.OBIWAN.self.roles.stream()
                 .map(r -> USERS_ROLES.newRecord()
                         .setUsroUserId(UserSamples.OBIWAN.id)
-                        .setUsroRole(r))
+                        .setUsroRole(r.toString()))
                 .toList());
         records.addAll(UserSamples.LUKE.self.roles.stream()
                 .map(r -> USERS_ROLES.newRecord()
                         .setUsroUserId(UserSamples.LUKE.id)
-                        .setUsroRole(r))
+                        .setUsroRole(r.toString()))
                 .toList());
         return List.copyOf(records);
     }

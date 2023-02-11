@@ -33,13 +33,12 @@ import static fr.ght1pc9kc.baywatch.security.api.model.RoleUtils.hasRole;
 @AllArgsConstructor
 public final class UserServiceImpl implements UserService {
     private static final String ID_PREFIX = "US";
-    private static final UlidFactory idGenerator = UlidFactory.newMonotonicInstance();
 
     private final UserPersistencePort userRepository;
     private final AuthenticationFacade authFacade;
     private final PasswordEncoder passwordEncoder;
     private final Clock clock;
-
+    private final UlidFactory idGenerator;
 
     @Override
     public Mono<Entity<User>> get(String userId) {
@@ -68,15 +67,13 @@ public final class UserServiceImpl implements UserService {
         Entity<User> entity = Entity.identify(userId, clock.instant(), withPassword);
         return authorizeAllData()
                 .flatMap(u -> userRepository.persist(List.of(entity)).single())
-                .then(userRepository.persist(userId, user.roles));
+                .then(userRepository.persist(userId, user.roles.stream().map(Permission::toString).distinct().toList()));
     }
 
     @Override
     public Mono<Entity<User>> update(String id, User user) {
         return authorizeSelfData(id).flatMap(u -> {
             User checkedUser = user.toBuilder()
-                    .clearRoles()
-                    .roles(user.roles.stream().filter(Permission::validate).toList())
                     .password(Objects.nonNull(user.password) ? passwordEncoder.encode(user.password) : null)
                     .build();
             return userRepository.update(id, checkedUser);
