@@ -11,6 +11,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
+import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.SecurityException;
@@ -27,8 +28,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static java.util.function.Predicate.not;
 
@@ -100,9 +99,11 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
                     .filter(not(String::isBlank))
                     .toList();
 
-            Set<String> roles = authorities.stream()
+            List<Permission> roles = authorities.stream()
                     .map(RoleUtils::fromSpringAuthority)
-                    .collect(Collectors.toUnmodifiableSet());
+                    .sorted()
+                    .distinct()
+                    .toList();
 
             Instant createdAt = Optional.ofNullable(claims.getDateClaim(CREATED_AT_KEY))
                     .map(Date::toInstant)

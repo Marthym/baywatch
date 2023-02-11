@@ -1,5 +1,7 @@
 package fr.ght1pc9kc.baywatch.security.domain;
 
+import com.github.f4b6a3.ulid.Ulid;
+import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
@@ -39,6 +41,7 @@ class UserServiceImplTest {
     private static final Instant CURRENT = Instant.parse("2022-02-08T22:57:00Z");
     private final UserPersistencePort mockUserRepository = mock(UserPersistencePort.class);
     private final AuthenticationFacade mockAuthFacade = mock(AuthenticationFacade.class);
+    private final UlidFactory mockUlidFactory = mock(UlidFactory.class);
 
     private UserService tested;
 
@@ -52,9 +55,10 @@ class UserServiceImplTest {
         when(mockUserRepository.delete(anyString(), anyCollection())).thenReturn(Mono.just(UserSamples.LUKE));
         when(mockUserRepository.count(any())).thenReturn(Mono.just(3));
         when(mockUserRepository.countPermission(any())).thenReturn(Mono.just(0));
+
         //noinspection deprecation
         tested = new UserServiceImpl(mockUserRepository, mockAuthFacade, NoOpPasswordEncoder.getInstance(),
-                Clock.fixed(CURRENT, ZoneOffset.UTC));
+                Clock.fixed(CURRENT, ZoneOffset.UTC), mockUlidFactory);
     }
 
     @Test
@@ -102,6 +106,7 @@ class UserServiceImplTest {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
         when(mockUserRepository.persist(any())).thenReturn(Flux.just(UserSamples.OBIWAN));
         when(mockUserRepository.persist(anyString(), anyCollection())).thenReturn(Mono.just(UserSamples.OBIWAN));
+        when(mockUlidFactory.create()).thenReturn(Ulid.from(UserSamples.OBIWAN.id.substring(2)));
 
         StepVerifier.create(tested.create(UserSamples.OBIWAN.self))
                 .expectNext(UserSamples.OBIWAN)

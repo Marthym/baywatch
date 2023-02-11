@@ -33,12 +33,12 @@ class RoleUtilsTest {
     @Test
     void should_fail_upade_user_roles() {
         assertThat(UserSamples.OBIWAN.self.withRoles("NOT_A_ROLE", Role.USER.name()).roles)
-                .containsOnly(Role.USER.name());
+                .containsOnly(Role.USER);
     }
 
     @Test
     void should_get_system() {
-        assertThat(RoleUtils.getSystemUser().self.roles).containsOnly(Role.SYSTEM.name());
+        assertThat(RoleUtils.getSystemUser().self.roles).containsOnly(Role.SYSTEM);
     }
 
     @ParameterizedTest
@@ -64,7 +64,7 @@ class RoleUtilsTest {
             """)
     void should_convert_from_authority(String expected, String authority) {
         if (Objects.nonNull(expected))
-            assertThat(RoleUtils.fromSpringAuthority(authority)).isEqualTo(expected);
+            assertThat(RoleUtils.fromSpringAuthority(authority)).isEqualTo(Permission.from(expected));
         else
             Assertions.assertThatException()
                     .isThrownBy(() -> RoleUtils.fromSpringAuthority(authority));

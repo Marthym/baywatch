@@ -120,7 +120,10 @@ public class UserRepository implements UserPersistencePort {
     @Override
     public Mono<Entity<User>> update(@NotNull String id, User user) {
         UsersRecord usersRecord = baywatchConverter.entityUserToRecord(Entity.identify(id, user));
-        List<UsersRolesRecord> usersRolesRecords = user.roles.stream().map(r -> USERS_ROLES.newRecord().setUsroUserId(id).setUsroRole(r)).toList();
+        List<UsersRolesRecord> usersRolesRecords = user.roles.stream()
+                .distinct()
+                .map(r -> USERS_ROLES.newRecord().setUsroUserId(id).setUsroRole(r.toString()))
+                .toList();
         return Mono.fromCallable(() -> dsl.transactionResult(tx -> {
                     tx.dsl().deleteFrom(USERS_ROLES).where(USERS_ROLES.USRO_USER_ID.eq(id)).execute();
                     if (!usersRolesRecords.isEmpty()) {

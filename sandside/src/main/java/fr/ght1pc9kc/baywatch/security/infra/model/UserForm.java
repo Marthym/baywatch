@@ -5,12 +5,12 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
-import java.util.Set;
+import java.util.List;
 
 public record UserForm(
         @NotEmpty String login,
         @NotEmpty String name,
         @Email String mail,
         @NotEmpty(groups = CreateValidation.class) String password,
-        @NotEmpty Set<@NotBlank String> roles) {
+        @NotEmpty List<@NotBlank String> roles) {
 }
