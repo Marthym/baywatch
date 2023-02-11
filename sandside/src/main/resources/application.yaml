@@ -5,6 +5,8 @@ spring:
     driver-class-name: org.sqlite.JDBC
     username: baywatch
     password: hasselhoff
+#    hikari:
+#      maximum-pool-size: 1
   jooq:
     sql-dialect: sqlite
   graphql:

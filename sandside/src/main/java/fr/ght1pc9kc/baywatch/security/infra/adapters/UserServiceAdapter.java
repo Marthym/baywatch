@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.infra.adapters;
 
+import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.domain.UserServiceImpl;
@@ -29,7 +30,7 @@ public class UserServiceAdapter implements UserService, ReactiveUserDetailsServi
     @Autowired
     public UserServiceAdapter(UserPersistencePort userPersistencePort, AuthenticationFacade authFacade,
                               PasswordEncoder passwordEncoder) {
-        this.delegate = new UserServiceImpl(userPersistencePort, authFacade, passwordEncoder, Clock.systemUTC());
+        this.delegate = new UserServiceImpl(userPersistencePort, authFacade, passwordEncoder, Clock.systemUTC(), UlidFactory.newInstance());
     }
 
     @Override

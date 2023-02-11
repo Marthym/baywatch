@@ -11,7 +11,6 @@ import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRolesSamples;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;
-import fr.ght1pc9kc.testy.jooq.WithDatabaseLoaded;
 import fr.ght1pc9kc.testy.jooq.WithDslContext;
 import fr.ght1pc9kc.testy.jooq.WithInMemoryDatasource;
 import fr.ght1pc9kc.testy.jooq.WithSampleDataLoaded;
@@ -32,13 +31,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class StateRepositoryTest {
     private static final WithInMemoryDatasource wDs = WithInMemoryDatasource.builder().build();
-    private static final WithDatabaseLoaded wBaywatchDb = WithDatabaseLoaded.builder()
-            .setDatasourceExtension(wDs)
-            .useFlywayDefaultLocation()
-            .build();
+
     private static final WithDslContext wDslContext = WithDslContext.builder()
             .setDatasourceExtension(wDs).build();
     private static final WithSampleDataLoaded wSamples = WithSampleDataLoaded.builder(wDslContext)
+            .createTablesIfNotExists()
             .addDataset(UsersRecordSamples.SAMPLE)
             .addDataset(UsersRolesSamples.SAMPLE)
             .addDataset(FeedRecordSamples.SAMPLE)
@@ -51,7 +48,6 @@ class StateRepositoryTest {
     @RegisterExtension
     @SuppressWarnings("unused")
     static ChainedExtension chain = ChainedExtension.outer(wDs)
-            .append(wBaywatchDb)
             .append(wDslContext)
             .append(wSamples)
             .register();

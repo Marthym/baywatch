@@ -7,6 +7,7 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
+import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
@@ -23,7 +24,9 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -54,14 +57,20 @@ public interface BaywatchMapper {
     UsersRecord entityUserToRecord(Entity<User> user);
 
     default Entity<User> recordToUserEntity(Record usersRecord) {
-        Set<String> roles = Arrays.stream(usersRecord.get(USERS_ROLES.USRO_ROLE).split(",")).collect(Collectors.toUnmodifiableSet());
+        Set<Permission> distinctRoles = new HashSet<>();
+        for (String s : usersRecord.get(USERS_ROLES.USRO_ROLE).split(",")) {
+            distinctRoles.add(Permission.from(s));
+        }
+        List<Permission> roles = new ArrayList<>(distinctRoles);
+        roles.sort(Permission.COMPARATOR);
+
         return Entity.identify(usersRecord.get(USERS.USER_ID), DateUtils.toInstant(usersRecord.get(USERS.USER_CREATED_AT)),
                 User.builder()
                         .login(usersRecord.get(USERS.USER_LOGIN))
                         .mail(usersRecord.get(USERS.USER_EMAIL))
                         .name(usersRecord.get(USERS.USER_NAME))
                         .password(usersRecord.get(USERS.USER_PASSWORD))
-                        .roles(roles)
+                        .roles(List.copyOf(roles))
                         .build());
     }
 

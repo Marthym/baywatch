@@ -4,6 +4,7 @@ import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,7 +19,7 @@ public final class RoleUtils {
     private static final Entity<User> SYSTEM = Entity.identify(Role.SYSTEM.name(), User.builder()
             .name(Role.SYSTEM.name())
             .login(Role.SYSTEM.name().toLowerCase())
-            .roles(Set.of(Role.SYSTEM.name())).build());
+            .roles(List.of(Role.SYSTEM)).build());
 
     public static Entity<User> getSystemUser() {
         return SYSTEM;
@@ -48,7 +49,6 @@ public final class RoleUtils {
         }
 
         return user.roles.stream()
-                .map(Permission::from)
                 .anyMatch(perm -> {
                     if (perm.equals(permission) || perm.role().ordinal() < permission.role().ordinal()) {
                         return true;
@@ -79,7 +79,6 @@ public final class RoleUtils {
         }
 
         return user.roles.stream()
-                .map(Permission::from)
                 .filter(perm -> role == perm.role() && perm.entity().isPresent())
                 .map(perm -> perm.entity().orElse(""))
                 .collect(Collectors.toUnmodifiableSet());
@@ -94,14 +93,24 @@ public final class RoleUtils {
      */
     public String toSpringAuthority(String permission) {
         try {
-            Permission perm = Permission.from(permission);
-            if (perm.entity().isPresent()) {
-                return permission;
-            } else {
-                return SPRING_ROLE_PREFIX + perm.role().name();
-            }
+            return toSpringAuthority(Permission.from(permission));
         } catch (Exception e) {
             throw new IllegalArgumentException(permission + " is not a valid Role", e);
+        }
+    }
+
+    /**
+     * Return the {@link Role} prefixed by {@code "ROLE_"} for Spring authority
+     * or the Permission authority if the role string contains an entity ID
+     *
+     * @param perm The permission to change into Spring Authority
+     * @return The Spring authority string
+     */
+    public String toSpringAuthority(Permission perm) {
+        if (perm.entity().isPresent()) {
+            return perm.toString();
+        } else {
+            return SPRING_ROLE_PREFIX + perm.role().name();
         }
     }
 
@@ -112,10 +121,10 @@ public final class RoleUtils {
      * @param authority The spring authority
      * @return The application role
      */
-    public String fromSpringAuthority(String authority) {
+    public Permission fromSpringAuthority(String authority) {
         try {
             String[] withoutPrefix = authority.split(SPRING_ROLE_PREFIX);
-            return Permission.from(withoutPrefix[withoutPrefix.length - 1]).toString();
+            return Permission.from(withoutPrefix[withoutPrefix.length - 1]);
         } catch (Exception e) {
             throw new IllegalArgumentException(authority + " is not a valid Authority", e);
         }

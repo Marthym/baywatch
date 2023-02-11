@@ -6,7 +6,6 @@ export type User = {
     mail: string;
     roles: string[];
     password?: string;
-    confirm?: string;
 }
 
 export const ANONYMOUS: User = {
