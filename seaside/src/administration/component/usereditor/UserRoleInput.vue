@@ -12,15 +12,24 @@
       <tbody>
       <tr v-for="(role, index) in roles">
         <td>
-          <select v-model="role.name" class="select select-bordered select-sm max-w-xs" @change="emitInputEvent">
+          <select v-model="role.name" class="select select-bordered select-sm max-w-xs w-32" @change="emitInputEvent">
             <option :value="undefined" disabled selected hidden>Choose the user role</option>
             <option>USER</option>
             <option>MANAGER</option>
             <option>ADMIN</option>
           </select>
         </td>
-        <td><input v-model="role.scope" type="text" placeholder="Type here" @change="emitInputEvent"
-                   class="input input-bordered input-sm w-full"/></td>
+        <td class="tooltip-error"
+            :class="{
+              'tooltip': isInvalidScope(role.scope),
+              'tooltip-bottom': index < (roles.length -1),
+            }" data-tip="Invalid role scope !">
+          <input v-model="role.scope" type="text" placeholder="Type here"
+                 @change="emitInputEvent"
+                 class="input input-bordered input-sm w-72"
+                 :class="{'input-error': isInvalidScope(role.scope)}"
+          />
+        </td>
         <td>
           <div class="btn-group">
             <button class="btn btn-sm" @click.prevent.stop="onAddRole()">
@@ -75,11 +84,16 @@ export default class UserRoleInput extends Vue {
   }
 
   private emitInputEvent(): void {
-    this.$emit('update:modelValue', this.roles.filter(r => r && r.name).map(r => (r.scope) ? `${r.name}:${r.scope}` : r.name));
+    try {
+      const value = this.roles.filter(r => r && r.name).map(r => (r.scope) ? `${r.name}:${r.scope}` : r.name)
+      this.$emit(UPDATE_EVENT, value);
+    } catch (e) {
+      console.error('emitInputEvent', e.message);
+    }
   }
 
-  private emitSubmitEvent(): void {
-    this.$emit('submit');
+  private isInvalidScope(scope: string): boolean {
+    return !!scope && !/^[A-Z]{2}[0-7][0-9A-HJKMNP-TV-Z]{25}$/.test(scope);
   }
 }
 
