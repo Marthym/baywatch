@@ -64,12 +64,12 @@ export function userDelete(ids: string[]): Observable<User[]> {
 const USER_UPGRADE_REQUEST = `#graphql
 mutation UpgradeUser ($id: ID, $user: UserForm) {
     userUpdate(_id: $id, user: $user) {
-        _id login name mail roles
+        _id _createdAt login name mail roles
     }
 }`
 
 export function userUpdate(user: User): Observable<User> {
-    const {_id, _createdAt, roles, ...toUpdate} = user;
+    const {_id, _createdAt, ...toUpdate} = user;
     return send<{ userUpdate: User }>(USER_UPGRADE_REQUEST, {id: _id, user: {...toUpdate}}).pipe(
         map(data => data.data.userUpdate),
         take(1),
