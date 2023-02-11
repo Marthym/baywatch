@@ -63,7 +63,7 @@
         </td>
         <td>{{ vUser.data.name }}</td>
         <td>{{ vUser.data.mail }}</td>
-        <td>{{ vUser.data.roles.join(', ') }}</td>
+        <td>{{ vUser.data.roles.slice(0, 1).join('...') }}</td>
         <td>{{ dateToString(vUser.data._createdAt) }}</td>
         <td>
           <div class="btn-group justify-end w-full">
@@ -196,31 +196,39 @@ export default class UserAdminTab extends Vue {
   private onUserSubmit(): void {
     const edit = '_id' in this.activeUser && this.activeUser._id !== undefined;
     if (edit) {
-      userUpdate(this.activeUser).subscribe({
-        next: user => {
-          const idx = this.users.findIndex(uv => uv.data._id === user._id);
-          this.users.splice(idx, 1, {isSelected: false, data: user})
-          notificationService.pushSimpleOk(`User ${user.login} updated successfully !`);
-          this.editorOpened = false;
-        },
-        error: e => {
-          notificationService.pushSimpleError(e.message);
-          this.editorOpened = false;
-        }
-      });
+      this.updateActiveUser();
     } else {
-      userCreate(this.activeUser).subscribe({
-        next: user => {
-          this.users.push({isSelected: false, data: user});
-          notificationService.pushSimpleOk(`User ${user.login} created successfully !`);
-          this.editorOpened = false;
-        },
-        error: e => {
-          notificationService.pushSimpleError(e.message);
-          this.editorOpened = false;
-        },
-      });
+      this.createActiveUser();
     }
+  }
+
+  private createActiveUser(): void {
+    userCreate(this.activeUser).subscribe({
+      next: user => {
+        this.users.push({isSelected: false, data: user});
+        notificationService.pushSimpleOk(`User ${user.login} created successfully !`);
+        this.editorOpened = false;
+      },
+      error: e => {
+        notificationService.pushSimpleError(e.message);
+        this.editorOpened = false;
+      },
+    });
+  }
+
+  private updateActiveUser(): void {
+    const idx = this.users.findIndex(uv => uv.data._id === this.activeUser._id);
+    userUpdate(this.activeUser).subscribe({
+      next: user => {
+        this.users.splice(idx, 1, {isSelected: false, data: user})
+        notificationService.pushSimpleOk(`User ${user.login} updated successfully !`);
+        this.editorOpened = false;
+      },
+      error: e => {
+        notificationService.pushSimpleError(e.message);
+        this.editorOpened = false;
+      }
+    });
   }
 
   private onUserAdd(): void {

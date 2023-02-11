@@ -66,10 +66,12 @@ export default class UserRoleInput extends Vue {
 
   private onAddRole(): void {
     this.roles.push({} as RoleView);
+    this.emitInputEvent();
   }
 
   private onRemoveRole(index: number): void {
     this.roles.splice(index, 1);
+    this.emitInputEvent();
   }
 
   private emitInputEvent(): void {
