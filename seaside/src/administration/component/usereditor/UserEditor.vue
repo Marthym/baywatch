@@ -69,13 +69,14 @@
             </label>
           </div>
           <div class="grow lg:basis-1/2 h-fit p-4">
-            <UserRoleInput v-model="modelValue.roles"/>
+            <UserRoleInput :model-value="modelValue.roles" @update:modelValue="onRoleUpdate"/>
           </div>
         </div>
         <span class="grow"></span>
         <div>
           <button class="btn m-2" @click.prevent.stop="onCancel">Annuler</button>
-          <button class="btn btn-primary m-2" @click.prevent.stop="onSaveUser">Enregistrer</button>
+          <button class="btn btn-primary m-2" @click.prevent.stop="onSaveUser" :disabled="!hasValidRoles">Enregistrer
+          </button>
         </div>
       </form>
     </Transition>
@@ -92,6 +93,7 @@ const CANCEL_EVENT: string = 'cancel';
 const SUBMIT_EVENT: string = 'submit';
 const CHANGE_EVENT: string = 'change';
 const MAIL_PATTERN = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+const ULID_PATTERN = /^[A-Z]*(:[A-Z]{2}[0-7][0-9A-HJKMNP-TV-Z]{25})?$/;
 
 @Options({
   name: 'UserEditor',
@@ -100,7 +102,7 @@ const MAIL_PATTERN = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
 })
 export default class UserEditor extends Vue {
   @Prop() private modelValue: User;
-  private passwordConfirm: string ='';
+  private passwordConfirm: string = '';
   private title = 'Create new user';
   private isEditionMode: boolean = false;
   private errors: Map<string, string> = new Map<string, string>();
@@ -123,7 +125,6 @@ export default class UserEditor extends Vue {
   }
 
   private onSaveUser(): void {
-    console.debug('enter onSaveUser');
     if (!this.modelValue.login) {
       this.errors.set('login', 'Login is mandatory !');
     }
@@ -136,7 +137,10 @@ export default class UserEditor extends Vue {
       this.errors.set('mail', 'Mail address must be syntactically correct !');
     }
     if (!this.modelValue.roles || this.modelValue.roles.length === 0) {
-      this.errors.set('role', 'Role is mandatory !');
+      this.errors.set('roles', 'Role is mandatory !');
+    }
+    if (!this.hasValidRoles) {
+      this.errors.set('roles', `All role scope must match ${ULID_PATTERN}`);
     }
     if (!this.isEditionMode) {
       if (!this.modelValue.password) {
@@ -150,6 +154,14 @@ export default class UserEditor extends Vue {
       this.closeEvent = SUBMIT_EVENT;
       this.opened = false;
     }
+  }
+
+  private onRoleUpdate(event: Event): void {
+    this.modelValue.roles.splice(0, this.modelValue.roles.length, ...event);
+  }
+
+  get hasValidRoles(): boolean {
+    return this.modelValue.roles.findIndex(r => !ULID_PATTERN.test(r)) == -1;
   }
 
   private onTransitionLeave(): void {
