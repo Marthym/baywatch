@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.security.api.model;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -14,6 +15,9 @@ import java.util.Optional;
  * </ul>
  */
 public sealed interface Permission permits Role, Authorization {
+    Comparator<Permission> COMPARATOR = Comparator
+            .comparing(Permission::role)
+            .thenComparing(c -> c.entity().orElse(""));
     char ENTITY_SEPARATOR = ':';
     String PERMISSION_FORMAT = "%s" + ENTITY_SEPARATOR + "%s";
 
@@ -30,6 +34,26 @@ public sealed interface Permission permits Role, Authorization {
             return role;
         } else {
             return new Authorization(role, entity);
+        }
+    }
+
+    /**
+     * Allow to validate a permission string.
+     *
+     * @param permissionRepresentation the permission string to validate
+     * @return Return {@code true} if the string starts with un existing {@link Role}, {@code false} otherwise.
+     */
+    static boolean validate(String permissionRepresentation) {
+        try {
+            String[] split = permissionRepresentation.split(String.valueOf(ENTITY_SEPARATOR));
+            Role.valueOf(split[0]);
+            if (split.length == 1) {
+                return true;
+            } else {
+                return split.length == 2 && !split[1].isBlank();
+            }
+        } catch (Exception e) {
+            return false;
         }
     }
 

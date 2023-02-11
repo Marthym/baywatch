@@ -30,7 +30,7 @@ public class UsersRecordSamples implements RelationalDataSet<UsersRecord> {
             .setUserEmail(UserSamples.LUKE.self.mail);
 
     public static final UsersRecord DSIDIOUS = Users.USERS.newRecord()
-            .setUserId(Hasher.sha3("darth.sidious@sith.com"))
+            .setUserId(UserSamples.DSIDIOUS.id)
             .setUserCreatedAt(LocalDateTime.parse("2023-01-10T22:59:42"))
             .setUserLogin("dsidious")
             .setUserName("Dark Sidious")

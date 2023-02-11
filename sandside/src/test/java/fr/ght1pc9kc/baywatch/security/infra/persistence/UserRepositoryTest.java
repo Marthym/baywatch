@@ -7,7 +7,6 @@ import fr.ght1pc9kc.baywatch.dsl.tables.Users;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
-import fr.ght1pc9kc.baywatch.security.infra.persistence.UserRepository;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
@@ -17,7 +16,6 @@ import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRolesSamples;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;
-import fr.ght1pc9kc.testy.jooq.WithDatabaseLoaded;
 import fr.ght1pc9kc.testy.jooq.WithDslContext;
 import fr.ght1pc9kc.testy.jooq.WithInMemoryDatasource;
 import fr.ght1pc9kc.testy.jooq.WithSampleDataLoaded;
@@ -41,13 +39,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class UserRepositoryTest {
     private static final WithInMemoryDatasource wDs = WithInMemoryDatasource.builder().build();
-    private static final WithDatabaseLoaded wBaywatchDb = WithDatabaseLoaded.builder()
-            .setDatasourceExtension(wDs)
-            .useFlywayDefaultLocation()
-            .build();
     private static final WithDslContext wDslContext = WithDslContext.builder()
             .setDatasourceExtension(wDs).build();
     private static final WithSampleDataLoaded wSamples = WithSampleDataLoaded.builder(wDslContext)
+            .createTablesIfNotExists()
             .addDataset(UsersRecordSamples.SAMPLE)
             .addDataset(UsersRolesSamples.SAMPLE)
             .addDataset(FeedRecordSamples.SAMPLE)
@@ -60,7 +55,6 @@ class UserRepositoryTest {
     @RegisterExtension
     @SuppressWarnings("unused")
     static ChainedExtension chain = ChainedExtension.outer(wDs)
-            .append(wBaywatchDb)
             .append(wDslContext)
             .append(wSamples)
             .register();
@@ -85,7 +79,7 @@ class UserRepositoryTest {
                         () -> assertThat(actual.self.login).isEqualTo("okenobi"),
                         () -> assertThat(actual.self.mail).isEqualTo("obiwan.kenobi@jedi.com"),
                         () -> assertThat(actual.self.password).isEqualTo(UserSamples.OBIWAN.self.password),
-                        () -> assertThat(actual.self.roles).containsOnly(Role.MANAGER.name())
+                        () -> assertThat(actual.self.roles).containsOnly(Role.MANAGER)
                 )).verifyComplete();
     }
 
@@ -101,7 +95,7 @@ class UserRepositoryTest {
                         () -> assertThat(actual.self.login).isEqualTo("lskywalker"),
                         () -> assertThat(actual.self.mail).isEqualTo("luke.skywalker@jedi.com"),
                         () -> assertThat(actual.self.password).isEqualTo(UserSamples.LUKE.self.password),
-                        () -> assertThat(actual.self.roles).containsOnly("USER", "MANAGER:TM01GP696RFPTY32WD79CVB0KDTF")
+                        () -> assertThat(actual.self.roles).containsOnly(Role.USER, Permission.manager("TM01GP696RFPTY32WD79CVB0KDTF"))
                 )).verifyComplete();
     }
 
@@ -130,13 +124,13 @@ class UserRepositoryTest {
             assertThat(actual).containsExactly(2, 3);
         }
 
-        Entity<User> dvader = new Entity<>((Hasher.sha3("darth.vader@sith.fr")), Entity.NO_ONE, Instant.EPOCH,
+        Entity<User> dvader = new Entity<>("US01GRQ15FNVC3XB8F1DD61J7WCC", Entity.NO_ONE, Instant.EPOCH,
                 User.builder()
                         .login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur")
-                        .role(Role.USER.name())
-                        .role(Permission.manager("TM01GP696RFPTY32WD79CVB0KDTF").toString()).build());
-        Entity<User> dsidious = new Entity<>((Hasher.sha3("darth.sidious@sith.fr")), Entity.NO_ONE, Instant.EPOCH,
-                User.builder().login("dsidious").name("Darth Sidious").mail("darth.sidious@sith.fr").password("obscur").role(Role.MANAGER.name()).build());
+                        .role(Role.USER)
+                        .role(Permission.manager("TM01GP696RFPTY32WD79CVB0KDTF")).build());
+        Entity<User> dsidious = new Entity<>("US01GRQ15G42PH15Q4RTKGN8KBT4", Entity.NO_ONE, Instant.EPOCH,
+                User.builder().login("dsidious").name("Darth Sidious").mail("darth.sidious@sith.fr").password("obscur").role(Role.MANAGER).build());
 
         StepVerifier.create(
                         tested.persist(List.of(dvader, dsidious)))
@@ -159,7 +153,7 @@ class UserRepositoryTest {
         }
 
         Entity<User> dvader = new Entity<>((Hasher.sha3("darth.vader@sith.fr")), Entity.NO_ONE, Instant.EPOCH,
-                User.builder().login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur").role(Role.USER.name()).build());
+                User.builder().login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur").role(Role.USER).build());
         StepVerifier.create(
                         tested.persist(List.of(dvader, UserSamples.LUKE, UserSamples.OBIWAN, UserSamples.YODA)))
                 .verifyError(DataAccessException.class);

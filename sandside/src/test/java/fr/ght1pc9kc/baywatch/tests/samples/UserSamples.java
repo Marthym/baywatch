@@ -1,7 +1,6 @@
 package fr.ght1pc9kc.baywatch.tests.samples;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
-import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
@@ -13,12 +12,12 @@ public final class UserSamples {
      * The {@link Role#ADMIN} role {@link User}
      */
     public static final Entity<User> YODA = Entity.identify(
-            Hasher.sha3("yoda@jedi.com"),
+            "US01GRQ11X1W8E6NQER7E1FNQ7HC",
             User.builder()
                     .login("yoda")
                     .name("Yoda Master")
                     .mail("yoda@jedi.com")
-                    .role(Role.ADMIN.name())
+                    .role(Role.ADMIN)
                     .password("adoy")
                     .build());
 
@@ -26,12 +25,12 @@ public final class UserSamples {
      * The {@link Role#MANAGER} role {@link User}
      */
     public static final Entity<User> OBIWAN = Entity.identify(
-            Hasher.sha3("obiwan.kenobi@jedi.com"),
+            "US01GRQ11XKGHERDEBSCHBNJAY78",
             User.builder()
                     .login("okenobi")
                     .name("Obiwan Kenobi")
                     .mail("obiwan.kenobi@jedi.com")
-                    .role(Role.MANAGER.name())
+                    .role(Role.MANAGER)
                     .password("nawibo")
                     .build());
 
@@ -40,13 +39,13 @@ public final class UserSamples {
      * {@link Role#MANAGER} for {@code TM01GP696RFPTY32WD79CVB0KDTF} (JEDI_TEAM)
      */
     public static final Entity<User> LUKE = Entity.identify(
-            Hasher.sha3("luke.skywalker@jedi.com"),
+            "US01GRQ15DCEX52JH4GWJ26G33ME",
             User.builder()
                     .login("lskywalker")
                     .name("Luke Skywalker")
                     .mail("luke.skywalker@jedi.com")
-                    .role(Role.USER.name())
-                    .role(Permission.manager("TM01GP696RFPTY32WD79CVB0KDTF").toString())
+                    .role(Role.USER)
+                    .role(Permission.manager("TM01GP696RFPTY32WD79CVB0KDTF"))
                     .password("ekul")
                     .build());
 
@@ -55,13 +54,13 @@ public final class UserSamples {
      * {@link Role#MANAGER} for {@code TM01GPETWVATJ968SJ717NRHYSEZ} (SITH_TEAM)
      */
     public static final Entity<User> DSIDIOUS = Entity.identify(
-            Hasher.sha3("darth.sidious@sith.com"),
+            "US01GRQ15F7DNWH4Q6Q1H5F7HYT0",
             User.builder()
                     .login("dsidious")
                     .name("Darth Sidious")
                     .mail("darth.sidious@sith.com")
-                    .role(Role.USER.name())
-                    .role(Permission.manager("TM01GPETWVATJ968SJ717NRHYSEZ").toString())
+                    .role(Role.USER)
+                    .role(Permission.manager("TM01GPETWVATJ968SJ717NRHYSEZ"))
                     .password("suoidis")
                     .build());
 
@@ -73,7 +72,7 @@ public final class UserSamples {
             User.builder()
                     .name(Role.SYSTEM.name())
                     .login(Role.SYSTEM.name().toLowerCase())
-                    .role(Role.SYSTEM.name()).build());
+                    .role(Role.SYSTEM).build());
 
     public static final List<Entity<User>> SAMPLES = List.of(OBIWAN, LUKE);
 }

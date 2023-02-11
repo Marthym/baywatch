@@ -1,0 +1,12 @@
+extend type Mutation {
+    userCreate(user: UserForm): User
+    userUpdate(_id: ID, user: UserForm): User
+    userDelete(ids: [ID]): [User]
+    userGrants(_id: ID, permissions: [String]): User
+    userRevokes(_id: ID, permissions: [String]): User
+}
+
+extend type Query {
+    userSearch(_p: Int, _pp: Int, _from: Int, _to: Int, _s: String
+        _id: [ID], login: String, name: String, mail: String): SearchUsersResponse
+}

@@ -1,8 +1,7 @@
 package fr.ght1pc9kc.baywatch.security.domain;
 
+import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
-import fr.ght1pc9kc.baywatch.common.domain.Hasher;
-import fr.ght1pc9kc.baywatch.common.domain.MailAddress;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
@@ -33,10 +32,13 @@ import static fr.ght1pc9kc.baywatch.security.api.model.RoleUtils.hasRole;
 
 @AllArgsConstructor
 public final class UserServiceImpl implements UserService {
+    private static final String ID_PREFIX = "US";
+
     private final UserPersistencePort userRepository;
     private final AuthenticationFacade authFacade;
     private final PasswordEncoder passwordEncoder;
     private final Clock clock;
+    private final UlidFactory idGenerator;
 
     @Override
     public Mono<Entity<User>> get(String userId) {
@@ -60,20 +62,18 @@ public final class UserServiceImpl implements UserService {
 
     @Override
     public Mono<Entity<User>> create(User user) {
-        String userMail = MailAddress.sanitize(user.mail);
-        String userId = Hasher.sha3(userMail);
+        String userId = String.format("%s%s", ID_PREFIX, idGenerator.create());
         User withPassword = user.withPassword(passwordEncoder.encode(user.password));
         Entity<User> entity = Entity.identify(userId, clock.instant(), withPassword);
         return authorizeAllData()
                 .flatMap(u -> userRepository.persist(List.of(entity)).single())
-                .then(userRepository.persist(userId, user.roles));
+                .then(userRepository.persist(userId, user.roles.stream().map(Permission::toString).distinct().toList()));
     }
 
     @Override
     public Mono<Entity<User>> update(String id, User user) {
         return authorizeSelfData(id).flatMap(u -> {
             User checkedUser = user.toBuilder()
-                    .clearRoles()
                     .password(Objects.nonNull(user.password) ? passwordEncoder.encode(user.password) : null)
                     .build();
             return userRepository.update(id, checkedUser);
@@ -85,11 +85,12 @@ public final class UserServiceImpl implements UserService {
         return authorizeSelfData(ids)
                 .flatMapMany(u -> userRepository.list(QueryContext.all(Criteria.property(ID).in(ids))))
                 .switchIfEmpty(Flux.error(new NoSuchElementException(String.format("Unable to find users %s :", ids))))
-                .flatMap(users -> Flux.just(users)
+                .collectList()
+                .flatMapMany(users -> Flux.fromIterable(users)
                         .map(u -> u.id)
                         .collectList()
                         .flatMap(userRepository::delete)
-                        .thenReturn(users));
+                        .thenMany(Flux.fromIterable(users)));
     }
 
     @Override
