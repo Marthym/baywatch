@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.api.model;
 
+import com.machinezoo.noexception.Exceptions;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,11 +10,12 @@ import lombok.Value;
 import lombok.With;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
+import java.util.Optional;
+
+import static java.util.function.Predicate.not;
 
 @Slf4j
 @Value
@@ -34,16 +36,13 @@ public class User {
         if (Objects.isNull(roles) || roles.length == 0) {
             return this.toBuilder().clearRoles().build();
         }
-        Set<Permission> perms = new HashSet<>();
-        for (String role : roles) {
-            try {
-                perms.add(Permission.from(role));
-            } catch (Exception e) {
-                log.debug(role + " ignored, not de role !");
-            }
-        }
-        List<Permission> verifiedRoles = new ArrayList<>(perms);
-        verifiedRoles.sort(Permission.COMPARATOR);
+        List<Permission> verifiedRoles = Arrays.stream(roles)
+                .map(Exceptions.silence().function(Permission::from))
+                .filter(not(Optional::isEmpty))
+                .map(Optional::get)
+                .distinct()
+                .sorted(Permission.COMPARATOR)
+                .toList();
         return this.toBuilder()
                 .clearRoles()
                 .roles(List.copyOf(verifiedRoles))
