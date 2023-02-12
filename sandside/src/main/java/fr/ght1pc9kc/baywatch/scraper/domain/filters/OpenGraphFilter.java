@@ -53,6 +53,10 @@ public class OpenGraphFilter implements NewsFilter {
                                     .withLink(links.canonical());
                         }
 
+                        if (nonNull(headMetas.title()) && !headMetas.title().isBlank()) {
+                            raw = raw.withTitle(headMetas.title());
+                        }
+
                         OpenGraph og = headMetas.og();
                         if (nonNull(og) && !og.isEmpty()) {
                             raw = Optional.ofNullable(og.title).map(raw::withTitle).orElse(raw);
@@ -62,10 +66,6 @@ public class OpenGraphFilter implements NewsFilter {
                                     .map(raw::withImage).orElse(raw);
                         } else {
                             log.debug("No OG meta found for {}", news.getLink());
-                        }
-
-                        if (nonNull(headMetas.title()) && !headMetas.title().isBlank()) {
-                            raw = raw.withTitle(headMetas.title());
                         }
 
                         return raw;
