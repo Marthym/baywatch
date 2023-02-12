@@ -32,12 +32,6 @@ public class ScraperConfiguration {
         return new OpenGraphFilter(headScraper);
     }
 
-//    @Bean
-//    @Order(3)
-//    public NewsFilter imageLinkValidation(WebClient http) {
-//        return new ImageLinkValidationFilter(http);
-//    }
-
     @Bean
     @Order(4)
     public NewsFilter newsSanitizer() {
