@@ -83,7 +83,7 @@ class OpenGraphFilterTest {
         StepVerifier.create(tested.filter(RAW))
                 .assertNext(actual -> Assertions.assertAll(
                         () -> assertThat(actual.getId()).isEqualTo("0"),
-                        () -> assertThat(actual.getTitle()).isEqualTo("Title from title tag"),
+                        () -> assertThat(actual.getTitle()).isEqualTo("Opengraph title"),
                         () -> assertThat(actual.getDescription()).isEqualTo("Opengraph description"),
                         () -> assertThat(actual.getImage()).isEqualTo(URI.create("https://open.graph.img/image.jpg"))
                 ))
