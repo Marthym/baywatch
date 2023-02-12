@@ -24,8 +24,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -57,12 +56,11 @@ public interface BaywatchMapper {
     UsersRecord entityUserToRecord(Entity<User> user);
 
     default Entity<User> recordToUserEntity(Record usersRecord) {
-        Set<Permission> distinctRoles = new HashSet<>();
-        for (String s : usersRecord.get(USERS_ROLES.USRO_ROLE).split(",")) {
-            distinctRoles.add(Permission.from(s));
-        }
-        List<Permission> roles = new ArrayList<>(distinctRoles);
-        roles.sort(Permission.COMPARATOR);
+        List<Permission> permissions = Arrays.stream(usersRecord.get(USERS_ROLES.USRO_ROLE).split(","))
+                .map(Permission::from)
+                .distinct()
+                .sorted(Permission.COMPARATOR)
+                .toList();
 
         return Entity.identify(usersRecord.get(USERS.USER_ID), DateUtils.toInstant(usersRecord.get(USERS.USER_CREATED_AT)),
                 User.builder()
@@ -70,7 +68,7 @@ public interface BaywatchMapper {
                         .mail(usersRecord.get(USERS.USER_EMAIL))
                         .name(usersRecord.get(USERS.USER_NAME))
                         .password(usersRecord.get(USERS.USER_PASSWORD))
-                        .roles(List.copyOf(roles))
+                        .roles(permissions)
                         .build());
     }
 
