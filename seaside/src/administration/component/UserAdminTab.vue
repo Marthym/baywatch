@@ -63,7 +63,7 @@
         </td>
         <td>{{ vUser.data.name }}</td>
         <td>{{ vUser.data.mail }}</td>
-        <td>{{ vUser.data.roles.slice(0, 1).join('...') }}</td>
+        <td>{{ roleFromPermission(vUser.data.roles) }}</td>
         <td>{{ dateToString(vUser.data._createdAt) }}</td>
         <td>
           <div class="btn-group justify-end w-full">
@@ -181,6 +181,12 @@ export default class UserAdminTab extends Vue {
       timeZone: 'UTC',
       year: 'numeric', month: '2-digit', day: '2-digit', hour: "2-digit", minute: "2-digit"
     });
+  }
+
+  private roleFromPermission(perm: string[]): string {
+    const first = perm.slice(0, 1).join();
+    const idx = first.indexOf(':');
+    return (idx > 0) ? first.substring(0, idx) : first;
   }
 
   private onSelectAll(): void {
