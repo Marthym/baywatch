@@ -1,0 +1,25 @@
+type Team {
+    _id: String
+    _createdAt: String
+    _createdBy: User
+    _managers: [User]
+    _members: [User]
+    name: String
+    topic: String
+}
+
+type SearchTeamsResponse {
+    entities: [Team]
+    totalCount: Int
+}
+
+extend type Query {
+    teamsSearch(
+        _p: Int, _pp: Int, _from: Int, _to: Int, _s: String
+        id: [ID], name: String, topic: String
+    ): SearchTeamsResponse
+}
+
+extend type Mutation {
+    teamCreate(name: String, topic: String): Team
+}
