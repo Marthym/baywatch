@@ -12,6 +12,7 @@ import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.infra.exceptions.AlreadyExistsException;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserForm;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserSearchRequest;
+import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
 import graphql.GraphqlErrorException;
@@ -40,6 +41,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ROLES;
 
 @Slf4j
 @Controller
@@ -134,5 +137,18 @@ public class UserGqlController {
                 .map(h -> h.get(0))
                 .map(Integer::parseInt)
                 .switchIfEmpty(Mono.just(0));
+    }
+
+    @SchemaMapping(typeName = "Team", value = "_createdBy")
+    public Mono<Map<String, Object>> createdBy(Map<String, Object> user) {
+        MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
+        return userService.get(user.get("_createdBy").toString()).map(e -> mapper.convertValue(e, gqlType));
+    }
+
+    @SchemaMapping(typeName = "Team", value = "_managers")
+    public Flux<Map<String, Object>> managers(Map<String, Object> team) {
+        MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
+        return userService.list(PageRequest.all(Criteria.property(ROLES).eq(Permission.manager(team.get("_id").toString()))))
+                .map(e -> mapper.convertValue(e, gqlType));
     }
 }
