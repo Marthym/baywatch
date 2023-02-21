@@ -1,12 +1,14 @@
 <template>
   <div class="overflow-x-auto mt-4">
-    <TableActionsComponent/>
-    <SmartTable columns="Name|Managers|Members" :elements="teams" v-slot="e">
-      <std>{{ e.data._id }}</std>
+    <TableActionsComponent @add="addNewTeam"/>
+    <SmartTable columns="Name|Managers|Topic" :elements="teams" v-slot="e">
       <std>{{ e.data.name }}</std>
+      <std>{{ e.data._managers.map(m => m.name).join(', ') }}</std>
       <std>{{ e.data.topic }}</std>
     </SmartTable>
   </div>
+  <team-editor v-if="isEditorOpened" @close="isEditorOpened = false"
+               title="Team Editor" v-model="activeTeam"/>
 </template>
 
 <script lang="ts">
@@ -16,25 +18,45 @@ import SmartTable from "@/common/components/smartTable/SmartTable.vue";
 import std from "@/common/components/smartTable/SmartTableData.vue";
 import {SmartTableView} from "@/common/components/smartTable/SmartTableView.interface";
 import {Team} from "@/teams/model/Team.type";
+import {teamsList} from "@/teams/Teams.service";
+import {Observable} from "rxjs";
+import {map, tap} from "rxjs/operators";
+import TeamEditor from "@/teams/components/TeamEditor.vue";
+import reloadActionService from "@/common/services/ReloadActionService";
 
 @Options({
   name: 'TeamsPage',
-  components: {std, SmartTable, TableActionsComponent},
+  components: {TeamEditor, std, SmartTable, TableActionsComponent},
 })
 export default class TeamsPage extends Vue {
+  private isEditorOpened: boolean = false;
   private teams: SmartTableView<Team>[] = [];
+  private activeTeam: SmartTableView<Team>;
+  private activePage = 0;
 
   private mounted(): void {
-    this.teams.push({
-      isSelected: false,
-      data: {
-        _id: '42',
-        _createdAt: '',
-        _createdBy: '',
-        name: 'Jedi',
-        topic: 'May the 4th be with you',
+    this.loadNextPage().subscribe({
+      next: () => {
+        reloadActionService.registerReloadFunction(context => {
+          if (context === '' || context === 'teams') {
+            this.loadNextPage(this.activePage).subscribe();
+          }
+        })
       }
     });
+  }
+
+  private loadNextPage(page: number = 0): Observable<SmartTableView<Team>[]> {
+    return teamsList().pipe(
+        map(page => page.data),
+        map(teams => teams.map(team => ({isSelected: false, data: team} as SmartTableView<Team>))),
+        tap(teams => this.teams.splice(0, this.teams.length, ...teams)),
+    );
+  }
+
+  private addNewTeam(): void {
+    this.activeTeam = {isSelected: false, data: {} as Team};
+    this.isEditorOpened = true;
   }
 }
 </script>
