@@ -19,6 +19,7 @@
 
 <script lang="ts">
 import {Options, Vue} from "vue-property-decorator";
+import keyboardControl from "@/common/services/KeyboardControl";
 
 const LEAVE_EVENT: string = 'leave';
 
@@ -31,6 +32,10 @@ export default class CurtainModal extends Vue {
 
   mounted(): void {
     this.$nextTick(() => this.opened = true);
+    keyboardControl.registerListener('Escape', event => {
+      event.preventDefault();
+      this.close();
+    });
   }
 
   private close(): void {
@@ -39,6 +44,10 @@ export default class CurtainModal extends Vue {
 
   private onTransitionLeave(): void {
     this.$emit(LEAVE_EVENT);
+  }
+
+  unmounted(): void {
+    keyboardControl.unregisterListener('Escape');
   }
 }
 </script>

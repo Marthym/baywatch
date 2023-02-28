@@ -69,7 +69,7 @@ import {Observable} from "rxjs";
 @Options({
   name: 'SmartTable',
   components: {ArrowDownTrayIcon, ArrowUpTrayIcon, PencilIcon, PlusCircleIcon, TrashIcon},
-  emits: [],
+  emits: ['delete', 'edit'],
 })
 export default class SmartTable extends Vue {
   @Prop()
