@@ -22,4 +22,5 @@ extend type Query {
 
 extend type Mutation {
     teamCreate(name: String, topic: String): Team
+    teamDelete(id: [ID]): [Team]
 }
