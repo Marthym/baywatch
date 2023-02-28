@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.infra.model.Page;
-import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.teams.api.TeamsService;
 import fr.ght1pc9kc.baywatch.teams.api.model.Team;
 import fr.ght1pc9kc.baywatch.teams.infra.model.SearchTeamsRequest;
+import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +21,11 @@ import org.springframework.stereotype.Controller;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 
 @Controller
 @RequiredArgsConstructor
@@ -46,6 +49,16 @@ public class TeamsController {
 
         return teamsService.count(teamsPageRequest)
                 .map(count -> Page.of(teams, count));
+    }
+
+    @MutationMapping
+    public Flux<Map<String, Object>> teamDelete(@Argument("id") List<String> teamIds) {
+        MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
+        return teamsService.list(PageRequest.all(Criteria.property(ID).in(teamIds)))
+                .collectList()
+                .flatMapMany(teams -> teamsService.delete(teams.stream().map(e -> e.id).toList())
+                        .thenMany(Flux.fromIterable(teams)))
+                .map(e -> mapper.convertValue(e, gqlType));
     }
 
     @SchemaMapping(typeName = "SearchTeamsResponse")
