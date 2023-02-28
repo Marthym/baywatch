@@ -58,7 +58,7 @@ export default class TeamEditor extends Vue {
             this.modelValue.data = team;
             notificationService.pushSimpleOk(`Team ${team._id} saved successfully !`);
           }
-        })
+        });
   }
 
   private close(): void {

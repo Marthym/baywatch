@@ -5,7 +5,6 @@ import {send} from "@/common/services/GraphQLClient";
 import {map, take} from "rxjs/operators";
 import {Team} from "@/teams/model/Team.type";
 import {TeamsSearchResponse} from "@/teams/model/TeamsSearchResponse";
-import {User} from "@/security/model/User";
 
 const DEFAULT_PER_PAGE: number = 20;
 const DEFAULT_QUERY: string = `?${ConstantFilters.PER_PAGE}=${DEFAULT_PER_PAGE}&_s=name`;
@@ -14,7 +13,7 @@ const TEAMS_SEARCH_REQUEST = `#graphql
 query SearchForTeams{
     teamsSearch {
         totalCount
-        entities {_id 
+        entities {_id
             _createdBy {_id name}
             _managers {_id name}
             name topic}
@@ -51,6 +50,19 @@ mutation CreateNewTeam($name: String, $topic: String){
 export function teamCreate(name: string, topic: string): Observable<Team> {
     return send<{ teamCreate: Team }>(TEAMS_CREATE_REQUEST, {name: name, topic: topic}).pipe(
         map(data => data.data.teamCreate),
+        take(1),
+    );
+}
+
+const TEAMS_DELETE_REQUEST = `#graphql
+mutation DeleteTeams($id: [ID]){
+    teamDelete(id: $id) {
+        _id name
+    }}`
+
+export function teamDelete(ids: string[]): Observable<Team[]> {
+    return send<{ teamDelete: Team[] }>(TEAMS_DELETE_REQUEST, {id: ids}).pipe(
+        map(data => data.data.teamDelete),
         take(1),
     );
 }
