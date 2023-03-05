@@ -46,6 +46,7 @@ public class TeamsController {
     }
 
     @MutationMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public Mono<Map<String, Object>> teamUpdate(@Argument("id") String id, @Valid @Argument("team") TeamForm team) {
         MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
         return teamsService.update(id, team.name(), team.topic())
@@ -62,6 +63,7 @@ public class TeamsController {
     }
 
     @MutationMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public Flux<Map<String, Object>> teamDelete(@Argument("id") List<String> teamIds) {
         MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
         return teamsService.list(PageRequest.all(Criteria.property(ID).in(teamIds)))
