@@ -73,11 +73,11 @@ import {Observable} from "rxjs";
 })
 export default class SmartTable extends Vue {
   @Prop()
-  private elements: SmartTableView[];
+  private elements: SmartTableView<unknown>[];
   @Prop({default: ""})
   private columns: string;
-  @Prop({default: p => console.log(`load page ${p}`)})
-  private loadPageByIndex: (page: number) => Observable<SmartTableView[]>;
+  @Prop({default: p => console.debug(`load page ${p}, not implemented`)})
+  private loadPageByIndex: (page: number) => Observable<SmartTableView<unknown>[]>;
 
   private pagesNumber = 0;
   private activePage = 0;
@@ -87,7 +87,7 @@ export default class SmartTable extends Vue {
   }
 
   get checkState(): boolean {
-    const teamView: SmartTableView | undefined = this.elements.find(t => t.isSelected);
+    const teamView: SmartTableView<unknown> | undefined = this.elements.find(t => t.isSelected);
     const isOneSelected = teamView !== undefined;
     if (this.$refs && this.$refs['globalCheck'])
       this.$refs['globalCheck'].indeterminate = isOneSelected && this.elements.find(t => !t.isSelected) !== undefined;
@@ -110,7 +110,3 @@ export default class SmartTable extends Vue {
   }
 }
 </script>
-
-<style scoped>
-
-</style>
