@@ -20,7 +20,7 @@ import SmartTable from "@/common/components/smartTable/SmartTable.vue";
 import std from "@/common/components/smartTable/SmartTableData.vue";
 import {SmartTableView} from "@/common/components/smartTable/SmartTableView.interface";
 import {Team} from "@/teams/model/Team.type";
-import {teamDelete, teamsList} from "@/teams/Teams.service";
+import {teamDelete, teamsList} from "@/teams/services/Teams.service";
 import {Observable} from "rxjs";
 import {map, tap} from "rxjs/operators";
 import TeamEditor, {CloseEvent} from "@/teams/components/TeamEditor.vue";

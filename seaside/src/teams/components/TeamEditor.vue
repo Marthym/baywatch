@@ -24,6 +24,7 @@
         <button class="btn" @click.stop="throttledOnSave">Save</button>
       </div>
     </div>
+    <team-members-input v-if="'_id' in modelValue.data" :teamId="modelValue.data._id"/>
   </curtain-modal>
 </template>
 
@@ -31,16 +32,17 @@
 import {Options, Prop, Vue} from "vue-property-decorator";
 import CurtainModal from "@/common/components/CurtainModal.vue";
 import {Team} from "@/teams/model/Team.type";
-import {teamCreate, teamUpdate} from "@/teams/Teams.service";
-import notificationService from "@/services/notification/NotificationService";
+import {teamCreate, teamUpdate} from "@/teams/services/Teams.service";
 import {SmartTableView} from "@/common/components/smartTable/SmartTableView.interface";
 import * as throttle from "lodash/throttle";
+import TeamMembersInput from "@/teams/components/TeamMembersInput.vue";
+import notificationService from "@/services/notification/NotificationService";
 
 const CLOSE_EVENT = 'close';
 
 @Options({
   name: 'TeamEditor',
-  components: {CurtainModal},
+  components: {CurtainModal, TeamMembersInput},
   emits: [CLOSE_EVENT]
 })
 export default class TeamEditor extends Vue {

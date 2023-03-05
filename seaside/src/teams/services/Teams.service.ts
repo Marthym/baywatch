@@ -9,6 +9,9 @@ import {TeamsSearchResponse} from "@/teams/model/TeamsSearchResponse";
 const DEFAULT_PER_PAGE: number = 20;
 const DEFAULT_QUERY: string = `?${ConstantFilters.PER_PAGE}=${DEFAULT_PER_PAGE}&_s=name`;
 
+/**
+ * Search for Teams
+ */
 const TEAMS_SEARCH_REQUEST = `#graphql
 query SearchForTeams{
     teamsSearch {
@@ -38,6 +41,9 @@ export function teamsList(page = 0, query: URLSearchParams = new URLSearchParams
     );
 }
 
+/**
+ * Create new Team
+ */
 const TEAMS_CREATE_REQUEST = `#graphql
 mutation CreateNewTeam($name: String, $topic: String){
     teamCreate(name: $name, topic: $topic) {
@@ -54,6 +60,9 @@ export function teamCreate(name: string, topic: string): Observable<Team> {
     );
 }
 
+/**
+ * Update a Team
+ */
 const TEAMS_UPDATE_REQUEST = `#graphql
 mutation UpdateTeam($id: ID, $team: TeamForm){
     teamUpdate(id: $id, team: $team) {
@@ -74,6 +83,9 @@ export function teamUpdate(_id: string, team: Team): Observable<Team> {
     );
 }
 
+/**
+ * Delete teams
+ */
 const TEAMS_DELETE_REQUEST = `#graphql
 mutation DeleteTeams($id: [ID]){
     teamDelete(id: $id) {
