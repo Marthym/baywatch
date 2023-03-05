@@ -1,0 +1,18 @@
+type TeamMember {
+    _id: ID
+    _createdAt: String
+    _createdBy: User
+    _user: User
+    userId: String!
+    pending: String
+}
+
+extend type Query {
+    teamMembersList(teamId: ID): [TeamMember]
+}
+
+#extend type Mutation {
+#    teamMembersList(name: String, topic: String): Team
+#    teamUpdate(id: ID, team: TeamForm): Team
+#    teamDelete(id: [ID]): [Team]
+#}
