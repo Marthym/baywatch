@@ -15,7 +15,3 @@ import {Options, Vue} from "vue-property-decorator";
 export default class SmartTableData extends Vue {
 }
 </script>
-
-<style scoped>
-
-</style>

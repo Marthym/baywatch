@@ -54,6 +54,26 @@ export function teamCreate(name: string, topic: string): Observable<Team> {
     );
 }
 
+const TEAMS_UPDATE_REQUEST = `#graphql
+mutation UpdateTeam($id: ID, $team: TeamForm){
+    teamUpdate(id: $id, team: $team) {
+        _id
+        _createdBy {_id name}
+        _managers {_id name}
+        name topic
+    }}`
+
+export function teamUpdate(_id: string, team: Team): Observable<Team> {
+    const teamForm = {
+        name: team.name,
+        topic: (team.topic.trim() !== "") ? team.topic : undefined,
+    }
+    return send<{ teamUpdate: Team }>(TEAMS_UPDATE_REQUEST, {id: _id, team: teamForm}).pipe(
+        map(data => data.data.teamUpdate),
+        take(1),
+    );
+}
+
 const TEAMS_DELETE_REQUEST = `#graphql
 mutation DeleteTeams($id: [ID]){
     teamDelete(id: $id) {

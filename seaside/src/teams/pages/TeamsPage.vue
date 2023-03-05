@@ -2,13 +2,14 @@
   <div class="overflow-x-auto mt-4">
     <TableActionsComponent @add="addNewTeam"/>
     <SmartTable columns="Name|Managers|Topic" :elements="teams" v-slot="e"
+                @edit="onEditData"
                 @delete="onDeleteData">
       <std>{{ e.data.name }}</std>
       <std>{{ e.data._managers.map(m => m.name).join(', ') }}</std>
       <std>{{ e.data.topic }}</std>
     </SmartTable>
   </div>
-  <team-editor v-if="isEditorOpened" @close="isEditorOpened = false"
+  <team-editor v-if="isEditorOpened" @close="onEditorClose"
                title="Team Editor" v-model="activeTeam"/>
 </template>
 
@@ -22,7 +23,7 @@ import {Team} from "@/teams/model/Team.type";
 import {teamDelete, teamsList} from "@/teams/Teams.service";
 import {Observable} from "rxjs";
 import {map, tap} from "rxjs/operators";
-import TeamEditor from "@/teams/components/TeamEditor.vue";
+import TeamEditor, {CloseEvent} from "@/teams/components/TeamEditor.vue";
 import reloadActionService from "@/common/services/ReloadActionService";
 import notificationService from "@/services/notification/NotificationService";
 
@@ -62,6 +63,13 @@ export default class TeamsPage extends Vue {
     this.isEditorOpened = true;
   }
 
+  private onEditData(idx): void {
+    if (this.teams.length >= (idx - 1)) {
+      this.activeTeam = this.teams[idx];
+      this.isEditorOpened = true;
+    }
+  }
+
   private onDeleteData(idx): void {
     if (this.teams.length >= (idx - 1)) {
       teamDelete([this.teams[idx].data._id])
@@ -72,6 +80,13 @@ export default class TeamsPage extends Vue {
             },
             error: err => notificationService.pushSimpleError(err),
           })
+    }
+  }
+
+  private onEditorClose(event: CloseEvent): void {
+    this.isEditorOpened = false;
+    if (event.updated) {
+      this.loadNextPage(this.activePage).subscribe();
     }
   }
 

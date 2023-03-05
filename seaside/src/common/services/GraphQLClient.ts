@@ -8,7 +8,13 @@ import {NotificationCode} from "@/services/notification/NotificationCode.enum";
 import {map, switchMap} from "rxjs/operators";
 import {UnauthorizedError} from "@/common/errors/UnauthorizedError";
 import {UnknownFetchError} from "@/common/errors/UnknownFetchError";
-import {GraphqlResponse, INTERNAL_ERROR, INVALID_SYNTAX, UNAUTHORIZED} from "@/common/model/GraphqlResponse.type";
+import {
+    GraphqlResponse,
+    INTERNAL_ERROR,
+    INVALID_SYNTAX,
+    UNAUTHORIZED,
+    VALIDATION_ERROR
+} from "@/common/model/GraphqlResponse.type";
 import {handleStatusCodeErrors} from "@/common/services/common";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL + import.meta.env.VITE_GQL_ENDPOINT;
@@ -56,6 +62,21 @@ function handleSyntaxErrors<T>(data: GraphqlResponse<T>): GraphqlResponse<T> {
     }
 }
 
+function handleValidationErrors<T>(data: GraphqlResponse<T>): GraphqlResponse<T> {
+    if (data.errors) {
+        const errIdx = data.errors.findIndex(e => e.extensions.classification === VALIDATION_ERROR);
+        if (errIdx !== -1) {
+            notificationService.pushNotification({
+                code: NotificationCode.ERROR,
+                severity: Severity.error,
+                message: data.errors[errIdx].message,
+            });
+            throw new UnknownFetchError('Illegal argument exception !');
+        }
+    }
+    return data;
+}
+
 function handleInternalServerErrors<T>(data: GraphqlResponse<T>): GraphqlResponse<T> {
     if (data.errors
         && data.errors.findIndex(e => e.extensions.classification === INTERNAL_ERROR) !== -1) {
@@ -84,6 +105,7 @@ export function send<T>(query: string, vars?: any): Observable<GraphqlResponse<T
         switchMap(handleStatusCodeErrors),
         switchMap(r => r.json()),
         map(handleAuthenticationErrors),
+        map(handleValidationErrors),
         map(handleSyntaxErrors),
         map(handleInternalServerErrors),
     );
