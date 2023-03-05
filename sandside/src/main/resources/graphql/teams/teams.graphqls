@@ -8,6 +8,11 @@ type Team {
     topic: String
 }
 
+input TeamForm {
+    name: String!
+    topic: String
+}
+
 type SearchTeamsResponse {
     entities: [Team]
     totalCount: Int
@@ -22,5 +27,6 @@ extend type Query {
 
 extend type Mutation {
     teamCreate(name: String, topic: String): Team
+    teamUpdate(id: ID, team: TeamForm): Team
     teamDelete(id: [ID]): [Team]
 }

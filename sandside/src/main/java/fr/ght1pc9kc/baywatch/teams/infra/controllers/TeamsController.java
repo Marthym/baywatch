@@ -7,9 +7,12 @@ import fr.ght1pc9kc.baywatch.common.infra.model.Page;
 import fr.ght1pc9kc.baywatch.teams.api.TeamsService;
 import fr.ght1pc9kc.baywatch.teams.api.model.Team;
 import fr.ght1pc9kc.baywatch.teams.infra.model.SearchTeamsRequest;
+import fr.ght1pc9kc.baywatch.teams.infra.model.TeamForm;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.Arguments;
@@ -36,9 +39,16 @@ public class TeamsController {
     private final ObjectMapper mapper;
 
     @MutationMapping
-    public Mono<Map<String, Object>> teamCreate(@Argument("name") String name, @Argument("topic") String topic) {
+    public Mono<Map<String, Object>> teamCreate(@Argument("name") @NotNull String name, @Argument("topic") String topic) {
         MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
         return teamsService.create(name, topic)
+                .map(e -> mapper.convertValue(e, gqlType));
+    }
+
+    @MutationMapping
+    public Mono<Map<String, Object>> teamUpdate(@Argument("id") String id, @Valid @Argument("team") TeamForm team) {
+        MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
+        return teamsService.update(id, team.name(), team.topic())
                 .map(e -> mapper.convertValue(e, gqlType));
     }
 
