@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.security.infra.controllers;
+package fr.ght1pc9kc.baywatch.teams.infra.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
