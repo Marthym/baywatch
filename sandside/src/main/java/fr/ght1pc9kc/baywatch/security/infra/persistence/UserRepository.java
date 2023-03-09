@@ -2,7 +2,6 @@ package fr.ght1pc9kc.baywatch.security.infra.persistence;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
-import fr.ght1pc9kc.baywatch.common.infra.PredicateSearchVisitor;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
@@ -45,7 +44,6 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.UsersRoles.USERS_ROLES;
 public class UserRepository implements UserPersistencePort {
     private static final JooqConditionVisitor JOOQ_CONDITION_VISITOR =
             new JooqConditionVisitor(PropertiesMappers.USER_PROPERTIES_MAPPING::get);
-    private static final PredicateSearchVisitor<Entity<User>> USER_PREDICATE_VISITOR = new PredicateSearchVisitor<>();
 
     private final @DatabaseQualifier Scheduler databaseScheduler;
     private final DSLContext dsl;
@@ -79,8 +77,7 @@ public class UserRepository implements UserPersistencePort {
                         }
                     }).onDispose(cursor::close);
                 }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
-                .map(baywatchConverter::recordToUserEntity)
-                .filter(qCtx.filter.accept(USER_PREDICATE_VISITOR));
+                .map(baywatchConverter::recordToUserEntity);
     }
 
     @Override

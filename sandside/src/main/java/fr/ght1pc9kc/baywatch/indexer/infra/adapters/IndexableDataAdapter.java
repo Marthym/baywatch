@@ -6,7 +6,6 @@ import fr.ght1pc9kc.baywatch.indexer.domain.ports.IndexableDataPort;
 import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
