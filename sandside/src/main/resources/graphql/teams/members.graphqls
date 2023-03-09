@@ -11,8 +11,7 @@ extend type Query {
     teamMembersList(teamId: ID): [TeamMember]
 }
 
-#extend type Mutation {
-#    teamMembersList(name: String, topic: String): Team
-#    teamUpdate(id: ID, team: TeamForm): Team
-#    teamDelete(id: [ID]): [Team]
-#}
+extend type Mutation {
+    teamMembersAdd(_id: ID, membersIds: [ID]): [TeamMember]
+    teamMembersDelete(_id: ID, membersIds: [ID]): [TeamMember]
+}
