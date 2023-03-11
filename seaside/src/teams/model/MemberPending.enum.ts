@@ -1,5 +1,5 @@
 export enum MemberPending {
-    MANAGER,
-    USER,
-    NONE,
+    MANAGER = 'MANAGER',
+    USER = 'USER',
+    NONE = 'NONE',
 }

@@ -1,5 +1,5 @@
 <template>
-  <curtain-modal @leave="close()" v-slot="scope">
+  <curtain-modal @leave="close()" v-slot="curtainModal">
     <h2 class="font-sans text-xl border-b border-accent/40 pb-2 w-full">{{ title }}</h2>
     <div class="m-4">
       <label class="label">
@@ -21,7 +21,8 @@
         <span v-if="errors.has('topic')" class="label-text-alt">{{ errors.get('topic') }}</span>
       </label>
       <div class="text-right">
-        <button class="btn" @click.stop="throttledOnSave">Save</button>
+        <button class="btn btn-sm mx-1" @click.stop="curtainModal.close()">Cancel</button>
+        <button class="btn btn-sm btn-primary mx-1" @click.stop="throttledOnSave">Save</button>
       </div>
     </div>
     <team-members-input v-if="'_id' in modelValue.data" :teamId="modelValue.data._id"/>

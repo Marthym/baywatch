@@ -10,7 +10,7 @@
         leave-to-class="lg:transform lg:translate-x-full"
         @after-leave="onTransitionLeave">
       <div v-if="opened" @click.stop
-           class="justify-self-end flex flex-col bg-base-100 text-base-content lg:w-3/4 w-full h-full overflow-auto p-2">
+           class="justify-self-end flex flex-col bg-neutral text-base-content lg:w-3/4 w-full h-full overflow-auto p-2">
         <slot :close="close"/>
       </div>
     </Transition>

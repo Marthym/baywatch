@@ -1,7 +1,7 @@
 <template>
   <div class="overflow-x-auto">
-    <table class="table table-zebra table-compact">
-      <caption class="label-text text-left mb-2">Rôle(s) de l'utilisateur</caption>
+    <h3 class="font-sans text-lg border-b border-accent/40 pb-1 mb-2 w-full">User role(s)</h3>
+    <table class="table table-zebra table-compact" aria-label="User role(s)">
       <thead>
       <tr>
         <th>Name</th>

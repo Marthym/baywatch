@@ -200,6 +200,7 @@ export default class UserAdminTab extends Vue {
   }
 
   private onUserSubmit(): void {
+    console.log('sibmit')
     const edit = '_id' in this.activeUser && this.activeUser._id !== undefined;
     if (edit) {
       this.updateActiveUser();
