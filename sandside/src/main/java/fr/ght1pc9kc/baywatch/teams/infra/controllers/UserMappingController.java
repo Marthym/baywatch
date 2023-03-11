@@ -6,6 +6,7 @@ import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.baywatch.teams.api.model.TeamMember;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.RequiredArgsConstructor;

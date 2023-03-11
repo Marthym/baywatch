@@ -20,6 +20,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,6 +34,7 @@ import static fr.ght1pc9kc.baywatch.security.api.model.RoleUtils.hasRole;
 @AllArgsConstructor
 public final class UserServiceImpl implements UserService {
     private static final String ID_PREFIX = "US";
+    private static final String AUTHENTICATION_NOT_FOUND = "Authentication not found !";
 
     private final UserPersistencePort userRepository;
     private final AuthenticationFacade authFacade;
@@ -42,15 +44,16 @@ public final class UserServiceImpl implements UserService {
 
     @Override
     public Mono<Entity<User>> get(String userId) {
-        return authorizeSelfData(userId)
-                .flatMap(u -> userRepository.get(userId));
+        return userRepository.get(userId)
+                .flatMap(this::filterPublicData);
     }
 
     @Override
     public Flux<Entity<User>> list(PageRequest pageRequest) {
-        return authorizeAllData()
+        return authFacade.getConnectedUser()
                 .map(u -> QueryContext.from(pageRequest).withUserId(u.id))
-                .flatMapMany(userRepository::list);
+                .flatMapMany(userRepository::list)
+                .flatMap(this::filterPublicData);
     }
 
     @Override
@@ -131,13 +134,31 @@ public final class UserServiceImpl implements UserService {
                 permissions.stream().map(Permission::toString).distinct().toList()));
     }
 
+    private Mono<Entity<User>> filterPublicData(Entity<User> original) {
+        return authFacade.getConnectedUser()
+                .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
+                .filter(u -> (hasRole(u.self, Role.ADMIN)
+                        || (hasRole(u.self, Role.USER) && original.id.equals(u.id))))
+                .map(u -> original)
+                .switchIfEmpty(Mono.just(Entity.<User>builder()
+                        .id(original.id)
+                        .createdBy(Entity.NO_ONE)
+                        .createdAt(Instant.EPOCH)
+                        .self(original.self.toBuilder()
+                                .clearRoles()
+                                .password(null)
+                                .mail(null)
+                                .build())
+                        .build()));
+    }
+
     private Mono<Entity<User>> authorizeSelfData(String id) {
         return authorizeSelfData(Collections.singleton(id));
     }
 
     private Mono<Entity<User>> authorizeSelfData(Collection<String> ids) {
         return authFacade.getConnectedUser()
-                .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
+                .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
                 .map(u -> {
                     if (hasRole(u.self, Role.ADMIN)
                             || (hasRole(u.self, Role.USER) && ids.size() == 1 && ids.contains(u.id))) {
@@ -149,7 +170,7 @@ public final class UserServiceImpl implements UserService {
 
     private Mono<Entity<User>> authorizeAllData() {
         return authFacade.getConnectedUser()
-                .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
+                .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
                 .map(u -> {
                     if (hasRole(u.self, Role.ADMIN)) {
                         return u;
