@@ -1,44 +1,59 @@
 <template>
-  <div>
-    <table class="table table-zebra table-compact">
-      <caption class="label-text text-left mb-2">Gérer les membres de l'équipe</caption>
+  <div class="mx-4">
+    <h3 class="font-sans text-lg border-b border-accent/40 pb-1 mb-2 w-full">Manage team members</h3>
+    <table class="table table-compact lg:w-3/4 w-full" :aria-label="'members for ' + teamId">
       <thead>
       <tr>
-        <th>Utilisateur</th>
-        <th>Status</th>
-        <th class="text-center">Action</th>
+        <th scope="col">Utilisateur</th>
+        <th scope="col" class="text-center">Status</th>
+        <th scope="col" class="text-right">Action</th>
       </tr>
-      </thead>
-      <tbody>
-      <tr v-for="(member, index) in members">
-        <td v-if="member._id">{{ member._user.login }}</td>
-        <td v-else>
+      <tr>
+        <td class="normal-case">
           <div class="dropdown dropdown-bottom">
             <input type="text" placeholder="Type here" class="input input-bordered input-xs w-full max-w-xs"
-                   v-model="member._user.login"
+                   v-model="newMember._user.login"
                    @keyup="onUserKeyup"/>
             <ul tabindex="0" v-if="dropdown.length > 0"
                 class="dropdown-content menu shadow bg-neutral border-primary-content border border-opacity-20 w-full">
-              <li v-for="i in dropdown"><a @click="onUserDropdownClick(index, i)">{{ i.login }}</a></li>
+              <li v-for="i in dropdown"><a @click="onUserDropdownClick(i)">{{ i.login }}</a></li>
             </ul>
           </div>
         </td>
         <td class="text-center">
-          <component :is="getStatusComponent(member)" class="h-4 w-4 inline text-amber-300"
+          <component :is="getStatusComponent(newMember)" class="h-4 w-4 inline"
+                     :class="{'text-amber-300': isManager(newMember)}"
+                     v-if="getStatusComponent(newMember) !== undefined"/>
+        </td>
+        <td class="text-right">
+          <button class="btn btn-sm" @click.prevent.stop="onAddRole()">
+            <PlusCircleIcon class="h-6 w-6 inline"/>
+          </button>
+        </td>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="(member, index) in members">
+        <td>{{ member._user.login }}</td>
+        <td class="text-center">
+          <component :is="getStatusComponent(member)" class="h-4 w-4 inline"
+                     :class="{'text-amber-300': isManager(member)}"
                      v-if="getStatusComponent(member) !== undefined"/>
         </td>
-        <td>
-          <div class="btn-group">
-            <button class="btn btn-sm" @click.prevent.stop="onAddRole()">
-              <PlusCircleIcon class="h-6 w-6 inline"/>
-            </button>
-            <button class="btn btn-sm" @click.prevent.stop="onRemoveRole(index)">
-              <TrashIcon class="w-6 h-6 inline"/>
-            </button>
-          </div>
+        <td class="text-right">
+          <button class="btn btn-sm" @click.prevent.stop="onRemoveMember(index)">
+            <TrashIcon class="w-6 h-6 inline"/>
+          </button>
         </td>
       </tr>
       </tbody>
+      <tfoot>
+      <tr>
+        <th scope="col">Utilisateur</th>
+        <th scope="col" class="text-center">Status</th>
+        <th scope="col" class="text-right">Action</th>
+      </tr>
+      </tfoot>
     </table>
   </div>
 </template>
@@ -48,9 +63,15 @@ import {Options, Prop, Vue} from "vue-property-decorator";
 import {PlusCircleIcon, TrashIcon} from "@heroicons/vue/24/outline";
 import {ClockIcon, TrophyIcon, UserPlusIcon} from "@heroicons/vue/20/solid";
 import {Member} from "@/teams/model/Member.type";
-import {teamMemberAvailable, teamMemberList} from "@/teams/services/TeamMembers.service";
+import {
+  teamMemberAdd,
+  teamMemberAvailable,
+  teamMemberDelete,
+  teamMemberList
+} from "@/teams/services/TeamMembers.service";
 import {MemberPending} from "@/teams/model/MemberPending.enum";
 import {User} from "@/teams/model/User.type";
+import {map} from "rxjs/operators";
 
 const SUBMIT_EVENT: string = 'submit';
 const UPDATE_EVENT: string = 'update:modelValue';
@@ -63,6 +84,7 @@ const UPDATE_EVENT: string = 'update:modelValue';
 export default class TeamMembersInput extends Vue {
   @Prop()
   private teamId!: string;
+  private newMember: Member = {pending: MemberPending.USER, _user: {}} as Member;
   private members: Member[] = [];
   private dropdown: User[] = [];
 
@@ -87,8 +109,19 @@ export default class TeamMembersInput extends Vue {
     }
   }
 
+  private isManager(member: Member): boolean {
+    return member?._user?.roles?.find(r => r === 'MANAGER') !== undefined;
+  }
+
   private onAddRole(): void {
-    this.members.push({_user: {}, pending: MemberPending.USER} as Member);
+    teamMemberAdd(this.teamId, [this.newMember._user._id]).pipe(
+        map(members => members.find(m => m._user._id === this.newMember._user._id))
+    ).subscribe({
+      next: member => {
+        this.members.push(member);
+        this.newMember = {pending: MemberPending.USER, _user: {}} as Member;
+      }
+    })
   }
 
   private onUserKeyup(event: KeyboardEvent): void {
@@ -99,13 +132,17 @@ export default class TeamMembersInput extends Vue {
     }
   }
 
-  private onUserDropdownClick(idx: number, u: User): void {
-    this.members[idx]._user = u;
+  private onUserDropdownClick(u: User): void {
+    this.newMember._user = u;
     this.dropdown.splice(0, this.dropdown.length);
   }
 
-  private onRemoveRole(index: number): void {
-
+  private onRemoveMember(index: number): void {
+    teamMemberDelete(this.teamId, [this.members[index]._user._id]).subscribe({
+      next: () => {
+        this.members.splice(index, 1);
+      }
+    })
   }
 
 }

@@ -40,3 +40,33 @@ export function teamMemberAvailable(term: string): Observable<User[]> {
         take(1),
     );
 }
+
+const TEAM_MEMBERS_ADD_REQUEST = `#graphql
+mutation AddTeamMembers($teamId: ID, $members: [ID]){
+    teamMembersAdd(_id: $teamId, membersIds: $members) {
+        _id _user {_id login roles} pending
+    }
+}`
+
+export function teamMemberAdd(teamId: string, members: string[]): Observable<Member[]> {
+    const vars = {teamId: teamId, members: members};
+    return send<{ teamMembersAdd: Member[] }>(TEAM_MEMBERS_ADD_REQUEST, vars).pipe(
+        map(data => data.data.teamMembersAdd),
+        take(1),
+    );
+}
+
+const TEAM_MEMBERS_REMOVE_REQUEST = `#graphql
+mutation RemoveTeamMembers($teamId: ID, $members: [ID]){
+    teamMembersDelete(_id: $teamId, membersIds: $members) {
+        _id _user {_id login roles} pending
+    }
+}`
+
+export function teamMemberDelete(teamId: string, members: string[]): Observable<Member[]> {
+    const vars = {teamId: teamId, members: members};
+    return send<{ teamMembersAdd: Member[] }>(TEAM_MEMBERS_REMOVE_REQUEST, vars).pipe(
+        map(data => data.data.teamMembersAdd),
+        take(1),
+    );
+}
