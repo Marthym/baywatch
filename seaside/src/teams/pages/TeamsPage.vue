@@ -1,7 +1,8 @@
 <template>
   <div class="overflow-x-auto mt-4">
-    <TableActionsComponent @add="addNewTeam"/>
-    <SmartTable columns="Name|Managers|Topic" :elements="teams" v-slot="e"
+    <SmartTable columns="Name|Managers|Topic" :elements="teams" actions="adl" v-slot="e"
+                @add="addNewTeam"
+                @view="onEditData"
                 @edit="onEditData"
                 @delete="onDeleteData">
       <std>{{ e.data.name }}</std>
@@ -26,6 +27,8 @@ import {map, tap} from "rxjs/operators";
 import TeamEditor, {CloseEvent} from "@/teams/components/TeamEditor.vue";
 import reloadActionService from "@/common/services/ReloadActionService";
 import notificationService from "@/services/notification/NotificationService";
+import {useStore} from "vuex";
+import {setup} from "vue-class-component";
 
 @Options({
   name: 'TeamsPage',
@@ -36,6 +39,7 @@ export default class TeamsPage extends Vue {
   private teams: SmartTableView<Team>[] = [];
   private activeTeam: SmartTableView<Team>;
   private activePage = 0;
+  private userState = setup(() => useStore().state.user);
 
   // noinspection JSUnusedLocalSymbols
   private mounted(): void {
@@ -51,15 +55,19 @@ export default class TeamsPage extends Vue {
   }
 
   private loadNextPage(page: number = 0): Observable<SmartTableView<Team>[]> {
-    return teamsList().pipe(
+    const roles: string[] = this.userState.user.roles;
+    return teamsList(page).pipe(
         map(page => page.data),
-        map(teams => teams.map(team => ({isSelected: false, data: team} as SmartTableView<Team>))),
+        map(teams => teams.map(team => {
+          const isEditable = roles.includes(`MANAGER:${team._id}`);
+          return {isSelected: false, isEditable: isEditable, data: team} as SmartTableView<Team>;
+        })),
         tap(teams => this.teams.splice(0, this.teams.length, ...teams)),
     )
   }
 
   private addNewTeam(): void {
-    this.activeTeam = {isSelected: false, data: {} as Team};
+    this.activeTeam = {isSelected: false, isEditable: true, data: {} as Team};
     this.isEditorOpened = true;
   }
 
