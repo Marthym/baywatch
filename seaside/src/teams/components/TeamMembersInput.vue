@@ -1,14 +1,14 @@
 <template>
   <div class="mx-4">
     <h3 class="font-sans text-lg border-b border-accent/40 pb-1 mb-2 w-full">Manage team members</h3>
-    <table class="table table-compact lg:w-3/4 w-full" :aria-label="'members for ' + teamId">
+    <table class="table table-compact lg:w-3/4 w-full" :aria-label="'members for ' + team._id">
       <thead>
       <tr>
         <th scope="col">Utilisateur</th>
         <th scope="col" class="text-center">Status</th>
         <th scope="col" class="text-right">Action</th>
       </tr>
-      <tr>
+      <tr v-if="isTeamManager">
         <td class="normal-case">
           <div class="dropdown dropdown-bottom">
             <input type="text" placeholder="Type here" class="input input-bordered input-xs w-full max-w-xs"
@@ -41,7 +41,7 @@
                      v-if="getStatusComponent(member) !== undefined"/>
         </td>
         <td class="text-right">
-          <button class="btn btn-sm" @click.prevent.stop="onRemoveMember(index)">
+          <button v-if="isTeamManager" class="btn btn-sm" @click.prevent.stop="onRemoveMember(index)">
             <TrashIcon class="w-6 h-6 inline"/>
           </button>
         </td>
@@ -72,6 +72,10 @@ import {
 import {MemberPending} from "@/teams/model/MemberPending.enum";
 import {User} from "@/teams/model/User.type";
 import {map} from "rxjs/operators";
+import {Team} from "@/teams/model/Team.type";
+import {setup} from "vue-class-component";
+import {GetterTree, useStore} from "vuex";
+import {UserState} from "@/store/user/user";
 
 const SUBMIT_EVENT: string = 'submit';
 const UPDATE_EVENT: string = 'update:modelValue';
@@ -82,14 +86,16 @@ const UPDATE_EVENT: string = 'update:modelValue';
   emits: [UPDATE_EVENT, SUBMIT_EVENT],
 })
 export default class TeamMembersInput extends Vue {
-  @Prop()
-  private teamId!: string;
+  @Prop() private team!: Team;
+  @Prop({default: false}) private isTeamManager!: boolean;
+
   private newMember: Member = {pending: MemberPending.USER, _user: {}} as Member;
   private members: Member[] = [];
   private dropdown: User[] = [];
+  private storeGetters: GetterTree<UserState, UserState> = setup(() => useStore().getters);
 
   mounted(): void {
-    teamMemberList(this.teamId).subscribe({
+    teamMemberList(this.team._id).subscribe({
       next: members => this.members.splice(0, this.members.length, ...members),
     })
   }
@@ -102,7 +108,7 @@ export default class TeamMembersInput extends Vue {
         return 'ClockIcon';
       case MemberPending.NONE:
       default:
-        if (member._user.roles.find(r => r === 'MANAGER')) {
+        if (this.team._managers.find(m => m._id === member._user._id)) {
           return 'TrophyIcon';
         }
         return undefined;
@@ -110,11 +116,11 @@ export default class TeamMembersInput extends Vue {
   }
 
   private isManager(member: Member): boolean {
-    return member?._user?.roles?.find(r => r === 'MANAGER') !== undefined;
+    return this.team._managers.findIndex(m => m._id === member._user._id) >= 0;
   }
 
   private onAddRole(): void {
-    teamMemberAdd(this.teamId, [this.newMember._user._id]).pipe(
+    teamMemberAdd(this.team._id, [this.newMember._user._id]).pipe(
         map(members => members.find(m => m._user._id === this.newMember._user._id))
     ).subscribe({
       next: member => {
@@ -138,7 +144,7 @@ export default class TeamMembersInput extends Vue {
   }
 
   private onRemoveMember(index: number): void {
-    teamMemberDelete(this.teamId, [this.members[index]._user._id]).subscribe({
+    teamMemberDelete(this.team._id, [this.members[index]._user._id]).subscribe({
       next: () => {
         this.members.splice(index, 1);
       }

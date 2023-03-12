@@ -7,10 +7,10 @@
         Administration
       </router-link>
     </li>
-    <li v-if="user.isAuthenticated && store.getters['user/hasRoleManager']">
+    <li v-if="user.isAuthenticated && store.getters['user/hasRoleUser']">
       <router-link to="/teams" @click="sideNavToggle">
         <UserGroupIcon class="fill-current w-6 h-6 mr-2"/>
-        Gestion d’équipe
+        Teams
       </router-link>
     </li>
     <li v-if="user.isAuthenticated && store.getters['user/hasRoleUser']">

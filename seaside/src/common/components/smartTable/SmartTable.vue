@@ -1,11 +1,36 @@
 <template>
+  <div class="md:btn-group mb-2">
+    <button v-if="actions.includes('a')" class="btn btn-sm btn-ghost mb-2 mr-2 md:m-0"
+            @click.stop.prevent="$emit('add')">
+      <PlusCircleIcon class="w-6 h-6 md:mr-2"/>
+      <span>Ajouter</span>
+    </button>
+    <button v-if="actions.includes('i')" class="btn btn-sm mb-2 mr-2 md:m-0" @click="$emit('import')">
+      <ArrowDownTrayIcon class="w-6 h-6 mr-2"/>
+      Importer
+    </button>
+    <a v-if="actions.includes('e')" class="btn btn-sm mb-2 mr-2 md:m-0" @click="$emit('export')">
+      <ArrowUpTrayIcon class="w-6 h-6 mr-2"/>
+      Exporter
+    </a>
+    <button v-if="actions.includes('l')" class="btn btn-sm btn-warning"
+            :disabled="selectedElements.length <= 0" @click.stop.prevent="$emit('leaveSelected', selectedElements)">
+      <ArrowRightOnRectangleIcon class="h-6 w-6"/>
+      Leave
+    </button>
+    <button v-if="actions.includes('d') && isGlobalEditable" class="btn btn-sm btn-error mb-2 mr-2 md:m-0"
+            :disabled="selectedElements.length <= 0" @click="$emit('deleteSelected', selectedElements)">
+      <TrashIcon class="w-6 h-6"/>
+      Supprimer
+    </button>
+  </div>
   <table class="table w-full table-compact" aria-describedby="User List">
     <thead>
     <tr>
       <th scope="col" class="w-1">
-        <label>
+        <label v-if="isGlobalEditable">
           <input type="checkbox" class="checkbox" ref="globalCheck"
-                 :checked="checkState" @change="onSelectAll()"/>
+                 :checked="selectedElements.length > 0" @change="onSelectAll"/>
           <span class="checkbox-mark"></span>
         </label>
       </th>
@@ -24,7 +49,7 @@
     <tbody>
     <tr v-for="(vElement, idx) in this.elements" :key="hashCode(JSON.stringify(vElement))">
       <th scope="row" class="w-1">
-        <label>
+        <label v-if="vElement.isEditable">
           <input type="checkbox" class="checkbox" v-model="vElement.isSelected">
           <span class="checkbox-mark"></span>
         </label>
@@ -32,10 +57,20 @@
       <slot :data="vElement.data"/>
       <td>
         <div class="btn-group justify-end w-full">
-          <button class="btn btn-sm btn-square btn-ghost" @click.stop.prevent="$emit('edit', idx)">
+          <button v-if="!vElement.isEditable" class="btn btn-sm btn-square btn-ghost"
+                  @click.stop.prevent="$emit('view', idx)">
+            <EyeIcon class="h-6 w-6"/>
+          </button>
+          <button v-if="vElement.isEditable" class="btn btn-sm btn-square btn-ghost"
+                  @click.stop.prevent="$emit('edit', idx)">
             <PencilIcon class="h-6 w-6"/>
           </button>
-          <button class="btn btn-sm btn-square btn-ghost" @click.stop.prevent="$emit('delete', idx)">
+          <button v-if="actions.includes('l')" class="btn btn-sm btn-square btn-ghost"
+                  @click.stop.prevent="$emit('leave', idx)">
+            <ArrowRightOnRectangleIcon class="h-6 w-6"/>
+          </button>
+          <button v-if="actions.includes('d') && vElement.isEditable" class="btn btn-sm btn-square btn-ghost"
+                  @click.stop.prevent="$emit('delete', idx)">
             <TrashIcon class="h-6 w-6"/>
           </button>
         </div>
@@ -62,20 +97,39 @@
 
 <script lang="ts">
 import {Options, Prop, Vue} from "vue-property-decorator";
-import {ArrowDownTrayIcon, ArrowUpTrayIcon, PencilIcon, PlusCircleIcon, TrashIcon} from "@heroicons/vue/24/outline";
+import {
+  ArrowDownTrayIcon,
+  ArrowRightOnRectangleIcon,
+  ArrowUpTrayIcon,
+  EyeIcon,
+  PencilIcon,
+  PlusCircleIcon,
+  TrashIcon
+} from "@heroicons/vue/24/outline";
 import {SmartTableView} from "@/common/components/smartTable/SmartTableView.interface";
 import {Observable} from "rxjs";
 
+/**
+ * Table component with global and line actions
+ * @requires ./SmartTableData.vue
+ */
 @Options({
+  components: {
+    ArrowDownTrayIcon,
+    ArrowRightOnRectangleIcon,
+    ArrowUpTrayIcon,
+    EyeIcon,
+    PencilIcon,
+    PlusCircleIcon,
+    TrashIcon
+  },
+  emits: ['add', 'import', 'export', 'deleteSelected', 'delete', 'edit', 'view', 'leave', 'leaveSelected'],
   name: 'SmartTable',
-  components: {ArrowDownTrayIcon, ArrowUpTrayIcon, PencilIcon, PlusCircleIcon, TrashIcon},
-  emits: ['delete', 'edit'],
 })
 export default class SmartTable extends Vue {
-  @Prop()
-  private elements: SmartTableView<unknown>[];
-  @Prop({default: ""})
-  private columns: string;
+  @Prop() private elements: SmartTableView<unknown>[];
+  @Prop({default: ''}) private columns: string;
+  @Prop({default: 'ad'}) private actions: string;
   @Prop({default: p => console.debug(`load page ${p}, not implemented`)})
   private loadPageByIndex: (page: number) => Observable<SmartTableView<unknown>[]>;
 
@@ -86,17 +140,27 @@ export default class SmartTable extends Vue {
     return this.columns.split('|');
   }
 
-  get checkState(): boolean {
-    const teamView: SmartTableView<unknown> | undefined = this.elements.find(t => t.isSelected);
-    const isOneSelected = teamView !== undefined;
-    if (this.$refs && this.$refs['globalCheck'])
-      this.$refs['globalCheck'].indeterminate = isOneSelected && this.elements.find(t => !t.isSelected) !== undefined;
-    return isOneSelected;
+  get isGlobalEditable(): boolean {
+    return this.elements.findIndex(e => e.isEditable) >= 0;
   }
 
-  private onSelectAll(): void {
-    const current = this.checkState;
-    this.elements.forEach(f => f.isSelected = !current);
+  get selectedElements(): number[] {
+    const selected: number[] = [];
+    for (let i = 0; i < this.elements.length; i++) {
+      if (this.elements[i].isSelected) {
+        selected.push(i);
+      }
+    }
+    if (this.$refs && this.$refs['globalCheck']) {
+      this.$refs['globalCheck'].indeterminate = (selected.length > 0) && this.elements.find(t => !t.isSelected) !== undefined;
+    }
+    return selected;
+  }
+
+  private onSelectAll(event: InputEvent): void {
+    const target: HTMLInputElement = event.target as HTMLInputElement;
+    const current = target.checked;
+    this.elements.forEach(f => f.isSelected = current);
   }
 
   private hashCode(data: string): number {
