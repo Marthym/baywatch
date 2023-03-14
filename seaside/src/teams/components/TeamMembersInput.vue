@@ -21,7 +21,7 @@
           </div>
         </td>
         <td class="text-center">
-          <component :is="getStatusComponent(newMember)" class="h-4 w-4 inline"
+          <component :is="getStatusComponent(newMember).icon" class="h-4 w-4 inline"
                      :class="{'text-amber-300': isManager(newMember)}"
                      v-if="getStatusComponent(newMember) !== undefined"/>
         </td>
@@ -36,9 +36,12 @@
       <tr v-for="(member, index) in members">
         <td>{{ member._user.login }}</td>
         <td class="text-center">
-          <component :is="getStatusComponent(member)" class="h-4 w-4 inline"
-                     :class="{'text-amber-300': isManager(member)}"
-                     v-if="getStatusComponent(member) !== undefined"/>
+          <div v-if="getStatusComponent(member) !== undefined"
+               class="tooltip tooltip-right"
+               :data-tip="getStatusComponent(member).tooltip">
+            <component :is="getStatusComponent(member).icon" class="h-4 w-4 inline"
+                       :class="{'text-amber-300': isManager(member)}"/>
+          </div>
         </td>
         <td class="text-right">
           <button v-if="isTeamManager" class="btn btn-sm" @click.prevent.stop="onRemoveMember(index)">
@@ -73,12 +76,14 @@ import {MemberPending} from "@/teams/model/MemberPending.enum";
 import {User} from "@/teams/model/User.type";
 import {map} from "rxjs/operators";
 import {Team} from "@/teams/model/Team.type";
-import {setup} from "vue-class-component";
-import {GetterTree, useStore} from "vuex";
-import {UserState} from "@/store/user/user";
 
 const SUBMIT_EVENT: string = 'submit';
 const UPDATE_EVENT: string = 'update:modelValue';
+
+type StatusIcon = {
+  icon: 'UserPlus' | 'ClockIcon' | 'TrophyIcon',
+  tooltip: string,
+}
 
 @Options({
   name: 'TeamMembersInput',
@@ -92,7 +97,6 @@ export default class TeamMembersInput extends Vue {
   private newMember: Member = {pending: MemberPending.USER, _user: {}} as Member;
   private members: Member[] = [];
   private dropdown: User[] = [];
-  private storeGetters: GetterTree<UserState, UserState> = setup(() => useStore().getters);
 
   mounted(): void {
     teamMemberList(this.team._id).subscribe({
@@ -100,16 +104,16 @@ export default class TeamMembersInput extends Vue {
     })
   }
 
-  private getStatusComponent(member: Member): string | undefined {
+  private getStatusComponent(member: Member): StatusIcon | undefined {
     switch (member.pending) {
       case MemberPending.MANAGER:
-        return 'UserPlus';
+        return {icon: 'UserPlus', tooltip: 'Waiting for manager...'};
       case MemberPending.USER:
-        return 'ClockIcon';
+        return {icon: 'ClockIcon', tooltip: 'Waiting for user...'};
       case MemberPending.NONE:
       default:
         if (this.team._managers.find(m => m._id === member._user._id)) {
-          return 'TrophyIcon';
+          return {icon: 'TrophyIcon', tooltip: 'Team Manager'};
         }
         return undefined;
     }
