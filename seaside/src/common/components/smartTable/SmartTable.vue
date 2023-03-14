@@ -57,6 +57,7 @@
       <slot :data="vElement.data"/>
       <td>
         <div class="btn-group justify-end w-full">
+          <slot name="lineActions" :idx="idx"/>
           <button v-if="!vElement.isEditable" class="btn btn-sm btn-square btn-ghost"
                   @click.stop.prevent="$emit('view', idx)">
             <EyeIcon class="h-6 w-6"/>

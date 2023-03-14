@@ -6,7 +6,7 @@
         <span class="label-text">Team Name</span>
       </label>
       <input v-model="modelValue.data.name" type="text" class="input input-bordered w-full"
-             :disabled="!isTeamManager"
+             :disabled="!modelValue.isEditable"
              :class="{'input-error': errors.has('login')}">
       <label class="label -mt-1">
         <span class="label-text-alt">&nbsp;</span>
@@ -17,18 +17,19 @@
       </label>
       <input v-model="modelValue.data.topic" type="text" class="input input-bordered w-full"
              :class="{'input-error': errors.has('topic')}"
-             :disabled="!isTeamManager">
+             :disabled="!modelValue.isEditable">
       <label class="label -mt-1">
         <span class="label-text-alt">&nbsp;</span>
         <span v-if="errors.has('topic')" class="label-text-alt">{{ errors.get('topic') }}</span>
       </label>
       <div class="text-right">
         <button class="btn btn-sm mx-1" @click.stop="curtainModal.close()">Cancel</button>
-        <button v-if="isTeamManager" class="btn btn-sm btn-primary mx-1" @click.stop="throttledOnSave">Save</button>
+        <button v-if="modelValue.isEditable" class="btn btn-sm btn-primary mx-1" @click.stop="throttledOnSave">Save
+        </button>
       </div>
     </div>
     <team-members-input v-if="modelValue.data && '_id' in modelValue.data"
-                        :team="modelValue.data" :isTeamManager="isTeamManager"/>
+                        :team="modelValue.data" :isTeamManager="modelValue.isEditable"/>
   </curtain-modal>
 </template>
 
@@ -41,10 +42,6 @@ import {SmartTableView} from "@/common/components/smartTable/SmartTableView.inte
 import * as throttle from "lodash/throttle";
 import TeamMembersInput from "@/teams/components/TeamMembersInput.vue";
 import notificationService from "@/services/notification/NotificationService";
-import {GetterTree, useStore} from "vuex";
-import {UserState} from "@/store/user/user";
-import {setup} from "vue-class-component";
-import {HAS_ROLE_MANAGER_GETTER} from "@/store/user/UserConstants";
 
 const CLOSE_EVENT = 'close';
 
@@ -54,13 +51,8 @@ const CLOSE_EVENT = 'close';
   emits: [CLOSE_EVENT]
 })
 export default class TeamEditor extends Vue {
-  @Prop({default: 'Edit Team'})
-  private title!: string;
-
-  @Prop()
-  private modelValue!: SmartTableView<Team>;
-
-  private storeGetters: GetterTree<UserState, UserState> = setup(() => useStore().getters);
+  @Prop({default: 'Edit Team'}) private title!: string;
+  @Prop() private modelValue!: SmartTableView<Team>;
 
   private errors: Map<string, string> = new Map<string, string>();
   private payload: CloseEvent = {
@@ -73,11 +65,6 @@ export default class TeamEditor extends Vue {
    */
   private created(): void {
     this.throttledOnSave = throttle(this.onSave, 1000, {'trailing': false});
-  }
-
-  get isTeamManager(): boolean {
-    return (this.modelValue.data && '_id' in this.modelValue.data)
-        && this.storeGetters[HAS_ROLE_MANAGER_GETTER](this.modelValue.data._id);
   }
 
   /**

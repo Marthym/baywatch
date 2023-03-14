@@ -1,13 +1,19 @@
 <template>
   <div class="overflow-x-auto mt-4">
-    <SmartTable columns="Name|Managers|Topic" :elements="teams" actions="adl" v-slot="e"
+    <SmartTable columns="Name|Managers|Topic" :elements="teams" actions="adl"
                 @add="addNewTeam"
                 @view="onEditData"
                 @edit="onEditData"
-                @delete="onDeleteData">
-      <std>{{ e.data.name }}</std>
-      <std>{{ e.data._managers.map(m => m.name).join(', ') }}</std>
-      <std>{{ e.data.topic }}</std>
+                @delete="onDeleteData"
+                @deleteSelected="onDeleteSelected">
+      <template #default="e">
+        <std>{{ e.data.name }}</std>
+        <std>{{ e.data._managers.map(m => m.name).join(', ') }}</std>
+        <std>{{ e.data.topic }}</std>
+      </template>
+      <template #lineActions="e">
+        <stla :icon="ArrowLeftOnRectangleIcon" @click.stop="onJoinTeam(e.idx)"/>
+      </template>
     </SmartTable>
   </div>
   <team-editor v-if="isEditorOpened" @close="onEditorClose"
@@ -18,21 +24,27 @@
 import {Options, Vue} from "vue-property-decorator";
 import TableActionsComponent from "@/common/components/TableActionsComponent.vue";
 import SmartTable from "@/common/components/smartTable/SmartTable.vue";
+import stla from '@/common/components/smartTable/SmartTableLineAction.vue'
 import std from "@/common/components/smartTable/SmartTableData.vue";
 import {SmartTableView} from "@/common/components/smartTable/SmartTableView.interface";
 import {Team} from "@/teams/model/Team.type";
 import {teamDelete, teamsList} from "@/teams/services/Teams.service";
 import {Observable} from "rxjs";
-import {map, tap} from "rxjs/operators";
+import {filter, map, switchMap, tap} from "rxjs/operators";
 import TeamEditor, {CloseEvent} from "@/teams/components/TeamEditor.vue";
 import reloadActionService from "@/common/services/ReloadActionService";
 import notificationService from "@/services/notification/NotificationService";
 import {useStore} from "vuex";
 import {setup} from "vue-class-component";
+import {NotificationCode} from "@/services/notification/NotificationCode.enum";
+import {Severity} from "@/services/notification/Severity.enum";
+import {AlertResponse, AlertType} from "@/common/components/alertdialog/AlertDialog.types";
+import {ArrowLeftOnRectangleIcon} from '@heroicons/vue/24/outline';
 
 @Options({
   name: 'TeamsPage',
-  components: {TeamEditor, std, SmartTable, TableActionsComponent},
+  methods: {ArrowLeftOnRectangleIcon},
+  components: {TeamEditor, std, stla, SmartTable, TableActionsComponent},
 })
 export default class TeamsPage extends Vue {
   private isEditorOpened: boolean = false;
@@ -71,6 +83,9 @@ export default class TeamsPage extends Vue {
     this.isEditorOpened = true;
   }
 
+  private onJoinTeam(idx): void {
+    console.log(this.teams[idx]);
+  }
   private onEditData(idx): void {
     if (this.teams.length >= (idx - 1)) {
       this.activeTeam = this.teams[idx];
@@ -78,17 +93,40 @@ export default class TeamsPage extends Vue {
     }
   }
 
-  private onDeleteData(idx): void {
+  private onDeleteData(idx: number): void {
+    const message = `Remove the team <b>${this.teams[idx].data.name}</b> ?`;
     if (this.teams.length >= (idx - 1)) {
-      teamDelete([this.teams[idx].data._id])
-          .subscribe({
-            next: deleted => {
-              this.teams.splice(idx, 1);
-              notificationService.pushSimpleOk(`${deleted[0].name} deleted successfully !`);
-            },
-            error: err => notificationService.pushSimpleError(err),
-          })
+      this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
+          filter(response => response === AlertResponse.CONFIRM),
+          switchMap(() => teamDelete([this.teams[idx].data._id])),
+      ).subscribe({
+        next: deleted => {
+          this.teams.splice(idx, 1);
+          notificationService.pushSimpleOk(`${deleted[0].name} deleted successfully !`);
+        },
+        error: err => notificationService.pushNotification({
+          code: NotificationCode.ERROR,
+          severity: Severity.error,
+          message: err.message,
+        }),
+      })
     }
+  }
+
+  private onDeleteSelected(idx: number[]): void {
+    const toBeDeleted: string[] = idx.map(i => this.teams[i].data._id);
+    teamDelete(toBeDeleted)
+        .subscribe({
+          next: deleted => {
+            idx.forEach(i => this.teams.splice(i, 1));
+            notificationService.pushSimpleOk(`${deleted[0].name} deleted successfully !`);
+          },
+          error: err => notificationService.pushNotification({
+            code: NotificationCode.ERROR,
+            severity: Severity.error,
+            message: err.message,
+          }),
+        });
   }
 
   private onEditorClose(event: CloseEvent): void {

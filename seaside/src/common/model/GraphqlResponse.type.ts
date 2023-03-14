@@ -1,9 +1,11 @@
+export const FORBIDDEN = 'FORBIDDEN';
 export const INTERNAL_ERROR = 'INTERNAL_ERROR';
 export const INVALID_SYNTAX = 'InvalidSyntax';
 export const UNAUTHORIZED = 'UNAUTHORIZED';
 export const VALIDATION_ERROR = 'ValidationError';
 
 export type GqlErrorClassification =
+    typeof FORBIDDEN |
     typeof INTERNAL_ERROR |
     typeof INVALID_SYNTAX |
     typeof UNAUTHORIZED |
