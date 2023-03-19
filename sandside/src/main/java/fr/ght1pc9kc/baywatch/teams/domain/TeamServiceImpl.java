@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.teams.domain;
 
 import com.github.f4b6a3.ulid.UlidFactory;
+import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
@@ -129,9 +130,9 @@ public class TeamServiceImpl implements TeamsService {
     }
 
     @Override
-    public Flux<Entity<TeamMember>> members(String id) {
+    public Flux<Entity<TeamMember>> members(PageRequest pgRequest) {
         return authFacade.getConnectedUser().flatMapMany(manager ->
-                teamMemberPersistence.list(QueryContext.all(Criteria.property(ID).eq(id))));
+                teamMemberPersistence.list(QueryContext.from(pgRequest)));
     }
 
     @Override
@@ -139,7 +140,12 @@ public class TeamServiceImpl implements TeamsService {
         Instant now = clock().instant();
         return authFacade.getConnectedUser()
                 .flatMapMany(user -> {
-                    PendingFor pending = RoleUtils.hasPermission(user.self, Permission.manager(id)) ? PendingFor.USER : PendingFor.MANAGER;
+                    boolean hasPermission = RoleUtils.hasPermission(user.self, Permission.manager(id));
+                    boolean addHimself = membersIds.size() == 1 && membersIds.iterator().next().equals(user.id);
+                    if (!hasPermission && !addHimself) {
+                        return Flux.error(() -> new UnauthorizedException("You haven't any permission for this operation !"));
+                    }
+                    PendingFor pending = hasPermission && !addHimself ? PendingFor.USER : PendingFor.MANAGER;
                     return Flux.fromStream(membersIds.stream()
                             .map(mId -> Entity.<TeamMember>builder().id(id)
                                     .self(new TeamMember(mId, pending))

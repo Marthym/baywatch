@@ -18,6 +18,7 @@ import fr.ght1pc9kc.baywatch.teams.infra.samples.TeamsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRolesSamples;
+import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;
 import fr.ght1pc9kc.testy.jooq.WithDslContext;
@@ -41,6 +42,7 @@ import reactor.test.StepVerifier;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.teams.infra.samples.TeamsRecordSamples.JEDI_TEAM;
 import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -168,7 +170,7 @@ class TeamServiceImplTest {
 
     @Test
     void should_list_team_members() {
-        StepVerifier.create(tested.members(JEDI_TEAM.getTeamId()).map(e -> e.self.userId()).collectList())
+        StepVerifier.create(tested.members(PageRequest.all(Criteria.property(ID).eq(JEDI_TEAM.getTeamId()))).map(e -> e.self.userId()).collectList())
                 .assertNext(actual -> Assertions.assertThat(actual).containsOnly(
                         UserSamples.LUKE.id,
                         UserSamples.OBIWAN.id

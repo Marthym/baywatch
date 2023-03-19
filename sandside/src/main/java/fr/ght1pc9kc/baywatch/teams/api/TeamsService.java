@@ -68,12 +68,12 @@ public interface TeamsService {
     Mono<Entity<Team>> update(String id, String name, String topic);
 
     /**
-     * List the members of a specified {@link Team}
+     * List the members of a {@link Team}
      *
-     * @param id The ID of the Team
+     * @param pgRequest The filter and pagination information for the request
      * @return A flux of TeamMember as Entity
      */
-    Flux<Entity<TeamMember>> members(String id);
+    Flux<Entity<TeamMember>> members(PageRequest pgRequest);
 
     /**
      * Add new members to the team
