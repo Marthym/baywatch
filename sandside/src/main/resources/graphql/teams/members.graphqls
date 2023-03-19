@@ -1,12 +1,3 @@
-type TeamMember {
-    _id: ID
-    _createdAt: String
-    _createdBy: User
-    _user: User
-    userId: String!
-    pending: String
-}
-
 extend type Query {
     teamMembersList(teamId: ID): [TeamMember]
 }
