@@ -101,7 +101,7 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
 
             List<Permission> roles = authorities.stream()
                     .map(RoleUtils::fromSpringAuthority)
-                    .sorted()
+                    .sorted(Permission.COMPARATOR)
                     .distinct()
                     .toList();
 

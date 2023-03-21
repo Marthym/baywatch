@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
@@ -101,18 +102,19 @@ public interface BaywatchMapper {
     }
 
     default News recordToNews(Record r) {
+        Pattern commaSplitPattern = Pattern.compile(",");
         RawNews raw = recordToRawNews(r);
         State state = (r.indexOf(NEWS_USER_STATE.NURS_STATE) >= 0)
                 ? State.of(r.get(NEWS_USER_STATE.NURS_STATE))
                 : State.NONE;
         Set<String> feeds = (r.indexOf(NEWS_FEEDS.NEFE_FEED_ID.getName()) >= 0)
                 ? Optional.ofNullable(r.get(NEWS_FEEDS.NEFE_FEED_ID.getName(), String.class))
-                .map(s -> s.split(","))
-                .map(Set::of).orElse(Set.of())
+                .map(s -> Stream.of(s.split(",")).collect(Collectors.toUnmodifiableSet()))
+                .orElse(Set.of())
                 : Set.of();
         Set<String> tags = (r.indexOf(FEEDS_USERS.FEUS_TAGS.getName()) >= 0)
                 ? Optional.ofNullable(r.get(FEEDS_USERS.FEUS_TAGS.getName(), String.class))
-                .map(s -> Pattern.compile(",").splitAsStream(s).filter(not(String::isBlank))
+                .map(s -> commaSplitPattern.splitAsStream(s).filter(not(String::isBlank))
                         .collect(Collectors.toUnmodifiableSet())).orElse(null)
                 : null;
         return News.builder()
