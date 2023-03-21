@@ -51,6 +51,7 @@ public class UserGqlController {
     private final ObjectMapper mapper;
 
     @QueryMapping
+    @PreAuthorize("isAuthenticated()")
     public Mono<Page<Entity<User>>> userSearch(@Arguments UserSearchRequest request) {
         PageRequest pageRequest = qsParser.parse(request.toPageRequest());
         Flux<Entity<User>> users = userService.list(pageRequest)
@@ -121,6 +122,7 @@ public class UserGqlController {
                 .map(e -> mapper.convertValue(e, gqlType));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @SchemaMapping(typeName = "SearchUsersResponse")
     public Flux<Map<String, Object>> entities(Page<Entity<User>> searchNewsResponse) {
         MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
@@ -128,6 +130,7 @@ public class UserGqlController {
                 .map(e -> mapper.convertValue(e, gqlType));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @SchemaMapping(typeName = "SearchUsersResponse")
     public Mono<Integer> totalCount(Page<Entity<User>> searchNewsResponse) {
         return Mono.justOrEmpty(searchNewsResponse.getHeaders().get("X-Total-Count"))

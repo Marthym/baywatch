@@ -58,7 +58,7 @@ public final class UserServiceImpl implements UserService {
 
     @Override
     public Mono<Integer> count(PageRequest pageRequest) {
-        return authorizeAllData()
+        return authFacade.getConnectedUser()
                 .map(u -> QueryContext.all(pageRequest.filter()).withUserId(u.id))
                 .flatMap(userRepository::count);
     }
