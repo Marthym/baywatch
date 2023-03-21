@@ -12,7 +12,8 @@ const $dialog: IAlertDialog = reactive({
     isFired: false,
     message: "",
     alertType: AlertType.INFO,
-    fire(message: string, alertType: AlertType = AlertType.INFO): Observable<AlertResponse> {
+    confirmLabel: '',
+    fire(message: string, alertType: AlertType = AlertType.INFO, confirmLabel: string = 'Supprimer'): Observable<AlertResponse> {
         if (this.isFired) {
             if (this.response) {
                 this.response.error(new Error('Multiple dialog at same time !'));
@@ -24,6 +25,7 @@ const $dialog: IAlertDialog = reactive({
         this.message = message;
         this.alertType = alertType;
         this.isFired = true;
+        this.confirmLabel = confirmLabel
 
         this.response = new Subject<AlertResponse>();
         return this.response.asObservable();
