@@ -19,6 +19,7 @@ query SearchForTeams{
         entities {_id
             _createdBy {_id name}
             _managers {_id name}
+            _me {pending}
             name topic}
     }
 }`

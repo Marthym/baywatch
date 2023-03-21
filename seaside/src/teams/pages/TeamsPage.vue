@@ -12,7 +12,9 @@
         <std>{{ e.data.topic }}</std>
       </template>
       <template #lineActions="e">
-        <stla :icon="ArrowLeftOnRectangleIcon" @click.stop="onJoinTeam(e.idx)"/>
+        <stla v-if="this.teams[e.idx].data._me.pending === MemberPending.USER"
+              class="animate-pulse text-accent"
+              :icon="ArrowLeftOnRectangleIcon" @click.stop="onJoinTeam(e.idx)"/>
       </template>
     </SmartTable>
   </div>
@@ -40,9 +42,17 @@ import {NotificationCode} from "@/services/notification/NotificationCode.enum";
 import {Severity} from "@/services/notification/Severity.enum";
 import {AlertResponse, AlertType} from "@/common/components/alertdialog/AlertDialog.types";
 import {ArrowLeftOnRectangleIcon} from '@heroicons/vue/24/outline';
+import {MemberPending} from "@/teams/model/MemberPending.enum";
+import {teamMemberAdd} from "@/teams/services/TeamMembers.service";
+import {UserState} from "@/store/user/user";
 
 @Options({
   name: 'TeamsPage',
+  computed: {
+    MemberPending() {
+      return MemberPending
+    }
+  },
   methods: {ArrowLeftOnRectangleIcon},
   components: {TeamEditor, std, stla, SmartTable, TableActionsComponent},
 })
@@ -51,7 +61,7 @@ export default class TeamsPage extends Vue {
   private teams: SmartTableView<Team>[] = [];
   private activeTeam: SmartTableView<Team>;
   private activePage = 0;
-  private userState = setup(() => useStore().state.user);
+  private userState: UserState = setup(() => useStore().state.user);
 
   // noinspection JSUnusedLocalSymbols
   private mounted(): void {
@@ -84,8 +94,22 @@ export default class TeamsPage extends Vue {
   }
 
   private onJoinTeam(idx): void {
-    console.log(this.teams[idx]);
+    const id = this.userState.user._id;
+    if (id) {
+      teamMemberAdd(this.teams[idx].data._id, [id]).subscribe({
+        next: members => {
+          const meAsMember = members.find(m => m._user._id === id);
+          if (meAsMember && meAsMember.pending === MemberPending.NONE) {
+            this.teams[idx].data._me.pending = meAsMember.pending;
+            notificationService.pushSimpleOk(`You join the team ${this.teams[idx].data.name} !`);
+          } else {
+            notificationService.pushSimpleError('Unknown error !');
+          }
+        },
+      })
+    }
   }
+
   private onEditData(idx): void {
     if (this.teams.length >= (idx - 1)) {
       this.activeTeam = this.teams[idx];
