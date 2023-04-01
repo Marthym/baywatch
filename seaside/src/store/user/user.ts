@@ -1,6 +1,6 @@
 import {ANONYMOUS, User} from "@/security/model/User";
 import {UserRole} from "@/security/model/UserRole.enum";
-import {HAS_ROLE_ADMIN, HAS_ROLE_MANAGER, HAS_ROLE_USER, LOGOUT, UPDATE} from "@/store/user/UserConstants";
+import {ADD_ROLE, HAS_ROLE_ADMIN, HAS_ROLE_MANAGER, HAS_ROLE_USER, LOGOUT, UPDATE} from "@/store/user/UserConstants";
 import {GetterTree} from "vuex";
 
 export type UserState = {
@@ -38,6 +38,9 @@ const mutations = {
     [UPDATE](st: UserState, payload: User): void {
         st.user = payload;
         st.isAuthenticated = hasRole(st.user, UserRole.USER);
+    },
+    [ADD_ROLE](st: UserState, payload: string): void {
+        st.user.roles.push(payload);
     },
 }
 
