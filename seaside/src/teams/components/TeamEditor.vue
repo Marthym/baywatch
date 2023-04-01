@@ -5,7 +5,7 @@
             <label class="label">
                 <span class="label-text">Team Name</span>
             </label>
-            <input v-model="modelValue.data?.name" type="text" class="input input-bordered w-full"
+            <input v-model="modelValue.data!.name" type="text" class="input input-bordered w-full"
                    :disabled="!modelValue.isEditable"
                    :class="{'input-error': errors.has('login')}">
             <label class="label -mt-1">
@@ -15,7 +15,7 @@
             <label class="label">
                 <span class="label-text">Team Topic</span>
             </label>
-            <input v-model="modelValue.data?.topic" type="text" class="input input-bordered w-full"
+            <input v-model="modelValue.data!.topic" type="text" class="input input-bordered w-full"
                    :class="{'input-error': errors.has('topic')}"
                    :disabled="!modelValue.isEditable">
             <label class="label -mt-1">
@@ -45,11 +45,12 @@ import TeamMembersInput from "@/teams/components/TeamMembersInput.vue";
 import notificationService from "@/services/notification/NotificationService";
 
 const CLOSE_EVENT = 'close';
+const UPDATE_EVENT = 'update:modelValue';
 
 @Options({
     name: 'TeamEditor',
     components: {CurtainModal, TeamMembersInput},
-    emits: [CLOSE_EVENT]
+    emits: [CLOSE_EVENT, UPDATE_EVENT]
 })
 export default class TeamEditor extends Vue {
     @Prop({default: 'Edit Team'}) private title!: string;
@@ -83,7 +84,8 @@ export default class TeamEditor extends Vue {
             teamUpdate(mv.data._id, mv.data)
                 .subscribe({
                     next: team => {
-                        mv.data = team;
+                        Object.assign(mv.data, mv);
+                        this.$emit(UPDATE_EVENT, mv);
                         this.payload.updated = true;
                         notificationService.pushSimpleOk(`Team ${team.name} updated successfully !`);
                     },
@@ -92,7 +94,8 @@ export default class TeamEditor extends Vue {
             teamCreate(mv.data.name, mv.data.topic)
                 .subscribe({
                     next: team => {
-                        mv.data = team;
+                        Object.assign(mv.data, team);
+                        this.$emit(UPDATE_EVENT, mv);
                         this.payload.updated = true;
                         notificationService.pushSimpleOk(`Team ${team.name} saved successfully !`);
                     }

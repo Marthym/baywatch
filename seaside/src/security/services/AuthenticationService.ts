@@ -12,13 +12,6 @@ export class AuthenticationService {
             _id login name roles mail
         }
     }`;
-    private static readonly REFRESH_REQUEST = `#graphql
-    mutation {
-        refreshSession {
-            user { _id login mail name roles }
-            maxAge
-        }
-    }`;
     private static readonly LOGOUT_REQUEST = 'mutation {logout}';
 
     login(username: string, password: string): Observable<User> {

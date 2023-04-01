@@ -2,9 +2,11 @@ import {ConstantFilters} from "@/constants";
 import {Observable} from "rxjs";
 import {Page} from "@/services/model/Page";
 import {send} from "@/common/services/GraphQLClient";
-import {map, take} from "rxjs/operators";
+import {map, take, tap} from "rxjs/operators";
 import {Team} from "@/teams/model/Team.type";
 import {TeamsSearchResponse} from "@/teams/model/TeamsSearchResponse";
+import store from '@/store';
+import {USER_ADD_ROLE_MUTATION} from "@/store/user/UserConstants";
 
 const DEFAULT_PER_PAGE: number = 20;
 const DEFAULT_QUERY: string = `?${ConstantFilters.PER_PAGE}=${DEFAULT_PER_PAGE}&_s=name`;
@@ -58,6 +60,7 @@ export function teamCreate(name: string, topic: string): Observable<Team> {
     return send<{ teamCreate: Team }>(TEAMS_CREATE_REQUEST, {name: name, topic: topic}).pipe(
         map(data => data.data.teamCreate),
         take(1),
+        tap(team => store.commit(USER_ADD_ROLE_MUTATION, `MANAGER:${team._id}`))
     );
 }
 
@@ -70,6 +73,7 @@ mutation UpdateTeam($id: ID, $team: TeamForm){
         _id
         _createdBy {_id name}
         _managers {_id name}
+        _me {pending}
         name topic
     }}`
 
