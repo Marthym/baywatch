@@ -6,7 +6,7 @@
       <env name="BAYWATCH_HOME" value="$USER_HOME$" />
       <env name="BAYWATCH_IMGPROXY_ENABLE" value="false" />
       <env name="BAYWATCH_INDEXER_ENABLE" value="true" />
-      <env name="BAYWATCH_SCRAPER_ENABLE" value="false" />
+      <env name="BAYWATCH_SCRAPER_ENABLE" value="true" />
     </envs>
     <module name="sandside" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="fr.ght1pc9kc.baywatch.BaywatchApplication" />

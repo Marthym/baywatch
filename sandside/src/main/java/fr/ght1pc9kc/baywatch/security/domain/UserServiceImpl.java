@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.security.domain;
 import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.security.api.AuthorizationService;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
@@ -10,6 +11,7 @@ import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
+import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -32,11 +34,12 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.security.api.model.RoleUtils.hasRole;
 
 @AllArgsConstructor
-public final class UserServiceImpl implements UserService {
+public final class UserServiceImpl implements UserService, AuthorizationService {
     private static final String ID_PREFIX = "US";
     private static final String AUTHENTICATION_NOT_FOUND = "Authentication not found !";
 
     private final UserPersistencePort userRepository;
+    private final AuthorizationPersistencePort authorizationRepository;
     private final AuthenticationFacade authFacade;
     private final PasswordEncoder passwordEncoder;
     private final Clock clock;
@@ -112,7 +115,7 @@ public final class UserServiceImpl implements UserService {
                 }
             }
 
-            return userRepository.countPermission(tobeVerified).flatMap(count ->
+            return authorizationRepository.count(tobeVerified).flatMap(count ->
                     (count > 0)
                             ? Mono.error(() -> new UnauthorizedOperation("Unauthorized grant operation !"))
                             : Mono.just(currentUser));
@@ -122,16 +125,27 @@ public final class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<Entity<User>> revokes(String revokedUserId, Collection<Permission> permissions) {
+    public Mono<Void> revokes(Permission permission, Collection<String> userIds) {
         return authFacade.getConnectedUser().flatMap(currentUser -> {
-            if (currentUser.id.equals(revokedUserId) || RoleUtils.hasRole(currentUser.self, Role.ADMIN)) {
+            if ((userIds.size() == 1 && userIds.contains(currentUser.id)) || RoleUtils.hasRole(currentUser.self, Role.ADMIN)) {
                 return Mono.just(currentUser);
             } else {
                 return Mono.error(() -> new UnauthorizedOperation("Unauthorized revoke operation !"));
             }
+        }).flatMap(currentUser ->
+                userRepository.delete(permission.toString(), userIds.stream().distinct().toList()));
+    }
 
-        }).flatMap(currentUser -> userRepository.delete(revokedUserId,
-                permissions.stream().map(Permission::toString).distinct().toList()));
+    @Override
+    public Mono<Void> remove(Collection<Permission> permissions) {
+        return authorizeAllData()
+                .flatMap(currentUser -> authorizationRepository.remove(permissions));
+    }
+
+    @Override
+    public Flux<String> listGrantedUsers(Permission permission) {
+        return authorizeAllData().flatMapMany(ignored ->
+                authorizationRepository.grantees(permission));
     }
 
     private Mono<Entity<User>> filterPublicData(Entity<User> original) {
@@ -159,23 +173,25 @@ public final class UserServiceImpl implements UserService {
     private Mono<Entity<User>> authorizeSelfData(Collection<String> ids) {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .map(u -> {
+                .handle((u, sink) -> {
                     if (hasRole(u.self, Role.ADMIN)
                             || (hasRole(u.self, Role.USER) && ids.size() == 1 && ids.contains(u.id))) {
-                        return u;
+                        sink.next(u);
+                        return;
                     }
-                    throw new UnauthorizedOperation("User unauthorized for the operation !");
+                    sink.error(new UnauthorizedOperation("User unauthorized for the operation !"));
                 });
     }
 
     private Mono<Entity<User>> authorizeAllData() {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .map(u -> {
+                .handle((u, sink) -> {
                     if (hasRole(u.self, Role.ADMIN)) {
-                        return u;
+                        sink.next(u);
+                        return;
                     }
-                    throw new UnauthorizedOperation("User unauthorized for the operation !");
+                    sink.error(new UnauthorizedOperation("User unauthorized for the operation !"));
                 });
     }
 }

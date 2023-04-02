@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.common.infra.adapters;
 
+import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
 import graphql.ErrorType;
 import graphql.GraphQLError;
 import graphql.GraphqlErrorBuilder;
@@ -9,6 +10,8 @@ import jakarta.validation.ConstraintViolationException;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.graphql.execution.DataFetcherExceptionResolverAdapter;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 @Component
 public class GraphqlExceptionAdapter extends DataFetcherExceptionResolverAdapter {
@@ -21,6 +24,22 @@ public class GraphqlExceptionAdapter extends DataFetcherExceptionResolverAdapter
                     .build();
         }
 
+        if (ex instanceof UnauthorizedException uex) {
+            return GraphqlErrorBuilder.newError(env)
+                    .errorType(ErrorType.OperationNotSupported)
+                    .extensions(Map.of("classification", "FORBIDDEN"))
+                    .message(uex.getLocalizedMessage())
+                    .build();
+        }
+
+        if (ex instanceof IllegalArgumentException iaex) {
+            return GraphqlErrorBuilder.newError(env)
+                    .errorType(ErrorType.ValidationError)
+                    .extensions(Map.of("classification", "ValidationError"))
+                    .message(iaex.getLocalizedMessage())
+                    .build();
+        }
+
         if (ex instanceof GraphqlErrorException gex) {
             return GraphqlErrorBuilder.newError(env)
                     .errorType(gex.getErrorType())
@@ -30,6 +49,7 @@ public class GraphqlExceptionAdapter extends DataFetcherExceptionResolverAdapter
                     .message(gex.getLocalizedMessage())
                     .build();
         }
+
         return null;
     }
 }
