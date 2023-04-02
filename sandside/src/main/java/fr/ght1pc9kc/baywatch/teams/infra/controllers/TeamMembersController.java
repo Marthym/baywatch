@@ -2,7 +2,10 @@ package fr.ght1pc9kc.baywatch.teams.infra.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.teams.api.TeamsService;
+import fr.ght1pc9kc.baywatch.teams.api.model.TeamMember;
 import fr.ght1pc9kc.baywatch.teams.domain.ports.TeamAuthFacade;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
@@ -24,6 +27,7 @@ import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.USER_ID;
+import static java.util.Objects.isNull;
 
 @Controller
 @RequiredArgsConstructor
@@ -48,6 +52,13 @@ public class TeamMembersController {
     }
 
     @MutationMapping
+    public Mono<Void> teamMembersPromote(
+            @Argument("_id") String teamId, @Argument("memberId") String memberId, @Argument("isManager") boolean isManager) {
+        return teamsService.promoteMember(teamId, memberId, isManager);
+    }
+
+
+    @MutationMapping
     public Flux<Map<String, Object>> teamMembersDelete(@Argument("_id") String teamId, @Argument("membersIds") List<String> membersIds) {
         MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
         return teamsService.removeMembers(teamId, membersIds)
@@ -61,11 +72,16 @@ public class TeamMembersController {
         return authFacade.getConnectedUser()
                 .flatMapMany(userEntity -> teamsService.members(PageRequest.all(Criteria.property(USER_ID).eq(userEntity.id))))
                 .collectMap(e -> e.id, Function.identity())
-                .map(currentUsers -> teams.stream()
-                        .map(t -> {
-                            String teamId = Optional.ofNullable(t.get("_id")).map(Object::toString).orElse("");
-                            Map<String, Object> asMap = mapper.convertValue(currentUsers.get(teamId), gqlType);
-                            return Map.entry(t, asMap);
-                        }).collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue)));
+                .map(currentUsers -> teams.stream().map(t -> {
+                    String teamId = Optional.ofNullable(t.get("_id")).map(Object::toString).orElse("");
+                    Entity<TeamMember> meForTeam = currentUsers.get(teamId);
+                    Map<String, Object> asMap;
+                    if (isNull(meForTeam)) {
+                        asMap = mapper.convertValue(Entity.identify(Entity.NO_ONE, User.ANONYMOUS), gqlType);
+                    } else {
+                        asMap = mapper.convertValue(meForTeam, gqlType);
+                    }
+                    return Map.entry(t, asMap);
+                }).collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue)));
     }
 }

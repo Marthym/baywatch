@@ -3,7 +3,6 @@ extend type Mutation {
     userUpdate(_id: ID, user: UserForm): User
     userDelete(ids: [ID]): [User]
     userGrants(_id: ID, permissions: [String]): User
-    userRevokes(_id: ID, permissions: [String]): User
 }
 
 extend type Query {

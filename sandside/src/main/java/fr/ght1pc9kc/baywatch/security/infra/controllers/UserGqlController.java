@@ -6,6 +6,7 @@ import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.common.infra.model.CreateValidation;
 import fr.ght1pc9kc.baywatch.common.infra.model.Page;
+import fr.ght1pc9kc.baywatch.security.api.AuthorizationService;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
@@ -48,6 +49,7 @@ import java.util.stream.Collectors;
 public class UserGqlController {
     private static final QueryStringParser qsParser = QueryStringParser.withDefaultConfig();
     private final UserService userService;
+    private final AuthorizationService authorizationService;
     private final ObjectMapper mapper;
 
     @QueryMapping
@@ -101,15 +103,7 @@ public class UserGqlController {
         MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
 
         List<Permission> permissions = permString.stream().map(Permission::from).distinct().toList();
-        return userService.grants(id, permissions).map(e -> mapper.convertValue(e, gqlType));
-    }
-
-    @MutationMapping
-    public Mono<Map<String, Object>> userRevokes(@Argument("_id") String id, @Argument("permissions") Collection<String> permString) {
-        MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
-
-        List<Permission> permissions = permString.stream().map(Permission::from).distinct().toList();
-        return userService.revokes(id, permissions).map(e -> mapper.convertValue(e, gqlType));
+        return authorizationService.grants(id, permissions).map(e -> mapper.convertValue(e, gqlType));
     }
 
     @MutationMapping

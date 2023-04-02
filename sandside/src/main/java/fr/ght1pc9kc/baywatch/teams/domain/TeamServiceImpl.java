@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.teams.domain;
 import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.common.domain.EntityAssert;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
+import static java.util.function.Predicate.not;
 
 @RequiredArgsConstructor
 public class TeamServiceImpl implements TeamsService {
@@ -41,7 +43,6 @@ public class TeamServiceImpl implements TeamsService {
     private final TeamPersistencePort teamPersistence;
     private final TeamMemberPersistencePort teamMemberPersistence;
     private final TeamAuthFacade authFacade;
-
 
     @Accessors(fluent = true)
     @Getter(value = AccessLevel.PRIVATE, onMethod = @__(@VisibleForTesting))
@@ -109,7 +110,7 @@ public class TeamServiceImpl implements TeamsService {
                             .createdBy(manager.id)
                             .createdAt(now)
                             .build())))
-                    .then(authFacade.grantAuthorization(List.of(Permission.manager(id).toString())))
+                    .then(authFacade.grantAuthorization(manager.id, List.of(Permission.manager(id).toString())))
                     .thenReturn(id);
         }).flatMap(this::get);
     }
@@ -118,7 +119,8 @@ public class TeamServiceImpl implements TeamsService {
     public Mono<Entity<Team>> update(String id, String name, String topic) {
         return authFacade.getConnectedUser()
                 .filter(user -> RoleUtils.hasPermission(user.self, Permission.manager(id)))
-                .switchIfEmpty(Mono.error(() -> new TeamPermissionDenied("You must be manager of the team to update it !")))
+                .switchIfEmpty(Mono.error(() -> new TeamPermissionDenied(
+                        "You must be manager of the team to update it ! Try refresh to update permissions.")))
                 .flatMap(manager ->
                         teamPersistence.persist(Entity.<Team>builder()
                                 .id(id)
@@ -158,28 +160,79 @@ public class TeamServiceImpl implements TeamsService {
     }
 
     @Override
-    public Flux<Entity<TeamMember>> removeMembers(String id, Collection<String> membersIds) {
+    public Flux<Entity<TeamMember>> removeMembers(String teamId, Collection<String> membersIds) {
         return authFacade.getConnectedUser()
-                .filter(user -> RoleUtils.hasPermission(user.self, Permission.manager(id)) || (membersIds.stream().allMatch(user.id::equals)))
+                .filter(user -> RoleUtils.hasPermission(user.self, Permission.manager(teamId)) || (membersIds.stream().allMatch(user.id::equals)))
                 .switchIfEmpty(Mono.error(() -> new TeamPermissionDenied("You must be manager of the team to remove users !")))
-                .flatMap(ignore -> teamMemberPersistence.remove(id, membersIds))
-                .thenMany(teamMemberPersistence.list(QueryContext.all(Criteria.property(ID).eq(id))));
+                .flatMapMany(manager -> ensureTeamKeepManager(manager.id, teamId, membersIds))
+                // If no more team members, just remove the team and leave
+                .flatMap(ignore -> teamMemberPersistence.list(QueryContext.all(Criteria.property(ID).eq(teamId))))
+                .filter(not(e -> membersIds.contains(e.id)))
+                .switchIfEmpty(delete(List.of(teamId)).thenMany(Flux.empty()))
+                // else remove required members
+                .then(authFacade.revokeAuthorization(Permission.manager(teamId).toString(), membersIds))
+                .then(teamMemberPersistence.remove(teamId, membersIds))
+                .thenMany(teamMemberPersistence.list(QueryContext.all(Criteria.property(ID).eq(teamId))));
+    }
+
+    /**
+     * Throw an {@link IllegalArgumentException} if manager is the last manager of the given team
+     *
+     * @param managerId  The authorised user
+     * @param teamId     The given team to check management
+     * @param membersIds The members Ids to remove from management
+     * @return The list of managerIds after filtering removed member
+     * @throws IllegalArgumentException If the team has no more manager after filtering
+     */
+    private Flux<String> ensureTeamKeepManager(String managerId, String teamId, Collection<String> membersIds) {
+        return authFacade.listManagers(teamId)
+                .contextWrite(TeamAuthFacade.withSystemAuthentication(managerId))
+                .filter(not(membersIds::contains))
+                .switchIfEmpty(Flux.error(() -> new IllegalArgumentException(
+                        "You are the last manager of the team, grant an other manager or remove the team")));
+    }
+
+    @Override
+    public Mono<Void> promoteMember(String id, String memberId, boolean isManager) {
+        if (!EntityAssert.user(memberId)) {
+            return Mono.error(() -> new IllegalArgumentException(memberId + "is not a user ID !"));
+        }
+        if (!EntityAssert.team(id)) {
+            return Mono.error(() -> new IllegalArgumentException(id + "is not a team ID !"));
+        }
+        return authFacade.getConnectedUser()
+                .filter(user -> RoleUtils.hasPermission(user.self, Permission.manager(id)))
+                .switchIfEmpty(Mono.error(() -> new TeamPermissionDenied("You must be manager of the team promote user !")))
+                .flatMap(manager -> {
+                    if (isManager) {
+                        return authFacade.grantAuthorization(memberId, List.of(Permission.manager(id).toString()))
+                                .contextWrite(TeamAuthFacade.withSystemAuthentication(manager.id));
+                    } else {
+                        return Mono.just(manager.id.equals(memberId))
+                                .flatMapMany(isRevokeMe -> Boolean.TRUE.equals(isRevokeMe) ?
+                                        ensureTeamKeepManager(manager.id, id, List.of(memberId)) :
+                                        Flux.just(manager.id)).collectList()
+                                .flatMap(ignore -> authFacade.revokeAuthorization(Permission.manager(id).toString(), List.of(memberId))
+                                        .contextWrite(TeamAuthFacade.withSystemAuthentication(manager.id)));
+                    }
+                });
     }
 
     @Override
     public Flux<String> delete(Collection<String> ids) {
         return authFacade.getConnectedUser()
-                .flatMapMany(user -> Flux.fromIterable(ids).filter(id -> RoleUtils.hasPermission(user.self, Permission.manager(id))))
-                .switchIfEmpty(Mono.error(() -> new TeamPermissionDenied("You must be manager of the team to delete it !")))
-                .collectList()
-                .flatMap(teamsIds ->
-                        teamMemberPersistence.clear(teamsIds)
-                                .then(teamPersistence.delete(ids))
-                                .then(authFacade.revokeAuthorization(
-                                        teamsIds.stream()
-                                                .map(id -> Permission.manager(id).toString())
-                                                .collect(Collectors.toUnmodifiableSet())))
-                                .thenReturn(teamsIds))
-                .flatMapMany(Flux::fromIterable);
+                .flatMapMany(user -> Flux.fromIterable(ids).filter(id -> RoleUtils.hasPermission(user.self, Permission.manager(id)))
+                        .switchIfEmpty(Mono.error(() -> new TeamPermissionDenied("You must be manager of the team to delete it !")))
+                        .collectList()
+                        .flatMap(teamsIds ->
+                                teamMemberPersistence.clear(teamsIds)
+                                        .then(teamPersistence.delete(ids))
+                                        .then(authFacade.removeAuthorizations(
+                                                        teamsIds.stream()
+                                                                .map(id -> Permission.manager(id).toString())
+                                                                .collect(Collectors.toUnmodifiableSet())
+                                                ).contextWrite(TeamAuthFacade.withSystemAuthentication(user.id))
+                                        ).thenReturn(teamsIds))
+                        .flatMapMany(Flux::fromIterable));
     }
 }

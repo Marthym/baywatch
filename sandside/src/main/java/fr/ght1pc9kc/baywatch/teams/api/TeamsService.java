@@ -96,6 +96,16 @@ public interface TeamsService {
     Flux<Entity<TeamMember>> removeMembers(String id, Collection<String> membersIds);
 
     /**
+     * Promote or retrograde {@link TeamMember} to/from manager status for a given {@link Team}.
+     *
+     * @param id       The ULID of the {@link Team} to update
+     * @param memberId The {@link fr.ght1pc9kc.baywatch.security.api.model.User} ID to promote
+     * @return {@code Void} when operation complete
+     * @throws TeamPermissionDenied if current {@code User} hasn't {@code MANAGER} permission for the specified Team
+     */
+    Mono<Void> promoteMember(String id, String memberId, boolean isManager);
+
+    /**
      * Allow a {@code MANAGER} to drop one or more {@link Team}s.
      * The connected user must have {@code MANAGER} role for all
      * the Teams passed in argument.

@@ -5,4 +5,5 @@ extend type Query {
 extend type Mutation {
     teamMembersAdd(_id: ID, membersIds: [ID]): [TeamMember]
     teamMembersDelete(_id: ID, membersIds: [ID]): [TeamMember]
+    teamMembersPromote(_id: ID, memberId: ID, isManager: Boolean): Void
 }

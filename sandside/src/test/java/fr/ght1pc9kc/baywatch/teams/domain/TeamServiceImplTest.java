@@ -34,6 +34,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mapstruct.factory.Mappers;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
@@ -49,6 +50,8 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Named.named;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -79,8 +82,10 @@ class TeamServiceImplTest {
     @BeforeEach
     void setUp(DSLContext dsl) {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
-        when(mockAuthFacade.grantAuthorization(any())).thenReturn(Mono.empty().then());
-        when(mockAuthFacade.revokeAuthorization(any())).thenReturn(Mono.empty().then());
+        when(mockAuthFacade.grantAuthorization(any(), anyCollection())).thenReturn(Mono.empty().then());
+        when(mockAuthFacade.revokeAuthorization(any(), anyCollection())).thenReturn(Mono.empty().then());
+        when(mockAuthFacade.removeAuthorizations(anyCollection())).thenReturn(Mono.empty().then());
+        when(mockAuthFacade.listManagers(anyString())).thenReturn(Flux.just(UserSamples.MWINDU.id));
 
         Scheduler immediate = Schedulers.immediate();
         TeamsMapper mapper = Mappers.getMapper(TeamsMapper.class);
@@ -127,7 +132,7 @@ class TeamServiceImplTest {
                         () -> Assertions.assertThat(actual.id).isNotBlank(),
                         () -> Assertions.assertThat(actual.createdBy).isEqualTo(UserSamples.OBIWAN.id),
                         () -> Assertions.assertThat(actual.self.name()).isEqualTo("Jedi council team"),
-                        () -> verify(mockAuthFacade).grantAuthorization(List.of("MANAGER:" + actual.id))
+                        () -> verify(mockAuthFacade).grantAuthorization(UserSamples.OBIWAN.id, List.of("MANAGER:" + actual.id))
                 )).verifyComplete();
     }
 
