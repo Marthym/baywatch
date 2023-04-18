@@ -56,6 +56,19 @@ export function teamMemberAdd(teamId: string, members: string[]): Observable<Mem
     );
 }
 
+const TEAM_MEMBERS_PROMOTE_REQUEST = `#graphql
+mutation PromoteTeamMembers($teamId: ID, $member: ID, $isManager: Boolean){
+    teamMembersPromote(_id: $teamId, memberId: $member, isManager: $isManager)
+}`
+
+export function teamMemberPromote(teamId: string, member: string, isManager: boolean): Observable<void> {
+    const vars = {teamId: teamId, member: member, isManager: isManager};
+    return send<{ teamMembersPromote: void }>(TEAM_MEMBERS_PROMOTE_REQUEST, vars).pipe(
+        map(data => data.data.teamMembersPromote),
+        take(1),
+    );
+}
+
 const TEAM_MEMBERS_REMOVE_REQUEST = `#graphql
 mutation RemoveTeamMembers($teamId: ID, $members: [ID]){
     teamMembersDelete(_id: $teamId, membersIds: $members) {

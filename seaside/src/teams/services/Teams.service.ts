@@ -1,5 +1,5 @@
 import {ConstantFilters} from "@/constants";
-import {Observable} from "rxjs";
+import {Observable, of} from "rxjs";
 import {Page} from "@/services/model/Page";
 import {send} from "@/common/services/GraphQLClient";
 import {map, take, tap} from "rxjs/operators";
@@ -37,7 +37,7 @@ export function teamsList(page = 0, query: URLSearchParams = new URLSearchParams
         map(response => ({
                 currentPage: resolvedPage,
                 totalPage: Math.ceil(response.totalCount / Number(resolvedPerPage)),
-                data: response.entities
+                data: of(response.entities),
             })
         ),
         take(1),

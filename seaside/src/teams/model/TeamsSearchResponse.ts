@@ -1,7 +1,7 @@
 import {Team} from "@/teams/model/Team.type";
 
 export type TeamsSearchResponse = {
-    teamsSearch?: {
+    teamsSearch: {
         totalCount: number
         entities: Team[]
     }
