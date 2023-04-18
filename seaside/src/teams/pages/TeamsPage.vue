@@ -1,5 +1,5 @@
 <template>
-    <div class="overflow-x-auto mt-4">
+    <div v-if="store.getters['user/hasRoleAdmin']" class="overflow-x-auto mt-4">
         <SmartTable columns="Name|Managers|Topic" :elements="teams" actions="adl"
                     @add="addNewTeam"
                     @view="onEditData"
@@ -8,7 +8,15 @@
                     @leave="onLeave"
                     @deleteSelected="onDeleteSelected">
             <template #default="e">
-                <std>{{ e.data.name }}</std>
+                <std>
+                    {{ e.data.name }}
+                    <div class="tooltip tooltip-right" :data-tip="e.data._id">
+                        <button class="btn btn-circle btn-xs btn-ghost -ml-2"
+                                @click.prevent.stop="onCopyToClipboard(e.data._id)">
+                            <InformationCircleIcon class="w-3 h-3"/>
+                        </button>
+                    </div>
+                </std>
                 <std>{{ e.data._managers.map(m => m.name).join(', ') }}</std>
                 <std>{{ e.data.topic }}</std>
             </template>
@@ -37,12 +45,12 @@ import {filter, map, switchMap, tap} from "rxjs/operators";
 import TeamEditor, {CloseEvent} from "@/teams/components/TeamEditor.vue";
 import reloadActionService from "@/common/services/ReloadActionService";
 import notificationService from "@/services/notification/NotificationService";
-import {useStore} from "vuex";
+import {Store, useStore} from "vuex";
 import {setup} from "vue-class-component";
 import {NotificationCode} from "@/services/notification/NotificationCode.enum";
 import {Severity} from "@/services/notification/Severity.enum";
 import {AlertResponse, AlertType} from "@/common/components/alertdialog/AlertDialog.types";
-import {ArrowLeftOnRectangleIcon} from '@heroicons/vue/24/outline';
+import {ArrowLeftOnRectangleIcon, InformationCircleIcon} from '@heroicons/vue/24/outline';
 import {MemberPending} from "@/teams/model/MemberPending.enum";
 import {teamMemberAdd, teamMemberDelete} from "@/teams/services/TeamMembers.service";
 import {UserState} from "@/store/user/user";
@@ -52,17 +60,18 @@ import {UserState} from "@/store/user/user";
     computed: {
         MemberPending() {
             return MemberPending
-        }
+        },
     },
     methods: {ArrowLeftOnRectangleIcon},
-    components: {TeamEditor, std, stla, SmartTable, TableActionsComponent},
+    components: {InformationCircleIcon, TeamEditor, std, stla, SmartTable, TableActionsComponent},
 })
 export default class TeamsPage extends Vue {
     private isEditorOpened: boolean = false;
     private teams: SmartTableView<Team>[] = [];
     private activeTeam: SmartTableView<Team>;
     private activePage = 0;
-    private userState: UserState = setup(() => useStore().state.user);
+
+    private store: Store<UserState> = setup(() => useStore<UserState>());
 
     // noinspection JSUnusedLocalSymbols
     private mounted(): void {
@@ -78,9 +87,9 @@ export default class TeamsPage extends Vue {
     }
 
     private loadNextPage(page: number = 0): Observable<SmartTableView<Team>[]> {
-        const roles: string[] = this.userState.user.roles;
+        const roles: string[] = this.store.state.user.user.roles;
         return teamsList(page).pipe(
-            map(page => page.data),
+            switchMap(page => page.data),
             map(teams => teams.map(team => {
                 const isEditable = roles.includes(`MANAGER:${team._id}`);
                 return {isSelected: false, isEditable: isEditable, data: team} as SmartTableView<Team>;
@@ -95,7 +104,7 @@ export default class TeamsPage extends Vue {
     }
 
     private onJoinTeam(idx): void {
-        const id = this.userState.user._id;
+        const id = this.store.state.user.user._id;
         if (id) {
             teamMemberAdd(this.teams[idx].data._id, [id]).subscribe({
                 next: members => {
@@ -121,13 +130,13 @@ export default class TeamsPage extends Vue {
     private onLeave(idx: number): void {
         const messageConfirm = `You will leave the team <strong>${this.teams[idx].data.name}</strong> definitively ?`;
         const messageComplete = `You have left the team ${this.teams[idx].data.name} ?`;
-        const id = this.userState.user._id;
+        const id = this.store.state.user.user._id;
         if (id && this.teams.length >= (idx - 1)) {
             this.$alert.fire(messageConfirm, AlertType.CONFIRM_DELETE, 'Leave').pipe(
                 filter(response => response === AlertResponse.CONFIRM),
                 switchMap(() => teamMemberDelete(this.teams[idx].data._id, [id])),
             ).subscribe({
-                next: deleted => {
+                next: () => {
                     this.teams.splice(idx, 1);
                     notificationService.pushSimpleOk(messageComplete);
                 },
@@ -181,6 +190,11 @@ export default class TeamsPage extends Vue {
         if (event.updated) {
             this.loadNextPage(this.activePage).subscribe();
         }
+    }
+
+    private onCopyToClipboard(value: string): void {
+        navigator.clipboard.writeText(value);
+        notificationService.pushSimpleOk(`User ID copied on clipboard !`);
     }
 
     // noinspection JSUnusedLocalSymbols

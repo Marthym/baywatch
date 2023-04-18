@@ -46,7 +46,10 @@
                     </div>
                 </td>
                 <td class="text-center">
-                    <input v-if="member.pending === 'NONE'" type="checkbox" class="toggle" :checked="isManager(member)" />
+                    <input v-if="member.pending === 'NONE'" type="checkbox" class="toggle"
+                           :checked="isManager(member)"
+                           :disabled="!isTeamManager"
+                           @change="onPromoteManager(member, $event)"/>
                 </td>
                 <td class="text-right">
                     <button v-if="isTeamManager" class="btn btn-sm" @click.prevent.stop="onRemoveMember(index)">
@@ -76,13 +79,16 @@ import {
     teamMemberAdd,
     teamMemberAvailable,
     teamMemberDelete,
-    teamMemberList
+    teamMemberList,
+    teamMemberPromote
 } from "@/teams/services/TeamMembers.service";
 import {MemberPending} from "@/teams/model/MemberPending.enum";
 import {User} from "@/teams/model/User.type";
-import {map} from "rxjs/operators";
+import {filter, map, switchMap} from "rxjs/operators";
 import {Team} from "@/teams/model/Team.type";
 import * as debounce from "lodash/debounce";
+import notificationService from "@/services/notification/NotificationService";
+import {AlertResponse, AlertType} from "@/common/components/alertdialog/AlertDialog.types";
 
 const SUBMIT_EVENT: string = 'submit';
 const UPDATE_EVENT: string = 'update:modelValue';
@@ -143,6 +149,26 @@ export default class TeamMembersInput extends Vue {
         return this.team._managers.findIndex(m => m._id === member._user._id) >= 0;
     }
 
+    private onPromoteManager(member: Member, event: InputEvent): void {
+        const memberIdx = this.team._managers.findIndex(m => m._id === member._user._id);
+        const isManager = memberIdx < 0;
+        teamMemberPromote(this.team._id, member._user._id, isManager)
+            .subscribe({
+                next: () => {
+                    if (memberIdx < 0)
+                        this.team._managers.push(member._user);
+                    else {
+                        this.team._managers.splice(memberIdx, 1);
+                    }
+                    notificationService.pushSimpleOk(`User promoted ${member._user.login} to manager`)
+                },
+                error: () => {
+                    notificationService.pushSimpleError(`Fail promoted user ${member._user.login} to manager`);
+                    (event.target as HTMLInputElement).checked = this.isManager(member);
+                }
+            });
+    }
+
     private onAddRole(): void {
         teamMemberAdd(this.team._id, [this.newMember._user._id]).pipe(
             map(members => members.find(m => m._user._id === this.newMember._user._id))
@@ -168,11 +194,15 @@ export default class TeamMembersInput extends Vue {
     }
 
     private onRemoveMember(index: number): void {
-        teamMemberDelete(this.team._id, [this.members[index]._user._id]).subscribe({
+        const message = `Eject <b>${this.members[index]._user.login}</b> from the team ?`;
+        this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
+            filter(response => response === AlertResponse.CONFIRM),
+            switchMap(() => teamMemberDelete(this.team._id, [this.members[index]._user._id])),
+        ).subscribe({
             next: () => {
                 this.members.splice(index, 1);
             }
-        })
+        });
     }
 
 }
