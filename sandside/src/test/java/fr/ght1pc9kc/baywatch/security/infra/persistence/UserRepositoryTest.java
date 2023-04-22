@@ -209,9 +209,8 @@ class UserRepositoryTest {
                         .fetch(USERS_ROLES.USRO_ROLE))
                 .containsOnly("MANAGER:TM01GP696RFPTY32WD79CVB0KDTF", "USER");
 
-        StepVerifier.create(tested.delete(UsersRecordSamples.LSKYWALKER.getUserId(), List.of("MANAGER:TM01GP696RFPTY32WD79CVB0KDTF"))
-                        .map(e -> e.self))
-                .expectNext(UserSamples.LUKE.self.withRoles("USER"))
+        StepVerifier.create(tested.delete("MANAGER:TM01GP696RFPTY32WD79CVB0KDTF", List.of(UsersRecordSamples.LSKYWALKER.getUserId())))
+                .expectNext()
                 .verifyComplete();
 
         assertThat(

@@ -11,9 +11,10 @@ export interface IAlertDialog {
     isFired: boolean;
     message: string;
     alertType: AlertType;
+    confirmLabel: string;
     response?: Subject<AlertResponse>;
 
-    fire(message: string, alertType: AlertType): Observable<AlertResponse>;
+    fire(message: string, alertType: AlertType, confirmLabel?: string): Observable<AlertResponse>;
 
     close(response: AlertResponse): void;
 }

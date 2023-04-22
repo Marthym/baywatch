@@ -1,6 +1,7 @@
 import {ANONYMOUS, User} from "@/security/model/User";
 import {UserRole} from "@/security/model/UserRole.enum";
-import {HAS_ROLE_ADMIN, HAS_ROLE_MANAGER, HAS_ROLE_USER, LOGOUT, UPDATE} from "@/store/user/UserConstants";
+import {ADD_ROLE, HAS_ROLE_ADMIN, HAS_ROLE_MANAGER, HAS_ROLE_USER, LOGOUT, UPDATE} from "@/store/user/UserConstants";
+import {GetterTree} from "vuex";
 
 export type UserState = {
     user: User;
@@ -13,12 +14,12 @@ const state = (): UserState => ({
 });
 
 // getters
-const getters = {
+const getters: GetterTree<UserState, UserState> = {
     [HAS_ROLE_USER](st: UserState): boolean {
         return hasRole(st.user, UserRole.USER);
     },
-    [HAS_ROLE_MANAGER](st: UserState): boolean {
-        return hasRole(st.user, UserRole.MANAGER);
+    [HAS_ROLE_MANAGER](st: UserState): (entity: string) => boolean {
+        return (e) => hasRole(st.user, UserRole.MANAGER, e);
     },
     [HAS_ROLE_ADMIN](st: UserState): boolean {
         return hasRole(st.user, UserRole.ADMIN);
@@ -38,6 +39,9 @@ const mutations = {
         st.user = payload;
         st.isAuthenticated = hasRole(st.user, UserRole.USER);
     },
+    [ADD_ROLE](st: UserState, payload: string): void {
+        st.user.roles.push(payload);
+    },
 }
 
 const hasRole = (user: User, expectedRole: UserRole, entity?: string): boolean => {
@@ -54,7 +58,7 @@ const hasRole = (user: User, expectedRole: UserRole, entity?: string): boolean =
 
     for (let role of Object.keys(UserRole)) {
         if (userRoles.indexOf(role) >= 0 ||
-            ((entity) && userRoles.indexOf(`${role}:${entity}`))) {
+            ((entity) && userRoles.indexOf(`${role}:${entity}`) >= 0)) {
             hasRole = true;
         }
         if (role == expectedRole) {

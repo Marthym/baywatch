@@ -15,5 +15,11 @@ public interface TeamMemberPersistencePort {
 
     Mono<Void> remove(String teamId, Collection<String> membersIds);
 
+    /**
+     * Delete all {@link TeamMember}s from the given {@link fr.ght1pc9kc.baywatch.teams.api.model.Team}s
+     *
+     * @param teamsIds The Teams IDs to clear
+     * @return {@code void} when operation was complete
+     */
     Mono<Void> clear(Collection<String> teamsIds);
 }

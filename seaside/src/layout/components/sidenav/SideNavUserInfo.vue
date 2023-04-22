@@ -19,7 +19,7 @@
 
 <script lang="ts">
 import {Options, Vue} from 'vue-property-decorator';
-import md5 from "js-md5";
+import {MD5} from 'md5-js-tools';
 import {setup} from "vue-class-component";
 import {useStore} from "vuex";
 import {UserState} from "@/store/user/user";
@@ -43,11 +43,11 @@ export default class SideNavUserInfo extends Vue {
   }
 
   get avatar(): string {
-    let hash = "0";
+    let avatarHash = "0";
     if (this.userState.user.mail !== '') {
-      hash = md5(this.userState.user.mail);
+        avatarHash = MD5.generate(this.userState.user.mail);
     }
-    return `https://www.gravatar.com/avatar/${hash}?s=48&d=retro`;
+    return `https://www.gravatar.com/avatar/${avatarHash}?s=48&d=retro`;
   }
 }
 </script>

@@ -23,7 +23,7 @@ import NotificationArea from "@/common/components/notificationArea/NotificationA
 import {EventType} from "@/techwatch/model/EventType.enum";
 import {Notification} from "@/services/notification/Notification.type";
 import {registerNotificationListener, unregisterNotificationListener} from "@/layout/services/ServerEventService";
-import authenticationService from '@/security/services/AuthenticationService'
+import {refresh} from '@/security/services/AuthenticationService'
 import notificationService from '@/services/notification/NotificationService'
 import keyboardControl from "@/common/services/KeyboardControl";
 import {setup} from "vue-class-component";
@@ -47,7 +47,7 @@ export default class App extends Vue {
   private readonly store = setup(() => useStore());
 
   mounted(): void {
-    authenticationService.refresh().subscribe({
+    refresh().subscribe({
       next: session => {
         this.store.commit(USER_UPDATE_MUTATION, session.user);
         this.registerSessionNotifications();

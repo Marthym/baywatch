@@ -91,24 +91,27 @@ public class AuthenticationGqlController {
 
     @MutationMapping
     @PreAuthorize("permitAll()")
-    public Mono<Session> refreshSession(GraphQLContext env) {
-        return env.<ServerWebExchange>getOrEmpty(ServerWebExchange.class).flatMap(exchange ->
+    public Mono<Object> refreshSession(GraphQLContext env) {
+        return env.<ServerWebExchange>getOrEmpty(ServerWebExchange.class)
+                .flatMap(exchange ->
                         cookieManager.getTokenCookie(exchange.getRequest())
                                 .map(HttpCookie::getValue)
                                 .map(authenticationManager::refresh)
                                 .map(mauth -> mauth.map(auth -> {
-                                    ResponseCookie tokenCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), auth);
-                                    exchange.getResponse().addCookie(tokenCookie);
-                                    return Session.builder()
-                                            .user(auth.user.self)
-                                            .maxAge(-1)
-                                            .build();
-                                }).onErrorMap(SecurityException.class, e -> GraphqlErrorException.newErrorException()
-                                        .message("User token has expired !")
-                                        .errorClassification(ErrorType.UNAUTHORIZED)
-                                        .cause(e)
-                                        .build())))
-                .orElseGet(() -> Mono.error(GraphqlErrorException.newErrorException()
+                                            ResponseCookie tokenCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), auth);
+                                            exchange.getResponse().addCookie(tokenCookie);
+                                            return Session.builder()
+                                                    .user(auth.user)
+                                                    .maxAge(-1)
+                                                    .build();
+                                        }).map(s -> jsonMapper.convertValue(s, Object.class)
+                                        ).onErrorMap(SecurityException.class, e -> GraphqlErrorException.newErrorException()
+                                                .message("User token has expired !")
+                                                .errorClassification(ErrorType.UNAUTHORIZED)
+                                                .cause(e)
+                                                .build())
+                                )
+                ).orElseGet(() -> Mono.error(GraphqlErrorException.newErrorException()
                         .message("User is not logged on !")
                         .errorClassification(ErrorType.NOT_FOUND)
                         .build()));

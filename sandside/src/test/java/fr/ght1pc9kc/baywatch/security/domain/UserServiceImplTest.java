@@ -5,12 +5,12 @@ import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
+import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
@@ -40,10 +40,11 @@ import static org.mockito.Mockito.when;
 class UserServiceImplTest {
     private static final Instant CURRENT = Instant.parse("2022-02-08T22:57:00Z");
     private final UserPersistencePort mockUserRepository = mock(UserPersistencePort.class);
+    private final AuthorizationPersistencePort mockAuthorizationRepository = mock(AuthorizationPersistencePort.class);
     private final AuthenticationFacade mockAuthFacade = mock(AuthenticationFacade.class);
     private final UlidFactory mockUlidFactory = mock(UlidFactory.class);
 
-    private UserService tested;
+    private UserServiceImpl tested;
 
     @BeforeEach
     void setUp() {
@@ -52,12 +53,13 @@ class UserServiceImplTest {
         when(mockUserRepository.list(any())).thenReturn(Flux.just(UserSamples.LUKE, UserSamples.OBIWAN, UserSamples.YODA));
         when(mockUserRepository.persist(any())).thenReturn(Flux.just(UserSamples.LUKE, UserSamples.OBIWAN, UserSamples.YODA));
         when(mockUserRepository.persist(anyString(), anyCollection())).thenReturn(Mono.just(UserSamples.LUKE));
-        when(mockUserRepository.delete(anyString(), anyCollection())).thenReturn(Mono.just(UserSamples.LUKE));
+        when(mockUserRepository.delete(anyString(), anyCollection())).thenReturn(Mono.empty().then());
         when(mockUserRepository.count(any())).thenReturn(Mono.just(3));
-        when(mockUserRepository.countPermission(any())).thenReturn(Mono.just(0));
+        when(mockAuthorizationRepository.count(any())).thenReturn(Mono.just(0));
 
         //noinspection deprecation
-        tested = new UserServiceImpl(mockUserRepository, mockAuthFacade, NoOpPasswordEncoder.getInstance(),
+        tested = new UserServiceImpl(mockUserRepository, mockAuthorizationRepository,
+                mockAuthFacade, NoOpPasswordEncoder.getInstance(),
                 Clock.fixed(CURRENT, ZoneOffset.UTC), mockUlidFactory);
     }
 
@@ -182,29 +184,29 @@ class UserServiceImplTest {
     void should_revoke_role_as_admin() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
 
-        StepVerifier.create(tested.revokes(UserSamples.LUKE.id, List.of(Permission.manager("42"))))
-                .expectNext(UserSamples.LUKE)
+        StepVerifier.create(tested.revokes(Permission.manager("42"), List.of(UserSamples.LUKE.id)))
+                .expectNext()
                 .verifyComplete();
 
-        verify(mockUserRepository).delete(UserSamples.LUKE.id, List.of("MANAGER:42"));
+        verify(mockUserRepository).delete("MANAGER:42", List.of(UserSamples.LUKE.id));
     }
 
     @Test
     void should_revoke_role_as_user() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
 
-        StepVerifier.create(tested.revokes(UserSamples.LUKE.id, List.of(Permission.manager("42"))))
-                .expectNext(UserSamples.LUKE)
+        StepVerifier.create(tested.revokes(Permission.manager("42"), List.of(UserSamples.LUKE.id)))
+                .expectNext()
                 .verifyComplete();
 
-        verify(mockUserRepository).delete(UserSamples.LUKE.id, List.of("MANAGER:42"));
+        verify(mockUserRepository).delete("MANAGER:42", List.of(UserSamples.LUKE.id));
     }
 
     @Test
     void should_fail_to_revoke_other_user() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
 
-        StepVerifier.create(tested.revokes(UserSamples.OBIWAN.id, List.of(Role.MANAGER)))
+        StepVerifier.create(tested.revokes(Role.MANAGER, List.of(UserSamples.OBIWAN.id)))
                 .verifyError(UnauthorizedOperation.class);
     }
 }
