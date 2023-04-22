@@ -25,6 +25,7 @@
     </dependencies>
 
     <build>
+        <finalName>${project.parent.artifactId}-${project.parent.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -44,7 +45,6 @@
                             <goal>single</goal>
                         </goals>
                         <configuration>
-                            <finalName>${project.parent.artifactId}-${project.parent.version}</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                             <descriptorRefs>
                                 <descriptorRef>baywatch</descriptorRef>
