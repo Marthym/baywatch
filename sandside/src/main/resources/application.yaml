@@ -5,7 +5,8 @@ spring:
     driver-class-name: org.sqlite.JDBC
     username: baywatch
     password: hasselhoff
-#    hikari:
+    hikari:
+      data-source-properties.foreign_keys=true: true
 #      maximum-pool-size: 1
   jooq:
     sql-dialect: sqlite

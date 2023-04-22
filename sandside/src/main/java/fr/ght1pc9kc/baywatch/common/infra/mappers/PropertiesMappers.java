@@ -16,6 +16,7 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Users.USERS;
+import static fr.ght1pc9kc.baywatch.dsl.tables.UsersRoles.USERS_ROLES;
 
 @UtilityClass
 public final class PropertiesMappers {
@@ -57,6 +58,7 @@ public final class PropertiesMappers {
             EntitiesProperties.CREATED_AT, USERS.USER_CREATED_AT,
             EntitiesProperties.LOGIN, USERS.USER_LOGIN,
             EntitiesProperties.NAME, USERS.USER_NAME,
-            EntitiesProperties.MAIL, USERS.USER_EMAIL
+            EntitiesProperties.MAIL, USERS.USER_EMAIL,
+            EntitiesProperties.ROLES, USERS_ROLES.USRO_ROLE
     );
 }

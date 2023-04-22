@@ -47,7 +47,8 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
                         BaywatchAuthentication freshBaywatchAuth = this.tokenProvider.createToken(bwAuth.getUser(), bwAuth.rememberMe, Collections.emptyList());
                         refreshCookieOrHeader(freshBaywatchAuth, exchange.getRequest(), exchange.getResponse());
                         return exchange;
-                    }).then(chain.filter(exchange).contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication)));
+                    }).then(chain.filter(exchange)
+                            .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication)));
         }
 
         if (StringUtils.hasText(token)) {

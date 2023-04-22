@@ -8,7 +8,7 @@
       </div>
       <div v-else-if="isConfirmDialog" class="modal-action">
         <button class="btn" @click.stop="onCancel">Annuler</button>
-        <button class="btn btn-error" @click.stop="onConfirm">Supprimer</button>
+        <button class="btn btn-error" @click.stop="onConfirm">{{ instance.confirmLabel }}</button>
       </div>
     </div>
   </div>

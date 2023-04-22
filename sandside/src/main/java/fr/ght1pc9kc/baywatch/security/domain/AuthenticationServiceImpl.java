@@ -7,6 +7,8 @@ import fr.ght1pc9kc.baywatch.security.domain.ports.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
+
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
     private final JwtTokenProvider tokenProvider;
@@ -15,13 +17,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public Mono<BaywatchAuthentication> refresh(String token) {
         return Mono.fromCallable(() -> tokenProvider.getAuthentication(token))
-                .flatMap(auth -> {
-                    if (tokenProvider.validateToken(token)) {
-                        return Mono.just(auth);
-                    } else {
-                        return userService.get(auth.user.id)
-                                .map(user -> tokenProvider.createToken(user, auth.rememberMe, auth.getAuthorities()));
-                    }
-                });
+                .flatMap(auth -> userService.get(auth.user.id)
+                        .map(user -> tokenProvider.createToken(user, auth.rememberMe, Collections.emptyList())));
     }
 }

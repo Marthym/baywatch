@@ -68,12 +68,12 @@ public interface TeamsService {
     Mono<Entity<Team>> update(String id, String name, String topic);
 
     /**
-     * List the members of a specified {@link Team}
+     * List the members of a {@link Team}
      *
-     * @param id The ID of the Team
+     * @param pgRequest The filter and pagination information for the request
      * @return A flux of TeamMember as Entity
      */
-    Flux<Entity<TeamMember>> members(String id);
+    Flux<Entity<TeamMember>> members(PageRequest pgRequest);
 
     /**
      * Add new members to the team
@@ -94,6 +94,16 @@ public interface TeamsService {
      *                              or if the current {@code User#id} is not the only element of the list
      */
     Flux<Entity<TeamMember>> removeMembers(String id, Collection<String> membersIds);
+
+    /**
+     * Promote or retrograde {@link TeamMember} to/from manager status for a given {@link Team}.
+     *
+     * @param id       The ULID of the {@link Team} to update
+     * @param memberId The {@link fr.ght1pc9kc.baywatch.security.api.model.User} ID to promote
+     * @return {@code Void} when operation complete
+     * @throws TeamPermissionDenied if current {@code User} hasn't {@code MANAGER} permission for the specified Team
+     */
+    Mono<Void> promoteMember(String id, String memberId, boolean isManager);
 
     /**
      * Allow a {@code MANAGER} to drop one or more {@link Team}s.

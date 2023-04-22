@@ -51,6 +51,21 @@ public final class UserSamples {
 
     /**
      * The {@link User} role {@link Role#USER} and
+     * {@link Role#MANAGER} for {@code TM01GP696RFPTY32WD79CVB0KDTF} (JEDI_TEAM)
+     */
+    public static final Entity<User> MWINDU = Entity.identify(
+            "US01GRQ15DCEX52JH4GWJ26G33ME",
+            User.builder()
+                    .login("mwindu")
+                    .name("Mace Windu")
+                    .mail("mace.windu@jedi.com")
+                    .role(Role.USER)
+                    .role(Permission.manager("TM01GP696RFPTY32WD79CVB0KDTF"))
+                    .password("udniw")
+                    .build());
+
+    /**
+     * The {@link User} role {@link Role#USER} and
      * {@link Role#MANAGER} for {@code TM01GPETWVATJ968SJ717NRHYSEZ} (SITH_TEAM)
      */
     public static final Entity<User> DSIDIOUS = Entity.identify(

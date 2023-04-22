@@ -1,5 +1,5 @@
 <template>
-  <div class="stack absolute bottom-5 right-5 transition-opacity easy-in-out duration-500 opacity-100 hover:opacity-30">
+  <div class="stack absolute bottom-5 right-5 z-50 transition-opacity easy-in-out duration-500 opacity-100 hover:opacity-30">
     <div v-for="notif in notifications" :key="notif.id" class="alert" :class="{
       'bg-error': isError(notif),
       'bg-warning': isWarning(notif),

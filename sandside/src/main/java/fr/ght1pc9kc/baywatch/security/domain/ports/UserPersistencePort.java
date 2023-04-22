@@ -18,14 +18,6 @@ public interface UserPersistencePort {
     Mono<Integer> count(QueryContext qCtx);
 
     /**
-     * Count the number of {@link User} having at leat one of the giving permissions
-     *
-     * @param permissions The list of permissions to count in database
-     * @return The number of users
-     */
-    Mono<Integer> countPermission(Collection<String> permissions);
-
-    /**
      * Persist all {@link Entity} given as argument.
      * If error throw during insert, all the transaction was rollback and nothing was persisted
      *
@@ -46,11 +38,11 @@ public interface UserPersistencePort {
     /**
      * Delete roles line for user id in roles tables
      *
-     * @param userId The user ID
-     * @param roles  The role string representation
+     * @param role    The roles strings representation
+     * @param userIds The user IDs
      * @return The new list of roles for the user ID
      */
-    Mono<Entity<User>> delete(String userId, Collection<String> roles);
+    Mono<Void> delete(String role, Collection<String> userIds);
 
     Mono<Entity<User>> update(String id, User user);
 

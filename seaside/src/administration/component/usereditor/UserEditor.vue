@@ -68,8 +68,9 @@
               <span v-if="errors.has('confirm')" class="label-text-alt">{{ errors.get('confirm') }}</span>
             </label>
           </div>
-          <div class="grow lg:basis-1/2 h-fit p-4">
+          <div class="grow lg:basis-1/2 h-fit p-4 border-error rounded-lg" :class="{'border': errors.has('roles')}">
             <UserRoleInput :model-value="modelValue.roles" @update:modelValue="onRoleUpdate"/>
+            <span v-if="errors.has('roles')" class="label-text-alt">{{ errors.get('roles') }}</span>
           </div>
         </div>
         <span class="grow"></span>
@@ -157,6 +158,7 @@ export default class UserEditor extends Vue {
   }
 
   private onRoleUpdate(event: Event): void {
+    this.errors.delete('roles');
     this.modelValue.roles.splice(0, this.modelValue.roles.length, ...event);
   }
 

@@ -2,7 +2,6 @@ package fr.ght1pc9kc.baywatch.security.infra.persistence;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
-import fr.ght1pc9kc.baywatch.common.infra.PredicateSearchVisitor;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
@@ -45,7 +44,6 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.UsersRoles.USERS_ROLES;
 public class UserRepository implements UserPersistencePort {
     private static final JooqConditionVisitor JOOQ_CONDITION_VISITOR =
             new JooqConditionVisitor(PropertiesMappers.USER_PROPERTIES_MAPPING::get);
-    private static final PredicateSearchVisitor<Entity<User>> USER_PREDICATE_VISITOR = new PredicateSearchVisitor<>();
 
     private final @DatabaseQualifier Scheduler databaseScheduler;
     private final DSLContext dsl;
@@ -57,7 +55,6 @@ public class UserRepository implements UserPersistencePort {
     }
 
     @Override
-    @SuppressWarnings("resource")
     public Flux<Entity<User>> list(QueryContext qCtx) {
         Condition conditions = qCtx.filter.accept(JOOQ_CONDITION_VISITOR);
         Select<Record> select = JooqPagination.apply(
@@ -79,8 +76,7 @@ public class UserRepository implements UserPersistencePort {
                         }
                     }).onDispose(cursor::close);
                 }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
-                .map(baywatchConverter::recordToUserEntity)
-                .filter(qCtx.filter.accept(USER_PREDICATE_VISITOR));
+                .map(baywatchConverter::recordToUserEntity);
     }
 
     @Override
@@ -93,14 +89,6 @@ public class UserRepository implements UserPersistencePort {
         Condition conditions = qCtx.getFilter().accept(JOOQ_CONDITION_VISITOR);
         return Mono.fromCallable(() -> dsl.fetchCount(dsl.selectFrom(USERS).where(conditions)))
                 .subscribeOn(databaseScheduler);
-    }
-
-    @Override
-    public Mono<Integer> countPermission(Collection<String> permissions) {
-        if (permissions.isEmpty()) {
-            return Mono.just(0);
-        }
-        return Mono.fromCallable(() -> dsl.fetchCount(USERS_ROLES, USERS_ROLES.USRO_ROLE.in(permissions)));
     }
 
     @Override
@@ -150,20 +138,23 @@ public class UserRepository implements UserPersistencePort {
     @Override
     public Mono<Entity<User>> persist(String userId, Collection<String> roles) {
         Query[] queries = roles.stream().map(role ->
-                        dsl.insertInto(USERS_ROLES).columns(USERS_ROLES.USRO_USER_ID, USERS_ROLES.USRO_ROLE).values(userId, role))
-                .toArray(Query[]::new);
+                dsl.insertInto(USERS_ROLES)
+                        .columns(USERS_ROLES.USRO_USER_ID, USERS_ROLES.USRO_ROLE)
+                        .values(userId, role)
+                        .onDuplicateKeyIgnore()
+        ).toArray(Query[]::new);
         return Mono.fromCallable(() -> dsl.batch(queries).execute())
                 .subscribeOn(databaseScheduler)
                 .then(get(userId));
     }
 
     @Override
-    public Mono<Entity<User>> delete(String userId, Collection<String> roles) {
-        Query[] queries = roles.stream().map(role ->
-                        dsl.deleteFrom(USERS_ROLES).where(USERS_ROLES.USRO_USER_ID.eq(userId).and(USERS_ROLES.USRO_ROLE.in(roles))))
-                .toArray(Query[]::new);
-        return Mono.fromCallable(() -> dsl.batch(queries).execute())
+    public Mono<Void> delete(String role, Collection<String> userIds) {
+        return Mono.fromCallable(() -> dsl.deleteFrom(USERS_ROLES)
+                        .where(USERS_ROLES.USRO_USER_ID.in(userIds)
+                                .and(USERS_ROLES.USRO_ROLE.eq(role)))
+                        .execute())
                 .subscribeOn(databaseScheduler)
-                .then(get(userId));
+                .then();
     }
 }

@@ -18,6 +18,7 @@ import fr.ght1pc9kc.baywatch.teams.infra.samples.TeamsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRolesSamples;
+import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;
 import fr.ght1pc9kc.testy.jooq.WithDslContext;
@@ -33,6 +34,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mapstruct.factory.Mappers;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
@@ -41,12 +43,15 @@ import reactor.test.StepVerifier;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.teams.infra.samples.TeamsRecordSamples.JEDI_TEAM;
 import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Named.named;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -77,8 +82,10 @@ class TeamServiceImplTest {
     @BeforeEach
     void setUp(DSLContext dsl) {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
-        when(mockAuthFacade.grantAuthorization(any())).thenReturn(Mono.empty().then());
-        when(mockAuthFacade.revokeAuthorization(any())).thenReturn(Mono.empty().then());
+        when(mockAuthFacade.grantAuthorization(any(), anyCollection())).thenReturn(Mono.empty().then());
+        when(mockAuthFacade.revokeAuthorization(any(), anyCollection())).thenReturn(Mono.empty().then());
+        when(mockAuthFacade.removeAuthorizations(anyCollection())).thenReturn(Mono.empty().then());
+        when(mockAuthFacade.listManagers(anyString())).thenReturn(Flux.just(UserSamples.MWINDU.id));
 
         Scheduler immediate = Schedulers.immediate();
         TeamsMapper mapper = Mappers.getMapper(TeamsMapper.class);
@@ -125,7 +132,7 @@ class TeamServiceImplTest {
                         () -> Assertions.assertThat(actual.id).isNotBlank(),
                         () -> Assertions.assertThat(actual.createdBy).isEqualTo(UserSamples.OBIWAN.id),
                         () -> Assertions.assertThat(actual.self.name()).isEqualTo("Jedi council team"),
-                        () -> verify(mockAuthFacade).grantAuthorization(List.of("MANAGER:" + actual.id))
+                        () -> verify(mockAuthFacade).grantAuthorization(UserSamples.OBIWAN.id, List.of("MANAGER:" + actual.id))
                 )).verifyComplete();
     }
 
@@ -168,7 +175,7 @@ class TeamServiceImplTest {
 
     @Test
     void should_list_team_members() {
-        StepVerifier.create(tested.members(JEDI_TEAM.getTeamId()).map(e -> e.self.userId()).collectList())
+        StepVerifier.create(tested.members(PageRequest.all(Criteria.property(ID).eq(JEDI_TEAM.getTeamId()))).map(e -> e.self.userId()).collectList())
                 .assertNext(actual -> Assertions.assertThat(actual).containsOnly(
                         UserSamples.LUKE.id,
                         UserSamples.OBIWAN.id
