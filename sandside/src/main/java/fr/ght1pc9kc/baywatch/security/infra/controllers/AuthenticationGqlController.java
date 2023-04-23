@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.security.infra.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.SecurityException;
@@ -30,6 +31,8 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -58,13 +61,18 @@ public class AuthenticationGqlController {
 
                     Optional<ServerWebExchange> orEmpty = env.getOrEmpty(ServerWebExchange.class);
                     orEmpty.ifPresent(exchange -> {
-                        Set<String> authorities = AuthorityUtils.authorityListToSet(auth.getT2().getAuthorities());
+                        Set<String> authorities = AuthorityUtils.authorityListToSet(user.getAuthorities());
                         BaywatchAuthentication bwAuth = tokenProvider.createToken(user.getEntity(), auth.getT1(), authorities);
                         ResponseCookie authCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), bwAuth);
                         exchange.getResponse().addCookie(authCookie);
                     });
 
-                    log.debug("Login to {}.", user.getUsername());
+                    if (log.isDebugEnabled()) {
+                        InetAddress clientIp = orEmpty.flatMap(ex -> Optional.ofNullable(ex.getRequest().getRemoteAddress()))
+                                .map(InetSocketAddress::getAddress)
+                                .orElse(Exceptions.sneak().get(() -> InetAddress.getByName("127.0.0.1")));
+                        log.debug("Login to {} from {}.", user.getUsername(), clientIp);
+                    }
                     return jsonMapper.convertValue(user.getEntity(), Object.class);
                 })
 

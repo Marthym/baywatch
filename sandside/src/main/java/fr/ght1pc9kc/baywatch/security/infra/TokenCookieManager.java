@@ -1,6 +1,8 @@
 package fr.ght1pc9kc.baywatch.security.infra;
 
 import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
+import fr.ght1pc9kc.baywatch.security.api.model.Role;
+import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.security.infra.model.SecurityParams;
 import fr.ght1pc9kc.baywatch.security.infra.model.SecurityParams.CookieParams;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,13 +31,14 @@ public final class TokenCookieManager {
 
     public ResponseCookie buildTokenCookie(String scheme, BaywatchAuthentication bwAuth) {
         Duration maxAge = (bwAuth.isRememberMe()) ? Duration.ofSeconds(-1) : params.validity;
-
+        String path = (bwAuth.authorities.contains(RoleUtils.toSpringAuthority(Role.ADMIN))) ?
+                "/" : baseRoute;
         return ResponseCookie.from(params.name, bwAuth.getToken())
                 .httpOnly(true)
                 .secure("https".equals(scheme))
                 .sameSite(Cookie.SameSite.STRICT.attributeValue())
                 .maxAge(maxAge)
-                .path(baseRoute)
+                .path(path)
                 .build();
     }
 
