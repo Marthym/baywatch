@@ -82,7 +82,7 @@ public class AuthenticationGqlController {
                 .onErrorMap(BadCredentialsException.class, BaywatchCredentialsException::new)
                 .onErrorMap(NoSuchElementException.class, BaywatchCredentialsException::new)
 
-                .name("bw.loging")
+                .name("bw.login")
                 .tag("username", authRequest.username)
                 .tap(Micrometer.observation(registry))
                 ;
