@@ -1,13 +1,14 @@
 package fr.ght1pc9kc.baywatch.security.infra.model;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import lombok.Value;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.Collections;
 
 @Value
 public class BaywatchUserDetails implements UserDetails {
@@ -19,7 +20,9 @@ public class BaywatchUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        return AuthorityUtils.createAuthorityList(user.self.roles.stream()
+                .map(RoleUtils::toSpringAuthority)
+                .toArray(String[]::new));
     }
 
     @Override
