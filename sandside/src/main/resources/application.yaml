@@ -21,9 +21,6 @@ server:
     include-message: ALWAYS
 
 management:
-  security:
-    enable: true
-    roles: ROLE_ADMIN
   endpoints.web.exposure.include: prometheus,health
   metrics.distribution.percentiles-histogram:
     http.server.requests: true
