@@ -14,6 +14,7 @@ import fr.ght1pc9kc.baywatch.security.infra.model.BaywatchUserDetails;
 import fr.ght1pc9kc.baywatch.security.infra.model.Session;
 import graphql.GraphQLContext;
 import graphql.GraphqlErrorException;
+import io.micrometer.observation.ObservationRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Arguments;
@@ -28,6 +29,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.server.ServerWebExchange;
+import reactor.core.observability.micrometer.Micrometer;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
@@ -47,6 +49,7 @@ public class AuthenticationGqlController {
     private final AuthenticationFacade authFacade;
     private final TokenCookieManager cookieManager;
     private final ObjectMapper jsonMapper;
+    private final ObservationRegistry registry;
 
     @MutationMapping
     @PreAuthorize("permitAll()")
@@ -77,7 +80,12 @@ public class AuthenticationGqlController {
                 })
 
                 .onErrorMap(BadCredentialsException.class, BaywatchCredentialsException::new)
-                .onErrorMap(NoSuchElementException.class, BaywatchCredentialsException::new);
+                .onErrorMap(NoSuchElementException.class, BaywatchCredentialsException::new)
+
+                .name("bw.loging")
+                .tag("username", authRequest.username)
+                .tap(Micrometer.observation(registry))
+                ;
     }
 
     @MutationMapping

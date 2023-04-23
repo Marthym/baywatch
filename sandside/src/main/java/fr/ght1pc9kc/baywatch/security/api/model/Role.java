@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.security.api.model;
 import java.util.Optional;
 
 public enum Role implements Permission {
-    SYSTEM, ADMIN, MANAGER, USER;
+    SYSTEM, ENDPOINT_ADMIN, ADMIN, MANAGER, USER;
 
     @Override
     public Role role() {

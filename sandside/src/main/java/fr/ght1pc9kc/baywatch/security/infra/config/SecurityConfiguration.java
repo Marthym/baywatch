@@ -46,6 +46,7 @@ public class SecurityConfiguration {
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange()
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
+                .pathMatchers(HttpMethod.GET, "/actuator/**").hasRole("ADMIN")
                 .pathMatchers(HttpMethod.GET, baseRoute + "/stats").permitAll()
                 .pathMatchers(HttpMethod.GET, baseRoute + "/news").permitAll()
                 .pathMatchers(HttpMethod.GET, baseRoute + "/feeds").permitAll()

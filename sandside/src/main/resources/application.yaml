@@ -20,6 +20,14 @@ server:
   error:
     include-message: ALWAYS
 
+management:
+  security:
+    enable: true
+    roles: ROLE_ADMIN
+  endpoints.web.exposure.include: prometheus,health
+  metrics.distribution.percentiles-histogram:
+    http.server.requests: true
+
 logging:
   # Avoid infinite stacktrace due to reactor
   exception-conversion-word: "%wEx{full, reactor.core.publisher}"
