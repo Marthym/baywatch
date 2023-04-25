@@ -1,5 +1,4 @@
 ---
-
 version: "3.9"
 
 volumes:
@@ -7,6 +6,26 @@ volumes:
   grafana_data: {}
 
 services:
+
+  baywatch:
+    image: 'marthym/baywatch:latest'
+    labels:
+      application: baywatch
+    read_only: true
+    environment:
+      BAYWATCH_DNS_SERVERS: 9.9.9.9, 8.8.8.8, 2620:fe::fe
+      BAYWATCH_HOME: /var/lib/baywatch
+      BAYWATCH_IMGPROXY_ENABLE: 'false'
+      BAYWATCH_LOG_LEVEL: DEBUG
+    logging:
+      options:
+        labels: 'application'
+    ports:
+      - '8081:8081'
+    volumes:
+      - /home/marthym:/var/lib/baywatch
+      - /tmp/baywatch:/tmp
+
   prometheus:
     image: prom/prometheus:v2.43.0
     network_mode: "host"
@@ -28,7 +47,7 @@ services:
     depends_on:
       - prometheus
     ports:
-      - 3000:3000
+      - '3000:3000'
     volumes:
       - grafana_data:/var/lib/grafana
       - ./.compose/grafana/provisioning/:/etc/grafana/provisioning/
@@ -36,3 +55,16 @@ services:
       GF_SECURITY_ADMIN_USER: baywatch
       GF_SECURITY_ADMIN_PASSWORD: baywatch
       GF_USERS_ALLOW_SIGN_UP: false
+
+  opentelemetry:
+    image: otel/opentelemetry-collector-contrib:0.75.0
+    network_mode: "host"
+    user: '0:0'
+    command: [--config=/etc/otel-collector-config.yaml]
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+    volumes:
+      - './.compose/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro'
+      - '/home/docker/containers:/var/lib/docker/containers:ro'
