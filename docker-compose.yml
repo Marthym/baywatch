@@ -8,7 +8,7 @@ volumes:
 services:
 
   baywatch:
-    image: 'marthym/baywatch:latest'
+    image: 'marthym/baywatch:2.0.0-SNAPSHOT'
     labels:
       application: baywatch
     read_only: true
@@ -17,6 +17,8 @@ services:
       BAYWATCH_HOME: /var/lib/baywatch
       BAYWATCH_IMGPROXY_ENABLE: 'false'
       BAYWATCH_LOG_LEVEL: DEBUG
+      SPRING_PROFILES_ACTIVE: json-logging
+      SPRING_MAIN_BANNER-MODE: off
     logging:
       options:
         labels: 'application'
@@ -39,6 +41,12 @@ services:
       - '--web.console.templates=/usr/share/prometheus/consoles'
     ports:
       - 9090:9090
+
+  loki:
+    image: grafana/loki:2.8.1
+    ports:
+      - '3100:3100'
+    command: -config.file=/etc/loki/local-config.yaml
 
   grafana:
     image: grafana/grafana:8.5.22

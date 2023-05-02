@@ -1,5 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="BaywatchApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <option name="ACTIVE_PROFILES" value="json-logging" />
     <envs>
       <env name="BAYWATCH_GRAPHIQL_ENABLE" value="true" />
       <env name="BAYWATCH_GRAPHQL_INTROSPECTION" value="true" />
