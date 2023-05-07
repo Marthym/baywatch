@@ -8,7 +8,7 @@
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
                 <jsonFormatter class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter"/>
-                <timestampFormat>${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd'T'HH:mm:ss.SSSZ}</timestampFormat>
+                <timestampFormat>${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd'T'HH:mm:ss.SSS'Z'}</timestampFormat>
                 <appendLineSeparator>true</appendLineSeparator>
                 <prettyPrint>false</prettyPrint>
             </layout>
