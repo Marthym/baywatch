@@ -1,0 +1,8 @@
+---
+
+service:
+  pipelines:
+    logs:
+      receivers: [filelog/containers]
+      processors: [attributes, batch]
+      exporters: [logging, loki]

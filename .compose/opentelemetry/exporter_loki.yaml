@@ -1,0 +1,5 @@
+---
+
+exporters:
+  loki:
+    endpoint: 'http://localhost:3100/loki/api/v1/push'
