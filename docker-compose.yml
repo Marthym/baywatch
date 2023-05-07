@@ -22,6 +22,7 @@ services:
     logging:
       options:
         labels: 'application'
+        tag: 'id={{.ID}} name={{.Name}} image={{.ImageName}}'
     ports:
       - '8081:8081'
     volumes:
@@ -68,11 +69,18 @@ services:
     image: otel/opentelemetry-collector-contrib:0.75.0
     network_mode: "host"
     user: '0:0'
-    command: [--config=/etc/otel-collector-config.yaml]
+    command: [
+      --config=/etc/otel/receiver_filelog_container.yaml,
+      --config=/etc/otel/processor_batch.yaml,
+      --config=/etc/otel/processor_attributes.yaml,
+      --config=/etc/otel/exporter_loki.yaml,
+      --config=/etc/otel/exporter_logging.yaml,
+      --config=/etc/otel/config.yaml
+    ]
     logging:
       driver: local
       options:
         max-size: 10m
     volumes:
-      - './.compose/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro'
+      - './.compose/opentelemetry:/etc/otel:ro'
       - '/home/docker/containers:/var/lib/docker/containers:ro'
