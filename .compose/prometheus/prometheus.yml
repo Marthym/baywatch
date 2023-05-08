@@ -34,12 +34,8 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
-  - job_name: 'node-exporter'
-    # Override the global default and scrape targets from this job every 5 seconds.
+  - job_name: 'otel-exporter'
     scrape_interval: 15s
-    metrics_path: '/actuator/prometheus'
-    basic_auth:
-      username: "prometheus"
-      password: "uzpUAANKgZXxbdk19AjfWmknKfGbP2wKzAAMCpHm"
     static_configs:
-      - targets: ['localhost:8081']
+      - targets:
+        - 'opentelemetry:9091'
