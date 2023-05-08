@@ -6,3 +6,7 @@ service:
       receivers: [filelog/containers]
       processors: [attributes, batch]
       exporters: [logging, loki]
+    metrics:
+      receivers: [prometheus]
+#      processors: [batch]
+      exporters: [prometheus]
