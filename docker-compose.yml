@@ -13,6 +13,8 @@ services:
 
   baywatch:
     image: 'marthym/baywatch:2.0.0-SNAPSHOT'
+    depends_on:
+      - opentelemetry
     labels:
       application: baywatch
     read_only: true
@@ -38,8 +40,8 @@ services:
 
   prometheus:
     image: prom/prometheus:v2.43.0
-#    ports:
-#      - '9090:9090'
+    depends_on:
+      - opentelemetry
     networks:
       - bwnet
     command:
@@ -53,8 +55,6 @@ services:
 
   loki:
     image: grafana/loki:2.8.1
-#    ports:
-#      - '3100:3100'
     networks:
       - bwnet
     command: -config.file=/etc/loki/local-config.yaml
@@ -89,6 +89,8 @@ services:
 
   opentelemetry:
     image: otel/opentelemetry-collector-contrib:0.75.0
+    depends_on:
+      - loki
     user: '0:0'
     command:
       - '--config=/etc/otel/receiver_filelog_container.yaml'
@@ -103,8 +105,6 @@ services:
       driver: local
       options:
         max-size: 10m
-#    ports:
-#      - '9091:9091'
     networks:
       - bwnet
     volumes:

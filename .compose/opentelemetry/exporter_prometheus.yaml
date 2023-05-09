@@ -4,7 +4,4 @@ exporters:
   prometheus:
     endpoint: 'opentelemetry:9091'
     send_timestamps: true
-    metric_expiration: 180m
     enable_open_metrics: true
-    resource_to_telemetry_conversion:
-      enabled: true
