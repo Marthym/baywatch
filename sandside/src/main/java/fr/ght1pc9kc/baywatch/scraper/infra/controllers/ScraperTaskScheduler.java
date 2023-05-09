@@ -3,9 +3,6 @@ package fr.ght1pc9kc.baywatch.scraper.infra.controllers;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperApplicationProperties;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
-import io.micrometer.core.instrument.DistributionSummary;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.observation.ObservationRegistry;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.AccessLevel;
@@ -16,7 +13,6 @@ import org.jetbrains.annotations.VisibleForTesting;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Component;
-import reactor.core.observability.micrometer.Micrometer;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -40,18 +36,11 @@ public class ScraperTaskScheduler implements Runnable {
 
     private final FeedScraperService scraperService;
     private final ScraperApplicationProperties properties;
-    private final ObservationRegistry observationRegistry;
 
-    private final DistributionSummary scrapSummary;
-
-    public ScraperTaskScheduler(FeedScraperService scraperService, ScraperApplicationProperties properties,
-                                ObservationRegistry observationRegistry, MeterRegistry meterRegistry) {
+    public ScraperTaskScheduler(FeedScraperService scraperService, ScraperApplicationProperties properties) {
         this.scraperService = scraperService;
         this.properties = properties;
-        this.observationRegistry = observationRegistry;
-        this.scrapSummary = DistributionSummary.builder("bw.scraping.summary")
-                .description("Number of news read from scraping")
-                .register(meterRegistry);
+
 
     }
 
@@ -95,8 +84,6 @@ public class ScraperTaskScheduler implements Runnable {
         }
         log.info("Start scraping ...");
         scraperService.scrap(properties.conservation())
-                .name("bw.scraping")
-                .tap(Micrometer.observation(observationRegistry))
                 .doOnError(e -> {
                     log.error(ERROR_CLASS_MESSAGE, e.getClass(), e.getLocalizedMessage());
                     log.debug(ERROR_STACKTRACE_MESSAGE, e);
@@ -106,6 +93,6 @@ public class ScraperTaskScheduler implements Runnable {
                     log.debug("Scraping terminated successfully !");
                 })
                 .contextWrite(AuthenticationFacade.withSystemAuthentication())
-                .subscribe(result -> scrapSummary.record(result.inserted()));
+                .subscribe();
     }
 }

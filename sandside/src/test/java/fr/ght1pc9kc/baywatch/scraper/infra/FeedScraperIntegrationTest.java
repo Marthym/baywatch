@@ -25,8 +25,6 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.scraphead.core.HeadScrapers;
 import fr.ght1pc9kc.scraphead.netty.http.NettyScrapClient;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.micrometer.observation.ObservationRegistry;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeAll;
@@ -167,7 +165,7 @@ class FeedScraperIntegrationTest {
                         scraperConfiguration.getScraperScheduler())
         );
 
-        tested = new ScraperTaskScheduler(scraperService, scraperProperties, ObservationRegistry.NOOP, new SimpleMeterRegistry());
+        tested = new ScraperTaskScheduler(scraperService, scraperProperties);
     }
 
     @ParameterizedTest

@@ -13,14 +13,13 @@ import reactor.core.publisher.Mono;
 
 import java.time.Clock;
 import java.time.Duration;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class ScrapingDurationCounter implements CounterProvider, EventHandler {
     private final AtomicReference<Long> startNanoTime = new AtomicReference<>(null);
-    private final AtomicReference<String> lastDuration = new AtomicReference<>("...");
+    private final AtomicReference<Duration> lastDuration = new AtomicReference<>(Duration.ZERO);
     private final AtomicReference<String> lastInstant = new AtomicReference<>("scraping in progress...");
 
     @VisibleForTesting
@@ -36,7 +35,9 @@ public class ScrapingDurationCounter implements CounterProvider, EventHandler {
     @Override
     public Mono<Void> after(int persisted) {
         if (log.isDebugEnabled()) {
-            String duration = getCurrentDuration();
+            String duration = getCurrentDuration(
+                    startNanoTime.get() == null ? Duration.ZERO : Duration.ofMillis(clock.millis() - startNanoTime.get())
+            );
             log.debug("Scraping finished, load {} news in {}", persisted, duration);
         }
         return EventHandler.super.after(persisted);
@@ -45,18 +46,15 @@ public class ScrapingDurationCounter implements CounterProvider, EventHandler {
     @Override
     public void onTerminate() {
         lastInstant.set(clock.instant().toString());
-        lastDuration.set(getCurrentDuration());
+        lastDuration.set(
+                startNanoTime.get() == null ? Duration.ZERO : Duration.ofMillis(clock.millis() - startNanoTime.get())
+        );
         startNanoTime.set(null);
         EventHandler.super.onTerminate();
     }
 
-    private String getCurrentDuration() {
-        long endTime = clock.millis();
-        Long startTime = startNanoTime.get();
-        return Optional.ofNullable(startTime).map(st -> {
-            Duration d = Duration.ofMillis(endTime - st);
-            return String.format("%02ds %02dms", d.toSecondsPart(), d.toMillisPart());
-        }).orElse("...");
+    private static String getCurrentDuration(Duration lastDuration) {
+        return String.format("%02ds %02dms", lastDuration.toSecondsPart(), lastDuration.toMillisPart());
     }
 
     @Override
@@ -69,8 +67,12 @@ public class ScrapingDurationCounter implements CounterProvider, EventHandler {
         return Mono.just(Counter.create(
                 "Scraping Duration",
                 HeroIcons.CLOUD_ARROWUP_ICON,
-                lastDuration.get(),
+                getCurrentDuration(lastDuration.get()),
                 lastInstant.get()));
+    }
+
+    public Duration getLastDuration() {
+        return lastDuration.get();
     }
 
     @Override
