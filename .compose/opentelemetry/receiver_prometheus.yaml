@@ -12,3 +12,5 @@ receivers:
             password: "uzpUAANKgZXxbdk19AjfWmknKfGbP2wKzAAMCpHm"
           static_configs:
             - targets: [baywatch:8081]
+              labels:
+                platform: 'devel'
