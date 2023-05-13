@@ -24,8 +24,11 @@ server:
 
 management:
   endpoints.web.exposure.include: prometheus,health
-  metrics.distribution.percentiles-histogram:
-    http.server.requests: true
+  metrics:
+    distribution.percentiles-histogram:
+      http.server.requests: true
+    tags:
+      application:
 
 logging:
   # Avoid infinite stacktrace due to reactor
