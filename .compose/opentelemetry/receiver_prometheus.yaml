@@ -12,3 +12,5 @@ receivers:
             password: "***REMOVED***"
           static_configs:
             - targets: [baywatch:8081]
+              labels:
+                platform: 'devel'
