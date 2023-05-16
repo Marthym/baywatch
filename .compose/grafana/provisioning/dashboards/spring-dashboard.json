@@ -1,4 +1,59 @@
 {
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__elements": [],
+  "__requires": [
+    {
+      "type": "panel",
+      "id": "bargauge",
+      "name": "Bar gauge",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "gauge",
+      "name": "Gauge",
+      "version": ""
+    },
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "8.5.22"
+    },
+    {
+      "type": "panel",
+      "id": "graph",
+      "name": "Graph (old)",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    }
+  ],
   "annotations": {
     "list": [
       {
@@ -26,7 +81,8 @@
   "fiscalYearStartMonth": 0,
   "gnetId": 6756,
   "graphTooltip": 0,
-  "iteration": 1683998105496,
+  "id": null,
+  "iteration": 1684267517280,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -45,7 +101,10 @@
       "type": "row"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -108,7 +167,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "process_uptime_seconds{application=\"$application\", platform=\"$platform\"}",
           "format": "time_series",
@@ -123,7 +182,10 @@
       "type": "stat"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -190,7 +252,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "sum(jvm_memory_used_bytes{application=\"$application\", platform=\"$platform\", area=\"heap\"})*100/sum(jvm_memory_max_bytes{application=\"$application\",platform=\"$platform\", area=\"heap\"})",
           "format": "time_series",
@@ -204,7 +266,10 @@
       "type": "gauge"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -281,7 +346,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "sum(jvm_memory_used_bytes{application=\"$application\", platform=\"$platform\", area=\"nonheap\"})*100/sum(jvm_memory_max_bytes{application=\"$application\",platform=\"$platform\", area=\"nonheap\"})",
           "format": "time_series",
@@ -295,7 +360,10 @@
       "type": "gauge"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -371,7 +439,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "process_files_open_files{application=\"$application\", platform=\"$platform\"}",
           "format": "time_series",
@@ -382,7 +450,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "process_files_max_files{application=\"$application\", platform=\"$platform\"}",
           "format": "time_series",
@@ -395,7 +463,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -457,7 +528,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "process_start_time_seconds{application=\"$application\", platform=\"$platform\"}*1000",
           "format": "time_series",
@@ -472,7 +543,10 @@
       "type": "stat"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -551,6 +625,10 @@
       "pluginVersion": "8.5.22",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "system_cpu_usage{platform=\"$platform\", application=\"$application\"}",
           "format": "time_series",
           "intervalFactor": 1,
@@ -558,6 +636,10 @@
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "process_cpu_usage{platform=\"$platform\", application=\"$application\"}",
           "format": "time_series",
           "intervalFactor": 1,
@@ -569,7 +651,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -648,6 +733,10 @@
       "pluginVersion": "8.5.22",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "system_load_average_1m{platform=\"$platform\", application=\"$application\"}",
           "format": "time_series",
           "intervalFactor": 1,
@@ -655,6 +744,10 @@
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "system_cpu_count{platform=\"$platform\", application=\"$application\"}",
           "format": "time_series",
           "intervalFactor": 1,
@@ -680,7 +773,10 @@
       "type": "row"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -762,7 +858,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "sum(jvm_memory_used_bytes{platform=\"$platform\", application=\"$application\", area=\"heap\"})",
@@ -775,7 +871,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "max(jvm_memory_committed_bytes{platform=\"$platform\", application=\"$application\", area=\"heap\"})",
@@ -788,7 +884,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "max(jvm_memory_max_bytes{platform=\"$platform\", application=\"$application\", area=\"heap\"})",
@@ -803,7 +899,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -885,7 +984,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "sum(jvm_memory_used_bytes{platform=\"$platform\", application=\"$application\", area=\"nonheap\"})",
@@ -898,7 +997,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "max(jvm_memory_committed_bytes{platform=\"$platform\", application=\"$application\", area=\"nonheap\"})",
@@ -911,7 +1010,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "max(jvm_memory_max_bytes{platform=\"$platform\", application=\"$application\", area=\"nonheap\"})",
@@ -926,7 +1025,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -965,8 +1067,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1009,7 +1110,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "jvm_memory_used_bytes{platform=\"$platform\", application=\"$application\", id=\"G1 Eden Space\"}",
@@ -1022,7 +1123,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "jvm_memory_committed_bytes{platform=\"$platform\", application=\"$application\", id=\"G1 Eden Space\"}",
@@ -1035,10 +1136,10 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "jvm_memory_max_bytes{platform=\"$platform\", application=\"$application\", id=\"G1 Eden Space\"}",
+          "expr": "max(jvm_memory_max_bytes{platform=\"$platform\", application=\"$application\", area=\"heap\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Max",
@@ -1050,7 +1151,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1089,8 +1193,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1132,7 +1235,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "jvm_memory_used_bytes{platform=\"$platform\", application=\"$application\", id=\"G1 Old Gen\"}",
@@ -1145,7 +1248,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "jvm_memory_committed_bytes{platform=\"$platform\", application=\"$application\", id=\"G1 Old Gen\"}",
@@ -1158,7 +1261,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "jvm_memory_max_bytes{platform=\"$platform\", application=\"$application\", id=\"G1 Old Gen\"}",
@@ -1173,7 +1276,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1212,8 +1318,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1255,7 +1360,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "jvm_memory_used_bytes{platform=\"$platform\", application=\"$application\", id=\"G1 Survivor Space\"}",
@@ -1268,7 +1373,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "jvm_memory_committed_bytes{platform=\"$platform\", application=\"$application\", id=\"G1 Survivor Space\"}",
@@ -1281,7 +1386,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "jvm_memory_max_bytes{platform=\"$platform\", application=\"$application\", id=\"G1 Survivor Space\"}",
@@ -1296,7 +1401,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1335,8 +1443,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1379,7 +1486,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_memory_used_bytes{platform=\"$platform\", application=\"$application\", id=\"CodeHeap 'non-nmethods'\"}",
           "format": "time_series",
@@ -1390,7 +1497,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_memory_committed_bytes{platform=\"$platform\", application=\"$application\", id=\"CodeHeap 'non-nmethods'\"}",
           "format": "time_series",
@@ -1401,7 +1508,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_memory_max_bytes{platform=\"$platform\", application=\"$application\", id=\"CodeHeap 'non-nmethods'\"}",
           "format": "time_series",
@@ -1414,7 +1521,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1453,8 +1563,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1496,7 +1605,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_memory_used_bytes{platform=\"$platform\", application=\"$application\", id=\"CodeHeap 'non-profiled nmethods'\"}",
           "format": "time_series",
@@ -1507,7 +1616,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_memory_committed_bytes{platform=\"$platform\", application=\"$application\", id=\"CodeHeap 'non-profiled nmethods'\"}",
           "format": "time_series",
@@ -1518,7 +1627,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_memory_max_bytes{platform=\"$platform\", application=\"$application\", id=\"CodeHeap 'non-profiled nmethods'\"}",
           "format": "time_series",
@@ -1531,7 +1640,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1570,8 +1682,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1613,7 +1724,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_memory_used_bytes{platform=\"$platform\", application=\"$application\", id=\"CodeHeap 'profiled nmethods'\"}",
           "format": "time_series",
@@ -1624,7 +1735,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_memory_committed_bytes{platform=\"$platform\", application=\"$application\", id=\"CodeHeap 'profiled nmethods'\"}",
           "format": "time_series",
@@ -1635,7 +1746,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_memory_max_bytes{platform=\"$platform\", application=\"$application\", id=\"CodeHeap 'profiled nmethods'\"}",
           "format": "time_series",
@@ -1648,7 +1759,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1687,8 +1801,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1730,7 +1843,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_memory_used_bytes{platform=\"$platform\", application=\"$application\", id=\"Compressed Class Space\"}",
           "format": "time_series",
@@ -1741,7 +1854,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_memory_committed_bytes{platform=\"$platform\", application=\"$application\", id=\"Compressed Class Space\"}",
           "format": "time_series",
@@ -1752,7 +1865,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_memory_max_bytes{platform=\"$platform\", application=\"$application\", id=\"Compressed Class Space\"}",
           "format": "time_series",
@@ -1765,7 +1878,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1804,8 +1920,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1847,7 +1962,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_memory_used_bytes{platform=\"$platform\", application=\"$application\", id=\"Metaspace\"}",
           "format": "time_series",
@@ -1858,7 +1973,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_memory_committed_bytes{platform=\"$platform\", application=\"$application\", id=\"Metaspace\"}",
           "format": "time_series",
@@ -1869,7 +1984,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_memory_max_bytes{platform=\"$platform\", application=\"$application\", id=\"Metaspace\"}",
           "format": "time_series",
@@ -1882,7 +1997,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1922,8 +2040,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -1964,7 +2081,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_classes_loaded_classes{platform=\"$platform\", application=\"$application\"}",
           "format": "time_series",
@@ -1977,7 +2094,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2016,8 +2136,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2053,7 +2172,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "irate(jvm_classes_unloaded_classes_total{platform=\"$platform\", application=\"$application\"}[5m])",
           "format": "time_series",
@@ -2066,7 +2185,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2105,8 +2227,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2147,7 +2268,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_threads_daemon_threads{platform=\"$platform\", application=\"$application\"}",
           "format": "time_series",
@@ -2158,7 +2279,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_threads_live_threads{platform=\"$platform\", application=\"$application\"}",
           "format": "time_series",
@@ -2169,7 +2290,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "expr": "jvm_threads_peak_threads{platform=\"$platform\", application=\"$application\"}",
           "format": "time_series",
@@ -2182,7 +2303,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2221,8 +2345,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2256,6 +2379,10 @@
       "pluginVersion": "8.5.22",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "jvm_buffer_memory_used_bytes{platform=\"$platform\", application=\"$application\", id=\"mapped\"}",
           "format": "time_series",
           "intervalFactor": 1,
@@ -2263,6 +2390,10 @@
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "jvm_buffer_total_capacity_bytes{platform=\"$platform\", application=\"$application\", id=\"mapped\"}",
           "format": "time_series",
           "intervalFactor": 1,
@@ -2278,7 +2409,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -2316,6 +2450,10 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "irate(jvm_gc_memory_allocated_bytes_total{platform=\"$platform\", application=\"$application\"}[5m])",
           "format": "time_series",
           "intervalFactor": 1,
@@ -2323,6 +2461,10 @@
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "irate(jvm_gc_memory_promoted_bytes_total{platform=\"$platform\", application=\"$application\"}[5m])",
           "format": "time_series",
           "intervalFactor": 1,
@@ -2365,7 +2507,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -2403,6 +2548,10 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "jvm_buffer_memory_used_bytes{platform=\"$platform\", application=\"$application\", id=\"direct\"}",
           "format": "time_series",
           "intervalFactor": 1,
@@ -2410,6 +2559,10 @@
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "jvm_buffer_total_capacity_bytes{platform=\"$platform\", application=\"$application\", id=\"direct\"}",
           "format": "time_series",
           "intervalFactor": 1,
@@ -2462,7 +2615,10 @@
       "type": "row"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2501,8 +2657,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2541,6 +2696,10 @@
       "pluginVersion": "8.5.22",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "irate(jvm_gc_pause_seconds_count{platform=\"$platform\", application=\"$application\"}[5m])",
           "format": "time_series",
           "intervalFactor": 1,
@@ -2552,7 +2711,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2591,8 +2753,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2631,6 +2792,10 @@
       "pluginVersion": "8.5.22",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "irate(jvm_gc_pause_seconds_sum{platform=\"$platform\", application=\"$application\"}[5m])",
           "format": "time_series",
           "intervalFactor": 1,
@@ -2656,7 +2821,10 @@
       "type": "row"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2677,8 +2845,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2716,6 +2883,10 @@
       "pluginVersion": "8.5.22",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "hikaricp_connections{platform=\"$platform\", application=\"$application\", pool=\"$hikaricp\"}",
           "format": "time_series",
           "intervalFactor": 1,
@@ -2727,7 +2898,10 @@
       "type": "stat"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2766,8 +2940,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2806,6 +2979,10 @@
       "pluginVersion": "8.5.22",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "hikaricp_connections_active{platform=\"$platform\", application=\"$application\", pool=\"$hikaricp\"}",
           "format": "time_series",
           "intervalFactor": 1,
@@ -2813,6 +2990,10 @@
           "refId": "B"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "hikaricp_connections_idle{platform=\"$platform\", application=\"$application\", pool=\"$hikaricp\"}",
           "format": "time_series",
           "intervalFactor": 1,
@@ -2820,6 +3001,10 @@
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "hikaricp_connections_pending{platform=\"$platform\", application=\"$application\", pool=\"$hikaricp\"}",
           "format": "time_series",
           "intervalFactor": 1,
@@ -2831,7 +3016,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2852,8 +3040,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2891,6 +3078,10 @@
       "pluginVersion": "8.5.22",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "hikaricp_connections_timeout_total{platform=\"$platform\", application=\"$application\", pool=\"$hikaricp\"}",
           "format": "time_series",
           "intervalFactor": 1,
@@ -2902,7 +3093,10 @@
       "type": "stat"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2941,8 +3135,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2976,6 +3169,10 @@
       "pluginVersion": "8.5.22",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "hikaricp_connections_creation_seconds_sum{platform=\"$platform\", application=\"$application\", pool=\"$hikaricp\"} / hikaricp_connections_creation_seconds_count{platform=\"$platform\", application=\"$application\", pool=\"$hikaricp\"}",
           "format": "time_series",
           "intervalFactor": 1,
@@ -2987,7 +3184,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3026,8 +3226,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -3061,6 +3260,10 @@
       "pluginVersion": "8.5.22",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "hikaricp_connections_usage_seconds_sum{platform=\"$platform\", application=\"$application\", pool=\"$hikaricp\"} / hikaricp_connections_usage_seconds_count{platform=\"$platform\", application=\"$application\", pool=\"$hikaricp\"}",
           "format": "time_series",
           "intervalFactor": 1,
@@ -3072,7 +3275,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3111,8 +3317,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -3146,6 +3351,10 @@
       "pluginVersion": "8.5.22",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "hikaricp_connections_acquire_seconds_sum{platform=\"$platform\", application=\"$application\", pool=\"$hikaricp\"} / hikaricp_connections_acquire_seconds_count{platform=\"$platform\", application=\"$application\", pool=\"$hikaricp\"}",
           "format": "time_series",
           "intervalFactor": 1,
@@ -3171,7 +3380,10 @@
       "type": "row"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3210,8 +3422,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -3245,6 +3456,10 @@
       "pluginVersion": "8.5.22",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "irate(http_server_requests_seconds_count{platform=\"$platform\", application=\"$application\", uri!~\".*actuator.*\"}[5m])",
           "format": "time_series",
           "intervalFactor": 1,
@@ -3258,7 +3473,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -3298,8 +3513,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -3364,7 +3578,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "irate(graphql_request_seconds_count{platform=\"$platform\", application=\"$application\"}[5m])",
@@ -3381,7 +3595,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -3421,8 +3635,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -3458,7 +3671,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "rate(graphql_datafetcher_seconds_count{platform=\"$platform\", application=\"$application\", graphql_outcome=\"SUCCESS\"}[$__rate_interval])",
@@ -3475,7 +3688,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -3515,8 +3728,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -3552,7 +3764,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "rate(graphql_datafetcher_seconds_count{platform=\"$platform\", application=\"$application\", graphql_outcome=\"ERROR\"}[$__rate_interval])",
@@ -3569,7 +3781,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -3581,8 +3793,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -3621,7 +3832,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "rate(graphql_datafetcher_seconds_sum{platform=\"$platform\", application=\"$application\", graphql_outcome=\"SUCCESS\"}[$__rate_interval]) / rate(graphql_datafetcher_seconds_count{platform=\"$platform\", application=\"$application\", graphql_outcome=\"SUCCESS\"}[$__rate_interval])",
@@ -3653,7 +3864,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
@@ -3693,8 +3904,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -3776,7 +3986,7 @@
           "alias": "",
           "datasource": {
             "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -3800,14 +4010,10 @@
   "templating": {
     "list": [
       {
-        "current": {
-          "selected": false,
-          "text": "Baywatch",
-          "value": "Baywatch"
-        },
+        "current": {},
         "datasource": {
           "type": "prometheus",
-          "uid": "PBFA97CFB590B2093"
+          "uid": "${DS_PROMETHEUS}"
         },
         "definition": "label_values(jvm_classes_loaded_classes{platform=\"$platform\"}, application)",
         "hide": 0,
@@ -3830,14 +4036,10 @@
         "useTags": false
       },
       {
-        "current": {
-          "selected": false,
-          "text": "HikariPool-1",
-          "value": "HikariPool-1"
-        },
+        "current": {},
         "datasource": {
           "type": "prometheus",
-          "uid": "PBFA97CFB590B2093"
+          "uid": "${DS_PROMETHEUS}"
         },
         "definition": "label_values(hikaricp_connections{platform=\"$platform\", application=\"$application\"}, pool)",
         "hide": 0,
@@ -3860,14 +4062,10 @@
         "useTags": false
       },
       {
-        "current": {
-          "selected": false,
-          "text": "devel",
-          "value": "devel"
-        },
+        "current": {},
         "datasource": {
           "type": "prometheus",
-          "uid": "PBFA97CFB590B2093"
+          "uid": "${DS_PROMETHEUS}"
         },
         "definition": "label_values(jvm_classes_loaded_classes, platform)",
         "hide": 0,

@@ -8,5 +8,5 @@ service:
       exporters: [logging, loki]
     metrics:
       receivers: [prometheus]
-#      processors: [batch]
+      processors: [batch]
       exporters: [prometheus]
