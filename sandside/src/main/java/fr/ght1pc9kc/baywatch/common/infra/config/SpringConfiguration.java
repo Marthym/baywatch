@@ -29,6 +29,6 @@ public class SpringConfiguration {
     @Bean
     public MeterRegistryCustomizer<MeterRegistry> metricsCommonTags(@Value("${spring.application.name}") String application) {
         return registry -> registry.config()
-                .commonTags("application", application);
+                .commonTags("application", application.toLowerCase());
     }
 }
