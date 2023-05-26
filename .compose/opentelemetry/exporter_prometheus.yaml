@@ -1,0 +1,7 @@
+---
+
+exporters:
+  prometheus:
+    endpoint: 'opentelemetry:9091'
+    send_timestamps: true
+    enable_open_metrics: true
