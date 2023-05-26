@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 
 @Qualifier("scraper")
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.PARAMETER, ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.PARAMETER, ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
 public @interface ScraperQualifier {
 }

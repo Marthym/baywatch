@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpServer;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
+import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
 import fr.ght1pc9kc.baywatch.scraper.domain.FeedScraperServiceImpl;
 import fr.ght1pc9kc.baywatch.scraper.domain.RssAtomParserImpl;
 import fr.ght1pc9kc.baywatch.scraper.domain.ScrapEnrichmentServiceImpl;
@@ -15,6 +16,7 @@ import fr.ght1pc9kc.baywatch.scraper.domain.ports.NewsMaintenancePort;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperApplicationProperties;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperConfiguration;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.WebClientConfiguration;
+import fr.ght1pc9kc.baywatch.scraper.infra.controllers.ScraperTaskScheduler;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
@@ -71,7 +73,7 @@ import static org.mockito.Mockito.when;
 class FeedScraperIntegrationTest {
     private static HttpServer server;
 
-    private FeedScraperServiceImpl tested;
+    private ScraperTaskScheduler tested;
     private final NewsMaintenancePort mockMaintenancePort = mock(NewsMaintenancePort.class);
 
     @BeforeAll
@@ -147,8 +149,7 @@ class FeedScraperIntegrationTest {
         WebClient webClientMock = webClientConfiguration.getScraperWebClient(nettyHttpClient);
 
         when(mockMaintenancePort.listAllNewsId()).thenReturn(Flux.empty());
-        tested = new FeedScraperServiceImpl(
-                scraperProperties,
+        FeedScraperService scraperService = new FeedScraperServiceImpl(
                 scraperConfiguration.getScraperScheduler(),
                 mockMaintenancePort,
                 webClientMock,
@@ -163,6 +164,8 @@ class FeedScraperIntegrationTest {
                         mockFacadeFor(UserSamples.YODA), mock(SystemMaintenanceService.class), mock(NotifyService.class),
                         scraperConfiguration.getScraperScheduler())
         );
+
+        tested = new ScraperTaskScheduler(scraperService, scraperProperties);
     }
 
     @ParameterizedTest

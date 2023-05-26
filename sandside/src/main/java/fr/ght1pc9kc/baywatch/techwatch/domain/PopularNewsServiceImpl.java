@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.NEWS_ID;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.SHARED;
-import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.STATE;
 
 @RequiredArgsConstructor
 public class PopularNewsServiceImpl implements PopularNewsService {

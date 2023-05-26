@@ -7,22 +7,20 @@ import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
+import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapResult;
+import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingException;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
-import fr.ght1pc9kc.baywatch.scraper.domain.model.ScraperProperties;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.NewsMaintenancePort;
-import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import lombok.AccessLevel;
 import lombok.Setter;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.xml.XmlEventDecoder;
-import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -32,32 +30,21 @@ import javax.xml.stream.XMLEventFactory;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Period;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
-public final class FeedScraperServiceImpl implements Runnable, FeedScraperService {
-
-    private static final Set<String> SUPPORTED_SCHEMES = Set.of("http", "https");
+public final class FeedScraperServiceImpl implements FeedScraperService {
     public static final String ERROR_CLASS_MESSAGE = "{}: {}";
     public static final String ERROR_STACKTRACE_MESSAGE = "STACKTRACE";
+    private static final Set<String> SUPPORTED_SCHEMES = Set.of("http", "https");
 
-    private final ScheduledExecutorService scheduleExecutor = Executors.newSingleThreadScheduledExecutor(
-            new CustomizableThreadFactory("scrapSched-"));
-    private final Semaphore lock = new Semaphore(1);
-
-    private final ScraperProperties properties;
     private final Scheduler scraperScheduler;
     private final NewsMaintenancePort newsMaintenance;
     private final WebClient http;
@@ -70,15 +57,13 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
     @Setter(value = AccessLevel.PACKAGE, onMethod = @__({@VisibleForTesting}))
     private Clock clock = Clock.systemUTC();
 
-    public FeedScraperServiceImpl(ScraperProperties properties,
-                                  Scheduler scraperScheduler,
+    public FeedScraperServiceImpl(Scheduler scraperScheduler,
                                   NewsMaintenancePort newsMaintenance,
                                   WebClient webClient, RssAtomParser feedParser,
                                   Collection<EventHandler> scrapingHandlers,
                                   Map<String, FeedScraperPlugin> plugins,
                                   ScrapEnrichmentService scrapEnrichmentService
     ) {
-        this.properties = properties;
         this.scraperScheduler = scraperScheduler;
         this.newsMaintenance = newsMaintenance;
         this.feedParser = feedParser;
@@ -92,44 +77,17 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
         this.xmlEventDecoder.setMaxInMemorySize(16 * 1024 * 1024);
     }
 
-    public void startScrapping() {
-        Instant now = clock.instant();
-        Instant nextScrapping = now.plus(properties.frequency());
-        Duration toNextScrapping = Duration.between(now, nextScrapping);
-
-        scheduleExecutor.scheduleAtFixedRate(this,
-                toNextScrapping.getSeconds(), properties.frequency().getSeconds(), TimeUnit.SECONDS);
-        log.debug("Next scraping at {}", LocalDateTime.now(clock).plus(toNextScrapping));
-        scheduleExecutor.schedule(this, 0, TimeUnit.MILLISECONDS);
-    }
-
-    @SneakyThrows
-    public void shutdownScrapping() {
-        if (!lock.tryAcquire(60, TimeUnit.SECONDS)) {
-            log.warn("Unable to stop threads gracefully ! Threads was killed !");
-        }
-        scraperScheduler.dispose();
-        scheduleExecutor.shutdownNow();
-        lock.release();
-        log.info("All scraper tasks finished and stopped !");
-    }
-
     @Override
-    public void run() {
+    public Mono<ScrapResult> scrap(Period maxRetention) {
         try {
-            if (!lock.tryAcquire()) {
-                log.warn("Scraping in progress !");
-                return;
-            }
-            log.info("Start scraping ...");
             Mono<Set<String>> alreadyHave = newsMaintenance.listAllNewsId()
                     .collect(Collectors.toUnmodifiableSet())
                     .cache();
 
-            Flux.concat(scrapingHandlers.stream().map(EventHandler::before).toList())
+            return Flux.concat(scrapingHandlers.stream().map(EventHandler::before).toList())
                     .thenMany(newsMaintenance.feedList())
                     .parallel(4).runOn(scraperScheduler)
-                    .concatMap(this::wgetFeedNews)
+                    .concatMap(feed -> wgetFeedNews(feed, maxRetention))
                     .sequential()
 
                     .filterWhen(n -> alreadyHave.map(l -> !l.contains(n.getId())))
@@ -142,27 +100,22 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
                     .flatMap(newsMaintenance::newsLoad)
 
                     .reduce(Integer::sum)
-                    .flatMap(count -> Flux.concat(scrapingHandlers.stream().map(h -> h.after(count)).toList()).then())
-                    .doOnError(e -> {
-                        log.error(ERROR_CLASS_MESSAGE, e.getClass(), e.getLocalizedMessage());
-                        log.debug(ERROR_STACKTRACE_MESSAGE, e);
-                    })
-                    .doFinally(signal -> {
-                        lock.release();
-                        scrapingHandlers.forEach(EventHandler::onTerminate);
-                        log.info("Scraping terminated successfully !");
-                    })
-                    .contextWrite(AuthenticationFacade.withSystemAuthentication())
-                    .subscribe();
+                    .flatMap(count -> Flux.concat(scrapingHandlers.stream().map(h -> h.after(count)).toList())
+                            .then(Mono.just(count)))
+                    .map(count -> new ScrapResult(count, 0))
+                    .onErrorMap(t -> new ScrapingException("Fatal error when scraping !", t))
+                    .doFinally(signal -> scrapingHandlers.forEach(EventHandler::onTerminate));
         } catch (Exception e) {
-            lock.release();
-            log.error("Scraping terminated on error !");
-            log.error(ERROR_CLASS_MESSAGE, e.getClass(), e.getLocalizedMessage());
-            log.debug(ERROR_STACKTRACE_MESSAGE, e);
+            return Mono.error(() -> new ScrapingException("Fatal error when scraping !", e));
         }
     }
 
-    private Flux<News> wgetFeedNews(ScrapedFeed feed) {
+    @Override
+    public void dispose() {
+        scraperScheduler.dispose();
+    }
+
+    private Flux<News> wgetFeedNews(ScrapedFeed feed, Period conservation) {
         String feedHost = feed.link().getHost();
         FeedScraperPlugin hostPlugin = plugins.get(feedHost);
         URI feedUrl = (hostPlugin != null) ? hostPlugin.uriModifier(feed.link()) : feed.link();
@@ -175,7 +128,7 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
         log.debug("Start scraping feed {} ...", feedHost);
 
         final Instant maxAge = LocalDate.now(clock)
-                .minus(properties.conservation())
+                .minus(conservation)
                 .atTime(LocalTime.MAX)
                 .toInstant(DateUtils.DEFAULT_ZONE_OFFSET);
 
@@ -217,11 +170,6 @@ public final class FeedScraperServiceImpl implements Runnable, FeedScraperServic
                     log.debug(ERROR_STACKTRACE_MESSAGE, e);
                     return Flux.empty();
                 });
-    }
-
-    @VisibleForTesting
-    public boolean isScraping() {
-        return lock.availablePermits() == 0;
     }
 
     @Override

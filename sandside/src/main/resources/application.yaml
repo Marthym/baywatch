@@ -1,5 +1,7 @@
 ---
 spring:
+  application.name: Baywatch
+
   datasource:
     url: jdbc:sqlite:file:${BAYWATCH_HOME:.}/.baywatch/data.db?cache=shared&journal_mode=WAL&synchronous=NORMAL&read_uncommitted=true
     driver-class-name: org.sqlite.JDBC
@@ -19,6 +21,14 @@ server:
   port: ${BAYWATCH_SERVER_PORT:8081}
   error:
     include-message: ALWAYS
+
+management:
+  endpoints.web.exposure.include: prometheus,health
+  metrics:
+    distribution.percentiles-histogram:
+      http.server.requests: true
+    tags:
+      application:
 
 logging:
   # Avoid infinite stacktrace due to reactor

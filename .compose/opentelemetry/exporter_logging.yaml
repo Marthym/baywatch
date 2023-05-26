@@ -1,0 +1,5 @@
+---
+
+exporters:
+  logging:
+    verbosity: detailed

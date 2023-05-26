@@ -3,14 +3,14 @@ package fr.ght1pc9kc.baywatch.scraper.domain;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
+import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapResult;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
-import fr.ght1pc9kc.baywatch.scraper.domain.model.ScraperProperties;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.NewsMaintenancePort;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
-import org.awaitility.Awaitility;
+import org.assertj.core.api.Assertions;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +26,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import reactor.test.StepVerifier;
 
 import javax.xml.stream.events.XMLEvent;
 import java.net.URI;
@@ -51,17 +52,7 @@ import static org.mockito.Mockito.when;
 
 class FeedScraperServiceTest {
 
-    static final ScraperProperties SCRAPER_PROPERTIES = new ScraperProperties() {
-        @Override
-        public Duration frequency() {
-            return Duration.ofDays(1);
-        }
-
-        @Override
-        public Period conservation() {
-            return Period.ofDays(30);
-        }
-    };
+    static final Period SCRAPER_RETENTION_PERIOD = Period.ofDays(30);
 
     private final ScrapEnrichmentService mockScrapEnrichmentService = mock(ScrapEnrichmentService.class);
 
@@ -72,11 +63,9 @@ class FeedScraperServiceTest {
 
     @Test
     void should_start_multi_scrapper() {
-        tested.startScrapping();
-        Awaitility.await("for scrapping begin").timeout(Duration.ofSeconds(5))
-                .pollDelay(Duration.ZERO)
-                .until(() -> tested.isScraping());
-        tested.shutdownScrapping();
+        StepVerifier.create(tested.scrap(SCRAPER_RETENTION_PERIOD))
+                .expectNext(new ScrapResult(1, 0))
+                .verifyComplete();
 
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/journal_du_hacker.xml")));
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/spring-blog.xml")));
@@ -100,11 +89,9 @@ class FeedScraperServiceTest {
                 new ScrapedFeed(springSha3, springUri)
         ));
 
-        tested.startScrapping();
-        Awaitility.await("for scrapping begin").timeout(Duration.ofSeconds(5))
-                .pollDelay(Duration.ZERO)
-                .until(() -> tested.isScraping());
-        tested.shutdownScrapping();
+        StepVerifier.create(tested.scrap(SCRAPER_RETENTION_PERIOD))
+                .expectNext(new ScrapResult(1, 0))
+                .verifyComplete();
 
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/error/darth-vader.xml")));
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/spring-blog.xml")));
@@ -121,11 +108,11 @@ class FeedScraperServiceTest {
                 .then(Mono.just(1)));
         when(newsMaintenanceMock.listAllNewsId()).thenReturn(Flux.empty());
 
-        tested.startScrapping();
-        Awaitility.await("for scrapping begin").timeout(Duration.ofSeconds(5))
-                .pollDelay(Duration.ZERO)
-                .until(() -> tested.isScraping());
-        tested.shutdownScrapping();
+        StepVerifier.create(tested.scrap(SCRAPER_RETENTION_PERIOD))
+                .expectErrorSatisfies(t -> Assertions.assertThat(t)
+                        .hasRootCauseInstanceOf(RuntimeException.class)
+                        .hasRootCauseMessage("Persistence failure simulation"))
+                .verify();
 
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/journal_du_hacker.xml")));
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/spring-blog.xml")));
@@ -142,11 +129,10 @@ class FeedScraperServiceTest {
                         .build()).name("Reddit").build()
         ).delayElements(Duration.ofMillis(100)));  // Delay avoid Awaitility start polling after the and of scraping
 
-        tested.startScrapping();
-        Awaitility.await("for scraping begin").timeout(Duration.ofSeconds(5))
-                .pollDelay(Duration.ZERO)
-                .until(() -> tested.isScraping());
-        tested.shutdownScrapping();
+        StepVerifier.create(tested.scrap(SCRAPER_RETENTION_PERIOD))
+                .expectErrorSatisfies(t -> Assertions.assertThat(t)
+                        .hasRootCauseInstanceOf(ClassCastException.class))
+                .verify();
 
         verify(mockExchangeFunction, never()).exchange(any());
         verify(rssAtomParserMock, never()).readEntryEvents(any(), any());
@@ -208,7 +194,7 @@ class FeedScraperServiceTest {
         when(mockScrapEnrichmentService.applyNewsFilters(any(News.class)))
                 .thenAnswer(((Answer<Mono<News>>) answer -> Mono.just(answer.getArgument(0))));
 
-        tested = new FeedScraperServiceImpl(SCRAPER_PROPERTIES, Schedulers.immediate(), newsMaintenanceMock, mockWebClient, rssAtomParserMock,
+        tested = new FeedScraperServiceImpl(Schedulers.immediate(), newsMaintenanceMock, mockWebClient, rssAtomParserMock,
                 Collections.emptyList(), Map.of(), mockScrapEnrichmentService);
         tested.setClock(Clock.fixed(Instant.parse("2022-04-30T12:35:41Z"), ZoneOffset.UTC));
     }
