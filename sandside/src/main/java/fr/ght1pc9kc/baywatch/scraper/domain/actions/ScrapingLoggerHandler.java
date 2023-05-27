@@ -14,7 +14,7 @@ public class ScrapingLoggerHandler implements ScrapingEventHandler {
         return Mono.just(result).map(r -> {
             log.info("Scraping finished, {} news inserted, {} error(s).", result.inserted(), result.errors().size());
             result.errors().forEach(se -> {
-                log.warn("{} => {}: {}", se.link(), se.exception().getClass(), se.exception().getLocalizedMessage());
+                log.warn("{} => {}: {}", se.feed().link(), se.exception().getClass(), se.exception().getLocalizedMessage());
                 if (log.isDebugEnabled()) {
                     log.debug("STACKTRACE", se.exception());
                 }

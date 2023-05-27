@@ -1,6 +1,8 @@
 package fr.ght1pc9kc.baywatch.scraper.api.model;
 
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
+
 public record ScrapingError(
-        String link, Throwable exception
+        ScrapedFeed feed, Throwable exception
 ) {
 }
