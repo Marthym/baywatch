@@ -226,6 +226,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
+                    <implicit>class</implicit>
                     <generatedSourcesDirectory>target/generated-sources</generatedSourcesDirectory>
                     <annotationProcessorPaths>
                         <path>

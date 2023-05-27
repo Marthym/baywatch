@@ -6,17 +6,17 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.TeamsMembersRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.TeamsRecord;
 import fr.ght1pc9kc.baywatch.teams.api.model.Team;
 import fr.ght1pc9kc.baywatch.teams.api.model.TeamMember;
-import fr.ght1pc9kc.baywatch.teams.domain.model.PendingFor;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 
-@Mapper(componentModel = "spring", imports = {
-        DateUtils.class
-})
+@Mapper(componentModel = "spring",
+        imports = {DateUtils.class},
+        unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TeamsMapper {
     @Mapping(source = "teamId", target = "id")
     @Mapping(source = "teamCreatedAt", target = "createdAt")

@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.mock;
@@ -113,8 +114,13 @@ class FeedScraperServiceTest {
         ));
 
         StepVerifier.create(tested.scrap(SCRAPER_RETENTION_PERIOD))
-                .expectNext(new ScrapResult(1, List.of()))
-                .verifyComplete();
+                .assertNext(actual -> assertAll(
+                        () -> Assertions.assertThat(actual.inserted()).isEqualTo(1),
+                        () -> Assertions.assertThat(actual.errors()).isNotEmpty(),
+                        () -> Assertions.assertThat(actual.errors())
+                                .element(0).extracting("exception")
+                                .isInstanceOf(IllegalArgumentException.class)
+                )).verifyComplete();
 
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/error/darth-vader.xml")));
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/spring-blog.xml")));

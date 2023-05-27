@@ -20,6 +20,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
 
 import java.net.URI;
 import java.time.Instant;
@@ -41,9 +42,9 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.Users.USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.UsersRoles.USERS_ROLES;
 import static java.util.function.Predicate.not;
 
-@Mapper(componentModel = "spring", imports = {
-        Hasher.class, StringUtils.class, Optional.class, URI.class
-})
+@Mapper(componentModel = "spring",
+        imports = {Hasher.class, StringUtils.class, Optional.class, URI.class},
+        unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface BaywatchMapper {
 
     @Mapping(source = "id", target = "userId")
