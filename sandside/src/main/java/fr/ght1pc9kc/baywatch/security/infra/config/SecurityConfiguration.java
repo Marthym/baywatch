@@ -35,34 +35,33 @@ public class SecurityConfiguration {
             ReactiveAuthenticationManager authenticationManager,
             @Value("${baywatch.base-route}") String baseRoute) {
         return http
-                .csrf().disable()
-                .httpBasic().disable()
-                .formLogin().disable()
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+                .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
 
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
-                .authorizeExchange()
-                .pathMatchers(HttpMethod.OPTIONS).permitAll()
-                .pathMatchers(HttpMethod.GET, "/actuator/**").hasRole(Role.ACTUATOR.name())
-                .pathMatchers(HttpMethod.GET, baseRoute + "/stats").permitAll()
-                .pathMatchers(HttpMethod.GET, baseRoute + "/news").permitAll()
-                .pathMatchers(HttpMethod.GET, baseRoute + "/feeds").permitAll()
-                .pathMatchers(HttpMethod.POST, baseRoute + "/auth/login").permitAll()
-                .pathMatchers(HttpMethod.PUT, baseRoute + "/auth/refresh").permitAll()
-                .pathMatchers(HttpMethod.DELETE, baseRoute + "/auth/logout").authenticated()
-                .pathMatchers("/*").permitAll()
-                .pathMatchers("/assets/*").permitAll()
-                .pathMatchers("/graphiql/*").permitAll()
-                .pathMatchers("/api/g").permitAll()
-                .pathMatchers(baseRoute + "/**").hasAnyRole(
-                        Role.USER.name(), Role.MANAGER.name(), Role.ADMIN.name())
-                .anyExchange().denyAll()
-
-                .and()
+                .authorizeExchange(ae -> {
+                    ae.pathMatchers(HttpMethod.OPTIONS).permitAll();
+                    ae.pathMatchers(HttpMethod.GET, "/actuator/**").hasRole(Role.ACTUATOR.name());
+                    ae.pathMatchers(HttpMethod.GET, baseRoute + "/stats").permitAll();
+                    ae.pathMatchers(HttpMethod.GET, baseRoute + "/news").permitAll();
+                    ae.pathMatchers(HttpMethod.GET, baseRoute + "/feeds").permitAll();
+                    ae.pathMatchers(HttpMethod.POST, baseRoute + "/auth/login").permitAll();
+                    ae.pathMatchers(HttpMethod.PUT, baseRoute + "/auth/refresh").permitAll();
+                    ae.pathMatchers(HttpMethod.DELETE, baseRoute + "/auth/logout").authenticated();
+                    ae.pathMatchers("/*").permitAll();
+                    ae.pathMatchers("/assets/*").permitAll();
+                    ae.pathMatchers("/graphiql/*").permitAll();
+                    ae.pathMatchers("/api/g").permitAll();
+                    ae.pathMatchers(baseRoute + "/**").hasAnyRole(
+                            Role.USER.name(), Role.MANAGER.name(), Role.ADMIN.name());
+                    ae.anyExchange().denyAll();
+                })
 
                 .addFilterAt(new AuthenticationWebFilter(authenticationManager), SecurityWebFiltersOrder.HTTP_BASIC)
                 .addFilterAt(new JwtTokenAuthenticationFilter(jwtTokenProvider, cookieManager, userService), SecurityWebFiltersOrder.AUTHENTICATION)
-                .exceptionHandling().authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED))
-                .and()
+
+                .exceptionHandling(eh -> eh.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)))
 
                 .build();
     }
