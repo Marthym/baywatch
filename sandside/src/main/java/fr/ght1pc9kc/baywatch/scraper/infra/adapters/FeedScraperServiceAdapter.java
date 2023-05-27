@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.scraper.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.common.api.EventHandler;
+import fr.ght1pc9kc.baywatch.common.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperPlugin;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
@@ -28,7 +28,7 @@ public class FeedScraperServiceAdapter implements FeedScraperService {
     public FeedScraperServiceAdapter(NewsMaintenancePort newsMaintenancePort,
                                      @ScraperQualifier Scheduler scraperScheduler,
                                      RssAtomParser rssAtomParser,
-                                     Collection<EventHandler> scrappingHandlers,
+                                     Collection<ScrapingEventHandler> scrappingHandlers,
                                      Collection<FeedScraperPlugin> scrapperPlugins,
                                      @ScraperQualifier WebClient webClient,
                                      ScrapEnrichmentService scrapEnrichmentService

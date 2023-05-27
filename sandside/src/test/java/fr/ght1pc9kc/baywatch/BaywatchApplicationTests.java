@@ -20,7 +20,7 @@ import java.nio.file.Paths;
 
 @Tag("integration")
 @ActiveProfiles("test")
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class BaywatchApplicationTests {
 
     @Autowired
@@ -40,7 +40,5 @@ class BaywatchApplicationTests {
         ContextInitializer ci = new ContextInitializer(loggerContext);
         loggerContext.reset();
         ci.autoConfig();
-//        URL url = ci.findURLOfDefaultConfigurationFile(true);
-//        ci.configureByResource(url);
     }
 }

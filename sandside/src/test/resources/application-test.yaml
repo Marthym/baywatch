@@ -5,14 +5,11 @@ spring:
   main:
     banner-mode: off
 
-server:
-  port: 0
-
 baywatch:
-  scrapper:
-    start: false
+  scraper:
+    enable: false
   indexer:
-    enable: ${BAYWATCH_INDEXER_ENABLE:true}
+    enable: false
     directory: ${BAYWATCH_HOME:.}/target/feedidx
 
 logging:

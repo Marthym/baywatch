@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
-import fr.ght1pc9kc.baywatch.common.api.EventHandler;
+import fr.ght1pc9kc.baywatch.common.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperApplicationProperties;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
@@ -25,7 +25,7 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.SHARED;
 
 @Slf4j
 @RequiredArgsConstructor
-public class PurgeNewsHandler implements EventHandler {
+public class PurgeNewsHandler implements ScrapingEventHandler {
     private static final int DELETE_BUFFER_SIZE = 500;
     private final NewsPersistencePort newsPersistence;
     private final StatePersistencePort statePersistence;

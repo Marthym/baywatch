@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.scraper.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.common.api.EventHandler;
+import fr.ght1pc9kc.baywatch.common.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.scraper.domain.actions.NewsUpdateNotificationHandler;
 import lombok.RequiredArgsConstructor;
@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class NewsUpdateNotificationHandlerAdapter implements EventHandler {
+public class NewsUpdateNotificationHandlerAdapter implements ScrapingEventHandler {
     @Delegate
-    private final EventHandler delegate;
+    private final ScrapingEventHandler delegate;
 
     @Autowired
     public NewsUpdateNotificationHandlerAdapter(NotifyService notifyService) {

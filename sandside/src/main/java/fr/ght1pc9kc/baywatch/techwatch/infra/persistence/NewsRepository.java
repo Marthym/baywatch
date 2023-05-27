@@ -124,7 +124,7 @@ public class NewsRepository implements NewsPersistencePort {
                 }))
                 .subscribeOn(databaseScheduler)
                 .map(loader -> {
-                    log.info("Load {} News with {} error(s).", loader.processed(), loader.errors().size());
+                    log.debug("Load {} News with {} error(s).", loader.processed(), loader.errors().size());
                     return loader.processed();
                 });
     }

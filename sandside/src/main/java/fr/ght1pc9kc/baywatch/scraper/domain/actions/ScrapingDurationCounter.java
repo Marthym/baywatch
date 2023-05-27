@@ -3,8 +3,9 @@ package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterGroup;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
-import fr.ght1pc9kc.baywatch.common.api.EventHandler;
+import fr.ght1pc9kc.baywatch.common.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.common.api.model.HeroIcons;
+import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapResult;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +18,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
-public class ScrapingDurationCounter implements CounterProvider, EventHandler {
+public class ScrapingDurationCounter implements CounterProvider, ScrapingEventHandler {
     private final AtomicReference<Long> startNanoTime = new AtomicReference<>(null);
     private final AtomicReference<Duration> lastDuration = new AtomicReference<>(Duration.ZERO);
     private final AtomicReference<String> lastInstant = new AtomicReference<>("scraping in progress...");
@@ -29,18 +30,20 @@ public class ScrapingDurationCounter implements CounterProvider, EventHandler {
     @Override
     public Mono<Void> before() {
         startNanoTime.set(clock.millis());
-        return EventHandler.super.before();
+        return ScrapingEventHandler.super.before();
     }
 
     @Override
-    public Mono<Void> after(int persisted) {
-        if (log.isDebugEnabled()) {
-            String duration = getCurrentDuration(
-                    startNanoTime.get() == null ? Duration.ZERO : Duration.ofMillis(clock.millis() - startNanoTime.get())
-            );
-            log.debug("Scraping finished, load {} news in {}", persisted, duration);
-        }
-        return EventHandler.super.after(persisted);
+    public Mono<Void> after(ScrapResult result) {
+        return Mono.fromCallable(() -> {
+            if (log.isDebugEnabled()) {
+                String duration = getCurrentDuration(
+                        startNanoTime.get() == null ? Duration.ZERO : Duration.ofMillis(clock.millis() - startNanoTime.get())
+                );
+                log.debug("Scraping duration: {}", duration);
+            }
+            return result;
+        }).then();
     }
 
     @Override
@@ -50,7 +53,7 @@ public class ScrapingDurationCounter implements CounterProvider, EventHandler {
                 startNanoTime.get() == null ? Duration.ZERO : Duration.ofMillis(clock.millis() - startNanoTime.get())
         );
         startNanoTime.set(null);
-        EventHandler.super.onTerminate();
+        ScrapingEventHandler.super.onTerminate();
     }
 
     private static String getCurrentDuration(Duration lastDuration) {

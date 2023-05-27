@@ -3,7 +3,6 @@ package fr.ght1pc9kc.baywatch.scraper.infra.controllers;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperApplicationProperties;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
-import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.AccessLevel;
 import lombok.Setter;
@@ -11,6 +10,9 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Component;
 
@@ -40,14 +42,13 @@ public class ScraperTaskScheduler implements Runnable {
     public ScraperTaskScheduler(FeedScraperService scraperService, ScraperApplicationProperties properties) {
         this.scraperService = scraperService;
         this.properties = properties;
-
-
     }
 
     @Setter(value = AccessLevel.PACKAGE, onMethod = @__({@VisibleForTesting}))
     private Clock clock = Clock.systemUTC();
 
-    @PostConstruct
+    @Async
+    @EventListener(ApplicationStartedEvent.class)
     public void startScrapping() {
         Instant now = clock.instant();
         Instant nextScrapping = now.plus(properties.frequency());
