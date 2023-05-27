@@ -148,7 +148,7 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                 .exchangeToFlux(response -> {
                     if (!response.statusCode().is2xxSuccessful()) {
                         errors.tryEmitNext(new ScrapingError(
-                                feed.link().toString(),
+                                feed,
                                 new IllegalArgumentException("Bad response status " + response.statusCode())
                         ));
                         return Flux.empty();
@@ -157,7 +157,7 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                                     response.bodyToFlux(DataBuffer.class).switchOnFirst(this::cleanupStreamStart),
                                     ResolvableType.NONE, null, null)
                             .onErrorResume(RuntimeException.class, t -> {
-                                errors.tryEmitNext(new ScrapingError(feed.link().toString(), t));
+                                errors.tryEmitNext(new ScrapingError(feed, t));
                                 return response.releaseBody().thenReturn(XMLEventFactory.newDefaultFactory().createEndDocument());
                             });
                 })
@@ -174,7 +174,7 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                         .build())
 
                 .onErrorResume(e -> {
-                    errors.tryEmitNext(new ScrapingError(feed.link().toString(), e));
+                    errors.tryEmitNext(new ScrapingError(feed, e));
                     return Flux.empty();
                 })
                 .doFinally(s -> {
