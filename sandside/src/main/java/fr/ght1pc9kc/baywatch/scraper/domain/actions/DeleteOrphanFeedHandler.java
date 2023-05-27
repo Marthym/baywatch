@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
-import fr.ght1pc9kc.baywatch.common.api.EventHandler;
+import fr.ght1pc9kc.baywatch.common.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
@@ -23,7 +23,7 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.FEED_ID;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class DeleteOrphanFeedHandler implements EventHandler {
+public class DeleteOrphanFeedHandler implements ScrapingEventHandler {
 
     private static final int BATCH_BUFFER_SIZE = 500;
 

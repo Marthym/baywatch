@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.scraper.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
-import fr.ght1pc9kc.baywatch.common.api.EventHandler;
+import fr.ght1pc9kc.baywatch.common.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.scraper.domain.actions.ScrapingDurationCounter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.TimeGauge;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.TimeUnit;
 
 @Component
-public class ScrapingDurationAdapter implements CounterProvider, EventHandler {
+public class ScrapingDurationAdapter implements CounterProvider, ScrapingEventHandler {
     @Delegate
     private final ScrapingDurationCounter delegate;
 

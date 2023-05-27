@@ -16,6 +16,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.stubbing.Answer;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -64,7 +66,7 @@ class FeedScraperServiceTest {
     @Test
     void should_start_multi_scrapper() {
         StepVerifier.create(tested.scrap(SCRAPER_RETENTION_PERIOD))
-                .expectNext(new ScrapResult(1, 0))
+                .expectNext(new ScrapResult(1, List.of()))
                 .verifyComplete();
 
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/journal_du_hacker.xml")));
@@ -75,6 +77,27 @@ class FeedScraperServiceTest {
                 times(1).description("Expect only one call because of the buffer to 100")
         ).newsLoad(anyCollection());
         verify(mockScrapEnrichmentService, times(2)).applyNewsFilters(any());
+    }
+
+    @Test
+    void should_scrap_bad_rss_feed() {
+        URI sNumeriquesUrl = URI.create("https://www.jedi.com/feeds/malformed_rss_feed.xml");
+        String sNumeriquesSha3 = Hasher.identify(sNumeriquesUrl);
+
+        when(newsMaintenanceMock.feedList()).thenReturn(Flux.just(
+                new ScrapedFeed(sNumeriquesSha3, sNumeriquesUrl)
+        ));
+        StepVerifier.create(tested.scrap(SCRAPER_RETENTION_PERIOD))
+                .expectNext(new ScrapResult(1, List.of()))
+                .verifyComplete();
+
+        verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/malformed_rss_feed.xml")));
+
+        verify(rssAtomParserMock, times(1)).readEntryEvents(any(), any(ScrapedFeed.class));
+        verify(newsMaintenanceMock,
+                times(1).description("Expect only one call because of the buffer to 100")
+        ).newsLoad(anyCollection());
+        verify(mockScrapEnrichmentService, times(1)).applyNewsFilters(any());
     }
 
     @Test
@@ -90,7 +113,7 @@ class FeedScraperServiceTest {
         ));
 
         StepVerifier.create(tested.scrap(SCRAPER_RETENTION_PERIOD))
-                .expectNext(new ScrapResult(1, 0))
+                .expectNext(new ScrapResult(1, List.of()))
                 .verifyComplete();
 
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/error/darth-vader.xml")));
@@ -208,11 +231,10 @@ class FeedScraperServiceTest {
             if (FEED_PATTERN.matcher(request.url().getPath()).matches()) {
                 return Mono.just(ClientResponse.create(HttpStatus.OK)
                         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_ATOM_XML_VALUE)
-                        .body("""
-                                <?xml version="1.0" encoding="UTF-8" ?>
-                                <entry>Obiwan Kenobi</entry>
-                                """)
-                        .build());
+                        .body(DataBufferUtils.readInputStream(
+                                () -> FeedScraperServiceTest.class.getResourceAsStream(request.url().getPath().replaceFirst("/", "")),
+                                new DefaultDataBufferFactory(), 512)
+                        ).build());
             } else if (ERROR_PATTERN.matcher(request.url().getPath()).matches()) {
                 return Mono.just(ClientResponse.create(HttpStatus.NOT_FOUND).build());
             }
