@@ -100,8 +100,8 @@ public class AuthenticationGqlController {
                         .orElse("Unknown User");
                 log.debug("Logout for {}.", user);
             }
-            exchange.getResponse().addCookie(
-                    cookieManager.buildTokenCookieDeletion(exchange.getRequest().getURI().getScheme()));
+            cookieManager.buildTokenCookieDeletion(exchange.getRequest().getURI().getScheme()).forEach(ct ->
+                    exchange.getResponse().addCookie(ct));
         }));
     }
 
