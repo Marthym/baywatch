@@ -88,8 +88,8 @@ public class AuthenticationController {
                     .orElse("Unknown User");
             log.debug("Logout for {}.", user);
         }
-        return Mono.fromRunnable(() -> exchange.getResponse().addCookie(
-                cookieManager.buildTokenCookieDeletion(exchange.getRequest().getURI().getScheme())));
+        return Mono.fromRunnable(() -> cookieManager.buildTokenCookieDeletion(exchange.getRequest().getURI().getScheme())
+                .forEach(tc -> exchange.getResponse().addCookie(tc)));
     }
 
     @PutMapping("/refresh")
