@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -53,8 +52,8 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
 
         if (StringUtils.hasText(token)) {
             // Remove invalid Token Cookie
-            ResponseCookie tokenCookie = cookieManager.buildTokenCookieDeletion(exchange.getRequest().getURI().getScheme());
-            exchange.getResponse().addCookie(tokenCookie);
+            cookieManager.buildTokenCookieDeletion(exchange.getRequest().getURI().getScheme()).forEach(
+                    tc -> exchange.getResponse().addCookie(tc));
         }
         return chain.filter(exchange);
     }
