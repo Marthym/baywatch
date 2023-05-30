@@ -13,6 +13,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -42,13 +43,22 @@ public final class TokenCookieManager {
                 .build();
     }
 
-    public ResponseCookie buildTokenCookieDeletion(String scheme) {
-        return ResponseCookie.from(params.name, "")
-                .httpOnly(true)
-                .secure("https".equals(scheme))
-                .sameSite(Cookie.SameSite.STRICT.attributeValue())
-                .path(baseRoute)
-                .maxAge(0)
-                .build();
+    public List<ResponseCookie> buildTokenCookieDeletion(String scheme) {
+        return List.of(
+                ResponseCookie.from(params.name, "")
+                        .httpOnly(true)
+                        .secure("https".equals(scheme))
+                        .sameSite(Cookie.SameSite.STRICT.attributeValue())
+                        .path("/")
+                        .maxAge(0)
+                        .build(),
+                ResponseCookie.from(params.name, "")
+                        .httpOnly(true)
+                        .secure("https".equals(scheme))
+                        .sameSite(Cookie.SameSite.STRICT.attributeValue())
+                        .path(baseRoute)
+                        .maxAge(0)
+                        .build()
+        );
     }
 }
