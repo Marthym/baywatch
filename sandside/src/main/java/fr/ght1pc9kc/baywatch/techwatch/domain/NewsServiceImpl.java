@@ -16,12 +16,14 @@ import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
+import fr.ght1pc9kc.baywatch.techwatch.domain.ports.TeamServicePort;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.api.Pagination;
 import fr.ght1pc9kc.juery.api.filter.CriteriaVisitor;
 import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -45,6 +47,7 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.TITLE;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.USER_ID;
 import static java.util.function.Predicate.not;
 
+@Slf4j
 @RequiredArgsConstructor
 public class NewsServiceImpl implements NewsService {
     private static final Set<String> ALLOWED_CRITERIA = Set.of(ID, STATE, TITLE, FEED_ID);
@@ -57,6 +60,7 @@ public class NewsServiceImpl implements NewsService {
     private final FeedPersistencePort feedRepository;
     private final StatePersistencePort stateRepository;
     private final AuthenticationFacade authFacade;
+    private final TeamServicePort teamServicePort;
 
     @Override
     public Flux<News> list(PageRequest pageRequest) {
@@ -134,15 +138,21 @@ public class NewsServiceImpl implements NewsService {
     }
 
     public Mono<List<String>> getStateQueryContext(QueryContext qCtx) {
-        Criteria sharedCriteria = Criteria.not(Criteria.property(USER_ID).eq(qCtx.userId))
-                .and(Criteria.property(SHARED).eq(true));
+        return teamServicePort.getTeamMates(qCtx.getUserId())
+                .filter(not(tm -> tm.equals(qCtx.getUserId())))
+                .collectList().flatMap(teamMates -> {
+                    if (teamMates.isEmpty()) {
+                        return Mono.empty();
+                    }
+                    Criteria sharedCriteria = Criteria.property(USER_ID).in(teamMates)
+                            .and(Criteria.property(SHARED).eq(true));
 
-        QueryContext stateQueryContext = QueryContext.builder()
-                .filter(sharedCriteria)
-                .pagination(Pagination.ALL)
-                .build();
-
-        return stateRepository.list(stateQueryContext)
+                    return Mono.just(QueryContext.builder()
+                            .filter(sharedCriteria)
+                            .pagination(Pagination.ALL)
+                            .build());
+                })
+                .flatMapMany(stateRepository::list)
                 .map(state -> state.id)
                 .distinct().collectList();
     }
