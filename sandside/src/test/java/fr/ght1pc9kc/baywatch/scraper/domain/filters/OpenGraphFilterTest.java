@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.scraper.domain.filters;
 
+import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.scraphead.core.HeadScraper;
 import fr.ght1pc9kc.scraphead.core.http.ScrapRequest;
@@ -43,6 +44,7 @@ class OpenGraphFilterTest {
     void should_filter_opengraph() {
         when(mockScraper.scrap(any(ScrapRequest.class))).thenReturn(Mono.just(
                 Metas.builder()
+                        .resourceUrl(RAW.getLink())
                         .og(OpenGraph.builder()
                                 .title("Opengraph title")
                                 .description("Opengraph description")
@@ -71,6 +73,7 @@ class OpenGraphFilterTest {
     void should_filter_opengraph_with_title() {
         when(mockScraper.scrap(any(ScrapRequest.class))).thenReturn(Mono.just(
                 Metas.builder()
+                        .resourceUrl(RAW.getLink())
                         .title("Title from title tag")
                         .og(OpenGraph.builder()
                                 .title("Opengraph title")
@@ -100,6 +103,7 @@ class OpenGraphFilterTest {
     void should_filter_opengraph_with_canonical() {
         when(mockScraper.scrap(any(ScrapRequest.class))).thenReturn(Mono.just(
                 Metas.builder()
+                        .resourceUrl(URI.create("https://www.jedi.com/obiwan/kenobi/canonical/"))
                         .og(OpenGraph.builder()
                                 .title("Opengraph title")
                                 .build()
@@ -126,9 +130,37 @@ class OpenGraphFilterTest {
     }
 
     @Test
+    void should_filter_opengraph_with_redirection() {
+        when(mockScraper.scrap(any(ScrapRequest.class))).thenReturn(Mono.just(
+                Metas.builder()
+                        .resourceUrl(URI.create("https://www.jedi.com/obiwan/kenobi/redirect/"))
+                        .og(OpenGraph.builder()
+                                .title("Opengraph title")
+                                .build()
+                        ).build()
+        ));
+
+        StepVerifier.create(tested.filter(RAW))
+                .assertNext(actual -> Assertions.assertAll(
+                        () -> assertThat(actual.getTitle()).isEqualTo("Opengraph title"),
+                        () -> assertThat(actual.getDescription()).isEqualTo("Start with this description"),
+                        () -> assertThat(actual.getId()).isEqualTo(Hasher.identify(URI.create("https://www.jedi.com/obiwan/kenobi/redirect/"))),
+                        () -> assertThat(actual.getLink()).isEqualTo(URI.create("https://www.jedi.com/obiwan/kenobi/redirect/"))
+                ))
+                .verifyComplete();
+
+        ArgumentCaptor<ScrapRequest> captor = ArgumentCaptor.forClass(ScrapRequest.class);
+        verify(mockScraper).scrap(captor.capture());
+
+        assertThat(captor.getValue()).extracting(ScrapRequest::location)
+                .isEqualTo(RAW.getLink());
+    }
+
+    @Test
     void should_filter_opengraph_without_OG() {
         when(mockScraper.scrap(any(ScrapRequest.class))).thenReturn(Mono.just(
                 Metas.builder()
+                        .resourceUrl(URI.create("https://www.jedi.com/obiwan/kenobi/canonical/"))
                         .links(Links.builder()
                                 .canonical(URI.create("https://www.jedi.com/obiwan/kenobi/canonical/"))
                                 .build())
@@ -170,6 +202,7 @@ class OpenGraphFilterTest {
     void should_filter_opengraph_for_youtube() {
         when(mockScraper.scrap(any(ScrapRequest.class))).thenReturn(Mono.just(
                 Metas.builder()
+                        .resourceUrl(URI.create("http://www.youtube.com/obiwan/kenobi"))
                         .og(OpenGraph.builder()
                                 .title("Opengraph title")
                                 .description("Opengraph description")
