@@ -52,6 +52,9 @@ public class OpenGraphFilter implements NewsFilter {
                         if (nonNull(links) && nonNull(links.canonical())) {
                             raw = raw.withId(Hasher.identify(links.canonical()))
                                     .withLink(links.canonical());
+                        } else if (!news.getLink().equals(headMetas.resourceUrl())) {
+                            raw = raw.withId(Hasher.identify(headMetas.resourceUrl()))
+                                    .withLink(headMetas.resourceUrl());
                         }
 
                         if (nonNull(headMetas.title()) && !headMetas.title().isBlank()) {

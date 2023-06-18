@@ -5,6 +5,7 @@
     <springProperty scope="context" name="rootLevel" source="logging.level.root"/>
 
     <springProfile name="json-logging">
+        <contextName>${appName}</contextName>
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
                 <jsonFormatter class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter"/>
