@@ -94,22 +94,28 @@ public class NewsServiceImpl implements NewsService {
             // Shortcut for get one News from id
             return Mono.just(qCtx);
         }
-        Mono<List<String>> states = getStateQueryContext(qCtx);
-        Mono<List<String>> feeds = getFeedFor(qCtx, props);
+        return teamServicePort.getTeamMates(qCtx.getUserId())
+                .concatWith(Mono.just(qCtx.getUserId()))
+                .collectList()
+                .flatMap(teamMates -> {
+                    Mono<List<String>> states = getStateQueryContext(teamMates, qCtx);
+                    Mono<List<String>> feeds = getFeedFor(qCtx, props);
 
-        return Mono.zip(states, feeds).map(contexts -> {
-            Criteria filters = Criteria.property(FEED_ID).in(contexts.getT2());
-            if (!contexts.getT1().isEmpty()) {
-                filters = Criteria.or(filters, Criteria.property(NEWS_ID).in(contexts.getT1()));
-            }
-            filters = Criteria.and(filters, qCtx.getFilter());
+                    return Mono.zip(states, feeds).map(contexts -> {
+                        Criteria filters = Criteria.property(FEED_ID).in(contexts.getT2());
+                        if (!contexts.getT1().isEmpty()) {
+                            filters = Criteria.or(filters, Criteria.property(NEWS_ID).in(contexts.getT1()));
+                        }
+                        filters = Criteria.and(filters, qCtx.getFilter());
 
-            return QueryContext.builder()
-                    .pagination(qCtx.getPagination())
-                    .userId(qCtx.getUserId())
-                    .filter(filters)
-                    .build();
-        });
+                        return QueryContext.builder()
+                                .pagination(qCtx.getPagination())
+                                .userId(qCtx.getUserId())
+                                .teamMates(teamMates)
+                                .filter(filters)
+                                .build();
+                    });
+                });
     }
 
     /**
@@ -137,22 +143,19 @@ public class NewsServiceImpl implements NewsService {
                 });
     }
 
-    public Mono<List<String>> getStateQueryContext(QueryContext qCtx) {
-        return teamServicePort.getTeamMates(qCtx.getUserId())
-                .filter(not(tm -> tm.equals(qCtx.getUserId())))
-                .collectList().flatMap(teamMates -> {
-                    if (teamMates.isEmpty()) {
-                        return Mono.empty();
-                    }
-                    Criteria sharedCriteria = Criteria.property(USER_ID).in(teamMates)
-                            .and(Criteria.property(SHARED).eq(true));
+    public Mono<List<String>> getStateQueryContext(List<String> teamMates, QueryContext qCtx) {
 
-                    return Mono.just(QueryContext.builder()
-                            .filter(sharedCriteria)
-                            .pagination(Pagination.ALL)
-                            .build());
-                })
-                .flatMapMany(stateRepository::list)
+        if (teamMates.isEmpty()) {
+            return Mono.empty();
+        }
+        Criteria sharedCriteria = Criteria.property(USER_ID).in(teamMates)
+                .and(Criteria.property(SHARED).eq(true));
+
+        QueryContext query = QueryContext.builder()
+                .filter(sharedCriteria)
+                .pagination(Pagination.ALL)
+                .build();
+        return stateRepository.list(query)
                 .map(state -> state.id)
                 .distinct().collectList();
     }

@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.With;
 
+import java.util.List;
+
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 
 @Value
@@ -18,20 +20,22 @@ public final class QueryContext {
     @With
     public final String userId;
 
+    public final List<String> teamMates;
+
     public static QueryContext from(PageRequest pr) {
-        return new QueryContext(pr.pagination(), pr.filter(), null);
+        return new QueryContext(pr.pagination(), pr.filter(), null, List.of());
     }
 
     public static QueryContext all(Criteria filter) {
-        return new QueryContext(Pagination.ALL, filter, null);
+        return new QueryContext(Pagination.ALL, filter, null, List.of());
     }
 
     public static QueryContext first(Criteria filter) {
-        return new QueryContext(Pagination.FIRST, filter, null);
+        return new QueryContext(Pagination.FIRST, filter, null, List.of());
     }
 
     public static QueryContext first(QueryContext qCtx) {
-        return new QueryContext(Pagination.FIRST, qCtx.filter, qCtx.userId);
+        return new QueryContext(Pagination.FIRST, qCtx.filter, qCtx.userId, qCtx.teamMates);
     }
 
     /**
@@ -41,11 +45,11 @@ public final class QueryContext {
      * @return A context for ONE and only ONE element
      */
     public static QueryContext id(String id) {
-        return new QueryContext(Pagination.FIRST, Criteria.property(ID).eq(id), null);
+        return new QueryContext(Pagination.FIRST, Criteria.property(ID).eq(id), null, List.of());
     }
 
     public static QueryContext empty() {
-        return new QueryContext(Pagination.ALL, Criteria.none(), null);
+        return new QueryContext(Pagination.ALL, Criteria.none(), null, List.of());
     }
 
     public boolean isScoped() {
