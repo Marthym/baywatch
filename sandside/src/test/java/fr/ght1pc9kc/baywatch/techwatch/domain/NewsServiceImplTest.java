@@ -9,6 +9,7 @@ import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
+import fr.ght1pc9kc.baywatch.techwatch.domain.ports.TeamServicePort;
 import fr.ght1pc9kc.baywatch.tests.samples.FeedSamples;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
@@ -31,6 +32,7 @@ import static fr.ght1pc9kc.baywatch.tests.samples.NewsSamples.ORDER_66;
 import static fr.ght1pc9kc.baywatch.tests.samples.UserSamples.LUKE;
 import static fr.ght1pc9kc.baywatch.tests.samples.UserSamples.OBIWAN;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -41,6 +43,7 @@ class NewsServiceImplTest {
 
     private AuthenticationFacade mockAuthFacade;
     private NewsPersistencePort mockNewsPersistence;
+    private TeamServicePort mockTeamServicePort;
     private final ArgumentCaptor<QueryContext> captor = ArgumentCaptor.forClass(QueryContext.class);
 
     @BeforeEach
@@ -57,8 +60,11 @@ class NewsServiceImplTest {
         FeedPersistencePort mockFeedRepository = mock(FeedPersistencePort.class);
         when(mockFeedRepository.list(any())).thenReturn(Flux.fromIterable(FeedSamples.SAMPLES));
 
-        tested = new NewsServiceImpl(
-                new ListPropertiesCriteriaVisitor(), mockNewsPersistence, mockFeedRepository, mockStateRepository, mockAuthFacade);
+        mockTeamServicePort = mock(TeamServicePort.class);
+        when(mockTeamServicePort.getTeamMates(anyString())).thenReturn(Flux.empty());
+
+        tested = new NewsServiceImpl(new ListPropertiesCriteriaVisitor(),
+                mockNewsPersistence, mockFeedRepository, mockStateRepository, mockAuthFacade, mockTeamServicePort);
     }
 
     @Test
@@ -117,6 +123,10 @@ class NewsServiceImplTest {
                         Criteria.property(NEWS_ID).in(MAY_THE_FORCE.getId())
                 )
         );
+
+        ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
+        verify(mockTeamServicePort, times(1)).getTeamMates(userIdCaptor.capture());
+        Assertions.assertThat(userIdCaptor.getValue()).isEqualTo(LUKE.id);
     }
 
     @Test
@@ -137,6 +147,10 @@ class NewsServiceImplTest {
                         Criteria.property(NEWS_ID).in(MAY_THE_FORCE.getId())
                 )
         );
+
+        ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
+        verify(mockTeamServicePort, times(1)).getTeamMates(userIdCaptor.capture());
+        Assertions.assertThat(userIdCaptor.getValue()).isEqualTo(LUKE.id);
     }
 
     @Test
