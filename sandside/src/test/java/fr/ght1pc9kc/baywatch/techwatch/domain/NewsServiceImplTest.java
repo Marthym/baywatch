@@ -116,6 +116,10 @@ class NewsServiceImplTest {
                 .expectNextCount(2)
                 .verifyComplete();
 
+        ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
+        verify(mockTeamServicePort, times(1)).getTeamMates(userIdCaptor.capture());
+        Assertions.assertThat(userIdCaptor.getValue()).isEqualTo(LUKE.id);
+
         verify(mockNewsPersistence, times(1)).list(captor.capture());
         Assertions.assertThat(captor.getValue().filter).isEqualTo(
                 Criteria.or( // FEED_ID in the 2 FEEDS ids plus the ID of the connected user
@@ -123,10 +127,6 @@ class NewsServiceImplTest {
                         Criteria.property(NEWS_ID).in(MAY_THE_FORCE.getId())
                 )
         );
-
-        ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
-        verify(mockTeamServicePort, times(1)).getTeamMates(userIdCaptor.capture());
-        Assertions.assertThat(userIdCaptor.getValue()).isEqualTo(LUKE.id);
     }
 
     @Test
@@ -140,6 +140,10 @@ class NewsServiceImplTest {
                 })
                 .verifyComplete();
 
+        ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
+        verify(mockTeamServicePort, times(1)).getTeamMates(userIdCaptor.capture());
+        Assertions.assertThat(userIdCaptor.getValue()).isEqualTo(LUKE.id);
+
         verify(mockNewsPersistence, times(1)).count(captor.capture());
         Assertions.assertThat(captor.getValue().filter).isEqualTo(
                 Criteria.or(// FEED_ID in the 2 FEEDS ids plus the ID of the connected user
@@ -147,10 +151,34 @@ class NewsServiceImplTest {
                         Criteria.property(NEWS_ID).in(MAY_THE_FORCE.getId())
                 )
         );
+    }
+
+    @Test
+    void should_list_news_with_teammates() {
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(LUKE));
+        when(mockTeamServicePort.getTeamMates(LUKE.id)).thenReturn(Flux.just(OBIWAN.id));
+
+        StepVerifier.create(tested.list(PageRequest.all()))
+                .assertNext(actual -> {
+                    Assertions.assertThat(actual).isNotNull();
+                    Assertions.assertThat(actual.getRaw()).isEqualTo(MAY_THE_FORCE.getRaw());
+                    Assertions.assertThat(actual.getState()).isEqualTo(MAY_THE_FORCE.getState());
+                })
+                .expectNextCount(2)
+                .verifyComplete();
 
         ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
         verify(mockTeamServicePort, times(1)).getTeamMates(userIdCaptor.capture());
         Assertions.assertThat(userIdCaptor.getValue()).isEqualTo(LUKE.id);
+
+        verify(mockNewsPersistence, times(1)).list(captor.capture());
+        Assertions.assertThat(captor.getValue().filter).isEqualTo(
+                Criteria.or( // FEED_ID in the 2 FEEDS ids plus the ID of the connected user
+                        Criteria.property(FEED_ID).in(JEDI.getId(), SITH.getId(), LUKE.id),
+                        Criteria.property(NEWS_ID).in(MAY_THE_FORCE.getId())
+                )
+        );
+        Assertions.assertThat(captor.getValue().teamMates).containsOnly(LUKE.id, OBIWAN.id);
     }
 
     @Test

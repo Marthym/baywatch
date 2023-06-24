@@ -10,6 +10,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
+import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsUsersRecordSample;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRolesSamples;
@@ -37,6 +38,7 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.COUNT;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.FEED_ID;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
+import static fr.ght1pc9kc.baywatch.tests.samples.UserSamples.OBIWAN;
 import static fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples.OKENOBI;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -51,7 +53,7 @@ class FeedRepositoryTest {
             .addDataset(UsersRolesSamples.SAMPLE)
             .addDataset(NewsRecordSamples.SAMPLE)
             .addDataset(NewsRecordSamples.NewsFeedsRecordSample.SAMPLE)
-            .addDataset(FeedRecordSamples.FeedUserRecordSamples.SAMPLE)
+            .addDataset(FeedsUsersRecordSample.SAMPLE)
             .build();
 
     @RegisterExtension
@@ -150,10 +152,10 @@ class FeedRepositoryTest {
 
     @Test
     void should_update_feed(DSLContext dsl) {
-        String feedOwnedOnlyByObywan = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("03"));
+        String feedOwnedOnlyByObywan = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("01"));
         RawFeed raw = RawFeed.builder()
                 .id(feedOwnedOnlyByObywan)
-                .url(URI.create("http://www.jedi.light/03"))
+                .url(URI.create("http://www.jedi.light/01"))
                 .name("Jedi")
                 .lastWatch(Instant.parse("2020-12-11T15:12:42Z"))
                 .build();
@@ -211,18 +213,18 @@ class FeedRepositoryTest {
     @Test
     void should_delete_feeds_for_user(DSLContext dsl) {
         String feedOwnedByObiwanAndSkywalker = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("01"));
-        String feedOwnedOnlyByObywan = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("03"));
+        String feedOwnedOnlyByObywan = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("02"));
         List<String> ids = List.of(feedOwnedByObiwanAndSkywalker, feedOwnedOnlyByObywan);
 
         {
             int countUser = dsl.fetchCount(FEEDS_USERS, FEEDS_USERS.FEUS_FEED_ID.in(ids)
-                    .and(FEEDS_USERS.FEUS_USER_ID.eq(OKENOBI.getUserId())));
+                    .and(FEEDS_USERS.FEUS_USER_ID.eq(OBIWAN.id)));
             assertThat(countUser).isEqualTo(2);
         }
 
         tested.delete(QueryContext.builder()
                 .filter(Criteria.property(FEED_ID).in(ids))
-                .userId(OKENOBI.getUserId())
+                .userId(OBIWAN.id)
                 .build()).block();
 
         {
@@ -236,6 +238,7 @@ class FeedRepositoryTest {
     @Test
     void should_list_orphan_feed() {
         List<Feed> actuals = tested.list(QueryContext.all(Criteria.property(COUNT).eq(0))).collectList().block();
-        assertThat(actuals).extracting(Feed::getId).containsExactly("17a323e6f4ffc872e5adc5575da0b22f4af56b903b2efa0d070e0cfb2295d7c7");
+        assertThat(actuals).extracting(Feed::getId).containsExactly(
+                FeedRecordSamples.FEEDS_RECORDS.get(FeedRecordSamples.FEEDS_RECORDS.size() - 1).getFeedId());
     }
 }
