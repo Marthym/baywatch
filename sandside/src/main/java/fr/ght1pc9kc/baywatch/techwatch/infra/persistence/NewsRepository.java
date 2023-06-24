@@ -19,6 +19,7 @@ import org.jooq.Cursor;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.JoinType;
+import org.jooq.Operator;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.Select;
@@ -29,6 +30,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -165,9 +167,13 @@ public class NewsRepository implements NewsPersistencePort {
             select.addJoin(NEWS_STATE, JoinType.LEFT_OUTER_JOIN,
                     NEWS.NEWS_ID.eq(NEWS_STATE.NURS_NEWS_ID).and(NEWS_STATE.NURS_USER_ID.eq(qCtx.userId)));
 
-            select.addJoin(POPULAR, JoinType.LEFT_OUTER_JOIN,
-                    NEWS.NEWS_ID.eq(POPULAR.NURS_NEWS_ID)
-                            .and(DSL.coalesce(POPULAR.NURS_STATE, Flags.NONE).bitAnd(Flags.SHARED).eq(Flags.SHARED)));
+            ArrayList<Condition> popularJoinConditions = new ArrayList<>();
+            popularJoinConditions.add(NEWS.NEWS_ID.eq(POPULAR.NURS_NEWS_ID));
+            popularJoinConditions.add(DSL.coalesce(POPULAR.NURS_STATE, Flags.NONE).bitAnd(Flags.SHARED).eq(Flags.SHARED));
+            if (!qCtx.teamMates.isEmpty()) {
+                popularJoinConditions.add(POPULAR.NURS_USER_ID.in(qCtx.teamMates));
+            }
+            select.addJoin(POPULAR, JoinType.LEFT_OUTER_JOIN, DSL.condition(Operator.AND, popularJoinConditions));
         }
 
         SelectQuery<Record> paginateSelect = (SelectQuery<Record>) JooqPagination.apply(qCtx.pagination, NEWS_PROPERTIES_MAPPING, select);

@@ -68,6 +68,9 @@
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
                 <configuration>
+                    <from>
+                        <image>eclipse-temurin:17.0.7_7-jre</image>
+                    </from>
                     <to>
                         <image>marthym/baywatch:${project.version}</image>
                     </to>
