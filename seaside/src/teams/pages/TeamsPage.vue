@@ -1,5 +1,5 @@
 <template>
-    <div v-if="store.getters['user/hasRoleAdmin']" class="overflow-x-auto mt-4">
+    <div v-if="store.getters['user/hasRoleUser']" class="overflow-x-auto mt-4">
         <SmartTable columns="Name|Managers|Topic" :elements="teams" actions="adl"
                     @add="addNewTeam"
                     @view="onEditData"
