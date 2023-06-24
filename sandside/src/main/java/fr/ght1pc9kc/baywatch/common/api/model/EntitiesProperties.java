@@ -25,6 +25,7 @@ public final class EntitiesProperties {
     public static final String STATE = "state";
     public static final String TAGS = "tags";
     public static final String TAGS_SEPARATOR = ",";
+    public static final String TEAM_MATES = "teamMates";
     public static final String TITLE = "title";
     public static final String TOPIC = "topic";
     public static final String URL = "url";

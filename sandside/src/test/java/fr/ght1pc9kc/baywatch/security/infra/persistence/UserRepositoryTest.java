@@ -169,7 +169,7 @@ class UserRepositoryTest {
         Assertions.assertAll(
                 () -> assertThat(dsl.fetchCount(Users.USERS)).isEqualTo(2),
                 () -> assertThat(dsl.fetchCount(NEWS_USER_STATE)).isEqualTo(50),
-                () -> assertThat(dsl.fetchCount(FEEDS_USERS)).isEqualTo(5)
+                () -> assertThat(dsl.fetchCount(FEEDS_USERS)).isEqualTo(6)
         );
 
         tested.delete(List.of(UsersRecordSamples.OKENOBI.getUserId())).block();

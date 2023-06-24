@@ -12,6 +12,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
+import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsUsersRecordSample;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRolesSamples;
@@ -37,9 +38,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.FEED_ID;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
+import static fr.ght1pc9kc.baywatch.tests.samples.UserSamples.LUKE;
+import static fr.ght1pc9kc.baywatch.tests.samples.UserSamples.OBIWAN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
@@ -55,7 +59,7 @@ class NewsRepositoryTest {
             .addDataset(NewsRecordSamples.SAMPLE)
             .addDataset(NewsRecordSamples.NewsFeedsRecordSample.SAMPLE)
             .addDataset(NewsRecordSamples.NewsUserStateSample.SAMPLE)
-            .addDataset(FeedRecordSamples.FeedUserRecordSamples.SAMPLE)
+            .addDataset(FeedsUsersRecordSample.SAMPLE)
             .build();
     private static final String NEWS_ID = UUID.randomUUID().toString();
     @RegisterExtension
