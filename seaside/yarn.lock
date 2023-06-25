@@ -4041,15 +4041,10 @@ vite@4.3.9:
   optionalDependencies:
     fsevents "~2.3.2"
 
-vue-class-component@8.0.0-rc.1:
-  version "8.0.0-rc.1"
-  resolved "https://registry.npmjs.org/vue-class-component/-/vue-class-component-8.0.0-rc.1.tgz"
-  integrity sha512-w1nMzsT/UdbDAXKqhwTmSoyuJzUXKrxLE77PCFVuC6syr8acdFDAq116xgvZh9UCuV0h+rlCtxXolr3Hi3HyPQ==
-
-vue-property-decorator@10.0.0-rc.3:
-  version "10.0.0-rc.3"
-  resolved "https://registry.npmjs.org/vue-property-decorator/-/vue-property-decorator-10.0.0-rc.3.tgz"
-  integrity sha512-EGqjf8Lq+kTausZzfLB1ynWOcyay8ZLAc5p2VlKGEX2q+BjYw84oZxr6IcdwuxGIdNmriZqPUX6AlAluBdnbEg==
+vue-facing-decorator@2.1.20:
+  version "2.1.20"
+  resolved "https://registry.yarnpkg.com/vue-facing-decorator/-/vue-facing-decorator-2.1.20.tgz#0d5b57c337c53fade93ddcfd043df5f2383c5682"
+  integrity sha512-Xv987Q+XhhWTPXxzG4HllHxckMahV04wDcRebdd/AWlU/hYm7+tGRo2eD84mpl3rZLZQ74Cr41UlWbGbEQptNA==
 
 vue-router@4.2.2:
   version "4.2.2"

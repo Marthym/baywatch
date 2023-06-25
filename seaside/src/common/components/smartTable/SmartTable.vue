@@ -30,7 +30,7 @@
       <th scope="col" class="w-1">
         <label v-if="isGlobalEditable">
           <input type="checkbox" class="checkbox" ref="globalCheck"
-                 :checked="selectedElements.length > 0" @change="onSelectAll"/>
+                 :checked="selectedElements.length > 0" @change="onSelectAll()"/>
           <span class="checkbox-mark"></span>
         </label>
       </th>
@@ -97,7 +97,7 @@
 </template>
 
 <script lang="ts">
-import {Options, Prop, Vue} from "vue-property-decorator";
+import {Component, Prop, Vue} from "vue-facing-decorator";
 import {
   ArrowDownTrayIcon,
   ArrowRightOnRectangleIcon,
@@ -114,7 +114,7 @@ import {Observable} from "rxjs";
  * Table component with global and line actions
  * @requires ./SmartTableData.vue
  */
-@Options({
+@Component({
   components: {
     ArrowDownTrayIcon,
     ArrowRightOnRectangleIcon,

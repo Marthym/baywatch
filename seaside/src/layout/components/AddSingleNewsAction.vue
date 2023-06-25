@@ -17,13 +17,13 @@
 </template>
 
 <script lang="ts">
-import {Options, Prop, Vue, Watch} from "vue-property-decorator";
+import {Component, Prop, Vue, Watch} from "vue-facing-decorator";
 import scraperService from '@/layout/services/ScraperService';
 import notificationService from "@/services/notification/NotificationService";
 import {NotificationCode} from "@/services/notification/NotificationCode.enum";
 import {Severity} from "@/services/notification/Severity.enum";
 
-@Options({
+@Component({
   name: 'AddSingleNewsAction',
   emits: ['close'],
   props: ['isTransitioning'],

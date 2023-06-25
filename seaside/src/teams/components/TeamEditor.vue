@@ -5,8 +5,8 @@
             <label class="label">
                 <span class="label-text">Team Name</span>
             </label>
-            <input v-model="modelValue.data!.name" type="text" class="input input-bordered w-full"
-                   :disabled="!modelValue.isEditable"
+            <input v-model="value.data!.name" type="text" class="input input-bordered w-full"
+                   :disabled="!value.isEditable"
                    :class="{'input-error': errors.has('login')}">
             <label class="label -mt-1">
                 <span class="label-text-alt">&nbsp;</span>
@@ -15,27 +15,27 @@
             <label class="label">
                 <span class="label-text">Team Topic</span>
             </label>
-            <input v-model="modelValue.data!.topic" type="text" class="input input-bordered w-full"
+            <input v-model="value.data!.topic" type="text" class="input input-bordered w-full"
                    :class="{'input-error': errors.has('topic')}"
-                   :disabled="!modelValue.isEditable">
+                   :disabled="!value.isEditable">
             <label class="label -mt-1">
                 <span class="label-text-alt">&nbsp;</span>
                 <span v-if="errors.has('topic')" class="label-text-alt">{{ errors.get('topic') }}</span>
             </label>
             <div class="text-right">
                 <button class="btn btn-sm mx-1" @click.stop="curtainModal.close()">Cancel</button>
-                <button v-if="modelValue.isEditable" class="btn btn-sm btn-primary mx-1" @click.stop="throttledOnSave">
+                <button v-if="value.isEditable" class="btn btn-sm btn-primary mx-1" @click.stop="throttledOnSave">
                     Save
                 </button>
             </div>
         </div>
-        <team-members-input v-if="modelValue.data && '_id' in modelValue.data"
-                            :team="modelValue.data" :isTeamManager="modelValue.isEditable"/>
+        <team-members-input v-if="isMembersDisplayable()"
+                            :team="value.data" :isTeamManager="value.isEditable"/>
     </curtain-modal>
 </template>
 
 <script lang="ts">
-import {Options, Prop, Vue} from "vue-property-decorator";
+import {Component, Prop, Vue} from "vue-facing-decorator";
 import CurtainModal from "@/common/components/CurtainModal.vue";
 import {Team} from "@/teams/model/Team.type";
 import {teamCreate, teamUpdate} from "@/teams/services/Teams.service";
@@ -45,9 +45,9 @@ import TeamMembersInput from "@/teams/components/TeamMembersInput.vue";
 import notificationService from "@/services/notification/NotificationService";
 
 const CLOSE_EVENT = 'close';
-const UPDATE_EVENT = 'update:modelValue';
+const UPDATE_EVENT = 'update:model-value';
 
-@Options({
+@Component({
     name: 'TeamEditor',
     components: {CurtainModal, TeamMembersInput},
     emits: [CLOSE_EVENT, UPDATE_EVENT]
@@ -62,6 +62,11 @@ export default class TeamEditor extends Vue {
     };
     private throttledOnSave: () => void;
 
+    private isMembersDisplayable(): boolean {
+        console.debug('test');
+        return (this.value.data !== undefined) && '_id' in this.value.data;
+    }
+
     /**
      * @see unmounted
      */
@@ -69,26 +74,32 @@ export default class TeamEditor extends Vue {
         delete this.throttledOnSave;
     }
 
+    get value(): SmartTableView<Team> {
+        return this.modelValue;
+    }
+
+    set value(v: SmartTableView<Team>) {
+        this.$emit(UPDATE_EVENT, v);
+    }
+
     private onSave(): void {
-        let mv = this.modelValue;
-        if (!mv.data) {
+        if (!this.value.data) {
             console.error('No data to persist !');
-        } else if ('_id' in mv.data) {
-            teamUpdate(mv.data._id, mv.data)
+        } else if ('_id' in this.value.data) {
+            teamUpdate(this.value.data._id, this.value.data)
                 .subscribe({
                     next: team => {
-                        Object.assign(mv.data, mv);
-                        this.$emit(UPDATE_EVENT, mv);
+                        Object.assign(this.value.data, team);
                         this.payload.updated = true;
                         notificationService.pushSimpleOk(`Team ${team.name} updated successfully !`);
                     },
                 })
         } else {
-            teamCreate(mv.data.name, mv.data.topic)
+            teamCreate(this.value.data.name, this.value.data.topic)
                 .subscribe({
                     next: team => {
-                        Object.assign(mv.data, team);
-                        this.$emit(UPDATE_EVENT, mv);
+                        Object.assign(this.value.data, team);
+                        this.$nextTick(() => console.log("next: ", this.modelValue));
                         this.payload.updated = true;
                         notificationService.pushSimpleOk(`Team ${team.name} saved successfully !`);
                     }

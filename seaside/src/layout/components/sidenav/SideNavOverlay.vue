@@ -1,27 +1,33 @@
 <template>
-  <div class="fixed right-0 h-full w-full bg-base-200 bg-opacity-60 z-20 lg:hidden"
-       :class="{'hidden': !state.open}"
-       @click.stop="sideNavToggle"
-  ></div>
+    <div class="fixed right-0 h-full w-full bg-base-200 bg-opacity-60 z-20 lg:hidden"
+         :class="{'hidden': !state.open}"
+         @click.stop="sideNavToggle"
+    ></div>
 </template>
 
 <script lang="ts">
-import {Options, Vue} from "vue-property-decorator";
-import {setup} from "vue-class-component";
+import {Component, Vue} from "vue-facing-decorator";
 import {useStore} from "vuex";
-import {SidenavState} from "@/store/sidenav/sidenav";
 import {SidenavMutation} from "@/store/sidenav/SidenavMutation.enum";
+import {SidenavState} from "@/store/sidenav/sidenav";
 
-@Options({
-  name: 'SideNavOverlay',
+@Component({
+    name: 'SideNavOverlay',
+    setup() {
+        const store = useStore();
+        return {
+            store: store,
+            state: store.state.sidenav,
+        }
+    }
 })
 export default class SideNavOverlay extends Vue {
-  private store = setup(() => useStore());
-  private state: SidenavState = setup(() => useStore().state.sidenav);
+    private store;
+    private state: SidenavState;
 
-  public sideNavToggle(): void {
-    this.store.commit(SidenavMutation.TOGGLE);
-  }
+    public sideNavToggle(): void {
+        this.store.commit(SidenavMutation.TOGGLE);
+    }
 }
 </script>
 
