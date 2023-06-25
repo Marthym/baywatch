@@ -1,12 +1,12 @@
 <template>
     <div v-if="store.getters['user/hasRoleUser']" class="overflow-x-auto mt-4">
         <SmartTable columns="Name|Managers|Topic" :elements="teams" actions="adl"
-                    @add="addNewTeam"
-                    @view="onEditData"
-                    @edit="onEditData"
-                    @delete="onDeleteData"
-                    @leave="onLeave"
-                    @deleteSelected="onDeleteSelected">
+                    @add="addNewTeam()"
+                    @view="idx => onEditData(idx)"
+                    @edit="idx => onEditData(idx)"
+                    @delete="idx => onDeleteData(idx)"
+                    @leave="idx => onLeave(idx)"
+                    @deleteSelected="idx => onDeleteSelected(idx)">
             <template #default="e">
                 <std>
                     {{ e.data.name }}
@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts">
-import {Options, Vue} from "vue-property-decorator";
+import {Component, Vue} from "vue-facing-decorator";
 import TableActionsComponent from "@/common/components/TableActionsComponent.vue";
 import SmartTable from "@/common/components/smartTable/SmartTable.vue";
 import stla from '@/common/components/smartTable/SmartTableLineAction.vue'
@@ -46,7 +46,6 @@ import TeamEditor, {CloseEvent} from "@/teams/components/TeamEditor.vue";
 import reloadActionService from "@/common/services/ReloadActionService";
 import notificationService from "@/services/notification/NotificationService";
 import {Store, useStore} from "vuex";
-import {setup} from "vue-class-component";
 import {NotificationCode} from "@/services/notification/NotificationCode.enum";
 import {Severity} from "@/services/notification/Severity.enum";
 import {AlertResponse, AlertType} from "@/common/components/alertdialog/AlertDialog.types";
@@ -55,15 +54,27 @@ import {MemberPending} from "@/teams/model/MemberPending.enum";
 import {teamMemberAdd, teamMemberDelete} from "@/teams/services/TeamMembers.service";
 import {UserState} from "@/store/user/user";
 
-@Options({
+@Component({
     name: 'TeamsPage',
     computed: {
         MemberPending() {
             return MemberPending
         },
     },
-    methods: {ArrowLeftOnRectangleIcon},
-    components: {InformationCircleIcon, TeamEditor, std, stla, SmartTable, TableActionsComponent},
+    components: {
+        ArrowLeftOnRectangleIcon,
+        InformationCircleIcon,
+        TeamEditor,
+        std,
+        stla,
+        SmartTable,
+        TableActionsComponent
+    },
+    setup() {
+        return {
+            store: useStore<UserState>(),
+        }
+    }
 })
 export default class TeamsPage extends Vue {
     private isEditorOpened: boolean = false;
@@ -71,9 +82,13 @@ export default class TeamsPage extends Vue {
     private activeTeam: SmartTableView<Team>;
     private activePage = 0;
 
-    private store: Store<UserState> = setup(() => useStore<UserState>());
+    private store: Store<UserState>;
 
-    // noinspection JSUnusedLocalSymbols
+    private ArrowLeftOnRectangleIcon = ArrowLeftOnRectangleIcon;
+
+    /**
+     * @see mounted
+     */
     private mounted(): void {
         this.loadNextPage().subscribe({
             next: () => {
@@ -86,7 +101,7 @@ export default class TeamsPage extends Vue {
         });
     }
 
-    private loadNextPage(page: number = 0): Observable<SmartTableView<Team>[]> {
+    public loadNextPage(page: number = 0): Observable<SmartTableView<Team>[]> {
         const roles: string[] = this.store.state.user.user.roles;
         return teamsList(page).pipe(
             switchMap(page => page.data),

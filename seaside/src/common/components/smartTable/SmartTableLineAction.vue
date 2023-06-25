@@ -5,11 +5,11 @@
 </template>
 
 <script lang="ts">
-import {Options, Prop, Vue} from "vue-property-decorator";
+import {Component, Prop, Vue} from "vue-facing-decorator";
 import {AdjustmentsHorizontalIcon} from '@heroicons/vue/24/outline';
 import {FunctionalComponent} from "vue";
 
-@Options({
+@Component({
   name: 'stla',
   components: {AdjustmentsHorizontalIcon},
   emits: ['click'],

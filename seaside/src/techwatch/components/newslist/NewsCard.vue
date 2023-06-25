@@ -41,13 +41,13 @@
 </template>
 
 <script lang="ts">
-import {Options, Prop, Vue} from 'vue-property-decorator';
+import {Component, Prop, Vue} from 'vue-facing-decorator';
 import {NewsView} from "@/techwatch/components/newslist/model/NewsView";
 import {ImgHTMLAttributes} from "vue";
 
 const EMPTY_IMAGE_DATA: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
-@Options({name: 'NewsCard', emits: ['addFilter']})
+@Component({name: 'NewsCard', emits: ['addFilter']})
 export default class NewsCard extends Vue {
   @Prop() card?: NewsView;
 
