@@ -1,15 +1,15 @@
 <template>
   <div class="md:btn-group mb-2">
-    <button v-if="actions.includes('a')" class="btn btn-sm btn-ghost mb-2 mr-2 md:m-0"
+    <button v-if="actions.includes('a')" class="btn btn-sm mb-2 mr-2 md:m-0"
             @click.stop.prevent="$emit('add')">
       <PlusCircleIcon class="w-6 h-6 md:mr-2"/>
       <span>Ajouter</span>
     </button>
-    <button v-if="actions.includes('i')" class="btn btn-sm mb-2 mr-2 md:m-0" @click="$emit('import')">
+    <button v-if="actions.includes('i')" class="btn btn-sm btn-ghost mb-2 mr-2 md:m-0" @click="$emit('import')">
       <ArrowDownTrayIcon class="w-6 h-6 mr-2"/>
       Importer
     </button>
-    <a v-if="actions.includes('e')" class="btn btn-sm mb-2 mr-2 md:m-0" @click="$emit('export')">
+    <a v-if="actions.includes('e')" class="btn btn-sm btn-ghost mb-2 mr-2 md:m-0" @click="$emit('export')">
       <ArrowUpTrayIcon class="w-6 h-6 mr-2"/>
       Exporter
     </a>

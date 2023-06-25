@@ -1,15 +1,15 @@
 <template>
   <div class="overflow-x-auto mt-4">
     <div class="md:btn-group mb-2">
-      <button class="btn btn-sm btn-ghost mb-2 mr-2 md:m-0" @click.prevent="onUserAdd()">
+      <button class="btn btn-sm mb-2 mr-2 md:m-0" @click.prevent="onUserAdd()">
         <PlusCircleIcon class="w-6 h-6 md:mr-2"/>
         <span>Ajouter</span>
       </button>
-      <button class="btn btn-sm mb-2 mr-2 md:m-0" @click="">
+      <button class="btn btn-sm btn-ghost mb-2 mr-2 md:m-0" @click="">
         <ArrowDownTrayIcon class="w-6 h-6 mr-2"/>
         Importer
       </button>
-      <a class="btn btn-sm mb-2 mr-2 md:m-0">
+      <a class="btn btn-sm btn-ghost mb-2 mr-2 md:m-0">
         <ArrowUpTrayIcon class="w-6 h-6 mr-2"/>
         Exporter
       </a>
@@ -18,7 +18,7 @@
         Supprimer
       </button>
     </div>
-    <table class="table w-full table-compact" aria-describedby="User List">
+    <table class="table w-full table-sm" aria-describedby="User List">
       <thead>
       <tr>
         <th scope="col" class="w-1">
