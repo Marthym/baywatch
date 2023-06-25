@@ -63,7 +63,6 @@ export default class TeamEditor extends Vue {
     private throttledOnSave: () => void;
 
     private isMembersDisplayable(): boolean {
-        console.debug('test');
         return (this.value.data !== undefined) && '_id' in this.value.data;
     }
 
@@ -99,7 +98,6 @@ export default class TeamEditor extends Vue {
                 .subscribe({
                     next: team => {
                         Object.assign(this.value.data, team);
-                        this.$nextTick(() => console.log("next: ", this.modelValue));
                         this.payload.updated = true;
                         notificationService.pushSimpleOk(`Team ${team.name} saved successfully !`);
                     }
