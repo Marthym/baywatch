@@ -86,7 +86,7 @@ import {MemberPending} from "@/teams/model/MemberPending.enum";
 import {User} from "@/teams/model/User.type";
 import {filter, map, switchMap} from "rxjs/operators";
 import {Team} from "@/teams/model/Team.type";
-import * as debounce from "lodash/debounce";
+import debounce from "lodash/debounce";
 import notificationService from "@/services/notification/NotificationService";
 import {AlertResponse, AlertType} from "@/common/components/alertdialog/AlertDialog.types";
 

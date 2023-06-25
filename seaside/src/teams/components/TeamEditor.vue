@@ -40,7 +40,7 @@ import CurtainModal from "@/common/components/CurtainModal.vue";
 import {Team} from "@/teams/model/Team.type";
 import {teamCreate, teamUpdate} from "@/teams/services/Teams.service";
 import {SmartTableView} from "@/common/components/smartTable/SmartTableView.interface";
-import * as throttle from "lodash/throttle";
+import throttle from "lodash/throttle";
 import TeamMembersInput from "@/teams/components/TeamMembersInput.vue";
 import notificationService from "@/services/notification/NotificationService";
 
@@ -61,13 +61,6 @@ export default class TeamEditor extends Vue {
         updated: false,
     };
     private throttledOnSave: () => void;
-
-    /**
-     * @see created
-     */
-    private created(): void {
-        this.throttledOnSave = throttle(this.onSave, 1000, {'trailing': false});
-    }
 
     /**
      * @see unmounted
@@ -101,6 +94,13 @@ export default class TeamEditor extends Vue {
                     }
                 });
         }
+    }
+
+    /**
+     * @see created
+     */
+    private created(): void {
+        this.throttledOnSave = throttle(this.onSave, 1000, {'trailing': false});
     }
 
     private close(): void {
