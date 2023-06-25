@@ -1,12 +1,8 @@
 <template>
-    <div class="modal compact flex-col space-x-0" v-if="isOpened"
-         :class="{'opacity-100 pointer-events-auto visible': isOpened}">
-        <div v-if="title !== undefined" class="modal-box scale-100 translate-y-0 rounded-none
-      text-lg bg-base-200 text-base-content uppercase font-bold p-4">
-            {{ title }}
-        </div>
-        <div class="modal-box scale-100 translate-y-0 rounded-none overflow-visible"
-             :class="{'pt-2': title !== undefined}">
+    <dialog class="modal bg-base-200 bg-opacity-50 backdrop-blur-sm text-primary-content" v-if="isOpened"
+            :class="{'opacity-100 pointer-events-auto visible': isOpened}">
+        <div class="modal-box flex-col space-x-0 overflow-visible">
+            <h3 class="font-bold text-lg -mt-2 mb-2">{{ title }}</h3>
             <slot></slot>
             <div class="modal-action">
                 <slot name="actions">
@@ -14,7 +10,7 @@
                 </slot>
             </div>
         </div>
-    </div>
+    </dialog>
 </template>
 <script lang="ts">
 import {Component, Prop, Vue} from "vue-facing-decorator";
