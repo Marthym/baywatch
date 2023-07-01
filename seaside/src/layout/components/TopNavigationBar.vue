@@ -5,7 +5,7 @@
             <ChevronDoubleRightIcon class="h-6 w-6"/>
         </button>
         <!-- The left side of top bar -->
-        <div class="navbar-start border-b border-base-100 ml-8 h-full">
+        <div class="navbar-start border-b border-base-content/20 ml-8 h-full">
             <!-- The NEWS Tab-->
             <router-link to="/news"
                          active-class="border-b-2 text-accent border-accent"
@@ -24,7 +24,7 @@
         </div>
 
         <!-- The RIGHT side of top bar -->
-        <div v-if="isAuthenticated" class="navbar-end w-full md:w-1/2 border-b border-base-100 pr-2 mr-2 h-full">
+        <div v-if="isAuthenticated" class="navbar-end w-full md:w-1/2 border-b border-base-content/20 pr-2 mr-2 h-full">
             <!-- Refresh Icon -->
             <div class="indicator mx-1">
                 <span v-if="statistics.updated > 0"

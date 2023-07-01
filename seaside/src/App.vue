@@ -5,7 +5,7 @@
         <div class="flex flex-col flex-1 h-full overflow-hidden">
             <TopNavigationBar/>
             <main ref="mainElement"
-                  class="flex-1 flex flex-col bg-gray-700 transition duration-500 ease-in-out overflow-y-auto px-4 py-2 lg:px-10">
+                  class="flex-1 flex flex-col bg-neutral transition duration-500 ease-in-out overflow-y-auto px-4 py-2 lg:px-10">
                 <router-view></router-view>
                 <alert-dialog/>
                 <notification-area/>
