@@ -3,19 +3,22 @@
         <template v-for="(card, idx) in news" :key="card.data.id">
             <NewsCard :ref="card.data.id" :card="card" @activate="activateNewsCard(idx)" @addFilter="onAddFilter">
                 <template #actions v-if="userStore.isAuthenticated">
-                    <div class="btn-group -ml-2 lg:ml-0">
+                    <div class="join -ml-2 lg:ml-0">
                         <button v-if="card.data.state.read" @click.stop="markNewsRead(idx, false)"
-                                class="btn btn-xs btn-ghost">
+                                class="btn btn-xs btn-ghost join-item">
                             <EnvelopeOpenIcon class="h-5 w-5 cursor-pointer stroke-2"/>
                         </button>
-                        <button v-else @click.stop="markNewsRead(idx, true)" class="btn btn-xs btn-ghost">
+                        <button v-else @click.stop="markNewsRead(idx, true)" class="btn btn-xs btn-ghost join-item">
                             <EnvelopeIcon class="h-5 w-5 cursor-pointer stroke-2"/>
                         </button>
-                        <button @click.stop="toggleNewsShared(idx)" class="btn btn-xs btn-ghost">
+                        <button @click.stop="toggleNewsKeep(idx, true)" class="btn btn-xs btn-ghost join-item">
+                            <BookmarkIcon class="h-5 w-5 cursor-pointer stroke-2"/>
+                        </button>
+                        <button @click.stop="toggleNewsShared(idx)" class="btn btn-xs btn-ghost join-item">
                             <ShareIcon class="h-5 w-5 cursor-pointer stroke-2"
                                        :class="{'text-red-400': card.data.state.shared}"/>
                         </button>
-                        <button class="btn btn-xs btn-ghost" disabled="disabled">
+                        <button class="btn btn-xs btn-ghost join-item" disabled="disabled">
                             <FireIcon class="w-6 h-6" :class="{'text-warning': card.data.popularity?.score > 0}"/>
                             <span v-if="card.data.popularity?.score > 0"
                                   class="text-warning">{{ card.data.popularity.score }}</span>
@@ -51,14 +54,14 @@ import {News} from "@/techwatch/model/News.type";
 import keyboardControl from '@/common/services/KeyboardControl';
 import {NEWS_FILTER_FEED_MUTATION, NewsStore} from "@/common/model/store/NewsStore.type";
 import {Feed} from "@/techwatch/model/Feed.type";
-import {EnvelopeIcon, EnvelopeOpenIcon, ShareIcon} from "@heroicons/vue/24/outline";
+import {BookmarkIcon, EnvelopeIcon, EnvelopeOpenIcon, ShareIcon} from "@heroicons/vue/24/outline";
 import {FireIcon} from "@heroicons/vue/20/solid";
 
 
 @Component({
     name: 'NewsList',
     components: {
-        EnvelopeIcon, EnvelopeOpenIcon, ShareIcon, FireIcon,
+        BookmarkIcon, EnvelopeIcon, EnvelopeOpenIcon, ShareIcon, FireIcon,
         NewsCard,
     },
     setup() {
@@ -140,6 +143,9 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
             }
             if (this.newsStore.popular) {
                 query.popular = true;
+            }
+            if (this.newsStore.keep) {
+                query.keep = true;
             }
             if (this.newsStore.tags.length > 0) {
                 query.tags = [];
@@ -275,6 +281,20 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
             } else {
                 this.news[idx].data.popularity.score -= 1;
             }
+        });
+    }
+
+    private toggleNewsKeep(idx: number) {
+        if (!this.isAuthenticated) {
+            return;
+        }
+        const target = this.news[idx];
+        const markObs = (!target.data.state.keep)
+            ? newsService.mark(target.data.id, Mark.KEEP)
+            : newsService.unmark(target.data.id, Mark.KEEP);
+
+        markObs.subscribe(state => {
+            this.news[idx].data.state.keep = state.keep;
         });
     }
 

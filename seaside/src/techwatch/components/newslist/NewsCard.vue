@@ -49,7 +49,7 @@ const EMPTY_IMAGE_DATA: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA
 
 @Component({name: 'NewsCard', emits: ['activate', 'addFilter']})
 export default class NewsCard extends Vue {
-  @Prop() card?: NewsView;
+  @Prop() card: NewsView;
 
   get cardImage() {
     return this.card?.data?.image ?? EMPTY_IMAGE_DATA;

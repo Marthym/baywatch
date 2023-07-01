@@ -30,15 +30,15 @@ export class NewsService {
     query LoadNewsListPage (
         $_p: Int, $_pp: Int = ${NewsService.DEFAULT_PER_PAGE}, $_from: Int, $_to: Int, $_s: String = "-publication",
         $id: ID, $title: String, $description: String, $publication: String, $feeds: [String],
-        $tags: [String] $read: Boolean, $shared: Boolean, $popular: Boolean) {
+        $tags: [String] $read: Boolean, $shared: Boolean, $popular: Boolean, $keep: Boolean) {
         newsSearch(_p: $_p, _pp: $_pp, _from: $_from, _to: $_to, _s: $_s,
             id: $id, title: $title, description: $description, publication: $publication, feeds: $feeds,
-            tags: $tags read: $read, shared: $shared, popular: $popular) {
+            tags: $tags read: $read, shared: $shared, popular: $popular, keep: $keep) {
             totalCount
             entities {
                 id title description publication image imgd imgm link
                 feeds { id name }
-                state { read shared }
+                state { read shared keep }
                 popularity { score }
             }
         }
