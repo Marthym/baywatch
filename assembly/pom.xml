@@ -69,7 +69,7 @@
                 <artifactId>jib-maven-plugin</artifactId>
                 <configuration>
                     <from>
-                        <image>eclipse-temurin:17-jre@sha256:54c51553e65a92a8f1c55bb38cd16c3669f40695e2d4ca107608655299463c25</image>
+                        <image>eclipse-temurin:17-jre-alpine@sha256:dd8238c151293ae6a7c22898ef2f0df2af8a05786aef73ccd3248e73765969ed</image>
                     </from>
                     <to>
                         <image>marthym/baywatch:${project.version}</image>
