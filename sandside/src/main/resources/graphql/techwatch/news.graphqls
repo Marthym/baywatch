@@ -1,6 +1,7 @@
 type State {
     read: Boolean
     shared: Boolean
+    keep: Boolean
 }
 
 type Popularity {
@@ -44,6 +45,7 @@ extend type Query {
         read: Boolean
         shared: Boolean
         popular: Boolean
+        keep: Boolean
     ): SearchNewsResponse
 
     popularity(ids: [String]): Popularity
