@@ -3,7 +3,7 @@
         <FeedActions v-if="userState.isAuthenticated" :delete-enable="checkState"
                      @clickAdd="addNewFeed()" @clickImport="this.isFileUploadVisible = true" @clickDelete="bulkDelete()"/>
         <table class="table w-full" aria-describedby="Feeds list">
-            <thead class="sticky top-0 bg-base-200 z-50">
+            <thead class="top-0 z-50">
             <tr>
                 <th scope="col" v-if="userState.isAuthenticated" class="w-1">
                     <label>
