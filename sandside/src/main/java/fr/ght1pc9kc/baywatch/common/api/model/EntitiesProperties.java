@@ -10,6 +10,7 @@ public final class EntitiesProperties {
     public static final String DESCRIPTION = "description";
     public static final String FEED_ID = "feedId";
     public static final String ID = "id";
+    public static final String KEEP = "keep";
     public static final String LAST_WATCH = "lastWatch";
     public static final String LINK = "link";
     public static final String LOGIN = "login";
