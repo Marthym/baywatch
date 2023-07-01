@@ -1,16 +1,16 @@
 <template>
-  <td>
-    <slot/>
-  </td>
+    <td>
+        <slot/>
+    </td>
 </template>
 
 <script lang="ts">
-import {Options, Vue} from "vue-property-decorator";
+import {Component, Vue} from "vue-facing-decorator";
 
-@Options({
-  name: 'std',
-  components: {},
-  emits: [],
+@Component({
+    name: 'std',
+    components: {},
+    emits: [],
 })
 export default class SmartTableData extends Vue {
 }

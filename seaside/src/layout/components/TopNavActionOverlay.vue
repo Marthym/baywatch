@@ -19,9 +19,9 @@
 </template>
 
 <script lang="ts">
-import {Options, Prop, Vue} from "vue-property-decorator";
+import {Component, Prop, Vue} from "vue-facing-decorator";
 
-@Options({
+@Component({
   name: 'TopNavActionOverlay',
   emits: ['close'],
   props: ['isOpen'],

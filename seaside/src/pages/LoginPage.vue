@@ -32,19 +32,26 @@
 </template>
 
 <script lang="ts">
-import {Options, Vue} from 'vue-property-decorator';
-import {setup} from "vue-class-component";
+import {Component, Vue} from 'vue-facing-decorator';
 import {useStore} from "vuex";
 import {UPDATE_MUTATION} from "@/store/user/UserConstants";
 
 import authenticationService from "@/security/services/AuthenticationService";
 import notificationService from "@/services/notification/NotificationService";
-import {useRouter} from "vue-router";
+import {Router, useRouter} from "vue-router";
 
-@Options({name: 'LoginPage'})
+@Component({
+    name: 'LoginPage',
+    setup() {
+        return {
+            store: useStore(),
+            router: useRouter(),
+        }
+    }
+})
 export default class LoginPage extends Vue {
-    private store = setup(() => useStore());
-    private router = setup(() => useRouter());
+    private store;
+    private router: Router;
 
     public username = '';
     public password = '';

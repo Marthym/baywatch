@@ -1,7 +1,7 @@
 <template>
-  <div class="flex flex-col lg:flex-row bg-gray-600 shadow rounded-lg"
+  <div class="flex flex-col lg:flex-row bg-base-100 shadow rounded-lg"
        :class="{
-        'shadow-lg lg:h-60 my-8 border border-gray-400': card.isActive,
+        'shadow-lg lg:h-60 my-8 border border-base-200': card.isActive,
         'lg:h-56 m-5': !card.isActive,
         'opacity-30': card.data.state?.read && !card.isActive,
        }" @click="$emit('activate')">
@@ -41,13 +41,13 @@
 </template>
 
 <script lang="ts">
-import {Options, Prop, Vue} from 'vue-property-decorator';
+import {Component, Prop, Vue} from 'vue-facing-decorator';
 import {NewsView} from "@/techwatch/components/newslist/model/NewsView";
 import {ImgHTMLAttributes} from "vue";
 
 const EMPTY_IMAGE_DATA: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
-@Options({name: 'NewsCard', emits: ['addFilter']})
+@Component({name: 'NewsCard', emits: ['activate', 'addFilter']})
 export default class NewsCard extends Vue {
   @Prop() card?: NewsView;
 

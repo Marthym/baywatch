@@ -71,7 +71,7 @@
 </template>
 
 <script lang="ts">
-import {Options, Prop, Vue} from "vue-property-decorator";
+import {Component, Prop, Vue} from "vue-facing-decorator";
 import {PlusCircleIcon, TrashIcon} from "@heroicons/vue/24/outline";
 import {ClockIcon, TrophyIcon, UserPlusIcon} from "@heroicons/vue/20/solid";
 import {Member} from "@/teams/model/Member.type";
@@ -98,7 +98,7 @@ type StatusIcon = {
     tooltip: string,
 }
 
-@Options({
+@Component({
     name: 'TeamMembersInput',
     components: {PlusCircleIcon, TrashIcon, TrophyIcon, UserPlusIcon, ClockIcon},
     emits: [UPDATE_EVENT, SUBMIT_EVENT],
