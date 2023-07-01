@@ -21,6 +21,13 @@
                                @change="onChangePopular" :checked="newsStore.popular">
                     </label>
                 </li>
+                <li>
+                    <label class="label cursor-pointer py-1">
+                        <span class="label-text">keep</span>
+                        <input type="checkbox" class="toggle"
+                               @change="onChangeKeep" :checked="newsStore.keep">
+                    </label>
+                </li>
             </ul>
         </li>
         <li class="mt-2">
@@ -58,6 +65,7 @@ import {
     FeedFilter,
     NEWS_REPLACE_TAGS_MUTATION,
     NEWS_RESET_FILTERS_MUTATION,
+    NEWS_TOGGLE_KEEP_MUTATION,
     NEWS_TOGGLE_POPULAR_MUTATION,
     NEWS_TOGGLE_UNREAD_MUTATION,
     NewsStore
@@ -120,6 +128,11 @@ export default class SideNavFilters extends Vue {
 
     private onChangePopular(): void {
         this.store.commit(NEWS_TOGGLE_POPULAR_MUTATION);
+        reloadActionService.reload('news');
+    }
+
+    private onChangeKeep(): void {
+        this.store.commit(NEWS_TOGGLE_KEEP_MUTATION);
         reloadActionService.reload('news');
     }
 }
