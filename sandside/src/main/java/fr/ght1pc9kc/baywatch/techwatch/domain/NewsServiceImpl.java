@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.FEED_ID;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.KEEP;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.NEWS_ID;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.POPULAR;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.PUBLICATION;
@@ -51,7 +52,7 @@ import static java.util.function.Predicate.not;
 @RequiredArgsConstructor
 public class NewsServiceImpl implements NewsService {
     private static final Set<String> ALLOWED_CRITERIA = Set.of(ID, STATE, TITLE, FEED_ID);
-    private static final Set<String> ALLOWED_AUTHENTICATED_CRITERIA = Set.of(POPULAR, READ, SHARED, TAGS, PUBLICATION);
+    private static final Set<String> ALLOWED_AUTHENTICATED_CRITERIA = Set.of(POPULAR, READ, SHARED, KEEP, TAGS, PUBLICATION);
     private static final int MAX_ANONYMOUS_NEWS = 20;
     private static final String AUTHENTICATION_NOT_FOUND = "Authentication not found !";
 
