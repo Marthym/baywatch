@@ -41,10 +41,10 @@ public final class PropertiesMappers {
             EntitiesProperties.PUBLICATION, NEWS.NEWS_PUBLICATION,
             EntitiesProperties.FEED_ID, NEWS_FEEDS.NEFE_FEED_ID,
             EntitiesProperties.READ, DSL.coalesce(NEWS_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.READ),
+            EntitiesProperties.KEEP, DSL.field(DSL.coalesce(NEWS_STATE.NURS_STATE, Flags.NONE)
+                    .bitAnd(Flags.KEEP).eq(Flags.KEEP)),
             EntitiesProperties.POPULAR, DSL.field(DSL.coalesce(POPULAR.NURS_STATE, Flags.NONE)
                     .bitAnd(Flags.SHARED).eq(Flags.SHARED)),
-            EntitiesProperties.KEEP, DSL.field(DSL.coalesce(POPULAR.NURS_STATE, Flags.NONE)
-                    .bitAnd(Flags.KEEP).eq(Flags.KEEP)),
             EntitiesProperties.TITLE, NEWS.NEWS_TITLE
     );
 
