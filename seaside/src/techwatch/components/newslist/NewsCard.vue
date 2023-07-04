@@ -25,14 +25,14 @@
            v-html="card.data.title"></a>
         <span v-html="card.data.description" class="mt-2 text-base flex-grow max-h-80 overflow-hidden"></span>
 
-        <div class="flex flex-row flex-wrap-reverse items-center justify-end items-end text-xs mt-2">
+        <div class="flex flex-row flex-wrap-reverse lg:justify-end text-xs mt-2">
           <slot name="actions"></slot>
           <span class="grow"></span>
-          <div class="italic text-right lg:whitespace-nowrap">
-            <button class="badge badge-xs m-px p-2 rounded" @click.stop="$emit('addFilter', {type: 'feed', entity: f})"
+          <span class="italic self-start lg:block">{{ publication }}</span>
+          <div class="text-right lg:whitespace-nowrap order-last basis-full">
+            <button class="badge badge-neutral badge-sm m-px rounded lg:whitespace-nowrap order-last basis-full" @click.stop="$emit('addFilter', {type: 'feed', entity: f})"
                     v-for="f in card.data.feeds">{{ f.name }}
             </button>
-            <div class="self-end">{{ publication }}</div>
           </div>
         </div>
       </div>
