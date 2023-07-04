@@ -53,8 +53,9 @@ const mutations = {
                 default:
             }
         } else {
-            st.popular = false;
             st.unread = true;
+            st.popular = false;
+            st.keep = false;
             delete st.feed;
             st.tags.splice(0);
         }

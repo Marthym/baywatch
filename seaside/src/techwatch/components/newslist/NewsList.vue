@@ -11,7 +11,7 @@
                         <button v-else @click.stop="markNewsRead(idx, true)" class="btn btn-xs btn-ghost join-item">
                             <EnvelopeIcon class="h-5 w-5 cursor-pointer stroke-2"/>
                         </button>
-                        <button @click.stop="toggleNewsKeep(idx, true)" class="btn btn-xs btn-ghost join-item">
+                        <button @click.stop="toggleNewsKeep(idx)" class="btn btn-xs btn-ghost join-item">
                             <BookmarkIcon class="h-5 w-5 cursor-pointer stroke-2"/>
                         </button>
                         <button @click.stop="toggleNewsShared(idx)" class="btn btn-xs btn-ghost join-item">
@@ -30,7 +30,7 @@
     </div>
 </template>
 <script lang="ts">
-import {Component, Vue, Watch} from 'vue-facing-decorator';
+import {Component, Prop, Vue, Watch} from 'vue-facing-decorator';
 import NewsCard from "@/techwatch/components/newslist/NewsCard.vue";
 import {iif, Observable, Subject} from "rxjs";
 import {map, switchMap, take, tap} from "rxjs/operators";
@@ -76,7 +76,6 @@ import {FireIcon} from "@heroicons/vue/20/solid";
     }
 })
 export default class NewsList extends Vue implements ScrollActivable, InfiniteScrollable {
-
     private readonly store;
     private readonly userStore: UserState;
     private readonly newsStore: NewsStore;
