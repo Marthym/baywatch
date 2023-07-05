@@ -5,6 +5,7 @@ import {
     NewsStore,
     REPLACE_TAGS,
     RESET_FILTERS,
+    TOGGLE_KEEP,
     TOGGLE_POPULAR,
     TOGGLE_UNREAD
 } from "@/common/model/store/NewsStore.type";
@@ -13,6 +14,7 @@ const state = (): NewsStore => ({
     tags: [],
     unread: true,
     popular: false,
+    keep: false,
 });
 
 // getters
@@ -39,6 +41,9 @@ const mutations = {
                 case "unread":
                     st.unread = true;
                     break;
+                case "keep":
+                    st.keep = false;
+                    break;
                 case "feed":
                     delete st.feed;
                     break;
@@ -48,8 +53,9 @@ const mutations = {
                 default:
             }
         } else {
-            st.popular = false;
             st.unread = true;
+            st.popular = false;
+            st.keep = false;
             delete st.feed;
             st.tags.splice(0);
         }
@@ -59,6 +65,9 @@ const mutations = {
     },
     [TOGGLE_UNREAD](st: NewsStore): void {
         st.unread = !st.unread;
+    },
+    [TOGGLE_KEEP](st: NewsStore): void {
+        st.keep = !st.keep;
     },
 }
 
