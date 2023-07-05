@@ -8,6 +8,7 @@ import java.util.Objects;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.DESCRIPTION;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.FEED_ID;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.KEEP;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.POPULAR;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.PUBLICATION;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.READ;
@@ -29,7 +30,8 @@ public record SearchNewsRequest(
         List<String> feeds,
         Boolean read,
         Boolean shared,
-        Boolean popular
+        Boolean popular,
+        Boolean keep
 ) {
     public Map<String, List<String>> toPageRequest() {
         Map<String, List<String>> params = new HashMap<>();
@@ -47,6 +49,7 @@ public record SearchNewsRequest(
         if (!Objects.isNull(read)) params.put(READ, List.of(Boolean.toString(read)));
         if (!Objects.isNull(shared)) params.put(SHARED, List.of(Boolean.toString(shared)));
         if (!Objects.isNull(popular)) params.put(POPULAR, List.of(Boolean.toString(popular)));
+        if (!Objects.isNull(keep)) params.put(KEEP, List.of(Boolean.toString(keep)));
         return Map.copyOf(params);
     }
 }

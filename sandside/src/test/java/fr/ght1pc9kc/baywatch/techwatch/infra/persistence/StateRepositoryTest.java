@@ -89,7 +89,7 @@ class StateRepositoryTest {
             Flags.SHARED + ", " + Flags.READ + ", true, true",
             Flags.READ + ", " + Flags.READ + ", true, false",
     })
-    void should_add_state_flag(int startState, int removeFlag, boolean expectedRead, boolean expectedShared, DSLContext dsl) {
+    void should_add_state_flag(int startState, int newFlag, boolean expectedRead, boolean expectedShared, DSLContext dsl) {
         final String newsId = "37c8fbce87cae77f34aac2a2a52511f60b1369317dec57f38df3f3ae30c42840";
         dsl.update(NEWS_USER_STATE)
                 .set(NEWS_USER_STATE.NURS_STATE, startState)
@@ -97,7 +97,7 @@ class StateRepositoryTest {
                 .execute();
 
         tested.flag(newsId,
-                OKENOBI.getUserId(), removeFlag).block();
+                OKENOBI.getUserId(), newFlag).block();
 
         Integer actual = dsl.select(NEWS_USER_STATE.NURS_STATE)
                 .from(NEWS_USER_STATE)

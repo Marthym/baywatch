@@ -10,4 +10,5 @@ export interface NewsSearchRequest extends SearchRequest {
     read?: boolean
     shared?: boolean
     popular?: boolean
+    keep?: boolean
 }

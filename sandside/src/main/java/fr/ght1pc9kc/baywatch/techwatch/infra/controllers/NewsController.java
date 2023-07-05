@@ -46,14 +46,12 @@ public class NewsController {
 
     @MagicConstant(flagsFromClass = Flags.class)
     private static int stringToFlag(String flag) {
-        switch (flag.toUpperCase()) {
-            case "READ":
-                return Flags.READ;
-            case "SHARED":
-                return Flags.SHARED;
-            default:
-                return Flags.NONE;
-        }
+        return switch (flag.toUpperCase()) {
+            case "READ" -> Flags.READ;
+            case "SHARED" -> Flags.SHARED;
+            case "KEEP" -> Flags.KEEP;
+            default -> Flags.NONE;
+        };
     }
 
     @GetMapping("/popularity")
