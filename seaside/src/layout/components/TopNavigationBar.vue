@@ -14,7 +14,7 @@
         <NewspaperIcon class="w-8 h-8 sm:w-6 sm:h-6 inline-block -mt-2"/>
         <span class="hidden sm:inline-block">news</span>
       </router-link>
-      <router-link to="/clipped"
+      <router-link to="/clipped" v-if="isAuthenticated"
                    active-class="border-b-2 text-accent border-accent"
                    class="py-2 ml-2 font-medium capitalize focus:outline-none transition duration-500 ease-in-out"
                    aria-label="display news list">
