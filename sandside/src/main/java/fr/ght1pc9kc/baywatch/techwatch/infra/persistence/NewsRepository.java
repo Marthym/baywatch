@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
 import com.machinezoo.noexception.Exceptions;
+import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
@@ -10,6 +11,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.juery.basic.common.lang3.StringUtils;
+import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
 import lombok.AllArgsConstructor;
@@ -50,6 +52,7 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 public class NewsRepository implements NewsPersistencePort {
     public static final JooqConditionVisitor NEWS_CONDITION_VISITOR =
             new JooqConditionVisitor(NEWS_PROPERTIES_MAPPING);
+    private static final ListPropertiesCriteriaVisitor LIST_PROPERTIES_VISITOR = new ListPropertiesCriteriaVisitor();
 
     private final @DatabaseQualifier Scheduler databaseScheduler;
     private final DSLContext dsl;
@@ -125,6 +128,9 @@ public class NewsRepository implements NewsPersistencePort {
                     return x;
                 }))
                 .subscribeOn(databaseScheduler)
+                .flatMap(loader -> Mono.fromCallable(() -> dsl.execute("ANALYZE"))
+                        .subscribeOn(databaseScheduler)
+                        .thenReturn(loader))
                 .map(loader -> {
                     log.debug("Load {} News with {} error(s).", loader.processed(), loader.errors().size());
                     return loader.processed();
@@ -153,6 +159,9 @@ public class NewsRepository implements NewsPersistencePort {
         Condition conditions = Optional.ofNullable(qCtx.filter).map(f -> f.accept(NEWS_CONDITION_VISITOR))
                 .orElse(DSL.noCondition());
 
+        List<String> properties = Optional.ofNullable(qCtx.filter).map(f -> f.accept(LIST_PROPERTIES_VISITOR))
+                .orElse(List.of());
+
         SelectQuery<Record> select = dsl.selectQuery();
         select.addSelect(fields);
         select.addFrom(NEWS);
@@ -167,17 +176,19 @@ public class NewsRepository implements NewsPersistencePort {
             select.addJoin(NEWS_STATE, JoinType.LEFT_OUTER_JOIN,
                     NEWS.NEWS_ID.eq(NEWS_STATE.NURS_NEWS_ID).and(NEWS_STATE.NURS_USER_ID.eq(qCtx.userId)));
 
-            ArrayList<Condition> popularJoinConditions = new ArrayList<>();
-            popularJoinConditions.add(NEWS.NEWS_ID.eq(POPULAR.NURS_NEWS_ID));
-            popularJoinConditions.add(DSL.coalesce(POPULAR.NURS_STATE, Flags.NONE).bitAnd(Flags.SHARED).eq(Flags.SHARED));
-            if (!qCtx.teamMates.isEmpty()) {
-                popularJoinConditions.add(POPULAR.NURS_USER_ID.in(qCtx.teamMates));
+            if (properties.contains(EntitiesProperties.POPULAR)) {
+                ArrayList<Condition> popularJoinConditions = new ArrayList<>();
+                popularJoinConditions.add(NEWS.NEWS_ID.eq(POPULAR.NURS_NEWS_ID));
+                popularJoinConditions.add(DSL.coalesce(POPULAR.NURS_STATE, Flags.NONE).bitAnd(Flags.SHARED).eq(Flags.SHARED));
+                if (!qCtx.teamMates.isEmpty()) {
+                    popularJoinConditions.add(POPULAR.NURS_USER_ID.in(qCtx.teamMates));
+                }
+                select.addJoin(POPULAR, JoinType.LEFT_OUTER_JOIN, DSL.condition(Operator.AND, popularJoinConditions));
             }
-            select.addJoin(POPULAR, JoinType.LEFT_OUTER_JOIN, DSL.condition(Operator.AND, popularJoinConditions));
         }
 
         SelectQuery<Record> paginateSelect = (SelectQuery<Record>) JooqPagination.apply(qCtx.pagination, NEWS_PROPERTIES_MAPPING, select);
-        paginateSelect.addOrderBy(NEWS.NEWS_ID); // This avoid random order for records with same value in ordered fields
+        paginateSelect.addOrderBy(NEWS.NEWS_ID); // This avoids random order for records with same value in ordered fields
         return paginateSelect;
     }
 
