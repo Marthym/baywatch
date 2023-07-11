@@ -8,6 +8,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.Popularity;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.graphql.SearchNewsRequest;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
+import io.micrometer.observation.ObservationRegistry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.Arguments;
@@ -15,6 +16,7 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import reactor.core.observability.micrometer.Micrometer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -25,16 +27,22 @@ import java.util.Set;
 public class GraphQLNewsController {
     private final NewsService newsService;
     private final PopularNewsService popularService;
+    private final ObservationRegistry observationRegistry;
     private static final QueryStringParser qsParser = QueryStringParser.withDefaultConfig();
+
 
     @QueryMapping
     @PreAuthorize("permitAll()")
     public Mono<Page<News>> newsSearch(@Arguments SearchNewsRequest request) {
         PageRequest pageRequest = qsParser.parse(request.toPageRequest());
-        Flux<News> news = newsService.list(pageRequest);
+        Flux<News> news = newsService.list(pageRequest)
+                .name("bw.newslist")
+                .tap(Micrometer.observation(observationRegistry));
 
         return newsService.count(pageRequest)
-                .map(count -> Page.of(news, count));
+                .map(count -> Page.of(news, count))
+                .name("bw.newscount")
+                .tap(Micrometer.observation(observationRegistry));
     }
 
     @SchemaMapping(typeName = "SearchNewsResponse")
