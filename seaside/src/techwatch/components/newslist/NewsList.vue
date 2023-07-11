@@ -119,6 +119,12 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     }).registerListener("m", event => {
       event.preventDefault();
       this.toggleRead(this.activeNews);
+    }).registerListener("c", event => {
+      event.preventDefault();
+      this.toggleNewsKeep(this.activeNews);
+    }).registerListener("s", event => {
+      event.preventDefault();
+      this.toggleNewsShared(this.activeNews);
     });
 
     reloadActionService.registerReloadFunction((context) => {
