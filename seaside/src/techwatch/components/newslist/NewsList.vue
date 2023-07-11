@@ -4,23 +4,27 @@
       <NewsCard :ref="card.data.id" :card="card" @activate="activateNewsCard(idx)" @addFilter="onAddFilter">
         <template #actions v-if="userStore.isAuthenticated">
           <div class="join -ml-2 lg:ml-0">
-            <button v-if="card.data.state.read" @click.stop="markNewsRead(idx, false)"
+            <button v-if="card.data.state.read" @click.stop="toggleRead(idx)"
                     class="btn btn-xs btn-ghost join-item">
-              <EnvelopeOpenIcon class="h-5 w-5 cursor-pointer stroke-2"/><span class="hidden lg:block">unread</span>
+              <EnvelopeOpenIcon class="h-5 w-5 cursor-pointer stroke-2"/>
+              <span class="hidden lg:block">unread</span>
             </button>
-            <button v-else @click.stop="markNewsRead(idx, true)" class="btn btn-xs btn-ghost join-item">
-              <EnvelopeIcon class="h-5 w-5 cursor-pointer stroke-2"/><span class="hidden lg:block">read</span>
+            <button v-else @click.stop="toggleRead(idx)" class="btn btn-xs btn-ghost join-item">
+              <EnvelopeIcon class="h-5 w-5 cursor-pointer stroke-2"/>
+              <span class="hidden lg:block">read</span>
             </button>
             <button @click.stop="toggleNewsKeep(idx)" class="btn btn-xs btn-ghost join-item"
                     :class="{'text-accent': card.data.state.keep}">
-              <PaperClipIcon class="h-5 w-5 cursor-pointer stroke-2"/><span class="hidden lg:block">clip</span>
+              <PaperClipIcon class="h-5 w-5 cursor-pointer stroke-2"/>
+              <span class="hidden lg:block">clip</span>
             </button>
             <button @click.stop="toggleNewsShared(idx)" class="btn btn-xs btn-ghost join-item"
                     :class="{'text-accent': card.data.state.shared}">
-              <ShareIcon class="h-5 w-5 cursor-pointer stroke-2"/><span class="hidden lg:block">share</span>
+              <ShareIcon class="h-5 w-5 cursor-pointer stroke-2"/>
+              <span class="hidden lg:block">share</span>
             </button>
             <button class="btn btn-xs btn-ghost join-item" disabled="disabled">
-              <FireIcon class="w-6 h-6" :class="{'text-warning': card.data.popularity?.score > 0}" />
+              <FireIcon class="w-6 h-6" :class="{'text-warning': card.data.popularity?.score > 0}"/>
               <span v-if="card.data.popularity?.score > 0"
                     class="hidden lg:block text-warning">{{ card.data.popularity.score }}</span>
             </button>
@@ -137,47 +141,53 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
 
   private buildNewsQueryString(): NewsSearchRequest {
     const query: NewsSearchRequest = {};
-    if (this.isAuthenticated) {
-      if (this.newsStore.unread) {
-        query.read = false;
-      }
-      if (this.newsStore.popular) {
-        query.popular = true;
-      }
-      if (this.newsStore.keep) {
-        query.keep = true;
-      }
-      if (this.newsStore.tags.length > 0) {
-        query.tags = [];
-        this.newsStore.tags.forEach(tag => query.tags?.push(`∋${tag}`));
-      }
-      if (this.newsStore.feed) {
-        query.feeds = [this.newsStore.feed.id];
+    if (!this.isAuthenticated) {
+      return query;
+    }
+
+    if (this.newsStore.unread) {
+      query.read = false;
+    }
+    if (this.newsStore.popular) {
+      query.popular = true;
+    }
+    if (this.newsStore.keep) {
+      query.keep = true;
+    }
+    if (this.newsStore.tags.length > 0) {
+      query.tags = [];
+      this.newsStore.tags.forEach(tag => query.tags?.push(`∋${tag}`));
+    }
+    if (this.newsStore.feed) {
+      query.feeds = [this.newsStore.feed.id];
+    }
+
+    const lastIndex = this.news.length - 1;
+    if (this.news.length <= 0) {
+      return query;
+    }
+
+    let toSkip = 0;
+    const lastNewsView = this.news[lastIndex];
+    // Find unread news at the same date to add offset in query, avoid duplicate
+    for (let i = this.news.length - 1; i >= 0; i--) {
+      if (!this.news[i].data.state.read && this.news[i].data.publication === lastNewsView.data.publication) {
+        toSkip++;
+      } else {
+        break;
       }
     }
+    query.publication = `≤${lastNewsView.data.publication}`;
+    if (toSkip > 0) {
+      query._from = toSkip;
+    }
+
     return query;
   }
 
   loadNextPage(): Observable<Element> {
     const query = this.buildNewsQueryString();
 
-    const lastIndex = this.news.length - 1;
-    if (this.news.length > 0) {
-      let toSkip = 0;
-      const lastNewsView = this.news[lastIndex];
-      // Find unread news at the same date to add offset in query, avoid duplicate
-      for (let i = this.news.length - 1; i >= 0; i--) {
-        if (!this.news[i].data.state.read && this.news[i].data.publication === lastNewsView.data.publication) {
-          toSkip++;
-        } else {
-          break;
-        }
-      }
-      query.publication = `≤${lastNewsView.data.publication}`;
-      if (toSkip > 0) {
-        query._from = toSkip;
-      }
-    }
     const elements = new Subject<Element>();
     let unreadCount = this.news.filter(n => !n.data.state.read).length;
     const newsResponse = (this.isAuthenticated) ? newsService.getNews(query) : newsService.getAnonymousNews();
@@ -189,7 +199,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
         map((ns: News[]) => ns.map(n => ({
           data: n,
           isActive: false,
-          keepMark: false,
+          keepMark: n.state?.keep || false,
           sizes: n.imgm ? '(max-width: 1024px) 268px, 240px' : '',
           srcset: n.imgm ? `${n.imgm} 268w, ${n.imgd} 240w` : '',
         }) as NewsView)),
@@ -295,6 +305,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
 
     markObs.subscribe(state => {
       this.news[idx].data.state.keep = state.keep;
+      this.news[idx].keepMark = state.keep;
     });
   }
 
