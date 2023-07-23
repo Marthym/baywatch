@@ -35,33 +35,36 @@
   </div>
 </template>
 <script lang="ts">
-import {Component, Vue, Watch} from 'vue-facing-decorator';
-import NewsCard from "@/techwatch/components/newslist/NewsCard.vue";
-import {iif, Observable, Subject} from "rxjs";
-import {map, switchMap, take, tap} from "rxjs/operators";
-import {NewsView} from "@/techwatch/components/newslist/model/NewsView";
-import ScrollActivable from "@/services/model/ScrollActivable";
-import {InfiniteScrollBehaviour, useInfiniteScroll} from "@/services/InfiniteScrollBehaviour";
-import {ScrollingActivationBehaviour, useScrollingActivation} from "@/services/ScrollingActivationBehaviour";
-import InfiniteScrollable from "@/services/model/InfiniteScrollable";
-import {Mark} from "@/techwatch/model/Mark.enum";
-import {useStore} from "vuex";
+import { Component, Vue, Watch } from 'vue-facing-decorator';
+import NewsCard from '@/techwatch/components/newslist/NewsCard.vue';
+import { iif, Observable, Subject } from 'rxjs';
+import { map, switchMap, take, tap } from 'rxjs/operators';
+import { NewsView } from '@/techwatch/components/newslist/model/NewsView';
+import ScrollActivable from '@/services/model/ScrollActivable';
+import { InfiniteScrollBehaviour, useInfiniteScroll } from '@/services/InfiniteScrollBehaviour';
+import { ScrollingActivationBehaviour, useScrollingActivation } from '@/services/ScrollingActivationBehaviour';
+import InfiniteScrollable from '@/services/model/InfiniteScrollable';
+import { Mark } from '@/techwatch/model/Mark.enum';
+import { useStore } from 'vuex';
 import {
   DECREMENT_UNREAD_MUTATION,
   FILTER_MUTATION,
-  INCREMENT_UNREAD_MUTATION
-} from "@/techwatch/store/statistics/StatisticsConstants";
-import {UserState} from "@/store/user/user";
-import newsService from "@/techwatch/services/NewsService";
-import reloadActionService from "@/common/services/ReloadActionService";
-import {NewsSearchRequest} from "@/techwatch/model/NewsSearchRequest.type";
-import {News} from "@/techwatch/model/News.type";
+  INCREMENT_UNREAD_MUTATION,
+} from '@/techwatch/store/statistics/StatisticsConstants';
+import { UserState } from '@/store/user/user';
+import newsService from '@/techwatch/services/NewsService';
+import {
+  actionServiceRegisterFunction,
+  actionServiceReload,
+  actionServiceUnregisterFunction,
+} from '@/common/services/ReloadActionService';
+import { NewsSearchRequest } from '@/techwatch/model/NewsSearchRequest.type';
+import { News } from '@/techwatch/model/News.type';
 import keyboardControl from '@/common/services/KeyboardControl';
-import {NEWS_FILTER_FEED_MUTATION, NewsStore} from "@/common/model/store/NewsStore.type";
-import {Feed} from "@/techwatch/model/Feed.type";
-import {EnvelopeIcon, EnvelopeOpenIcon, PaperClipIcon, ShareIcon} from "@heroicons/vue/24/outline";
-import {FireIcon} from "@heroicons/vue/20/solid";
-
+import { NEWS_FILTER_FEED_MUTATION, NewsStore } from '@/common/model/store/NewsStore.type';
+import { Feed } from '@/techwatch/model/Feed.type';
+import { EnvelopeIcon, EnvelopeOpenIcon, PaperClipIcon, ShareIcon } from '@heroicons/vue/24/outline';
+import { FireIcon } from '@heroicons/vue/20/solid';
 
 @Component({
   name: 'NewsList',
@@ -77,8 +80,8 @@ import {FireIcon} from "@heroicons/vue/20/solid";
       newsStore: store.state.news,
       activateOnScroll: useScrollingActivation(),
       infiniteScroll: useInfiniteScroll(),
-    }
-  }
+    };
+  },
 })
 export default class NewsList extends Vue implements ScrollActivable, InfiniteScrollable {
   private readonly store;
@@ -97,7 +100,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
 
   @Watch('isAuthenticated')
   onAuthenticationChange(): void {
-    this.loadNextPage().pipe(take(1)).subscribe({next: el => this.observeFirst(el)});
+    this.loadNextPage().pipe(take(1)).subscribe({ next: el => this.observeFirst(el) });
   }
 
   mounted(): void {
@@ -108,30 +111,30 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
       this.onAuthenticationChange();
     }
 
-    keyboardControl.registerListener("n", event => {
+    keyboardControl.registerListener('n', event => {
       event.preventDefault();
       this.activateNewsCard(this.activeNews + 1);
       this.scrollToActivateNews();
-    }).registerListener("k", event => {
+    }).registerListener('k', event => {
       event.preventDefault();
       this.activateNewsCard(this.activeNews - 1);
       this.scrollToActivateNews();
-    }).registerListener("m", event => {
+    }).registerListener('m', event => {
       event.preventDefault();
       this.toggleRead(this.activeNews);
-    }).registerListener("c", event => {
+    }).registerListener('c', event => {
       event.preventDefault();
       this.toggleNewsKeep(this.activeNews);
-    }).registerListener("s", event => {
+    }).registerListener('s', event => {
       event.preventDefault();
       this.toggleNewsShared(this.activeNews);
     });
 
-    reloadActionService.registerReloadFunction((context) => {
+    actionServiceRegisterFunction((context) => {
       if (context === 'news' || context === '') {
         this.news = [];
         this.activeNews = -1;
-        this.loadNextPage().pipe(take(1)).subscribe(el => this.observeFirst(el))
+        this.loadNextPage().pipe(take(1)).subscribe(el => this.observeFirst(el));
       }
     });
   }
@@ -209,7 +212,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
           sizes: n.imgm ? '(max-width: 1024px) 268px, 240px' : '',
           srcset: n.imgm ? `${n.imgm} 268w, ${n.imgd} 240w` : '',
         }) as NewsView)),
-        tap(ns => this.news.push(...ns))
+        tap(ns => this.news.push(...ns)),
     ).subscribe({
       next: ns => {
         this.$nextTick(() => {
@@ -219,7 +222,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
           elements.complete();
         });
       },
-      error: e => elements.next(e)
+      error: e => elements.next(e),
     });
     return elements.asObservable();
   }
@@ -251,7 +254,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     }
 
     this.news[this.activeNews].isActive = true;
-    this.activateOnScroll.observe(this.getRefElement(this.news[this.activeNews].data.id))
+    this.activateOnScroll.observe(this.getRefElement(this.news[this.activeNews].data.id));
   }
 
   toggleRead(idx: number): void {
@@ -289,7 +292,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
 
     markObs.subscribe(state => {
       if (!this.news[idx].data.popularity) {
-        this.news[idx].data.popularity = {score: 0, fans: []};
+        this.news[idx].data.popularity = { score: 0, fans: [] };
       }
       this.news[idx].data.state.shared = state.shared;
       if (state.shared) {
@@ -334,7 +337,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     const current = this.news[this.activeNews + 1];
     this.$nextTick(() => {
       this.getRefElement(current.data.id).scrollIntoView(
-          {block: 'center', scrollBehavior: 'smooth'} as ScrollIntoViewOptions);
+          { block: 'center', scrollBehavior: 'smooth' } as ScrollIntoViewOptions);
     });
   }
 
@@ -343,20 +346,20 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     if (vueRef === undefined) {
       throw new Error(`Element with ref ${ref} not found !`);
     }
-    return (vueRef)[0].$el
+    return (vueRef)[0].$el;
   }
 
   private onAddFilter(event: { type: string, entity: Feed }): void {
-    this.store.commit(NEWS_FILTER_FEED_MUTATION, {id: event.entity.id, label: event.entity.name});
-    reloadActionService.reload('news');
+    this.store.commit(NEWS_FILTER_FEED_MUTATION, { id: event.entity.id, label: event.entity.name });
+    actionServiceReload('news');
   }
 
   // noinspection JSUnusedGlobalSymbols
   unmounted(): void {
     this.activateOnScroll.disconnect();
     this.infiniteScroll.disconnect();
-    keyboardControl.unregisterListener("n", "m", "k");
-    reloadActionService.unregisterReloadFunction();
+    keyboardControl.unregisterListener('n', 'm', 'k');
+    actionServiceUnregisterFunction();
   }
 
 }

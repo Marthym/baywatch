@@ -70,25 +70,25 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-facing-decorator';
-import {SidenavMutation} from "@/store/sidenav/SidenavMutation.enum";
-import {StatisticsState} from "@/techwatch/store/statistics/statistics";
-import reloadActionService from '@/common/services/ReloadActionService';
+import { Component, Vue } from 'vue-facing-decorator';
+import { SidenavMutation } from '@/store/sidenav/SidenavMutation.enum';
+import { StatisticsState } from '@/techwatch/store/statistics/statistics';
+import { actionServiceReload } from '@/common/services/ReloadActionService';
 import searchService from '@/layout/services/SearchService';
-import {Store, useStore} from "vuex";
-import {RESET_UPDATED_MUTATION} from "@/techwatch/store/statistics/StatisticsConstants";
-import TopNavActionOverlay from "@/layout/components/TopNavActionOverlay.vue";
-import {defineAsyncComponent} from "vue";
-import keyboardControl from "@/common/services/KeyboardControl";
+import { Store, useStore } from 'vuex';
+import { RESET_UPDATED_MUTATION } from '@/techwatch/store/statistics/StatisticsConstants';
+import TopNavActionOverlay from '@/layout/components/TopNavActionOverlay.vue';
+import { defineAsyncComponent } from 'vue';
+import keyboardControl from '@/common/services/KeyboardControl';
 import {
   ArrowPathIcon,
   ChevronDoubleRightIcon,
   EnvelopeIcon,
   MagnifyingGlassIcon,
   PaperClipIcon,
-  SquaresPlusIcon
+  SquaresPlusIcon,
 } from '@heroicons/vue/24/outline';
-import {NewspaperIcon} from '@heroicons/vue/24/solid'
+import { NewspaperIcon } from '@heroicons/vue/24/solid';
 
 const AddSingleNewsAction = defineAsyncComponent(() => import('@/layout/components/AddSingleNewsAction.vue'));
 const SearchResultAction = defineAsyncComponent(() => import('@/layout/components/SearchResultAction.vue'));
@@ -115,8 +115,8 @@ type ActionOverlayComponent = 'AddSingleNewsAction' | 'SearchResultAction';
     return {
       store: store,
       statistics: store.state.statistics,
-    }
-  }
+    };
+  },
 })
 export default class TopNavigationBar extends Vue {
 
@@ -126,7 +126,7 @@ export default class TopNavigationBar extends Vue {
   private actionOverlayOpen = false;
   private actionOverlayContent: ActionOverlayComponent = 'AddSingleNewsAction';
   private actionOverlayProps: unknown = {};
-  private searchQuery = "";
+  private searchQuery = '';
 
   get isAuthenticated(): boolean {
     return this.store.state.user.isAuthenticated || false;
@@ -138,7 +138,7 @@ export default class TopNavigationBar extends Vue {
 
   private reload(): void {
     this.store.commit(RESET_UPDATED_MUTATION);
-    reloadActionService.reload();
+    actionServiceReload();
   }
 
   private toggleClipAction(): void {
@@ -153,7 +153,7 @@ export default class TopNavigationBar extends Vue {
         this.actionOverlayProps.entries = r;
         this.actionOverlayOpen = true;
       },
-    })
+    });
   }
 
   private onBlur(): void {

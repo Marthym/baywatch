@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -29,7 +30,7 @@ public class NotificationController {
     private final NotifyManager notifyManager;
     private final AuthenticationFacade facade;
 
-    @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping
     public Flux<ServerSentEvent<Object>> sse() {
         return notifyManager.subscribe().flatMap(evt ->
                 evt.accept(new ServerEventVisitor<Mono<?>>() {

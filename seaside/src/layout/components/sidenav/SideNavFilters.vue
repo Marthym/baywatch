@@ -49,32 +49,32 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-facing-decorator';
-import tagsService from "@/techwatch/services/TagsService";
-import reloadActionService from '@/common/services/ReloadActionService';
-import {Router, useRouter} from "vue-router";
-import {useStore} from "vuex";
+import { Component, Vue } from 'vue-facing-decorator';
+import tagsService from '@/techwatch/services/TagsService';
+import { actionServiceReload } from '@/common/services/ReloadActionService';
+import { Router, useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 import {
   FeedFilter,
   NEWS_REPLACE_TAGS_MUTATION,
   NEWS_RESET_FILTERS_MUTATION,
   NEWS_TOGGLE_POPULAR_MUTATION,
   NEWS_TOGGLE_UNREAD_MUTATION,
-  NewsStore
-} from "@/common/model/store/NewsStore.type";
-import {FunnelIcon, TagIcon, XMarkIcon} from "@heroicons/vue/24/outline";
+  NewsStore,
+} from '@/common/model/store/NewsStore.type';
+import { FunnelIcon, TagIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 
 @Component({
   name: 'SideNavFilters',
-  components: {FunnelIcon, TagIcon, XMarkIcon},
+  components: { FunnelIcon, TagIcon, XMarkIcon },
   setup() {
     const store = useStore();
     return {
       router: useRouter(),
       store: store,
       newsStore: store.state.news,
-    }
-  }
+    };
+  },
 })
 export default class SideNavFilters extends Vue {
   private router: Router;
@@ -86,7 +86,7 @@ export default class SideNavFilters extends Vue {
     tagsService.list().subscribe({
       next: tags => {
         this.tags = tags;
-      }
+      },
     });
   }
 
@@ -99,28 +99,28 @@ export default class SideNavFilters extends Vue {
     const selected = (event.target as HTMLElement).innerText;
     if (currentTags.indexOf(selected) >= 0) {
       this.store.commit(NEWS_REPLACE_TAGS_MUTATION, []);
-      this.router.replace({path: this.router.currentRoute.value.path});
-      reloadActionService.reload('news');
+      this.router.replace({ path: this.router.currentRoute.value.path });
+      actionServiceReload('news');
     } else if (this.tags.indexOf(selected) >= 0) {
       this.store.commit(NEWS_REPLACE_TAGS_MUTATION, [selected]);
-      this.router.replace({path: this.router.currentRoute.value.path, query: {tag: selected}});
-      reloadActionService.reload('news');
+      this.router.replace({ path: this.router.currentRoute.value.path, query: { tag: selected } });
+      actionServiceReload('news');
     }
   }
 
   private resetFeedFilter(): void {
     this.store.commit(NEWS_RESET_FILTERS_MUTATION, 'feed');
-    reloadActionService.reload('news');
+    actionServiceReload('news');
   }
 
   private onChangeUnread(): void {
     this.store.commit(NEWS_TOGGLE_UNREAD_MUTATION);
-    reloadActionService.reload('news');
+    actionServiceReload('news');
   }
 
   private onChangePopular(): void {
     this.store.commit(NEWS_TOGGLE_POPULAR_MUTATION);
-    reloadActionService.reload('news');
+    actionServiceReload('news');
   }
 }
 </script>

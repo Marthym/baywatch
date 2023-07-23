@@ -4,7 +4,8 @@ import lombok.Getter;
 
 public enum EventType {
     NEWS_UPDATE("newsUpdate"),
-    USER_NOTIFICATION("userNotification");
+    USER_NOTIFICATION("userNotification"),
+    NEWS_ADD("newsAdd");
 
     @Getter
     private final String name;

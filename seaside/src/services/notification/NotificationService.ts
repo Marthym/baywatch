@@ -1,7 +1,7 @@
-import {Notification} from "@/services/notification/Notification.type";
-import NotificationListener from "@/services/notification/NotificationListener";
-import {NotificationCode} from "@/services/notification/NotificationCode.enum";
-import {Severity} from "@/services/notification/Severity.enum";
+import { Notification } from '@/services/notification/Notification.type';
+import NotificationListener from '@/services/notification/NotificationListener';
+import { NotificationCode } from '@/services/notification/NotificationCode.enum';
+import { Severity } from '@/services/notification/Severity.enum';
 
 const DEFAUTL_DELAY = 5000;
 
@@ -45,8 +45,10 @@ export class NotificationService {
     }
 
     private static onNotificationExpiration(ns: NotificationService): void {
-        window.clearTimeout(ns.timeout);
-        ns.timeout = undefined;
+        if (ns.timeout) {
+            window.clearTimeout(ns.timeout);
+            ns.timeout = undefined;
+        }
         const notif = ns.notifs.shift();
         if (notif) {
             if (ns.notifs.length > 0) {
@@ -72,7 +74,7 @@ export class NotificationService {
             code: NotificationCode.OK,
             severity: Severity.info,
             message: message,
-        })
+        });
     }
 
     public pushSimpleError(message: string): void {
@@ -80,7 +82,7 @@ export class NotificationService {
             code: NotificationCode.ERROR,
             severity: Severity.error,
             message: message,
-        })
+        });
     }
 }
 
