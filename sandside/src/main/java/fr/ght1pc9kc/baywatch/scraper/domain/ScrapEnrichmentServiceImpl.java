@@ -38,7 +38,7 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
             .code(UserNotification.CODE_NEWS_ADD)
             .severity(Severity.notice)
             .message("News successfully added !")
-            .delay(Duration.ofSeconds(20).toMillis())
+            .delay(Duration.ofSeconds(5).toMillis())
             .actions("VSC")
             .build();
 
