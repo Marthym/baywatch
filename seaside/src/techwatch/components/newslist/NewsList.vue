@@ -53,7 +53,11 @@ import {
 } from '@/techwatch/store/statistics/StatisticsConstants';
 import { UserState } from '@/store/user/user';
 import newsService from '@/techwatch/services/NewsService';
-import reloadActionService from '@/common/services/ReloadActionService';
+import {
+  actionServiceRegisterFunction,
+  actionServiceReload,
+  actionServiceUnregisterFunction,
+} from '@/common/services/ReloadActionService';
 import { NewsSearchRequest } from '@/techwatch/model/NewsSearchRequest.type';
 import { News } from '@/techwatch/model/News.type';
 import keyboardControl from '@/common/services/KeyboardControl';
@@ -126,7 +130,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
       this.toggleNewsShared(this.activeNews);
     });
 
-    reloadActionService.registerReloadFunction((context) => {
+    actionServiceRegisterFunction((context) => {
       if (context === 'news' || context === '') {
         this.news = [];
         this.activeNews = -1;
@@ -347,7 +351,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
 
   private onAddFilter(event: { type: string, entity: Feed }): void {
     this.store.commit(NEWS_FILTER_FEED_MUTATION, { id: event.entity.id, label: event.entity.name });
-    reloadActionService.reload('news');
+    actionServiceReload('news');
   }
 
   // noinspection JSUnusedGlobalSymbols
@@ -355,7 +359,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     this.activateOnScroll.disconnect();
     this.infiniteScroll.disconnect();
     keyboardControl.unregisterListener('n', 'm', 'k');
-    reloadActionService.unregisterReloadFunction();
+    actionServiceUnregisterFunction();
   }
 
 }

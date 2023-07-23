@@ -9,25 +9,16 @@ export function actionServiceReload(context?: string): void {
     }
 }
 
-class ReloadActionService {
-
-    /**
-     * Register the function call on reload
-     * This allows others components to reload news list
-     *
-     * @param apply [VoidFunction] The call function
-     */
-    registerReloadFunction(apply: FunctionStringCallback): void {
-        reloadFunction = apply;
-    }
-
-    unregisterReloadFunction(): void {
-        reloadFunction = EMPTY_CALLBACK;
-    }
-
-    reload(context?: string): void {
-        actionServiceReload(context);
-    }
+export function actionServiceUnregisterFunction(): void {
+    reloadFunction = EMPTY_CALLBACK;
 }
 
-export default new ReloadActionService();
+/**
+ * Register the function call on reload
+ * This allows others components to reload news list
+ *
+ * @param apply [VoidFunction] The call function
+ */
+export function actionServiceRegisterFunction(apply: FunctionStringCallback): void {
+    reloadFunction = apply;
+}
