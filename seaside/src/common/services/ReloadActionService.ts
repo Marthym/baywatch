@@ -1,7 +1,15 @@
+const EMPTY_CALLBACK: FunctionStringCallback = (context) => {
+    console.warn(`no reload function for context ${context}!`);
+};
+let reloadFunction: FunctionStringCallback = EMPTY_CALLBACK;
+
+export function actionServiceReload(context?: string): void {
+    if (reloadFunction) {
+        reloadFunction(context ? context : '');
+    }
+}
+
 class ReloadActionService {
-    private reloadFunction: FunctionStringCallback = (context) => {
-        console.warn(`no reload function for context ${context}!`)
-    };
 
     /**
      * Register the function call on reload
@@ -10,17 +18,15 @@ class ReloadActionService {
      * @param apply [VoidFunction] The call function
      */
     registerReloadFunction(apply: FunctionStringCallback): void {
-        this.reloadFunction = apply;
+        reloadFunction = apply;
     }
 
     unregisterReloadFunction(): void {
-        delete this.reloadFunction;
+        reloadFunction = EMPTY_CALLBACK;
     }
 
     reload(context?: string): void {
-        if (this.reloadFunction) {
-            this.reloadFunction(context ? context : '');
-        }
+        actionServiceReload(context);
     }
 }
 

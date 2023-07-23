@@ -48,6 +48,8 @@ import {
 } from '@heroicons/vue/24/outline';
 import { newsMark } from '@/techwatch/services/NewsService';
 import { Mark } from '@/techwatch/model/Mark.enum';
+import { actionServiceReload } from '@/common/services/ReloadActionService';
+import { NotificationCode } from '@/services/notification/NotificationCode.enum';
 
 @Component({
   name: 'NotificationArea',
@@ -79,6 +81,9 @@ export default class NotificationArea extends Vue implements NotificationListene
       })(),
       raw: notif,
     });
+    if (notif.code === NotificationCode.NEWS_ADD) {
+      actionServiceReload('news');
+    }
   }
 
   onPopNotification(notif: Notification): void {
