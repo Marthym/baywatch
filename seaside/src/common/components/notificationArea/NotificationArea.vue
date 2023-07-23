@@ -1,100 +1,156 @@
 <template>
-    <div class="stack absolute bottom-5 right-5 z-50 transition-opacity easy-in-out duration-500 opacity-100 hover:opacity-30">
-        <div v-for="notif in notifications" :key="notif.id" class="alert" :class="{
+  <div
+      class="stack absolute bottom-5 right-5 z-50 transition-opacity easy-in-out duration-500 opacity-100"
+      @mouseenter="onMouseEnterNotification()" @mouseleave="onMouseLeaveNotification()">
+    <div v-for="notif in notifications" :key="notif.id" class="alert shadow-lg" :class="{
       'bg-error': isError(notif),
       'bg-warning': isWarning(notif),
       'bg-info': isInfo(notif),
       }">
-            <div class="flex-1">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                     class="w-6 h-6 mx-2 stroke-current"
-                     v-if="isError(notif)">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
-                </svg>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                     stroke="currentColor"
-                     v-else-if="isWarning(notif)">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                </svg>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                     stroke="currentColor"
-                     v-else-if="isInfo(notif)">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <label>{{ notif.raw.message }}</label>
-            </div>
-            <div class="flex-none">
-                <button class="btn btn-sm btn-ghost btn-square" @click="onPopNotification(notif.raw)">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                         class="inline-block w-6 h-6 stroke-current">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-        </div>
+      <Component :is="notif.icon" class="w-6 h-6 stroke-current" :class="{'stroke-info': isNotice(notif)}"/>
+      <div>
+        <h3 v-if="notif.raw.title" class="font-bold">{{ notif.raw.title }}</h3>
+        <div class="text-xs">{{ notif.raw.message }}</div>
+      </div>
+      <div class="join">
+        <button v-if="hasAction(notif, 'C')" @click.stop="onClipAction(notif)" class="btn btn-xs btn-ghost join-item"
+                :class="{'text-accent': notif.doneActions?.indexOf('C') >= 0}">
+          <PaperClipIcon class="h-5 w-5 stroke-current"/>
+          <span class="hidden lg:block">clip</span>
+        </button>
+        <button v-if="hasAction(notif, 'S')" @click.stop="onShareAction(notif)" class="btn btn-xs btn-ghost join-item"
+                :class="{'text-accent': notif.doneActions?.indexOf('S') >= 0}">
+          <ShareIcon class="h-5 w-5 cursor-pointer stroke-2"/>
+          <span class="hidden lg:block">share</span>
+        </button>
+        <button class="btn btn-xs btn-ghost btn-square join-item" @click="onPopNotification(notif.raw)">
+          <XMarkIcon class="w-5 h-5 stroke-current"/>
+        </button>
+      </div>
     </div>
+  </div>
 </template>
 
-<style scoped>
-
-</style>
-
 <script lang="ts">
-import {Component, Vue} from "vue-facing-decorator";
-import {NotificationView} from "@/common/components/notificationArea/NotificationView";
-import {Notification} from "@/services/notification/Notification.type";
-import NotificationListener from "@/services/notification/NotificationListener";
+import { Component, Vue } from 'vue-facing-decorator';
+import { NotificationView } from '@/common/components/notificationArea/NotificationView';
+import { Notification } from '@/services/notification/Notification.type';
+import NotificationListener from '@/services/notification/NotificationListener';
 import notificationService from '@/services/notification/NotificationService';
-import {Severity} from "@/services/notification/Severity.enum";
+import { Severity } from '@/services/notification/Severity.enum';
+import {
+  ExclamationCircleIcon,
+  ExclamationTriangleIcon,
+  PaperClipIcon,
+  ShareIcon,
+  XCircleIcon,
+  XMarkIcon,
+} from '@heroicons/vue/24/outline';
+import { newsMark } from '@/techwatch/services/NewsService';
+import { Mark } from '@/techwatch/model/Mark.enum';
+import { actionServiceReload } from '@/common/services/ReloadActionService';
+import { NotificationCode } from '@/services/notification/NotificationCode.enum';
 
 @Component({
-    name: 'NotificationArea',
-    components: {},
+  name: 'NotificationArea',
+  components: { ShareIcon, PaperClipIcon, ExclamationCircleIcon, ExclamationTriangleIcon, XCircleIcon, XMarkIcon },
 })
 export default class NotificationArea extends Vue implements NotificationListener {
-    private notifications: NotificationView[] = [];
-    private keys = 0;
+  private notifications: NotificationView[] = [];
+  private keys = 0;
+  private popOnBlur?: number[];
 
-    mounted(): void {
-        notificationService.registerNotificationListener(this);
-    }
+  mounted(): void {
+    notificationService.registerNotificationListener(this);
+  }
 
-    onPushNotification(notif: Notification): void {
-        this.notifications.push({
-            id: ++this.keys,
-            raw: notif,
-        });
-    }
-
-    onPopNotification(notif: Notification): void {
-        const idx = this.notifications.findIndex(e => e.raw.message === notif.message);
-        if (idx >= 0) {
-            this.notifications.splice(idx, 1);
-
-        } else if (this.notifications.length > 0) {
-            this.notifications.splice(0, this.notifications.length);
+  onPushNotification(notif: Notification): void {
+    this.notifications.push({
+      id: ++this.keys,
+      icon: (() => {
+        switch (notif.severity) {
+          case 'warning':
+            return 'ExclamationTriangleIcon';
+          case 'error':
+            return 'XCircleIcon';
+          case 'info':
+          case 'notice':
+          default:
+            return 'ExclamationCircleIcon';
         }
+      })(),
+      raw: notif,
+    });
+    if (notif.code === NotificationCode.NEWS_ADD) {
+      actionServiceReload('news');
     }
+  }
 
-    private isError(n: NotificationView) {
-        return n.raw.severity === Severity.error;
+  onPopNotification(notif: Notification): void {
+    const idx = this.notifications.findIndex(e => e.raw.message === notif.message);
+    if (idx >= 0) {
+      if (this.popOnBlur) {
+        this.popOnBlur.push(idx);
+      } else {
+        this.notifications.splice(idx, 1);
+      }
+    } else if (this.notifications.length > 0) {
+      this.notifications.splice(0, this.notifications.length);
     }
+  }
 
-    private isWarning(n: NotificationView) {
-        return n.raw.severity === Severity.warning;
+  onClipAction(n: NotificationView) {
+    if (n.raw.target) {
+      newsMark(n.raw.target, Mark.KEEP).subscribe({
+        next: () => n.doneActions += 'C',
+        error: () => console.error('Unable to clip target ' + n.raw.target),
+      });
     }
+  }
 
-    private isInfo(n: NotificationView) {
-        return n.raw.severity === Severity.info;
+  onShareAction(n: NotificationView) {
+    if (n.raw.target) {
+      newsMark(n.raw.target, Mark.SHARED).subscribe({
+        next: () => n.doneActions += 'S',
+        error: () => console.error('Unable to share target ' + n.raw.target),
+      });
     }
+  }
 
-    destroyed(): void {
-        notificationService.unregisterNotificationListener(this);
+  onMouseEnterNotification(): void {
+    this.popOnBlur = [];
+  }
+
+  onMouseLeaveNotification(): void {
+    if (this.popOnBlur) {
+      this.popOnBlur.forEach(idx => this.notifications.splice(idx, 1));
     }
+    delete this.popOnBlur;
+  }
+
+  private isError(n: NotificationView) {
+    return n.raw.severity === Severity.error;
+  }
+
+  private isWarning(n: NotificationView) {
+    return n.raw.severity === Severity.warning;
+  }
+
+  private isInfo(n: NotificationView) {
+    return n.raw.severity === Severity.info;
+  }
+
+  private isNotice(n: NotificationView) {
+    return n.raw.severity === Severity.notice;
+  }
+
+  private hasAction(n: NotificationView, action: 'V' | 'S' | 'C') {
+    return n.raw.actions?.indexOf(action) >= 0;
+  }
+
+  destroyed(): void {
+    notificationService.unregisterNotificationListener(this);
+  }
 }
 </script>
 

@@ -1,15 +1,28 @@
-import {EMPTY, Observable, of} from 'rxjs';
-import {map, switchMap, take} from "rxjs/operators";
-import {HttpStatusError} from "@/common/errors/HttpStatusError";
-import {News} from "@/techwatch/model/News.type";
-import {Mark} from "@/techwatch/model/Mark.enum";
+import { EMPTY, Observable, of } from 'rxjs';
+import { map, switchMap, take } from 'rxjs/operators';
+import { HttpStatusError } from '@/common/errors/HttpStatusError';
+import { News } from '@/techwatch/model/News.type';
+import { Mark } from '@/techwatch/model/Mark.enum';
 import rest from '@/common/services/RestWrapper';
-import {Infinite} from "@/services/model/Infinite";
-import {NewsState} from "@/techwatch/model/NewsState.type";
-import {NewsSearchRequest} from "@/techwatch/model/NewsSearchRequest.type";
-import {SandSideError} from "@/common/errors/SandSideError";
-import {GraphqlResponse} from "@/common/model/GraphqlResponse.type";
-import {send} from "@/common/services/GraphQLClient";
+import { Infinite } from '@/services/model/Infinite';
+import { NewsState } from '@/techwatch/model/NewsState.type';
+import { NewsSearchRequest } from '@/techwatch/model/NewsSearchRequest.type';
+import { SandSideError } from '@/common/errors/SandSideError';
+import { GraphqlResponse } from '@/common/model/GraphqlResponse.type';
+import { send } from '@/common/services/GraphQLClient';
+
+export function newsMark(id: string, mark: Mark): Observable<NewsState> {
+    return rest.put(`/news/${id}/mark/${mark}`).pipe(
+        switchMap(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new HttpStatusError(response.status, `Error while mark news ${id} as ${mark}.`);
+            }
+        }),
+        take(1),
+    );
+}
 
 export class NewsService {
 
@@ -24,7 +37,7 @@ export class NewsService {
                 feeds { id name }
             }
         }
-    }`
+    }`;
 
     private static readonly NEWS_SEARCH_REQUEST = `#graphql
     query LoadNewsListPage (
@@ -42,12 +55,12 @@ export class NewsService {
                 popularity { score }
             }
         }
-    }`
+    }`;
 
     getAnonymousNews(): Observable<Infinite<News>> {
         return send(NewsService.NEWS_SEARCH_ANONYMOUS_REQUEST).pipe(
             map(response => NewsService.graphResponseToInfinite(response)),
-            take(1)
+            take(1),
         );
     }
 
@@ -73,7 +86,7 @@ export class NewsService {
             const data: Observable<T[]> = of(response.data.newsSearch.entities as T[]);
             return {
                 total: totalCount,
-                data: data
+                data: data,
             };
         } else {
             throw new SandSideError(response.errors[0].extension[0].classification, 'Error while getting news.');
@@ -89,7 +102,7 @@ export class NewsService {
                     throw new HttpStatusError(response.status, `Error while mark news ${id} as ${mark}.`);
                 }
             }),
-            take(1)
+            take(1),
         );
     }
 
@@ -102,7 +115,7 @@ export class NewsService {
                     return EMPTY;
                 }
             }),
-            take(1)
+            take(1),
         );
     }
 }

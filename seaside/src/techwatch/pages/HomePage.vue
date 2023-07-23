@@ -3,17 +3,17 @@
 </template>
 
 <script lang="ts">
-import {Component, Vue} from 'vue-facing-decorator';
-import {NavigationGuardNext, RouteLocationNormalized, Router, useRouter} from "vue-router";
-import {Store, useStore} from "vuex";
+import { Component, Vue } from 'vue-facing-decorator';
+import { NavigationGuardNext, RouteLocationNormalized, Router, useRouter } from 'vue-router';
+import { Store, useStore } from 'vuex';
 import {
   NEWS_REPLACE_TAGS_MUTATION,
   NEWS_RESET_FILTERS_MUTATION,
   NEWS_TOGGLE_KEEP_MUTATION,
-  NEWS_TOGGLE_UNREAD_MUTATION
-} from "@/common/model/store/NewsStore.type";
-import NewsList from "@/techwatch/components/newslist/NewsList.vue";
-import reloadActionService from "@/common/services/ReloadActionService";
+  NEWS_TOGGLE_UNREAD_MUTATION,
+} from '@/common/model/store/NewsStore.type';
+import NewsList from '@/techwatch/components/newslist/NewsList.vue';
+import { actionServiceReload } from '@/common/services/ReloadActionService';
 
 @Component({
   name: 'HomePage',
@@ -33,8 +33,8 @@ import reloadActionService from "@/common/services/ReloadActionService";
     return {
       router: useRouter(),
       store: useStore(),
-    }
-  }
+    };
+  },
 })
 export default class HomePage extends Vue {
   private router: Router;
@@ -63,7 +63,7 @@ export default class HomePage extends Vue {
       this.store.commit(NEWS_TOGGLE_KEEP_MUTATION);
       this.store.commit(NEWS_TOGGLE_UNREAD_MUTATION);
     }
-    reloadActionService.reload('news');
+    actionServiceReload('news');
   }
 
   public onPageLeave(from: RouteLocationNormalized) {
