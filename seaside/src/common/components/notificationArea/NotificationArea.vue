@@ -1,15 +1,13 @@
 <template>
   <div
-      class="stack absolute bottom-5 right-5 z-50 transition-opacity easy-in-out duration-500 opacity-100">
-    <div v-for="notif in notifications" :key="notif.id" class="alert" :class="{
+      class="stack absolute bottom-5 right-5 z-50 transition-opacity easy-in-out duration-500 opacity-100"
+      @mouseenter="onMouseEnterNotification()" @mouseleave="onMouseLeaveNotification()">
+    <div v-for="notif in notifications" :key="notif.id" class="alert shadow-lg" :class="{
       'bg-error': isError(notif),
       'bg-warning': isWarning(notif),
       'bg-info': isInfo(notif),
       }">
-      <XCircleIcon v-if="isError(notif)" class="w-6 h-6 mx-2 stroke-current"/>
-      <ExclamationTriangleIcon v-else-if="isWarning(notif)" class="h-6 w-6 stroke-current"/>
-      <ExclamationCircleIcon v-else-if="isInfo(notif) || isNotice(notif)" class="h-6 w-6 stroke-current"
-                             :class="{'stroke-info': isNotice(notif)}"/>
+      <Component :is="notif.icon" class="w-6 h-6 stroke-current" :class="{'stroke-info': isNotice(notif)}"/>
       <div>
         <h3 v-if="notif.raw.title" class="font-bold">{{ notif.raw.title }}</h3>
         <div class="text-xs">{{ notif.raw.message }}</div>
@@ -19,6 +17,11 @@
                 :class="{'text-accent': notif.doneActions?.indexOf('C') >= 0}">
           <PaperClipIcon class="h-5 w-5 stroke-current"/>
           <span class="hidden lg:block">clip</span>
+        </button>
+        <button v-if="hasAction(notif, 'S')" @click.stop="onShareAction(notif)" class="btn btn-xs btn-ghost join-item"
+                :class="{'text-accent': notif.doneActions?.indexOf('S') >= 0}">
+          <ShareIcon class="h-5 w-5 cursor-pointer stroke-2"/>
+          <span class="hidden lg:block">share</span>
         </button>
         <button class="btn btn-xs btn-ghost btn-square join-item" @click="onPopNotification(notif.raw)">
           <XMarkIcon class="w-5 h-5 stroke-current"/>
@@ -39,6 +42,7 @@ import {
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
   PaperClipIcon,
+  ShareIcon,
   XCircleIcon,
   XMarkIcon,
 } from '@heroicons/vue/24/outline';
@@ -47,11 +51,12 @@ import { Mark } from '@/techwatch/model/Mark.enum';
 
 @Component({
   name: 'NotificationArea',
-  components: { PaperClipIcon, ExclamationCircleIcon, ExclamationTriangleIcon, XCircleIcon, XMarkIcon },
+  components: { ShareIcon, PaperClipIcon, ExclamationCircleIcon, ExclamationTriangleIcon, XCircleIcon, XMarkIcon },
 })
 export default class NotificationArea extends Vue implements NotificationListener {
   private notifications: NotificationView[] = [];
   private keys = 0;
+  private popOnBlur?: number[];
 
   mounted(): void {
     notificationService.registerNotificationListener(this);
@@ -60,6 +65,18 @@ export default class NotificationArea extends Vue implements NotificationListene
   onPushNotification(notif: Notification): void {
     this.notifications.push({
       id: ++this.keys,
+      icon: (() => {
+        switch (notif.severity) {
+          case 'warning':
+            return 'ExclamationTriangleIcon';
+          case 'error':
+            return 'XCircleIcon';
+          case 'info':
+          case 'notice':
+          default:
+            return 'ExclamationCircleIcon';
+        }
+      })(),
       raw: notif,
     });
   }
@@ -67,8 +84,11 @@ export default class NotificationArea extends Vue implements NotificationListene
   onPopNotification(notif: Notification): void {
     const idx = this.notifications.findIndex(e => e.raw.message === notif.message);
     if (idx >= 0) {
-      this.notifications.splice(idx, 1);
-
+      if (this.popOnBlur) {
+        this.popOnBlur.push(idx);
+      } else {
+        this.notifications.splice(idx, 1);
+      }
     } else if (this.notifications.length > 0) {
       this.notifications.splice(0, this.notifications.length);
     }
@@ -81,6 +101,26 @@ export default class NotificationArea extends Vue implements NotificationListene
         error: () => console.error('Unable to clip target ' + n.raw.target),
       });
     }
+  }
+
+  onShareAction(n: NotificationView) {
+    if (n.raw.target) {
+      newsMark(n.raw.target, Mark.SHARED).subscribe({
+        next: () => n.doneActions += 'S',
+        error: () => console.error('Unable to share target ' + n.raw.target),
+      });
+    }
+  }
+
+  onMouseEnterNotification(): void {
+    this.popOnBlur = [];
+  }
+
+  onMouseLeaveNotification(): void {
+    if (this.popOnBlur) {
+      this.popOnBlur.forEach(idx => this.notifications.splice(idx, 1));
+    }
+    delete this.popOnBlur;
   }
 
   private isError(n: NotificationView) {
