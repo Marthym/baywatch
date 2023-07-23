@@ -4,6 +4,7 @@ import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
+import fr.ght1pc9kc.baywatch.notify.api.model.Severity;
 import fr.ght1pc9kc.baywatch.notify.api.model.UserNotification;
 import fr.ght1pc9kc.baywatch.scraper.api.NewsFilter;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
@@ -25,12 +26,21 @@ import reactor.core.scheduler.Scheduler;
 
 import java.net.URI;
 import java.time.Clock;
+import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 
 @RequiredArgsConstructor
 public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
     private static final String OPERATION_NOT_PERMITTED = "Operation not permitted !";
+
+    private static final UserNotification DEFAULT_NOTIFICATION = UserNotification.builder()
+            .code(UserNotification.CODE_NEWS_ADD)
+            .severity(Severity.notice)
+            .message("News successfully added !")
+            .delay(Duration.ofSeconds(20).toMillis())
+            .actions("VSC")
+            .build();
 
     private final List<NewsFilter> newsFilters;
     private final List<FeedsFilter> feedsFilters;
@@ -51,7 +61,9 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
                         .contextWrite(context)
                         .subscribeOn(scraperScheduler)
                         .subscribe(n -> notifyService.send(user.id, EventType.USER_NOTIFICATION,
-                                        UserNotification.info("New " + n.getTitle() + " add successfully !")),
+                                        DEFAULT_NOTIFICATION.toBuilder()
+                                                .title(n.getTitle())
+                                                .target(n.getId()).build()),
                                 t -> notifyService.send(user.id, EventType.USER_NOTIFICATION,
                                         UserNotification.error(t.getLocalizedMessage())))
                 ))
