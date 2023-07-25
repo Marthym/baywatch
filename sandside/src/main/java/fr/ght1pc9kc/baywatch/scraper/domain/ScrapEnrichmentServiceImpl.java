@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.scraper.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
+import fr.ght1pc9kc.baywatch.common.domain.Try;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.model.Severity;
@@ -87,7 +88,7 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
     }
 
     @Override
-    public Mono<News> applyNewsFilters(News news) {
+    public Mono<Try<News>> applyNewsFilters(News news) {
         Mono<RawNews> raw = authFacade.getConnectedUser()
                 .filter(u -> RoleUtils.hasRole(u.self, Role.USER))
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(OPERATION_NOT_PERMITTED)))
@@ -96,7 +97,8 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
         for (NewsFilter filter : newsFilters) {
             raw = raw.flatMap(filter::filter);
         }
-        return raw.map(news::withRaw);
+        return raw.map(Try.of(news::withRaw))
+                .onErrorResume(e -> Mono.just(Try.fail(e)));
     }
 
     @Override
