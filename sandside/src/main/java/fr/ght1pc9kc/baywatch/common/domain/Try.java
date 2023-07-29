@@ -16,6 +16,10 @@ public sealed interface Try<T> permits Success, Failure {
         return input -> Try.of(() -> func.apply(input));
     }
 
+    static <T> Try<T> of(T value) {
+        return Try.of(() -> value);
+    }
+
     static <T> Try<T> success(T value) {
         return new Success<>(value);
     }
@@ -23,4 +27,14 @@ public sealed interface Try<T> permits Success, Failure {
     static <T> Try<T> fail(Throwable e) {
         return new Failure<>(e);
     }
+
+    T get();
+
+    boolean isFailure();
+
+    Throwable getCause();
+
+    T orElse(T failover);
+
+    T orElseGet(Supplier<T> supplier);
 }

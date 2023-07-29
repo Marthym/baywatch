@@ -102,30 +102,29 @@ class FeedScraperIntegrationTest {
 
                         String status = body.substring(0, 3);
                         switch (status) {
-                            case "301":
+                            case "301" -> {
                                 exchange.getResponseHeaders().add(HttpHeaders.LOCATION, templatize.apply(body.substring(4)));
                                 exchange.sendResponseHeaders(HttpStatus.MOVED_PERMANENTLY.value(), 0);
                                 try (OutputStream responseBody = exchange.getResponseBody()) {
                                     StreamUtils.copy(HttpStatus.MOVED_PERMANENTLY.getReasonPhrase(), StandardCharsets.UTF_8, responseBody);
                                     responseBody.flush();
                                 }
-                                break;
-                            case "418":
-                                exchange.sendResponseHeaders(HttpStatus.INTERNAL_SERVER_ERROR.value(), 0);
-                                break;
-                            case "500":
+                            }
+                            case "418" -> exchange.sendResponseHeaders(HttpStatus.INTERNAL_SERVER_ERROR.value(), 0);
+                            case "500" -> {
                                 exchange.sendResponseHeaders(HttpStatus.INTERNAL_SERVER_ERROR.value(), 0);
                                 try (OutputStream responseBody = exchange.getResponseBody()) {
                                     responseBody.flush();
                                 }
-                                break;
-                            default:
+                            }
+                            default -> {
                                 try (OutputStream responseBody = exchange.getResponseBody()) {
                                     exchange.getResponseHeaders().set(HttpHeaders.CONTENT_TYPE, mediaType);
                                     exchange.sendResponseHeaders(HttpStatus.OK.value(), 0);
                                     StreamUtils.copy(templatize.apply(body), StandardCharsets.UTF_8, responseBody);
                                     responseBody.flush();
                                 }
+                            }
                         }
                     } catch (Exception e) {
                         exchange.sendResponseHeaders(HttpStatus.INTERNAL_SERVER_ERROR.value(), 0);
@@ -171,7 +170,8 @@ class FeedScraperIntegrationTest {
     @ParameterizedTest
     @CsvSource({
             "feeds/132-feed-canonical.xml, entries/132-blog_devgenius_io",
-            "feeds/132-http-server-incomplete.xml, entries/132-http-server-incomplete",
+            "feeds/132-http-server-incomplete.xml, entries/132-blog_devgenius_io",
+            "feeds/132-http-server-incomplete-teapot.xml, ",
             "feeds/135-invalid-feed-flux.xml, ",
     })
     @SuppressWarnings("ReactiveStreamsUnusedPublisher")

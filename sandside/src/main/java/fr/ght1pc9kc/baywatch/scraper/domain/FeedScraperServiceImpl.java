@@ -2,15 +2,16 @@ package fr.ght1pc9kc.baywatch.scraper.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
+import fr.ght1pc9kc.baywatch.common.domain.Try;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperPlugin;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapResult;
-import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingError;
-import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingException;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.FeedScrapingException;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.ScrapingException;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.NewsMaintenancePort;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
@@ -88,7 +89,8 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                     .collect(Collectors.toUnmodifiableSet())
                     .cache();
 
-            Sinks.Many<ScrapingError> errors = Sinks.many().unicast().onBackpressureBuffer();
+            Sinks.Many<ScrapingException> errors = Sinks.many().unicast().onBackpressureBuffer();
+
             return Flux.concat(scrapingHandlers.stream().map(ScrapingEventHandler::before).toList())
                     .thenMany(newsMaintenance.feedList())
                     .parallel(4).runOn(scraperScheduler)
@@ -100,6 +102,7 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                     .concatMap(scrapEnrichmentService::applyNewsFilters)
                     .sequential()
 
+                    .flatMap(tn -> this.handleEnrichmentException(tn, errors))
                     .filterWhen(n -> alreadyHave.map(l -> !l.contains(n.getId())))
                     .buffer(100)
                     .flatMap(newsMaintenance::newsLoad)
@@ -123,7 +126,7 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
         scraperScheduler.dispose();
     }
 
-    private Flux<News> wgetFeedNews(ScrapedFeed feed, Period conservation, Sinks.Many<ScrapingError> errors) {
+    private Flux<News> wgetFeedNews(ScrapedFeed feed, Period conservation, Sinks.Many<ScrapingException> errors) {
         String feedHost = feed.link().getHost();
         FeedScraperPlugin hostPlugin = plugins.get(feedHost);
         URI feedUrl = (hostPlugin != null) ? hostPlugin.uriModifier(feed.link()) : feed.link();
@@ -147,8 +150,8 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                 .acceptCharset(StandardCharsets.UTF_8)
                 .exchangeToFlux(response -> {
                     if (!response.statusCode().is2xxSuccessful()) {
-                        errors.tryEmitNext(new ScrapingError(
-                                feed,
+                        errors.tryEmitNext(new FeedScrapingException(
+                                AtomFeed.of(feed.id(), feed.link()),
                                 new IllegalArgumentException("Bad response status " + response.statusCode())
                         ));
                         return Flux.empty();
@@ -157,7 +160,7 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                                     response.bodyToFlux(DataBuffer.class).switchOnFirst(this::cleanupStreamStart),
                                     ResolvableType.NONE, null, null)
                             .onErrorResume(RuntimeException.class, t -> {
-                                errors.tryEmitNext(new ScrapingError(feed, t));
+                                errors.tryEmitNext(new FeedScrapingException(AtomFeed.of(feed.id(), feed.link()), t));
                                 return response.releaseBody().thenReturn(XMLEventFactory.newDefaultFactory().createEndDocument());
                             });
                 })
@@ -174,7 +177,7 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                         .build())
 
                 .onErrorResume(e -> {
-                    errors.tryEmitNext(new ScrapingError(feed, e));
+                    errors.tryEmitNext(new FeedScrapingException(AtomFeed.of(feed.id(), feed.link()), e));
                     return Flux.empty();
                 })
                 .doFinally(s -> {
@@ -227,5 +230,18 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                 .next()
                 .map(feedParser::readFeedProperties)
                 .flatMap(scrapEnrichmentService::applyFeedsFilters);
+    }
+
+    private Mono<News> handleEnrichmentException(Try<News> news, Sinks.Many<ScrapingException> errors) {
+        if (news.isFailure()) {
+            if (news.getCause() instanceof ScrapingException cause) {
+                errors.tryEmitNext(cause);
+            } else {
+                errors.tryEmitNext(new ScrapingException("Unknown entity scraping error !", news.getCause()));
+            }
+            return Mono.empty();
+        } else {
+            return Mono.just(news.get());
+        }
     }
 }

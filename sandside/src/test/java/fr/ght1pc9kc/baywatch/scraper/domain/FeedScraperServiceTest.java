@@ -1,10 +1,14 @@
 package fr.ght1pc9kc.baywatch.scraper.domain;
 
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
+import fr.ght1pc9kc.baywatch.common.domain.Try;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
+import fr.ght1pc9kc.baywatch.scraper.api.model.AtomEntry;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapResult;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.FeedScrapingException;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.NewsScrapingException;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.NewsMaintenancePort;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
@@ -48,6 +52,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -118,8 +123,8 @@ class FeedScraperServiceTest {
                         () -> Assertions.assertThat(actual.inserted()).isEqualTo(1),
                         () -> Assertions.assertThat(actual.errors()).isNotEmpty(),
                         () -> Assertions.assertThat(actual.errors())
-                                .element(0).extracting("exception")
-                                .isInstanceOf(IllegalArgumentException.class)
+                                .element(0).isInstanceOf(FeedScrapingException.class)
+                                .extracting("cause").isInstanceOf(IllegalArgumentException.class)
                 )).verifyComplete();
 
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/error/darth-vader.xml")));
@@ -128,6 +133,36 @@ class FeedScraperServiceTest {
         verify(rssAtomParserMock, times(1)).readEntryEvents(any(), any(ScrapedFeed.class));
         verify(newsMaintenanceMock,
                 times(1).description("Expect only one call because of the buffer of 100")
+        ).newsLoad(anyCollection());
+    }
+
+    @Test
+    void should_fail_enrichment_without_fail_scraping() {
+        reset(mockExchangeFunction);
+        when(mockScrapEnrichmentService.applyNewsFilters(any(News.class)))
+                .thenAnswer(((Answer<Mono<Try<News>>>) answer -> Mono.just(Try.fail(new NewsScrapingException(
+                        new AtomEntry(
+                                answer.getArgument(0, News.class).getId(),
+                                answer.getArgument(0, News.class).getTitle(),
+                                answer.getArgument(0, News.class).getImage(),
+                                answer.getArgument(0, News.class).getDescription(),
+                                answer.getArgument(0, News.class).getPublication(),
+                                answer.getArgument(0, News.class).getLink(),
+                                answer.getArgument(0, News.class).getFeeds()
+                        ),
+                        new IllegalArgumentException())))));
+
+        StepVerifier.create(tested.scrap(SCRAPER_RETENTION_PERIOD))
+                .assertNext(actual -> assertAll(
+                        () -> Assertions.assertThat(actual.inserted()).isZero(),
+                        () -> Assertions.assertThat(actual.errors()).isNotEmpty(),
+                        () -> Assertions.assertThat(actual.errors())
+                                .element(0).isInstanceOf(NewsScrapingException.class)
+                                .extracting("cause").isInstanceOf(IllegalArgumentException.class)
+                )).verifyComplete();
+        
+        verify(newsMaintenanceMock,
+                never().description("Expect no invocation because no valid enrichment")
         ).newsLoad(anyCollection());
     }
 
@@ -221,7 +256,7 @@ class FeedScraperServiceTest {
         ));
 
         when(mockScrapEnrichmentService.applyNewsFilters(any(News.class)))
-                .thenAnswer(((Answer<Mono<News>>) answer -> Mono.just(answer.getArgument(0))));
+                .thenAnswer(((Answer<Mono<Try<News>>>) answer -> Mono.just(Try.of(answer.getArgument(0, News.class)))));
 
         tested = new FeedScraperServiceImpl(Schedulers.immediate(), newsMaintenanceMock, mockWebClient, rssAtomParserMock,
                 Collections.emptyList(), Map.of(), mockScrapEnrichmentService);
