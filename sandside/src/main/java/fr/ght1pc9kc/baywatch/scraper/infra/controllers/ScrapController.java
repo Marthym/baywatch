@@ -1,7 +1,6 @@
 package fr.ght1pc9kc.baywatch.scraper.infra.controllers;
 
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,9 +20,7 @@ public class ScrapController {
 
     @PostMapping("/news/{uri}")
     @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
-    public Mono<News> scrapSimpleNews(@PathVariable("uri") URI uri) {
-        return scrapEnrichmentService.buildStandaloneNews(uri)
-                .flatMap(scrapEnrichmentService::applyNewsFilters)
-                .flatMap(scrapEnrichmentService::saveAndShare);
+    public Mono<Void> scrapSimpleNews(@PathVariable("uri") URI uri) {
+        return scrapEnrichmentService.scrapSingleNews(uri);
     }
 }
