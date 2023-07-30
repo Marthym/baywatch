@@ -2,7 +2,7 @@
   <div
       class="stack absolute bottom-5 right-5 z-50 transition-opacity easy-in-out duration-500 opacity-100"
       @mouseenter="onMouseEnterNotification()" @mouseleave="onMouseLeaveNotification()">
-    <div v-for="notif in notifications" :key="notif.id" class="alert shadow-lg" :class="{
+    <div v-for="(notif, index) in notifications" :key="notif.id" class="alert shadow-lg" :class="{
       'bg-error': isError(notif),
       'bg-warning': isWarning(notif),
       'bg-info': isInfo(notif),
@@ -23,7 +23,7 @@
           <ShareIcon class="h-5 w-5 cursor-pointer stroke-2"/>
           <span class="hidden lg:block">share</span>
         </button>
-        <button class="btn btn-xs btn-ghost btn-square join-item" @click="onPopNotification(notif.raw)">
+        <button class="btn btn-xs btn-ghost btn-square join-item" @click="onCloseNotification(index)">
           <XMarkIcon class="w-5 h-5 stroke-current"/>
         </button>
       </div>
@@ -86,13 +86,31 @@ export default class NotificationArea extends Vue implements NotificationListene
     }
   }
 
+  /**
+   * Call when user click on the close notification button on the notif
+   * This does not take care about the onBlur property.
+   *
+   * @param nIndex The index of the notification to close
+   */
+  onCloseNotification(nIndex: number): void {
+    if (nIndex >= 0) {
+      this.notifications.splice(nIndex, 1);
+    } else if (this.notifications.length > 0) {
+      this.notifications.splice(0, this.notifications.length);
+    }
+  }
+
+  /**
+   * Call when notification rise the timeout display time.
+   * @param notif The raw notification to close
+   */
   onPopNotification(notif: Notification): void {
     const idx = this.notifications.findIndex(e => e.raw.message === notif.message);
     if (idx >= 0) {
       if (this.popOnBlur) {
         this.popOnBlur.push(idx);
       } else {
-        this.notifications.splice(idx, 1);
+        this.onCloseNotification(idx);
       }
     } else if (this.notifications.length > 0) {
       this.notifications.splice(0, this.notifications.length);
