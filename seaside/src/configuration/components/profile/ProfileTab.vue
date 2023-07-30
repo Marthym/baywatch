@@ -29,9 +29,12 @@
       <label class="label">
         <span class="label-text-alt italic mb-4">Mail address is only use for avatar and security transactions</span>
       </label>
-      <button class="btn mb-4">Change Password</button>
+      <button class="btn mb-4" @click.stop="onClickChangePassword()">Change Password</button>
       <button class="btn btn-primary">Save Profile</button>
     </div>
+    <ChangePasswordModal :is-open="isChangePasswordOpen"
+                         @cancel="onCancelPasswordChange()"
+                         @submit="event => onSubmitPasswordChange(event)"/>
   </div>
 </template>
 <script lang="ts">
@@ -39,10 +42,11 @@ import { Component, Vue } from 'vue-facing-decorator';
 import { useStore } from 'vuex';
 import { MD5 } from 'md5-js-tools';
 import { UserState } from '@/store/user/user';
+import ChangePasswordModal from '@/configuration/components/profile/ChangePasswordModal.vue';
 
 @Component({
   name: 'ProfileTab',
-  components: {},
+  components: { ChangePasswordModal },
   setup() {
     return {
       userState: useStore().state.user,
@@ -51,6 +55,7 @@ import { UserState } from '@/store/user/user';
 })
 export default class ProfileTab extends Vue {
   private userState: UserState;
+  private isChangePasswordOpen: boolean = false;
 
   get avatar(): string {
     let avatarHash = '0';
@@ -58,6 +63,18 @@ export default class ProfileTab extends Vue {
       avatarHash = MD5.generate(this.userState.user.mail);
     }
     return `https://www.gravatar.com/avatar/${avatarHash}?s=96&d=retro`;
+  }
+
+  private onClickChangePassword(): void {
+    this.isChangePasswordOpen = true;
+  }
+
+  private onCancelPasswordChange(): void {
+    this.isChangePasswordOpen = false;
+  }
+
+  private onSubmitPasswordChange(changePasswordEvent: { old: string, new: string }): void {
+    this.isChangePasswordOpen = false;
   }
 }
 </script>
