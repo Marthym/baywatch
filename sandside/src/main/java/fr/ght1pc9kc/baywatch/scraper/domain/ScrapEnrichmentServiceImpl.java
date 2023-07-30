@@ -2,14 +2,17 @@ package fr.ght1pc9kc.baywatch.scraper.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
+import fr.ght1pc9kc.baywatch.common.domain.Try;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.model.Severity;
 import fr.ght1pc9kc.baywatch.notify.api.model.UserNotification;
 import fr.ght1pc9kc.baywatch.scraper.api.NewsFilter;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
+import fr.ght1pc9kc.baywatch.scraper.api.model.AtomEntry;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.FeedsFilter;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.NewsScrapingException;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
@@ -57,6 +60,7 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
         return authFacade.getConnectedUser()
                 .transformDeferredContextual((original, context) -> original.doOnNext(user -> buildStandaloneNews(uri)
                         .flatMap(this::applyNewsFilters)
+                        .flatMap(t -> Mono.fromCallable(t::get))
                         .flatMap(this::saveAndShare)
                         .contextWrite(context)
                         .subscribeOn(scraperScheduler)
@@ -87,7 +91,7 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
     }
 
     @Override
-    public Mono<News> applyNewsFilters(News news) {
+    public Mono<Try<News>> applyNewsFilters(News news) {
         Mono<RawNews> raw = authFacade.getConnectedUser()
                 .filter(u -> RoleUtils.hasRole(u.self, Role.USER))
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(OPERATION_NOT_PERMITTED)))
@@ -96,7 +100,13 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
         for (NewsFilter filter : newsFilters) {
             raw = raw.flatMap(filter::filter);
         }
-        return raw.map(news::withRaw);
+        return raw.map(Try.of(news::withRaw))
+                .onErrorResume(e -> {
+                    AtomEntry atomEntry = new AtomEntry(
+                            news.getId(), news.getTitle(), news.getImage(), news.getDescription(), news.getPublication(),
+                            news.getLink(), news.getFeeds());
+                    return Mono.just(Try.fail(new NewsScrapingException(atomEntry, e)));
+                });
     }
 
     @Override

@@ -3,16 +3,19 @@ package fr.ght1pc9kc.baywatch.common.domain;
 import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.HashingException;
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.Objects;
 
 @UtilityClass
 public class Hasher {
     private static final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes(StandardCharsets.US_ASCII);
 
-    public static String identify(URI toHash) {
+    public static String identify(@NotNull URI toHash) {
+        Objects.requireNonNull(toHash);
         StringBuilder bldr = new StringBuilder(toHash.toString().length());
         bldr.append("://")
                 .append(toHash.getHost());
