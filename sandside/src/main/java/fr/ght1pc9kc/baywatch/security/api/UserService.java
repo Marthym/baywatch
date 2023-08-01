@@ -44,6 +44,17 @@ public interface UserService {
     Mono<Entity<User>> update(String id, User user);
 
     /**
+     * Change password for the {@link User} id
+     *
+     * @param id          The user Id to change password
+     * @param oldPassword The current password to change
+     * @param newPassword The new password
+     * @return {@code Void} when the password is changed
+     * @throws IllegalArgumentException When password strength is not enough
+     */
+    Mono<Void> changePassword(String id, String oldPassword, String newPassword);
+
+    /**
      * Delete {@link User}s
      *
      * @param ids {@link User}s ID to delete

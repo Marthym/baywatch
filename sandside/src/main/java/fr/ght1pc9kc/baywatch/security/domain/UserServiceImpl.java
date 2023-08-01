@@ -11,12 +11,15 @@ import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
+import fr.ght1pc9kc.baywatch.security.domain.model.PasswordStrength;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
+import fr.ght1pc9kc.baywatch.security.domain.ports.PasswordStrengthChecker;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -27,12 +30,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.security.api.model.RoleUtils.hasRole;
 
+@Slf4j
 @AllArgsConstructor
 public final class UserServiceImpl implements UserService, AuthorizationService {
     private static final String ID_PREFIX = "US";
@@ -44,6 +49,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     private final PasswordEncoder passwordEncoder;
     private final Clock clock;
     private final UlidFactory idGenerator;
+    private final PasswordStrengthChecker passwordChecker;
 
     @Override
     public Mono<Entity<User>> get(String userId) {
@@ -83,6 +89,20 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                     .password(Objects.nonNull(user.password) ? passwordEncoder.encode(user.password) : null)
                     .build();
             return userRepository.update(id, checkedUser);
+        });
+    }
+
+    @Override
+    public Mono<Void> changePassword(String id, String oldPassword, String newPassword) {
+        return authorizeSelfData(id).mapNotNull(user -> {
+            PasswordStrength strength = passwordChecker.estimate(newPassword, user.self, Locale.FRANCE);
+            log.info("Change password for {}", newPassword);
+
+            log.info("New password is safe : {}", strength.isSafe());
+            log.info("New password entropie : {}", strength.entropy());
+            log.info("Estimate : {}", strength.timeToCrack());
+
+            return null;
         });
     }
 
