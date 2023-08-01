@@ -43,6 +43,7 @@ import { useStore } from 'vuex';
 import { MD5 } from 'md5-js-tools';
 import { UserState } from '@/store/user/user';
 import ChangePasswordModal from '@/configuration/components/profile/ChangePasswordModal.vue';
+import { userUpdate } from '@/security/services/UserService';
 
 @Component({
   name: 'ProfileTab',
@@ -74,6 +75,7 @@ export default class ProfileTab extends Vue {
   }
 
   private onSubmitPasswordChange(changePasswordEvent: { old: string, new: string }): void {
+    userUpdate({})
     this.isChangePasswordOpen = false;
   }
 }
