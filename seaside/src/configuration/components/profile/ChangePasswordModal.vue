@@ -6,9 +6,9 @@
     <template v-slot:actions>
       <button class="btn btn-primary"
               @click.stop="$emit('submit', {old: oldPassword, new: confirmPassword})">
-        Fermer
+        Update
       </button>
-      <button class="btn" @click.stop="$emit('cancel')">Fermer</button>
+      <button class="btn" @click.stop="$emit('cancel')">Cancel</button>
     </template>
   </ModalWindow>
 </template>
