@@ -1,11 +1,9 @@
 <template>
   <nav class="tabs tabs-boxed">
-    <a class="tab" :class="{'tab-active': 'FeedsList' === activeTab}"
-       @click.prevent="onChangeTab('FeedsList')">Feeds</a>
-    <a class="tab" :class="{'tab-active': 'ProfileTab' === activeTab}"
-       @click.prevent="onChangeTab('ProfileTab')">Profile</a>
+    <router-link to="/config/feeds" class="tab" active-class="tab-active">Feeds</router-link>
+    <router-link to="/config/profile" class="tab" active-class="tab-active">Profile</router-link>
   </nav>
-  <component :is="activeTab"></component>
+  <router-view></router-view>
 </template>
 
 <script lang="ts">

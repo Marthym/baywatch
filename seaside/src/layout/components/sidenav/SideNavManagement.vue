@@ -2,19 +2,19 @@
     <span class="mt-auto"></span>
     <ul class="menu -mx-4">
         <li v-if="user.isAuthenticated && store.getters['user/hasRoleAdmin']">
-            <router-link to="/admin" @click="sideNavToggle">
+            <router-link to="/admin" active-class="active" @click="sideNavToggle">
                 <AcademicCapIcon class="fill-current w-6 h-6 mr-2"/>
                 Administration
             </router-link>
         </li>
         <li v-if="user.isAuthenticated && store.getters['user/hasRoleUser']">
-            <router-link to="/teams" @click="sideNavToggle">
+            <router-link to="/teams" active-class="active" @click="sideNavToggle">
                 <UserGroupIcon class="fill-current w-6 h-6 mr-2"/>
                 Teams
             </router-link>
         </li>
         <li v-if="user.isAuthenticated && store.getters['user/hasRoleUser']">
-            <router-link to="/config" @click="sideNavToggle">
+            <router-link to="/config" active-class="active" @click="sideNavToggle">
                 <AdjustmentsVerticalIcon class="fill-current w-6 h-6 mr-2"/>
                 Configuration
             </router-link>
