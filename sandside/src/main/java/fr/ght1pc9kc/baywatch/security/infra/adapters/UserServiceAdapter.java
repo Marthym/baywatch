@@ -6,6 +6,7 @@ import fr.ght1pc9kc.baywatch.security.api.AuthorizationService;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.domain.UserServiceImpl;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
+import fr.ght1pc9kc.baywatch.security.domain.ports.PasswordStrengthChecker;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.security.infra.model.BaywatchUserDetails;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -33,9 +34,10 @@ public class UserServiceAdapter implements AuthorizationService, UserService, Re
     public UserServiceAdapter(UserPersistencePort userPersistencePort,
                               AuthorizationPersistencePort authorizationRepository,
                               AuthenticationFacade authFacade,
-                              PasswordEncoder passwordEncoder) {
+                              PasswordEncoder passwordEncoder, PasswordStrengthChecker passwordChecker) {
         this.delegate = new UserServiceImpl(
-                userPersistencePort, authorizationRepository, authFacade, passwordEncoder, Clock.systemUTC(), UlidFactory.newInstance());
+                userPersistencePort, authorizationRepository, authFacade, passwordEncoder, Clock.systemUTC(),
+                UlidFactory.newInstance(), passwordChecker);
     }
 
     @Override
