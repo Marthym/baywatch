@@ -75,3 +75,16 @@ export function userUpdate(user: Partial<User>): Observable<User> {
         take(1),
     );
 }
+
+const USER_CHANGE_PASSWORD_REQUEST = `#graphql
+mutation ChangeUserPassword($id:ID , $password:ChangePasswordForm){
+    changePassword(_id: $id, password: $password)
+}`;
+
+export function changePassword(userId: string, oldPassword: string, newPassword: string): Observable<void> {
+    const password = { oldPassword, newPassword };
+    return send<{ changePassword: void }>(USER_CHANGE_PASSWORD_REQUEST, { id: userId, password: { ...password } }).pipe(
+        map(data => data.data.changePassword),
+        take(1),
+    );
+}
