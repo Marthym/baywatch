@@ -94,16 +94,23 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
 
     @Override
     public Mono<Void> changePassword(String id, String oldPassword, String newPassword) {
-        return authorizeSelfData(id).mapNotNull(user -> {
-            PasswordStrength strength = passwordChecker.estimate(newPassword, user.self, Locale.FRANCE);
-            log.info("Change password for {}", newPassword);
+        return authorizeSelfData(id)
+                .flatMap(current -> {
+                    if (hasRole(current.self, Role.ADMIN)) {
+                        return userRepository.get(id);
+                    } else {
+                        return userRepository.get(id)
+                                .filter(u -> passwordEncoder.matches(oldPassword, u.self.password))
+                                .switchIfEmpty(Mono.error(() -> new UnauthorizedOperation("The current password does not match !")));
+                    }
+                }).flatMap(user -> {
+                    PasswordStrength strength = passwordChecker.estimate(newPassword, user.self, Locale.FRANCE);
+                    if (!strength.isSafe()) {
+                        return Mono.error(new IllegalArgumentException("The password is not safe"));
+                    }
 
-            log.info("New password is safe : {}", strength.isSafe());
-            log.info("New password entropie : {}", strength.entropy());
-            log.info("Estimate : {}", strength.timeToCrack());
-
-            return null;
-        });
+                    return userRepository.update(user.id, user.self.withPassword(passwordEncoder.encode(newPassword)));
+                }).then();
     }
 
     @Override
