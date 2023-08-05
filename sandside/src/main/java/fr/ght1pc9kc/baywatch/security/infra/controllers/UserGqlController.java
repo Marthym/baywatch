@@ -11,7 +11,6 @@ import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.infra.exceptions.AlreadyExistsException;
-import fr.ght1pc9kc.baywatch.security.infra.model.ChangePasswordForm;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserForm;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserSearchRequest;
 import fr.ght1pc9kc.juery.api.PageRequest;
@@ -77,11 +76,6 @@ public class UserGqlController {
                     return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
                 })
                 .map(e -> mapper.convertValue(e, gqlType));
-    }
-
-    @MutationMapping
-    public Mono<Void> changePassword(@Argument("_id") String id, @Valid @Argument("password") ChangePasswordForm toUpdate) {
-        return userService.changePassword(id, toUpdate.oldPassword(), toUpdate.newPassword());
     }
 
     @MutationMapping

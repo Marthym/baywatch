@@ -12,11 +12,6 @@ type Session {
     maxAge: Int
 }
 
-input ChangePasswordForm {
-    oldPassword: String
-    newPassword: String
-}
-
 input UserForm {
     login: String
     name: String

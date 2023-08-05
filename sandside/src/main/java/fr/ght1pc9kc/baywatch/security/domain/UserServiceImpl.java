@@ -11,9 +11,7 @@ import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
-import fr.ght1pc9kc.baywatch.security.domain.model.PasswordStrength;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
-import fr.ght1pc9kc.baywatch.security.domain.ports.PasswordStrengthChecker;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -30,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
@@ -49,7 +46,6 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     private final PasswordEncoder passwordEncoder;
     private final Clock clock;
     private final UlidFactory idGenerator;
-    private final PasswordStrengthChecker passwordChecker;
 
     @Override
     public Mono<Entity<User>> get(String userId) {
@@ -90,27 +86,6 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                     .build();
             return userRepository.update(id, checkedUser);
         });
-    }
-
-    @Override
-    public Mono<Void> changePassword(String id, String oldPassword, String newPassword) {
-        return authorizeSelfData(id)
-                .flatMap(current -> {
-                    if (hasRole(current.self, Role.ADMIN)) {
-                        return userRepository.get(id);
-                    } else {
-                        return userRepository.get(id)
-                                .filter(u -> passwordEncoder.matches(oldPassword, u.self.password))
-                                .switchIfEmpty(Mono.error(() -> new UnauthorizedOperation("The current password does not match !")));
-                    }
-                }).flatMap(user -> {
-                    PasswordStrength strength = passwordChecker.estimate(newPassword, user.self, Locale.FRANCE);
-                    if (!strength.isSafe()) {
-                        return Mono.error(new IllegalArgumentException("The password is not safe"));
-                    }
-
-                    return userRepository.update(user.id, user.self.withPassword(passwordEncoder.encode(newPassword)));
-                }).then();
     }
 
     @Override

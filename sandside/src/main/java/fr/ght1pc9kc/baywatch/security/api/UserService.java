@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.security.api;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.security.api.model.PasswordEvaluation;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.juery.api.PageRequest;
@@ -42,17 +43,6 @@ public interface UserService {
      * @return The updates {@link User} {@link Entity}
      */
     Mono<Entity<User>> update(String id, User user);
-
-    /**
-     * Change password for the {@link User} id
-     *
-     * @param id          The user Id to change password
-     * @param oldPassword The current password to change
-     * @param newPassword The new password
-     * @return {@code Void} when the password is changed
-     * @throws IllegalArgumentException When password strength is not enough
-     */
-    Mono<Void> changePassword(String id, String oldPassword, String newPassword);
 
     /**
      * Delete {@link User}s
