@@ -1,5 +1,4 @@
 extend type Mutation {
-    changePassword(_id: ID, password: ChangePasswordForm): Void
     userCreate(user: UserForm): User
     userDelete(ids: [ID]): [User]
     userGrants(_id: ID, permissions: [String]): User
