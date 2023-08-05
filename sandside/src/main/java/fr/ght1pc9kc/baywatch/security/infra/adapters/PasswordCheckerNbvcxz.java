@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 @Service
@@ -21,8 +22,8 @@ public record PasswordCheckerNbvcxz() implements PasswordStrengthChecker {
 
     @Override
     public PasswordEvaluation estimate(String password, Locale locale, Collection<String> exclude) {
+        ResourceBundle mainResource = ResourceBundle.getBundle("main", locale, Configuration.class.getClassLoader());
         if (password == null || password.isEmpty()) {
-            ResourceBundle mainResource = ResourceBundle.getBundle("main", locale, Configuration.class.getClassLoader());
             return new PasswordEvaluation(false, 0, mainResource.getString("main.estimate.instant"));
         }
 
@@ -41,10 +42,17 @@ public record PasswordCheckerNbvcxz() implements PasswordStrengthChecker {
 
         Nbvcxz nbvcxz = new Nbvcxz(configuration);
         Result result = nbvcxz.estimate(password);
+
+        String message = Optional.ofNullable(result.getFeedback())
+                .flatMap(fb -> Optional.ofNullable(fb.getWarning()))
+                .map(w -> w + " ")
+                .orElse("") +
+                mainResource.getString("main.timeToCrack") + " " +
+                TimeEstimate.getTimeToCrackFormatted(result, "OFFLINE_BCRYPT_10");
         return new PasswordEvaluation(
                 result.isMinimumEntropyMet(),
                 result.getEntropy(),
-                TimeEstimate.getTimeToCrackFormatted(result, "OFFLINE_BCRYPT_10")
+                message
         );
     }
 }
