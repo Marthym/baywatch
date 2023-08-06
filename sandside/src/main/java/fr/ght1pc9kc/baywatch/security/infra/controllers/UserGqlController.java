@@ -82,11 +82,14 @@ public class UserGqlController {
     }
 
     @MutationMapping
-    public Mono<Map<String, Object>> userUpdate(@Argument("_id") String id, @Valid @Argument("user") Map<String, Object> toUpdate) {
+    @PreAuthorize("isAuthenticated()")
+    public Mono<Map<String, Object>> userUpdate(
+            @Argument("_id") String id,
+            @Argument("currentPassword") String currentPassword, @Valid @Argument("user") Map<String, Object> toUpdate) {
         MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
 
         return Mono.fromCallable(() -> userMapper.getUpdatableUser(toUpdate))
-                .flatMap(user -> userService.update(id, user))
+                .flatMap(user -> userService.update(id, user, currentPassword))
                 .map(e -> mapper.convertValue(e, gqlType));
     }
 
