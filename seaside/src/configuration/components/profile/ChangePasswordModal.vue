@@ -73,7 +73,8 @@ export default class ChangePasswordModal extends Vue {
   } = {};
 
   get updateButtonDisable(): boolean {
-    return !(this.success.old && this.success.new && this.success.confirm);
+    return !(this.success.old && this.success.new
+        && this.success.confirm && this.success.new === this.success.confirm);
   }
 
   private onBlurOldPassword(): void {
