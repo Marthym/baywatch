@@ -1,16 +1,14 @@
 package fr.ght1pc9kc.baywatch.security.infra.model;
 
-import fr.ght1pc9kc.baywatch.common.infra.model.CreateValidation;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 
 import java.util.List;
 
 public record UserForm(
-        @NotEmpty String login,
-        @NotEmpty String name,
+        String login,
+        String name,
         @Email String mail,
-        @NotEmpty(groups = CreateValidation.class) String password,
-        @NotEmpty List<@NotBlank String> roles) {
+        String password,
+        List<@NotBlank String> roles) {
 }

@@ -27,7 +27,9 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.LOGIN;
 @Qualifier("Baywatch")
 public class UserServiceAdapter implements AuthorizationService, UserService, ReactiveUserDetailsService {
     @Delegate
-    private final UserServiceImpl delegate;
+    private final UserService delegate;
+    @Delegate
+    private final AuthorizationService delegateA;
 
     @Autowired
     public UserServiceAdapter(UserPersistencePort userPersistencePort,
@@ -37,6 +39,7 @@ public class UserServiceAdapter implements AuthorizationService, UserService, Re
         this.delegate = new UserServiceImpl(
                 userPersistencePort, authorizationRepository, authFacade, passwordEncoder, Clock.systemUTC(),
                 UlidFactory.newInstance());
+        this.delegateA = (UserServiceImpl) this.delegate;
     }
 
     @Override
