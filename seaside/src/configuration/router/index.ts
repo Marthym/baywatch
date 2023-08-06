@@ -7,7 +7,7 @@ const ProfileTab = () => import('@/configuration/components/profile/ProfileTab.v
 export const routes: RouteRecordRaw[] = [
     {
         path: '/config', component: ConfigurationPage, name: 'config', children: [
-            { path: '', redirect: '/config/feeds' },
+            { path: '', redirect: '/config/feeds', name:'feeds' },
             { path: 'feeds', component: FeedsList, name: 'feeds' },
             { path: 'profile', component: ProfileTab, name: 'profile' },
         ],

@@ -8,7 +8,7 @@ type PasswordCheckResponse = { checkPasswordStrength: PasswordEvaluation };
 const PASSWORD_CHECK_REQUEST = `#graphql
 query CheckPasswordStrength($password: String){
     checkPasswordStrength(password: $password) {
-        entropy isSecure timeToCrack
+        entropy isSecure message
     }
 }`;
 
