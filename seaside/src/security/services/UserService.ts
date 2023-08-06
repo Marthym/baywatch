@@ -62,15 +62,16 @@ export function userDelete(ids: string[]): Observable<User[]> {
 }
 
 const USER_UPGRADE_REQUEST = `#graphql
-mutation UpgradeUser ($id: ID, $user: UserForm) {
-    userUpdate(_id: $id, user: $user) {
+mutation UpdateNewUser($id:ID , $currentPassword: String, $user:UserForm){
+    userUpdate(_id: $id, currentPassword: $currentPassword, user: $user){
         _id _createdAt login name mail roles
     }
 }`;
 
-export function userUpdate(user: Partial<User>): Observable<User> {
+export function userUpdate(id: string, currentPassword: string, user: Partial<User>): Observable<User> {
     const { _id, _createdAt, ...toUpdate } = user;
-    return send<{ userUpdate: User }>(USER_UPGRADE_REQUEST, { id: _id, user: { ...toUpdate } }).pipe(
+    const variables = { id: id, currentPassword: currentPassword, user: { ...toUpdate } };
+    return send<{ userUpdate: User }>(USER_UPGRADE_REQUEST, variables).pipe(
         map(data => data.data.userUpdate),
         take(1),
     );
