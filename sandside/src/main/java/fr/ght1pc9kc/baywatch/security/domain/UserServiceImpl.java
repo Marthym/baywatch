@@ -92,7 +92,11 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
         if (user.roles() != null && user.roles().isEmpty()) {
             throw new IllegalArgumentException("User must have at least 1 roles !");
         }
+        if (user.password() != null && user.password().trim().length() < 4) {
+            throw new IllegalArgumentException("Password must be stronger !");
+        }
         return authorizeSelfData(id)
+                .flatMap(u -> get(u.id))
                 .handle((u, sink) -> {
                     if (hasRole(u.self, Role.ADMIN)) {
                         sink.next(u);
