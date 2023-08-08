@@ -13,7 +13,6 @@ import fr.ght1pc9kc.baywatch.security.infra.exceptions.AlreadyExistsException;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserForm;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -26,7 +25,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,7 +35,6 @@ import reactor.core.publisher.Mono;
 
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -74,19 +71,6 @@ public class UserController {
                 .flatMap(userService::create)
                 .onErrorMap(AlreadyExistsException.class, e ->
                         new ResponseStatusException(HttpStatus.CONFLICT, e.getLocalizedMessage()))
-                .onErrorMap(WebExchangeBindException.class, e -> {
-                    String message = e.getFieldErrors().stream().map(err -> err.getField() + " " + err.getDefaultMessage()).collect(Collectors.joining("\n"));
-                    return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
-                });
-    }
-
-    @PutMapping("/{id}")
-    public Mono<Entity<User>> updateUser(@PathVariable("id") String id, @Valid @RequestBody Mono<UserForm> toUpdate) {
-        return toUpdate
-                .map(mapper::formToUser)
-                .flatMap(u -> userService.update(id, u))
-                .onErrorMap(NoSuchElementException.class, e ->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, e.getLocalizedMessage()))
                 .onErrorMap(WebExchangeBindException.class, e -> {
                     String message = e.getFieldErrors().stream().map(err -> err.getField() + " " + err.getDefaultMessage()).collect(Collectors.joining("\n"));
                     return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);

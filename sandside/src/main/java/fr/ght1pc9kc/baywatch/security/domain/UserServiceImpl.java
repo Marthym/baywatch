@@ -8,6 +8,7 @@ import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
+import fr.ght1pc9kc.baywatch.security.api.model.UpdatableUser;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
@@ -17,6 +18,7 @@ import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -33,10 +35,12 @@ import java.util.Objects;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.security.api.model.RoleUtils.hasRole;
 
+@Slf4j
 @AllArgsConstructor
 public final class UserServiceImpl implements UserService, AuthorizationService {
     private static final String ID_PREFIX = "US";
     private static final String AUTHENTICATION_NOT_FOUND = "Authentication not found !";
+    private static final String UNAUTHORIZED_USER = "User unauthorized for the operation !";
 
     private final UserPersistencePort userRepository;
     private final AuthorizationPersistencePort authorizationRepository;
@@ -77,13 +81,39 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     }
 
     @Override
-    public Mono<Entity<User>> update(String id, User user) {
-        return authorizeSelfData(id).flatMap(u -> {
-            User checkedUser = user.toBuilder()
-                    .password(Objects.nonNull(user.password) ? passwordEncoder.encode(user.password) : null)
-                    .build();
-            return userRepository.update(id, checkedUser);
-        });
+    public Mono<Entity<User>> update(String id, UpdatableUser user) {
+        return update(id, user, null);
+    }
+
+    @Override
+    public Mono<Entity<User>> update(String id, UpdatableUser user, String currentPassword) {
+        Objects.requireNonNull(id);
+        Objects.requireNonNull(user);
+        if (user.roles() != null && user.roles().isEmpty()) {
+            throw new IllegalArgumentException("User must have at least 1 roles !");
+        }
+        if (user.password() != null && user.password().trim().length() < 4) {
+            throw new IllegalArgumentException("Password must be stronger !");
+        }
+        return authorizeSelfData(id)
+                .flatMap(u -> get(u.id))
+                .handle((u, sink) -> {
+                    if (hasRole(u.self, Role.ADMIN)) {
+                        sink.next(u);
+                    } else if (id.equals(u.id)
+                            && Objects.nonNull(currentPassword)
+                            && passwordEncoder.matches(currentPassword, u.self.password)) {
+                        sink.next(u);
+                    } else {
+                        sink.error(new UnauthorizedOperation(UNAUTHORIZED_USER));
+                    }
+                }).flatMap(u -> {
+
+                    UpdatableUser checkedUser = user.toBuilder()
+                            .password(Objects.nonNull(user.password()) ? passwordEncoder.encode(user.password()) : null)
+                            .build();
+                    return userRepository.update(id, checkedUser);
+                });
     }
 
     @Override
@@ -179,7 +209,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                         sink.next(u);
                         return;
                     }
-                    sink.error(new UnauthorizedOperation("User unauthorized for the operation !"));
+                    sink.error(new UnauthorizedOperation(UNAUTHORIZED_USER));
                 });
     }
 
@@ -191,7 +221,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                         sink.next(u);
                         return;
                     }
-                    sink.error(new UnauthorizedOperation("User unauthorized for the operation !"));
+                    sink.error(new UnauthorizedOperation(UNAUTHORIZED_USER));
                 });
     }
 }
