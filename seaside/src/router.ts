@@ -23,8 +23,7 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
     if (to.matched.some(record => record.meta.requiresAuth)) {
         const isAuthenticated = useStore<UserState>().state.user.isAuthenticated;
-        console.debug('isAuth', isAuthenticated);
-        if (isAuthenticated === true) {
+        if (isAuthenticated === undefined || isAuthenticated === true) {
             next();
         } else {
             next({ name: 'LoginPage' });

@@ -124,5 +124,11 @@ export default class ChangePasswordModal extends Vue {
       s.type = 'text';
     }
   }
+
+  private unmounted(): void {
+    delete this.newPassword;
+    delete this.confirmPassword;
+    delete this.oldPassword;
+  }
 }
 </script>
