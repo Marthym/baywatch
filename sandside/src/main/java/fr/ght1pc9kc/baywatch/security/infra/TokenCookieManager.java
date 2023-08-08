@@ -31,10 +31,10 @@ public final class TokenCookieManager {
     }
 
     public ResponseCookie buildTokenCookie(String scheme, BaywatchAuthentication bwAuth) {
-        Duration maxAge = (bwAuth.isRememberMe()) ? Duration.ofSeconds(-1) : params.validity;
-        String path = (bwAuth.authorities.contains(RoleUtils.toSpringAuthority(Role.ADMIN))) ?
+        Duration maxAge = (bwAuth.rememberMe()) ? Duration.ofSeconds(-1) : params.validity;
+        String path = (bwAuth.authorities().contains(RoleUtils.toSpringAuthority(Role.ADMIN))) ?
                 "/" : baseRoute;
-        return ResponseCookie.from(params.name, bwAuth.getToken())
+        return ResponseCookie.from(params.name, bwAuth.token())
                 .httpOnly(true)
                 .secure("https".equals(scheme))
                 .sameSite(Cookie.SameSite.STRICT.attributeValue())

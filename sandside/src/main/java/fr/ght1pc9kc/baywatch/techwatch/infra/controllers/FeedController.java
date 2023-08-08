@@ -125,7 +125,7 @@ public class FeedController {
     @PutMapping("/{id}")
     public Mono<Feed> update(@PathVariable("id") String id, @Valid @RequestBody Mono<FeedForm> feedForm) {
         return feedForm.map(ff -> {
-                    URI uri = URI.create(ff.url);
+                    URI uri = URI.create(ff.url());
                     if (!id.equals(Hasher.identify(uri))) {
                         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Inconsistent ID for URL !");
                     }
@@ -133,10 +133,10 @@ public class FeedController {
                             .raw(RawFeed.builder()
                                     .id(id)
                                     .url(uri)
-                                    .name(ff.name)
+                                    .name(ff.name())
                                     .build())
-                            .tags(Set.of(ff.tags))
-                            .name(ff.name)
+                            .tags(Set.of(ff.tags()))
+                            .name(ff.name())
                             .build();
                 }).flatMap(feedService::update)
                 .onErrorMap(BadRequestCriteria.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
@@ -145,16 +145,16 @@ public class FeedController {
     @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT})
     public Mono<ResponseEntity<Feed>> subscribe(@Valid @RequestBody Mono<FeedForm> feedForm) {
         return feedForm.map(form -> {
-                    URI uri = URI.create(form.url);
-                    Set<String> tags = Optional.ofNullable(form.tags).map(Set::of).orElseGet(Set::of);
+                    URI uri = URI.create(form.url());
+                    Set<String> tags = Optional.ofNullable(form.tags()).map(Set::of).orElseGet(Set::of);
                     return Feed.builder()
                             .raw(RawFeed.builder()
                                     .id(Hasher.identify(uri))
                                     .url(uri)
-                                    .name(form.name)
+                                    .name(form.name())
                                     .build())
                             .tags(tags)
-                            .name(form.name)
+                            .name(form.name())
                             .build();
                 })
                 .flatMap(feed -> feedService.addAndSubscribe(Collections.singleton(feed)).next())
@@ -175,14 +175,14 @@ public class FeedController {
     @PostMapping("/import")
     public Flux<Feed> importFeeds(@RequestBody @Valid Flux<FeedForm> feedForms) {
         return feedForms.map(form -> {
-                    URI uri = URI.create(form.url);
+                    URI uri = URI.create(form.url());
                     return Feed.builder()
                             .raw(RawFeed.builder()
                                     .id(Hasher.identify(uri))
                                     .url(uri)
-                                    .name(Optional.ofNullable(form.name).orElseGet(uri::getHost))
+                                    .name(Optional.ofNullable(form.name()).orElseGet(uri::getHost))
                                     .build())
-                            .tags(Set.of(form.tags))
+                            .tags(Set.of(form.tags()))
                             .build();
                 }).collectList()
                 .flatMapMany(feedService::addAndSubscribe);

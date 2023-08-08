@@ -56,7 +56,7 @@ public class AuthenticationGqlController {
     public Mono<Object> login(@Arguments AuthenticationRequest authRequest, GraphQLContext env) {
         return Mono.just(authRequest)
                 .flatMap(login -> authenticationManager.authenticate(
-                                new UsernamePasswordAuthenticationToken(login.getUsername(), login.getPassword()))
+                                new UsernamePasswordAuthenticationToken(login.username(), login.password()))
                         .map(u -> Tuples.of(login.rememberMe(), u)))
 
                 .map(auth -> {
@@ -65,7 +65,7 @@ public class AuthenticationGqlController {
                     Optional<ServerWebExchange> orEmpty = env.getOrEmpty(ServerWebExchange.class);
                     orEmpty.ifPresent(exchange -> {
                         Set<String> authorities = AuthorityUtils.authorityListToSet(user.getAuthorities());
-                        BaywatchAuthentication bwAuth = tokenProvider.createToken(user.getEntity(), auth.getT1(), authorities);
+                        BaywatchAuthentication bwAuth = tokenProvider.createToken(user.entity(), auth.getT1(), authorities);
                         ResponseCookie authCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), bwAuth);
                         exchange.getResponse().addCookie(authCookie);
                     });
@@ -76,14 +76,14 @@ public class AuthenticationGqlController {
                                 .orElse(Exceptions.sneak().get(() -> InetAddress.getByName("127.0.0.1")));
                         log.debug("Login to {} from {}.", user.getUsername(), clientIp);
                     }
-                    return jsonMapper.convertValue(user.getEntity(), Object.class);
+                    return jsonMapper.convertValue(user.entity(), Object.class);
                 })
 
                 .onErrorMap(BadCredentialsException.class, BaywatchCredentialsException::new)
                 .onErrorMap(NoSuchElementException.class, BaywatchCredentialsException::new)
 
                 .name("bw.login")
-                .tag("username", authRequest.username)
+                .tag("username", authRequest.username())
                 .tap(Micrometer.observation(registry))
                 ;
     }
@@ -96,7 +96,7 @@ public class AuthenticationGqlController {
                 String user = cookieManager.getTokenCookie(exchange.getRequest())
                         .map(HttpCookie::getValue)
                         .map(tokenProvider::getAuthentication)
-                        .map(a -> String.format("%s (%s)", a.user.self.login, a.user.id))
+                        .map(a -> String.format("%s (%s)", a.user().self.login, a.user().id))
                         .orElse("Unknown User");
                 log.debug("Logout for {}.", user);
             }
@@ -117,7 +117,7 @@ public class AuthenticationGqlController {
                                             ResponseCookie tokenCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), auth);
                                             exchange.getResponse().addCookie(tokenCookie);
                                             return Session.builder()
-                                                    .user(auth.user)
+                                                    .user(auth.user())
                                                     .maxAge(-1)
                                                     .build();
                                         }).map(s -> jsonMapper.convertValue(s, Object.class)

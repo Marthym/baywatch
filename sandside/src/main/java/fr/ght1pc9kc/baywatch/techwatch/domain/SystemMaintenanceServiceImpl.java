@@ -12,6 +12,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
+import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +52,7 @@ public class SystemMaintenanceServiceImpl implements SystemMaintenanceService {
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(EXCEPTION_MESSAGE)))
                 .map(u -> QueryContext.all(Criteria.property(FEED_ID).in(toDelete)))
                 .flatMap(feedRepository::delete)
-                .map(r -> r.purged);
+                .map(FeedDeletedResult::purged);
     }
 
     @Override

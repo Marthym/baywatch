@@ -25,6 +25,7 @@ import java.util.function.Predicate;
 @Slf4j
 @RequiredArgsConstructor
 public class JwtTokenAuthenticationFilter implements WebFilter {
+    public static final String BEARER_PREFIX = "Bearer ";
     private final JwtTokenProvider tokenProvider;
     private final TokenCookieManager cookieManager;
     private final ReactiveUserDetailsService userService;
@@ -35,15 +36,15 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
         if (StringUtils.hasText(token) && this.tokenProvider.validateToken(token, false)) {
             BaywatchAuthentication bwAuth = this.tokenProvider.getAuthentication(token);
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    bwAuth.user, bwAuth.token, AuthorityUtils.createAuthorityList(bwAuth.authorities.toArray(String[]::new))
+                    bwAuth.user(), bwAuth.token(), AuthorityUtils.createAuthorityList(bwAuth.authorities().toArray(String[]::new))
             );
 
             return Mono.just(!this.tokenProvider.validateToken(token, true))
                     .filter(Predicate.isEqual(true))
-                    .flatMap(x -> userService.findByUsername(bwAuth.getUser().self.login))
+                    .flatMap(x -> userService.findByUsername(bwAuth.user().self.login))
                     .map(updated -> {
-                        log.debug("Refresh valid expired token for {}", bwAuth.getUser().self.login);
-                        BaywatchAuthentication freshBaywatchAuth = this.tokenProvider.createToken(bwAuth.getUser(), bwAuth.rememberMe, Collections.emptyList());
+                        log.debug("Refresh valid expired token for {}", bwAuth.user().self.login);
+                        BaywatchAuthentication freshBaywatchAuth = this.tokenProvider.createToken(bwAuth.user(), bwAuth.rememberMe(), Collections.emptyList());
                         refreshCookieOrHeader(freshBaywatchAuth, exchange.getRequest(), exchange.getResponse());
                         return exchange;
                     }).then(chain.filter(exchange)
@@ -60,7 +61,7 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
 
     private String resolveCookieOrHeader(ServerHttpRequest request) {
         String bearerToken = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
             return bearerToken.substring(7);
         }
         return cookieManager.getTokenCookie(request)
@@ -71,8 +72,8 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
 
     private void refreshCookieOrHeader(BaywatchAuthentication bwAuth, ServerHttpRequest request, ServerHttpResponse response) {
         String bearerToken = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            response.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer " + bwAuth.getToken());
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
+            response.getHeaders().add(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + bwAuth.token());
         } else {
             cookieManager.getTokenCookie(request).ifPresent(old ->
                     response.addCookie(cookieManager.buildTokenCookie(request.getURI().getScheme(), bwAuth)));
