@@ -1,14 +1,10 @@
 package fr.ght1pc9kc.baywatch.common.infra.mappers;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
-import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
-import fr.ght1pc9kc.baywatch.security.api.model.Permission;
-import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
@@ -18,15 +14,11 @@ import org.jooq.Record;
 import org.jooq.tools.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.NullValueCheckStrategy;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -38,41 +30,12 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
-import static fr.ght1pc9kc.baywatch.dsl.tables.Users.USERS;
-import static fr.ght1pc9kc.baywatch.dsl.tables.UsersRoles.USERS_ROLES;
 import static java.util.function.Predicate.not;
 
 @Mapper(componentModel = "spring",
         imports = {Hasher.class, StringUtils.class, Optional.class, URI.class},
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface BaywatchMapper {
-
-    @Mapping(source = "id", target = "userId")
-    @Mapping(source = "createdAt", target = "userCreatedAt")
-    @Mapping(source = "self.login", target = "userLogin")
-    @Mapping(source = "self.name", target = "userName")
-    @Mapping(source = "self.mail", target = "userEmail")
-    @Mapping(source = "self.password", target = "userPassword",
-            nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
-            nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    UsersRecord entityUserToRecord(Entity<User> user);
-
-    default Entity<User> recordToUserEntity(Record usersRecord) {
-        List<Permission> permissions = Arrays.stream(usersRecord.get(USERS_ROLES.USRO_ROLE).split(","))
-                .map(Permission::from)
-                .distinct()
-                .sorted(Permission.COMPARATOR)
-                .toList();
-
-        return Entity.identify(usersRecord.get(USERS.USER_ID), DateUtils.toInstant(usersRecord.get(USERS.USER_CREATED_AT)),
-                User.builder()
-                        .login(usersRecord.get(USERS.USER_LOGIN))
-                        .mail(usersRecord.get(USERS.USER_EMAIL))
-                        .name(usersRecord.get(USERS.USER_NAME))
-                        .password(usersRecord.get(USERS.USER_PASSWORD))
-                        .roles(permissions)
-                        .build());
-    }
 
     default LocalDateTime map(Instant value) {
         return DateUtils.toLocalDateTime(value);

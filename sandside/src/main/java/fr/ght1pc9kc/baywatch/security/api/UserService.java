@@ -2,8 +2,10 @@ package fr.ght1pc9kc.baywatch.security.api;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
+import fr.ght1pc9kc.baywatch.security.api.model.UpdatableUser;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.juery.api.PageRequest;
+import org.jetbrains.annotations.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -41,7 +43,20 @@ public interface UserService {
      * @param user The new data for the {@link User}
      * @return The updates {@link User} {@link Entity}
      */
-    Mono<Entity<User>> update(String id, User user);
+    Mono<Entity<User>> update(String id, UpdatableUser user);
+
+    /**
+     * Update {@link User} data. The {@link Role}s are replaced by those provided in input
+     * <p>
+     * The current user must have {@link Role#ADMIN} or more to update a user.
+     * The user himself can update its data.
+     *
+     * @param id              The ID of the {@link User} {@link Entity} to be updated
+     * @param user            The new data for the {@link User}
+     * @param currentPassword The current password of the user who made the operation
+     * @return The updates {@link User} {@link Entity}
+     */
+    Mono<Entity<User>> update(String id, UpdatableUser user, @Nullable String currentPassword);
 
     /**
      * Delete {@link User}s

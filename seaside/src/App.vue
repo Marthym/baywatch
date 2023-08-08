@@ -33,6 +33,7 @@ import {
   LOGOUT_MUTATION,
   UPDATE_MUTATION as USER_UPDATE_MUTATION,
 } from '@/store/user/UserConstants';
+import { Router, useRouter } from 'vue-router';
 
 @Component({
   components: {
@@ -44,11 +45,13 @@ import {
   setup() {
     return {
       store: useStore(),
+      router: useRouter(),
     };
   },
 })
 export default class App extends Vue {
   private readonly store;
+  private readonly router: Router;
 
   mounted(): void {
     refresh().subscribe({
@@ -67,6 +70,7 @@ export default class App extends Vue {
                 this.registerSessionNotifications();
               }
             });
+        this.router.push({ name: 'LoginPage' });
       },
     });
     keyboardControl.startKeyboardControl();

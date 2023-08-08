@@ -10,17 +10,19 @@ import fr.ght1pc9kc.baywatch.security.api.AuthorizationService;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.baywatch.security.infra.adapters.UserMapper;
 import fr.ght1pc9kc.baywatch.security.infra.exceptions.AlreadyExistsException;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserForm;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserSearchRequest;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
-import graphql.GraphqlErrorException;
+import graphql.GraphQLError;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.Arguments;
+import org.springframework.graphql.data.method.annotation.GraphQlExceptionHandler;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
@@ -51,6 +53,7 @@ public class UserGqlController {
     private final UserService userService;
     private final AuthorizationService authorizationService;
     private final ObjectMapper mapper;
+    private final UserMapper userMapper;
 
     @QueryMapping
     @PreAuthorize("isAuthenticated()")
@@ -79,23 +82,31 @@ public class UserGqlController {
     }
 
     @MutationMapping
-    public Mono<Map<String, Object>> userUpdate(@Argument("_id") String id, @Valid @Argument("user") UserForm toUpdate) {
+    @PreAuthorize("isAuthenticated()")
+    public Mono<Map<String, Object>> userUpdate(
+            @Argument("_id") String id,
+            @Argument("currentPassword") String currentPassword, @Valid @Argument("user") Map<String, Object> toUpdate) {
         MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
 
-        return Mono.fromCallable(() -> mapper.convertValue(toUpdate, User.class))
-                .flatMap(user -> userService.update(id, user))
-                .doOnError(e -> log.warn("{}: {}", e.getClass(), e.getLocalizedMessage()))
-                .onErrorMap(NoSuchElementException.class, e ->
-                        GraphqlErrorException.newErrorException()
-                                .errorClassification(ErrorType.NOT_FOUND)
-                                .message(e.getLocalizedMessage())
-                                .cause(e)
-                                .build())
-                .onErrorMap(e -> GraphqlErrorException.newErrorException()
-                        .errorClassification(ErrorType.INTERNAL_ERROR)
-                        .message("Unable to execute this operation !")
-                        .build())
+        return Mono.fromCallable(() -> userMapper.getUpdatableUser(toUpdate))
+                .flatMap(user -> userService.update(id, user, currentPassword))
                 .map(e -> mapper.convertValue(e, gqlType));
+    }
+
+    @GraphQlExceptionHandler
+    public Mono<GraphQLError> handle(NoSuchElementException ex) {
+        return Mono.just(GraphQLError.newError()
+                .errorType(ErrorType.NOT_FOUND)
+                .message(ex.getLocalizedMessage())
+                .build());
+    }
+
+    @GraphQlExceptionHandler
+    public Mono<GraphQLError> handle(IllegalArgumentException ex) {
+        return Mono.just(GraphQLError.newError()
+                .errorType(ErrorType.BAD_REQUEST)
+                .message(ex.getLocalizedMessage())
+                .build());
     }
 
     @MutationMapping
