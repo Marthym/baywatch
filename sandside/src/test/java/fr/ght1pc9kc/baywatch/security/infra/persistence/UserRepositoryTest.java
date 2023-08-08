@@ -2,11 +2,11 @@ package fr.ght1pc9kc.baywatch.security.infra.persistence;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
-import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.Users;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.baywatch.security.infra.adapters.UserMapper;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
@@ -63,8 +63,8 @@ class UserRepositoryTest {
 
     @BeforeEach
     void setUp(DSLContext dslContext) {
-        BaywatchMapper baywatchMapper = Mappers.getMapper(BaywatchMapper.class);
-        tested = new UserRepository(Schedulers.immediate(), dslContext, baywatchMapper);
+        UserMapper userMapper = Mappers.getMapper(UserMapper.class);
+        tested = new UserRepository(Schedulers.immediate(), dslContext, userMapper);
     }
 
     @Test
