@@ -17,7 +17,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public Mono<BaywatchAuthentication> refresh(String token) {
         return Mono.fromCallable(() -> tokenProvider.getAuthentication(token))
-                .flatMap(auth -> userService.get(auth.user.id)
-                        .map(user -> tokenProvider.createToken(user, auth.rememberMe, Collections.emptyList())));
+                .flatMap(auth -> userService.get(auth.user().id)
+                        .map(user -> tokenProvider.createToken(user, auth.rememberMe(), Collections.emptyList())));
     }
 }

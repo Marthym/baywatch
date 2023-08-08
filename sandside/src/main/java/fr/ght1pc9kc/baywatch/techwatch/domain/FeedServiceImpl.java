@@ -9,6 +9,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.ScraperServicePort;
+import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.api.filter.CriteriaVisitor;
@@ -139,6 +140,6 @@ public class FeedServiceImpl implements FeedService {
                         .userId(u.id)
                         .build())
                 .flatMap(feedRepository::delete)
-                .map(r -> r.unsubscribed);
+                .map(FeedDeletedResult::unsubscribed);
     }
 }

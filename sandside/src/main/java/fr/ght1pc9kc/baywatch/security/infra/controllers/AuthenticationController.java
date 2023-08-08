@@ -56,13 +56,13 @@ public class AuthenticationController {
     public Mono<Entity<User>> login(@Valid Mono<AuthenticationRequest> authRequest, ServerWebExchange exchange) {
         return authRequest
                 .flatMap(login -> authenticationManager.authenticate(
-                                new UsernamePasswordAuthenticationToken(login.getUsername(), login.getPassword()))
+                                new UsernamePasswordAuthenticationToken(login.username(), login.password()))
                         .map(u -> Tuples.of(login.rememberMe(), u)))
 
                 .map(auth -> {
                     BaywatchUserDetails user = (BaywatchUserDetails) auth.getT2().getPrincipal();
                     Set<String> authorities = AuthorityUtils.authorityListToSet(user.getAuthorities());
-                    BaywatchAuthentication bwAuth = tokenProvider.createToken(user.getEntity(), auth.getT1(), authorities);
+                    BaywatchAuthentication bwAuth = tokenProvider.createToken(user.entity(), auth.getT1(), authorities);
                     ResponseCookie authCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), bwAuth);
                     exchange.getResponse().addCookie(authCookie);
                     if (log.isDebugEnabled()) {
@@ -71,7 +71,7 @@ public class AuthenticationController {
                                 .orElse(Exceptions.sneak().get(() -> InetAddress.getByName("127.0.0.1")));
                         log.debug("Login to {} from {}.", user.getUsername(), clientIp);
                     }
-                    return user.getEntity();
+                    return user.entity();
                 })
 
                 .onErrorMap(BadCredentialsException.class, BaywatchCredentialsException::new)
@@ -84,7 +84,7 @@ public class AuthenticationController {
             String user = cookieManager.getTokenCookie(exchange.getRequest())
                     .map(HttpCookie::getValue)
                     .map(tokenProvider::getAuthentication)
-                    .map(a -> String.format("%s (%s)", a.user.self.login, a.user.id))
+                    .map(a -> String.format("%s (%s)", a.user().self.login, a.user().id))
                     .orElse("Unknown User");
             log.debug("Logout for {}.", user);
         }
@@ -104,7 +104,7 @@ public class AuthenticationController {
                     ResponseCookie tokenCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), auth);
                     exchange.getResponse().addCookie(tokenCookie);
                     return Session.builder()
-                            .user(auth.user)
+                            .user(auth.user())
                             .maxAge(-1)
                             .build();
                 })
