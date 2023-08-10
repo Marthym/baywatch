@@ -44,7 +44,6 @@ class FeedServiceImplTest {
 
     private FeedService tested;
 
-    @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @BeforeEach
     void setUp() {
         Feed jediFeed = BAYWATCH_MAPPER.recordToFeed(FeedRecordSamples.JEDI);

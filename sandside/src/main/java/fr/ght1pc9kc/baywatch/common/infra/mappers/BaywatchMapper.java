@@ -46,10 +46,10 @@ public interface BaywatchMapper {
     }
 
     @Mapping(target = "newsId",
-            expression = "java((news.getId() == null) ? Hasher.identify(news.getLink()) : news.getId())")
-    @Mapping(target = "newsTitle", expression = "java( StringUtils.abbreviate(news.getTitle(), 250) )")
+            expression = "java((news.id() == null) ? Hasher.identify(news.link()) : news.id())")
+    @Mapping(target = "newsTitle", expression = "java( StringUtils.abbreviate(news.title(), 250) )")
     @Mapping(target = "newsDescription", source = "raw.description")
-    @Mapping(target = "newsImgLink", expression = "java( Optional.ofNullable(news.getImage()).map(URI::toString).orElse(null) )")
+    @Mapping(target = "newsImgLink", expression = "java( Optional.ofNullable(news.image()).map(URI::toString).orElse(null) )")
     @Mapping(target = "newsLink", source = "raw.link")
     @Mapping(target = "newsPublication", source = "raw.publication")
     NewsRecord newsToNewsRecord(News news);
@@ -107,7 +107,7 @@ public interface BaywatchMapper {
                 .map(t -> Set.of(t.split(",")))
                 .orElse(Set.of());
         String name = (r.indexOf(FEEDS_USERS.FEUS_FEED_NAME) >= 0 && r.get(FEEDS_USERS.FEUS_FEED_NAME) != null)
-                ? r.get(FEEDS_USERS.FEUS_FEED_NAME) : raw.getName();
+                ? r.get(FEEDS_USERS.FEUS_FEED_NAME) : raw.name();
         return Feed.builder()
                 .raw(raw)
                 .name(name)

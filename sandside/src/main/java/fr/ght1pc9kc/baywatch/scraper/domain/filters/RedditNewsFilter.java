@@ -18,12 +18,12 @@ public class RedditNewsFilter implements NewsFilter {
 
     @Override
     public Mono<RawNews> filter(RawNews news) {
-        if (!news.getLink().getHost().contains("reddit.com")) {
+        if (!news.link().getHost().contains("reddit.com")) {
             return Mono.just(news);
         }
 
-        URI realLink = news.getLink();
-        String description = news.getDescription();
+        URI realLink = news.link();
+        String description = news.description();
         String parsableContent = HtmlUtils.htmlUnescape(description);
         Matcher m = LINK_EXTRACT_PATTERN.matcher(parsableContent);
         if (m.find()) {

@@ -13,27 +13,28 @@ import java.util.Set;
 @Value
 @Builder
 public class Feed {
-    @With @NonNull RawFeed raw;
+    @With
+    @NonNull RawFeed raw;
     String name;
     Set<String> tags;
 
     public String getName() {
-        return Optional.ofNullable(this.name).orElse(raw.name);
+        return Optional.ofNullable(this.name).orElse(raw.name());
     }
 
     public String getId() {
-        return raw.getId();
+        return raw.id();
     }
 
     public String getDescription() {
-        return raw.getDescription();
+        return raw.description();
     }
 
     public URI getUrl() {
-        return raw.getUrl();
+        return raw.url();
     }
 
     public Instant getLastWatch() {
-        return raw.getLastWatch();
+        return raw.lastWatch();
     }
 }

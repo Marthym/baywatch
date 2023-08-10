@@ -21,6 +21,7 @@ import static java.util.function.Predicate.not;
 @Value
 @Builder(toBuilder = true)
 @Getter(AccessLevel.NONE)
+@SuppressWarnings("java:S6548")
 public class User {
     public static final User ANONYMOUS = new User("anonymous", "Anonymous",
             "noreply@anomynous.org", null, List.of());

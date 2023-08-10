@@ -174,7 +174,6 @@ class FeedScraperIntegrationTest {
             "feeds/132-http-server-incomplete-teapot.xml, ",
             "feeds/135-invalid-feed-flux.xml, ",
     })
-    @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     void should_scrap_feeds(String feed, String expected) {
         URI BASE_URI = URI.create(String.format("http://%s:%d/", server.getAddress().getHostName(), server.getAddress().getPort()));
         when(mockMaintenancePort.feedList()).thenReturn(
@@ -194,7 +193,7 @@ class FeedScraperIntegrationTest {
 
         if (expected != null) {
             Assertions.assertThat(actual)
-                    .extracting(News::getId)
+                    .extracting(News::id)
                     .containsOnly(Hasher.identify(URI.create(BASE_URI + expected)));
         } else {
             Assertions.assertThat(actual).isEmpty();

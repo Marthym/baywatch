@@ -14,6 +14,6 @@ public final class Page<T> extends ResponseEntity<Flux<T>> {
     public static <T> Page<T> of(Flux<T> body, int totalCount) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("X-Total-Count", Integer.toString(totalCount));
-        return new Page<T>(httpHeaders, body);
+        return new Page<>(httpHeaders, body);
     }
 }
