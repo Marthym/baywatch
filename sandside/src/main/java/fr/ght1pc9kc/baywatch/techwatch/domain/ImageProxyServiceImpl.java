@@ -24,13 +24,14 @@ public class ImageProxyServiceImpl implements ImageProxyService {
 
     @Override
     public URI proxify(URI image, ImagePresets preset) {
-        if (Objects.isNull(image)) {
-            return null;
+        URI result = null;
+        if (!Objects.isNull(image)) {
+            String imgPath = "/pr:" + preset.name().toLowerCase() + '/'
+                    + Base64.getUrlEncoder().encodeToString(image.toString().getBytes(StandardCharsets.UTF_8));
+            result = URI.create(properties.pathBase() + signPath(imgPath));
         }
-        String imgPath = "/pr:" + preset.name().toLowerCase() + '/'
-                + Base64.getUrlEncoder().encodeToString(image.toString().getBytes(StandardCharsets.UTF_8));
 
-        return URI.create(properties.pathBase() + signPath(imgPath));
+        return result;
     }
 
     private String signPath(String path) {

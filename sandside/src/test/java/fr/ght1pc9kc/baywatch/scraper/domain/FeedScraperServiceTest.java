@@ -142,12 +142,12 @@ class FeedScraperServiceTest {
         when(mockScrapEnrichmentService.applyNewsFilters(any(News.class)))
                 .thenAnswer(((Answer<Mono<Try<News>>>) answer -> Mono.just(Try.fail(new NewsScrapingException(
                         new AtomEntry(
-                                answer.getArgument(0, News.class).getId(),
-                                answer.getArgument(0, News.class).getTitle(),
-                                answer.getArgument(0, News.class).getImage(),
-                                answer.getArgument(0, News.class).getDescription(),
-                                answer.getArgument(0, News.class).getPublication(),
-                                answer.getArgument(0, News.class).getLink(),
+                                answer.getArgument(0, News.class).id(),
+                                answer.getArgument(0, News.class).title(),
+                                answer.getArgument(0, News.class).image(),
+                                answer.getArgument(0, News.class).description(),
+                                answer.getArgument(0, News.class).publication(),
+                                answer.getArgument(0, News.class).link(),
                                 answer.getArgument(0, News.class).getFeeds()
                         ),
                         new IllegalArgumentException())))));
@@ -160,7 +160,7 @@ class FeedScraperServiceTest {
                                 .element(0).isInstanceOf(NewsScrapingException.class)
                                 .extracting("cause").isInstanceOf(IllegalArgumentException.class)
                 )).verifyComplete();
-        
+
         verify(newsMaintenanceMock,
                 never().description("Expect no invocation because no valid enrichment")
         ).newsLoad(anyCollection());

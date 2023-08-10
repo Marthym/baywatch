@@ -25,7 +25,7 @@ public class NewsMaintenanceAdapter implements NewsMaintenancePort {
     @Override
     public Flux<ScrapedFeed> feedList() {
         return systemMaintenanceService.feedList(PageRequest.all())
-                .map(f -> new ScrapedFeed(f.getId(), f.getUrl()));
+                .map(f -> new ScrapedFeed(f.id(), f.url()));
     }
 
     @Override

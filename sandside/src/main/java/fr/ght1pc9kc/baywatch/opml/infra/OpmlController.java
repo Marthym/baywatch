@@ -12,7 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.http.codec.multipart.Part;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -40,7 +45,7 @@ public class OpmlController {
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName)
                         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE)
                         .body((Resource) new InputStreamResource(is)))
-                .doOnNext(_x -> log.debug("Start OPML download"))
+                .doOnNext(ignore -> log.debug("Start OPML download"))
                 .doOnTerminate(() -> log.debug("Terminate OPML download"))
                 .doOnError(e -> log.error("STACKTRACE", e));
     }

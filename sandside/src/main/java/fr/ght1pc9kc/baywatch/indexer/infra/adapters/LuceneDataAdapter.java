@@ -52,6 +52,7 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.TITLE;
 @Component
 public class LuceneDataAdapter implements IndexBuilderPort, IndexSearcherPort {
 
+    private static final String STACKTRACE = "STACKTRACE";
     private static final int MAX_SEARCH_RESULT = 10;
     private static final String[] FIELDS = new String[]{TITLE, DESCRIPTION, LINK, "contentTitles", "contentSummaries"};
     private static final Map<String, Float> BOOSTERS = Map.of(
@@ -70,17 +71,13 @@ public class LuceneDataAdapter implements IndexBuilderPort, IndexSearcherPort {
 
     public LuceneDataAdapter(IndexerProperties properties) {
         Path indexDir = Path.of(properties.directory());
-        this.indexDirectory = Exceptions.log(log).get(Exceptions.sneak().supplier(() ->
+        this.indexDirectory = Exceptions.silence().get(Exceptions.sneak().supplier(() ->
                 FSDirectory.open(indexDir))
         ).orElseThrow();
         this.analyzer = new StandardAnalyzer();
         try (DirectoryStream<Path> pathDirectoryStream = Files.newDirectoryStream(indexDir)) {
             if (!pathDirectoryStream.iterator().hasNext()) {
-                try (IndexWriter idx = new IndexWriter(indexDirectory, new IndexWriterConfig(analyzer))) {
-                    idx.commit();
-                } catch (IOException e) {
-                    log.warn("Unable to init index dir at {}", indexDir);
-                }
+                initIndexDirectory(indexDir);
             }
         } catch (IOException e) {
             log.warn("Unable open path for listing {}", indexDir);
@@ -94,7 +91,15 @@ public class LuceneDataAdapter implements IndexBuilderPort, IndexSearcherPort {
             this.indexSearcher.set(new IndexSearcher(reader, searchExecutor));
         } catch (Exception e) {
             log.error("Unable to read index !");
-            log.debug("STACKTRACE", e);
+            log.debug(STACKTRACE, e);
+        }
+    }
+
+    private void initIndexDirectory(Path indexDir) {
+        try (IndexWriter idx = new IndexWriter(indexDirectory, new IndexWriterConfig(analyzer))) {
+            idx.commit();
+        } catch (IOException e) {
+            log.warn("Unable to init index dir at {}", indexDir);
         }
     }
 
@@ -123,15 +128,15 @@ public class LuceneDataAdapter implements IndexBuilderPort, IndexSearcherPort {
                         log.warn("Unable to index document with id {}", i.id().substring(0, 10));
                     }
                     if (log.isDebugEnabled()) {
-                        log.debug("STACKTRACE", e);
+                        log.debug(STACKTRACE, e);
                     }
                 }
             }).doFinally(signal -> {
-                Exceptions.log(log).run(Exceptions.sneak().runnable(() -> {
+                Exceptions.silence().run(Exceptions.sneak().runnable(() -> {
                     writer.commit();
                     writer.close();
                 }));
-                Exceptions.log(log).run(Exceptions.sneak().runnable(() -> {
+                Exceptions.silence().run(Exceptions.sneak().runnable(() -> {
                     DirectoryReader reader = DirectoryReader.open(indexDirectory);
                     IndexSearcher searcher = new IndexSearcher(reader, searchExecutor);
                     this.indexSearcher.set(searcher);
@@ -140,7 +145,7 @@ public class LuceneDataAdapter implements IndexBuilderPort, IndexSearcherPort {
 
         } catch (Exception e) {
             log.error("Error while writing Feed index !");
-            log.debug("STACKTRACE", e);
+            log.debug(STACKTRACE, e);
             return Mono.empty().then();
         }
     }
@@ -158,7 +163,8 @@ public class LuceneDataAdapter implements IndexBuilderPort, IndexSearcherPort {
             return Flux.empty();
         }
         return performFuzzySearch(searcher, terms)
-                .map(Exceptions.sneak().function(d -> searcher.getIndexReader().document(d.doc)))
+                .map(Exceptions.sneak().function(d -> searcher.getIndexReader()
+                        .storedFields().document(d.doc)))
                 .map(d -> d.get(ID));
     }
 
@@ -182,7 +188,8 @@ public class LuceneDataAdapter implements IndexBuilderPort, IndexSearcherPort {
             if (log.isTraceEnabled()) {
                 for (ScoreDoc score : tops.scoreDocs) {
                     try {
-                        Document document = searcher.getIndexReader().document(score.doc);
+                        Document document = searcher.getIndexReader()
+                                .storedFields().document(score.doc);
                         log.trace("-- {}: {} --------", document.get(ID).substring(0, 10), score.score);
                         Explanation explanation = searcher.explain(query, score.doc);
                         log.trace(explanation.toString());

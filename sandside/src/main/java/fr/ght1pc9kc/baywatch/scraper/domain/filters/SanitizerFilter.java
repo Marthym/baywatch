@@ -31,8 +31,8 @@ public class SanitizerFilter implements NewsFilter, FeedsFilter {
     @Override
     public Mono<RawNews> filter(@NotNull RawNews news) {
         return Mono.just(news
-                .withTitle(sanitizePlainText(news.getTitle()))
-                .withDescription(sanitizeHtml(news.getDescription())));
+                .withTitle(sanitizePlainText(news.title()))
+                .withDescription(sanitizeHtml(news.description())));
     }
 
     @Override

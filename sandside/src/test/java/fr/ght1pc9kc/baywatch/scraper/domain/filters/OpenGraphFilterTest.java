@@ -44,7 +44,7 @@ class OpenGraphFilterTest {
     void should_filter_opengraph() {
         when(mockScraper.scrap(any(ScrapRequest.class))).thenReturn(Mono.just(
                 Metas.builder()
-                        .resourceUrl(RAW.getLink())
+                        .resourceUrl(RAW.link())
                         .og(OpenGraph.builder()
                                 .title("Opengraph title")
                                 .description("Opengraph description")
@@ -55,10 +55,10 @@ class OpenGraphFilterTest {
 
         StepVerifier.create(tested.filter(RAW))
                 .assertNext(actual -> Assertions.assertAll(
-                        () -> assertThat(actual.getId()).isEqualTo("0"),
-                        () -> assertThat(actual.getTitle()).isEqualTo("Opengraph title"),
-                        () -> assertThat(actual.getDescription()).isEqualTo("Opengraph description"),
-                        () -> assertThat(actual.getImage()).isEqualTo(URI.create("https://open.graph.img/image.jpg"))
+                        () -> assertThat(actual.id()).isEqualTo("0"),
+                        () -> assertThat(actual.title()).isEqualTo("Opengraph title"),
+                        () -> assertThat(actual.description()).isEqualTo("Opengraph description"),
+                        () -> assertThat(actual.image()).isEqualTo(URI.create("https://open.graph.img/image.jpg"))
                 ))
                 .verifyComplete();
 
@@ -66,14 +66,14 @@ class OpenGraphFilterTest {
         verify(mockScraper).scrap(captor.capture());
 
         assertThat(captor.getValue()).extracting(ScrapRequest::location)
-                .isEqualTo(RAW.getLink());
+                .isEqualTo(RAW.link());
     }
 
     @Test
     void should_filter_opengraph_with_title() {
         when(mockScraper.scrap(any(ScrapRequest.class))).thenReturn(Mono.just(
                 Metas.builder()
-                        .resourceUrl(RAW.getLink())
+                        .resourceUrl(RAW.link())
                         .title("Title from title tag")
                         .og(OpenGraph.builder()
                                 .title("Opengraph title")
@@ -85,10 +85,10 @@ class OpenGraphFilterTest {
 
         StepVerifier.create(tested.filter(RAW))
                 .assertNext(actual -> Assertions.assertAll(
-                        () -> assertThat(actual.getId()).isEqualTo("0"),
-                        () -> assertThat(actual.getTitle()).isEqualTo("Opengraph title"),
-                        () -> assertThat(actual.getDescription()).isEqualTo("Opengraph description"),
-                        () -> assertThat(actual.getImage()).isEqualTo(URI.create("https://open.graph.img/image.jpg"))
+                        () -> assertThat(actual.id()).isEqualTo("0"),
+                        () -> assertThat(actual.title()).isEqualTo("Opengraph title"),
+                        () -> assertThat(actual.description()).isEqualTo("Opengraph description"),
+                        () -> assertThat(actual.image()).isEqualTo(URI.create("https://open.graph.img/image.jpg"))
                 ))
                 .verifyComplete();
 
@@ -96,7 +96,7 @@ class OpenGraphFilterTest {
         verify(mockScraper).scrap(captor.capture());
 
         assertThat(captor.getValue()).extracting(ScrapRequest::location)
-                .isEqualTo(RAW.getLink());
+                .isEqualTo(RAW.link());
     }
 
     @Test
@@ -115,10 +115,10 @@ class OpenGraphFilterTest {
 
         StepVerifier.create(tested.filter(RAW))
                 .assertNext(actual -> Assertions.assertAll(
-                        () -> assertThat(actual.getTitle()).isEqualTo("Opengraph title"),
-                        () -> assertThat(actual.getDescription()).isEqualTo("Start with this description"),
-                        () -> assertThat(actual.getId()).isEqualTo("48e3dc849d49a1ea3d73e8abb3630d947a722e662160b10d05325a9d902d7696"),
-                        () -> assertThat(actual.getLink()).isEqualTo(URI.create("https://www.jedi.com/obiwan/kenobi/canonical/"))
+                        () -> assertThat(actual.title()).isEqualTo("Opengraph title"),
+                        () -> assertThat(actual.description()).isEqualTo("Start with this description"),
+                        () -> assertThat(actual.id()).isEqualTo("48e3dc849d49a1ea3d73e8abb3630d947a722e662160b10d05325a9d902d7696"),
+                        () -> assertThat(actual.link()).isEqualTo(URI.create("https://www.jedi.com/obiwan/kenobi/canonical/"))
                 ))
                 .verifyComplete();
 
@@ -126,7 +126,7 @@ class OpenGraphFilterTest {
         verify(mockScraper).scrap(captor.capture());
 
         assertThat(captor.getValue()).extracting(ScrapRequest::location)
-                .isEqualTo(RAW.getLink());
+                .isEqualTo(RAW.link());
     }
 
     @Test
@@ -142,10 +142,10 @@ class OpenGraphFilterTest {
 
         StepVerifier.create(tested.filter(RAW))
                 .assertNext(actual -> Assertions.assertAll(
-                        () -> assertThat(actual.getTitle()).isEqualTo("Opengraph title"),
-                        () -> assertThat(actual.getDescription()).isEqualTo("Start with this description"),
-                        () -> assertThat(actual.getId()).isEqualTo(Hasher.identify(URI.create("https://www.jedi.com/obiwan/kenobi/redirect/"))),
-                        () -> assertThat(actual.getLink()).isEqualTo(URI.create("https://www.jedi.com/obiwan/kenobi/redirect/"))
+                        () -> assertThat(actual.title()).isEqualTo("Opengraph title"),
+                        () -> assertThat(actual.description()).isEqualTo("Start with this description"),
+                        () -> assertThat(actual.id()).isEqualTo(Hasher.identify(URI.create("https://www.jedi.com/obiwan/kenobi/redirect/"))),
+                        () -> assertThat(actual.link()).isEqualTo(URI.create("https://www.jedi.com/obiwan/kenobi/redirect/"))
                 ))
                 .verifyComplete();
 
@@ -153,7 +153,7 @@ class OpenGraphFilterTest {
         verify(mockScraper).scrap(captor.capture());
 
         assertThat(captor.getValue()).extracting(ScrapRequest::location)
-                .isEqualTo(RAW.getLink());
+                .isEqualTo(RAW.link());
     }
 
     @Test
@@ -169,10 +169,10 @@ class OpenGraphFilterTest {
 
         StepVerifier.create(tested.filter(RAW))
                 .assertNext(actual -> Assertions.assertAll(
-                        () -> assertThat(actual.getTitle()).isEqualTo(RAW.getTitle()),
-                        () -> assertThat(actual.getDescription()).isEqualTo(RAW.getDescription()),
-                        () -> assertThat(actual.getId()).isEqualTo("48e3dc849d49a1ea3d73e8abb3630d947a722e662160b10d05325a9d902d7696"),
-                        () -> assertThat(actual.getLink()).isEqualTo(URI.create("https://www.jedi.com/obiwan/kenobi/canonical/"))
+                        () -> assertThat(actual.title()).isEqualTo(RAW.title()),
+                        () -> assertThat(actual.description()).isEqualTo(RAW.description()),
+                        () -> assertThat(actual.id()).isEqualTo("48e3dc849d49a1ea3d73e8abb3630d947a722e662160b10d05325a9d902d7696"),
+                        () -> assertThat(actual.link()).isEqualTo(URI.create("https://www.jedi.com/obiwan/kenobi/canonical/"))
                 ))
                 .verifyComplete();
 
@@ -180,7 +180,7 @@ class OpenGraphFilterTest {
         verify(mockScraper).scrap(captor.capture());
 
         assertThat(captor.getValue()).extracting(ScrapRequest::location)
-                .isEqualTo(RAW.getLink());
+                .isEqualTo(RAW.link());
     }
 
     @Test
@@ -195,7 +195,7 @@ class OpenGraphFilterTest {
         verify(mockScraper).scrap(captor.capture());
 
         assertThat(captor.getValue()).extracting(ScrapRequest::location)
-                .isEqualTo(RAW.getLink());
+                .isEqualTo(RAW.link());
     }
 
     @Test
@@ -213,10 +213,10 @@ class OpenGraphFilterTest {
 
         StepVerifier.create(tested.filter(RAW.withLink(URI.create("http://www.youtube.com/obiwan/kenobi"))))
                 .assertNext(actual -> Assertions.assertAll(
-                        () -> assertThat(actual.getId()).isEqualTo("0"),
-                        () -> assertThat(actual.getTitle()).isEqualTo("Opengraph title"),
-                        () -> assertThat(actual.getDescription()).isEqualTo("Opengraph description"),
-                        () -> assertThat(actual.getImage()).isEqualTo(URI.create("https://open.graph.img/image.jpg"))
+                        () -> assertThat(actual.id()).isEqualTo("0"),
+                        () -> assertThat(actual.title()).isEqualTo("Opengraph title"),
+                        () -> assertThat(actual.description()).isEqualTo("Opengraph description"),
+                        () -> assertThat(actual.image()).isEqualTo(URI.create("https://open.graph.img/image.jpg"))
                 ))
                 .verifyComplete();
 

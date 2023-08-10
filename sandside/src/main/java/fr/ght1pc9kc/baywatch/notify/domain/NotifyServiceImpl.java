@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class NotifyServiceImpl implements NotifyService, NotifyManager {
     private final AuthenticationFacade authFacade;
 
-    private final Sinks.Many<ServerEvent<Object>> multicast;
+    private final Sinks.Many<ServerEvent> multicast;
     private final Cache<String, ByUserEventPublisherCacheEntry> cache;
 
     public NotifyServiceImpl(AuthenticationFacade authenticationFacade) {
@@ -51,16 +51,16 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
     }
 
     @Override
-    public Flux<ServerEvent<Object>> subscribe() {
+    public Flux<ServerEvent> subscribe() {
         if (multicast.isScanAvailable() && Boolean.TRUE.equals(multicast.scan(Scannable.Attr.TERMINATED))) {
             return Flux.error(() -> new IllegalStateException("Publisher was closed !"));
         }
         return authFacade.getConnectedUser().flatMapMany(u ->
                 Objects.requireNonNull(cache.get(u.id, id -> {
-                    Sinks.Many<ServerEvent<Object>> sink = Sinks.many().multicast().directBestEffort();
+                    Sinks.Many<ServerEvent> sink = Sinks.many().multicast().directBestEffort();
                     AtomicReference<Subscription> subscription = new AtomicReference<>();
-                    Flux<ServerEvent<Object>> multicastFlux = this.multicast.asFlux().doOnSubscribe(subscription::set);
-                    Flux<ServerEvent<Object>> eventPublisher = Flux.merge(sink.asFlux(), multicastFlux)
+                    Flux<ServerEvent> multicastFlux = this.multicast.asFlux().doOnSubscribe(subscription::set);
+                    Flux<ServerEvent> eventPublisher = Flux.merge(sink.asFlux(), multicastFlux)
                             .takeWhile(e -> cache.asMap().containsKey(id))
                             .map(e -> {
                                 log.debug("Event: {}", e);
@@ -89,38 +89,34 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> BasicEvent<T> send(String userId, EventType type, T data) {
         BasicEvent<T> event = new BasicEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
         Optional.ofNullable(cache.getIfPresent(userId))
                 .map(ByUserEventPublisherCacheEntry::sink)
-                .ifPresent(sk -> emit(sk, (ServerEvent<Object>) event));
+                .ifPresent(sk -> emit(sk, event));
         return event;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> ReactiveEvent<T> send(String userId, EventType type, Mono<T> data) {
         ReactiveEvent<T> event = new ReactiveEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
         Optional.ofNullable(cache.getIfPresent(userId))
                 .map(ByUserEventPublisherCacheEntry::sink)
-                .ifPresent(sk -> emit(sk, (ServerEvent<Object>) event));
+                .ifPresent(sk -> emit(sk, event));
         return event;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> BasicEvent<T> broadcast(EventType type, T data) {
         BasicEvent<T> event = new BasicEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
-        emit(this.multicast, (ServerEvent<Object>) event);
+        emit(this.multicast, event);
         return event;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> ReactiveEvent<T> broadcast(EventType type, Mono<T> data) {
         ReactiveEvent<T> event = new ReactiveEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
-        emit(this.multicast, (ServerEvent<Object>) event);
+        emit(this.multicast, event);
         return event;
     }
 
@@ -128,7 +124,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         return cache.estimatedSize();
     }
 
-    private void emit(@Nullable Sinks.Many<ServerEvent<Object>> sink, ServerEvent<Object> event) {
+    private void emit(@Nullable Sinks.Many<ServerEvent> sink, ServerEvent event) {
         if (sink == null) {
             log.debug("No subscriber listening the SSE entry point.");
             return;

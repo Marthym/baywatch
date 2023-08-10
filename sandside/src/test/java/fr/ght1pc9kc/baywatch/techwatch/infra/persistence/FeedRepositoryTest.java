@@ -120,7 +120,7 @@ class FeedRepositoryTest {
 
         FeedsRecord actual = dsl.selectFrom(FEEDS).where(FEEDS.FEED_ID.eq(expected.getId())).fetchOne();
         assertThat(actual).isNotNull();
-        assertThat(actual.getFeedName()).isEqualTo(expected.getRaw().getName());
+        assertThat(actual.getFeedName()).isEqualTo(expected.getRaw().name());
     }
 
     @Test
@@ -128,7 +128,7 @@ class FeedRepositoryTest {
         RawFeed expectedRawFeed = Mappers.getMapper(BaywatchMapper.class).recordToRawFeed(FeedRecordSamples.JEDI);
         Feed expected = Feed.builder()
                 .raw(expectedRawFeed)
-                .name(expectedRawFeed.getName() + " of Obiwan")
+                .name(expectedRawFeed.name() + " of Obiwan")
                 .tags(Set.of("jedi", "saber"))
                 .build();
 
@@ -139,7 +139,7 @@ class FeedRepositoryTest {
         {
             FeedsRecord actual = dsl.selectFrom(FEEDS).where(FEEDS.FEED_ID.eq(expected.getId())).fetchOne();
             assertThat(actual).isNotNull();
-            assertThat(actual.getFeedName()).isEqualTo(expected.getRaw().getName());
+            assertThat(actual.getFeedName()).isEqualTo(expected.getRaw().name());
         }
         {
             FeedsUsersRecord actual = dsl.selectFrom(FEEDS_USERS).where(FEEDS_USERS.FEUS_FEED_ID.eq(expected.getId()))

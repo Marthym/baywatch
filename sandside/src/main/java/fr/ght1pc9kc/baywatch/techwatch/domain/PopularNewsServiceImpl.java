@@ -44,17 +44,5 @@ public class PopularNewsServiceImpl implements PopularNewsService {
                     Set<String> fans = states.stream().map(s -> s.createdBy).collect(Collectors.toUnmodifiableSet());
                     return new Popularity(states.get(0).id, fans.size(), fans);
                 });
-
-//        QueryContext qCtx = QueryContext.builder()
-//                .filter(Criteria.property(NEWS_ID).in(ids)
-//                        .and(Criteria.property(SHARED).eq(true)))
-//                .pagination(Pagination.of(-1, -1, Sort.of(Direction.ASC, NEWS_ID)))
-//                .build();
-//        return stateRepository.list(qCtx)
-//                .bufferUntilChanged(s -> s.id)
-//                .map(states -> {
-//                    Set<String> fans = states.stream().map(s -> s.createdBy).collect(Collectors.toUnmodifiableSet());
-//                    return new Popularity(states.get(0).id, fans.size(), fans);
-//                });
     }
 }
