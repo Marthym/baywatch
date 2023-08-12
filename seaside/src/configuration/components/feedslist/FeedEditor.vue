@@ -77,7 +77,7 @@ export default class FeedEditor extends Vue {
 
   private onSaveFeed(): void {
     this.errors.splice(0);
-    if (this.feed.name === undefined || this.feed.name.match(/^ *$/) !== null) {
+    if (this.feed.name === undefined || /^ *$/.exec(this.feed.name) !== null) {
       this.errors.push('name');
     }
     if (!URL_PATTERN.test(this.feed.url)) {
