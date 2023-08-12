@@ -30,7 +30,7 @@
       <th scope="col" class="w-1">
         <label v-if="isGlobalEditable">
           <input type="checkbox" class="checkbox" ref="globalCheck"
-                 :checked="selectedElements.length > 0" @change="onSelectAll()"/>
+                 :checked="selectedElements.length > 0" @change="onSelectAll"/>
           <span class="checkbox-mark"></span>
         </label>
       </th>
@@ -97,7 +97,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from "vue-facing-decorator";
+import { Component, Prop, Vue } from 'vue-facing-decorator';
 import {
   ArrowDownTrayIcon,
   ArrowRightOnRectangleIcon,
@@ -105,10 +105,10 @@ import {
   EyeIcon,
   PencilIcon,
   PlusCircleIcon,
-  TrashIcon
-} from "@heroicons/vue/24/outline";
-import {SmartTableView} from "@/common/components/smartTable/SmartTableView.interface";
-import {Observable} from "rxjs";
+  TrashIcon,
+} from '@heroicons/vue/24/outline';
+import { SmartTableView } from '@/common/components/smartTable/SmartTableView.interface';
+import { Observable } from 'rxjs';
 
 /**
  * Table component with global and line actions
@@ -122,16 +122,16 @@ import {Observable} from "rxjs";
     EyeIcon,
     PencilIcon,
     PlusCircleIcon,
-    TrashIcon
+    TrashIcon,
   },
   emits: ['add', 'import', 'export', 'deleteSelected', 'delete', 'edit', 'view', 'leave', 'leaveSelected'],
   name: 'SmartTable',
 })
 export default class SmartTable extends Vue {
   @Prop() private elements: SmartTableView<unknown>[];
-  @Prop({default: ''}) private columns: string;
-  @Prop({default: 'ad'}) private actions: string;
-  @Prop({default: p => console.debug(`load page ${p}, not implemented`)})
+  @Prop({ default: '' }) private columns: string;
+  @Prop({ default: 'ad' }) private actions: string;
+  @Prop({ default: p => console.debug(`load page ${p}, not implemented`) })
   private loadPageByIndex: (page: number) => Observable<SmartTableView<unknown>[]>;
 
   private pagesNumber = 0;
@@ -152,7 +152,7 @@ export default class SmartTable extends Vue {
         selected.push(i);
       }
     }
-    if (this.$refs && this.$refs['globalCheck']) {
+    if (this.$refs?.['globalCheck']) {
       this.$refs['globalCheck'].indeterminate = (selected.length > 0) && this.elements.find(t => !t.isSelected) !== undefined;
     }
     return selected;

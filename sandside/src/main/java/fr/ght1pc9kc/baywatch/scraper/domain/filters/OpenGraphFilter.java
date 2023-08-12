@@ -6,6 +6,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.scraphead.core.HeadScraper;
 import fr.ght1pc9kc.scraphead.core.http.ScrapRequest;
 import fr.ght1pc9kc.scraphead.core.http.ScrapRequestBuilder;
+import fr.ght1pc9kc.scraphead.core.model.Metas;
 import fr.ght1pc9kc.scraphead.core.model.links.Links;
 import fr.ght1pc9kc.scraphead.core.model.opengraph.OpenGraph;
 import lombok.RequiredArgsConstructor;
@@ -30,11 +31,11 @@ public class OpenGraphFilter implements NewsFilter {
     @Override
     public Mono<RawNews> filter(RawNews news) {
         try {
-            if (!SUPPORTED_SCHEMES.contains(news.getLink().getScheme())) {
+            if (!SUPPORTED_SCHEMES.contains(news.link().getScheme())) {
                 return Mono.just(news);
             }
-            ScrapRequestBuilder scrapRequestBldr = ScrapRequest.builder(news.getLink());
-            if (YOUTUBE_URI_PATTERN.matcher(news.getLink().getHost()).find()) {
+            ScrapRequestBuilder scrapRequestBldr = ScrapRequest.builder(news.link());
+            if (YOUTUBE_URI_PATTERN.matcher(news.link().getHost()).find()) {
                 HttpCookie ytCookie = new HttpCookie("CONSENT", "YES+0");
                 ytCookie.setPath("/");
                 ytCookie.setDomain("youtube.com");
@@ -45,45 +46,48 @@ public class OpenGraphFilter implements NewsFilter {
             }
 
             return headScrapper.scrap(scrapRequestBldr.build())
-                    .map(headMetas -> {
-                        RawNews raw = news;
-
-                        Links links = headMetas.links();
-                        if (nonNull(links) && nonNull(links.canonical())) {
-                            raw = raw.withId(Hasher.identify(links.canonical()))
-                                    .withLink(links.canonical());
-                        } else if (!news.getLink().equals(headMetas.resourceUrl())) {
-                            raw = raw.withId(Hasher.identify(headMetas.resourceUrl()))
-                                    .withLink(headMetas.resourceUrl());
-                        }
-
-                        if (nonNull(headMetas.title()) && !headMetas.title().isBlank()) {
-                            raw = raw.withTitle(headMetas.title());
-                        }
-
-                        OpenGraph og = headMetas.og();
-                        if (nonNull(og) && !og.isEmpty()) {
-                            raw = Optional.ofNullable(og.title).map(raw::withTitle).orElse(raw);
-                            raw = Optional.ofNullable(og.description).map(raw::withDescription).orElse(raw);
-                            raw = Optional.ofNullable(og.image)
-                                    .filter(i -> SUPPORTED_SCHEMES.contains(i.getScheme()))
-                                    .map(raw::withImage).orElse(raw);
-                        } else {
-                            log.debug("No OG meta found for {}", news.getLink());
-                        }
-
-                        if (nonNull(links) && isNull(raw.getImage())) {
-                            raw = Optional.ofNullable(links.icon())
-                                    .filter(i -> SUPPORTED_SCHEMES.contains(i.getScheme()))
-                                    .map(raw::withImage).orElse(raw);
-                        }
-
-                        return raw;
-                    }).switchIfEmpty(Mono.just(news));
+                    .map(headMetas -> handleMetaData(news, headMetas))
+                    .switchIfEmpty(Mono.just(news));
         } catch (Exception e) {
-            log.warn("Unable to scrap header from {}.", news.getLink());
+            log.warn("Unable to scrap header from {}.", news.link());
             log.debug("STACKTRACE", e);
             return Mono.just(news);
         }
+    }
+
+    private RawNews handleMetaData(RawNews news, Metas metas) {
+        RawNews raw = news;
+
+        Links links = metas.links();
+        if (nonNull(links) && nonNull(links.canonical())) {
+            raw = raw.withId(Hasher.identify(links.canonical()))
+                    .withLink(links.canonical());
+        } else if (!news.link().equals(metas.resourceUrl())) {
+            raw = raw.withId(Hasher.identify(metas.resourceUrl()))
+                    .withLink(metas.resourceUrl());
+        }
+
+        if (nonNull(metas.title()) && !metas.title().isBlank()) {
+            raw = raw.withTitle(metas.title());
+        }
+
+        OpenGraph og = metas.og();
+        if (nonNull(og) && !og.isEmpty()) {
+            raw = Optional.ofNullable(og.title).map(raw::withTitle).orElse(raw);
+            raw = Optional.ofNullable(og.description).map(raw::withDescription).orElse(raw);
+            raw = Optional.ofNullable(og.image)
+                    .filter(i -> SUPPORTED_SCHEMES.contains(i.getScheme()))
+                    .map(raw::withImage).orElse(raw);
+        } else {
+            log.debug("No OG meta found for {}", news.link());
+        }
+
+        if (nonNull(links) && isNull(raw.image())) {
+            raw = Optional.ofNullable(links.icon())
+                    .filter(i -> SUPPORTED_SCHEMES.contains(i.getScheme()))
+                    .map(raw::withImage).orElse(raw);
+        }
+
+        return raw;
     }
 }

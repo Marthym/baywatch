@@ -55,7 +55,7 @@ class NewsServiceImplTest {
         mockAuthFacade = mock(AuthenticationFacade.class);
         StatePersistencePort mockStateRepository = mock(StatePersistencePort.class);
         when(mockStateRepository.list(any())).thenReturn(Flux.just(
-                Entity.identify(MAY_THE_FORCE.getId(), OBIWAN.id, MAY_THE_FORCE.getState())
+                Entity.identify(MAY_THE_FORCE.id(), OBIWAN.id, MAY_THE_FORCE.getState())
         ));
         FeedPersistencePort mockFeedRepository = mock(FeedPersistencePort.class);
         when(mockFeedRepository.list(any())).thenReturn(Flux.fromIterable(FeedSamples.SAMPLES));
@@ -124,7 +124,7 @@ class NewsServiceImplTest {
         Assertions.assertThat(captor.getValue().filter).isEqualTo(
                 Criteria.or( // FEED_ID in the 2 FEEDS ids plus the ID of the connected user
                         Criteria.property(FEED_ID).in(JEDI.getId(), SITH.getId(), LUKE.id),
-                        Criteria.property(NEWS_ID).in(MAY_THE_FORCE.getId())
+                        Criteria.property(NEWS_ID).in(MAY_THE_FORCE.id())
                 )
         );
     }
@@ -148,7 +148,7 @@ class NewsServiceImplTest {
         Assertions.assertThat(captor.getValue().filter).isEqualTo(
                 Criteria.or(// FEED_ID in the 2 FEEDS ids plus the ID of the connected user
                         Criteria.property(FEED_ID).in(JEDI.getId(), SITH.getId(), LUKE.id),
-                        Criteria.property(NEWS_ID).in(MAY_THE_FORCE.getId())
+                        Criteria.property(NEWS_ID).in(MAY_THE_FORCE.id())
                 )
         );
     }
@@ -175,7 +175,7 @@ class NewsServiceImplTest {
         Assertions.assertThat(captor.getValue().filter).isEqualTo(
                 Criteria.or( // FEED_ID in the 2 FEEDS ids plus the ID of the connected user
                         Criteria.property(FEED_ID).in(JEDI.getId(), SITH.getId(), LUKE.id),
-                        Criteria.property(NEWS_ID).in(MAY_THE_FORCE.getId())
+                        Criteria.property(NEWS_ID).in(MAY_THE_FORCE.id())
                 )
         );
         Assertions.assertThat(captor.getValue().teamMates).containsOnly(LUKE.id, OBIWAN.id);
@@ -184,7 +184,7 @@ class NewsServiceImplTest {
     @Test
     void should_get_news_for_anonymous() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.empty());
-        News actual = tested.get(MAY_THE_FORCE.getId()).block();
+        News actual = tested.get(MAY_THE_FORCE.id()).block();
 
         Assertions.assertThat(actual).isNotNull();
         Assertions.assertThat(actual.getRaw()).isEqualTo(MAY_THE_FORCE.getRaw());
@@ -194,7 +194,7 @@ class NewsServiceImplTest {
     @Test
     void should_get_news_for_authenticated_user() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(LUKE));
-        News actual = tested.get(MAY_THE_FORCE.getId()).block();
+        News actual = tested.get(MAY_THE_FORCE.id()).block();
 
         Assertions.assertThat(actual).isNotNull();
         Assertions.assertThat(actual.getRaw()).isEqualTo(MAY_THE_FORCE.getRaw());

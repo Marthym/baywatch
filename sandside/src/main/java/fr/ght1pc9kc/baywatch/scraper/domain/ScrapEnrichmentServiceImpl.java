@@ -66,8 +66,8 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
                         .subscribeOn(scraperScheduler)
                         .subscribe(n -> notifyService.send(user.id, EventType.USER_NOTIFICATION,
                                         DEFAULT_NOTIFICATION.toBuilder()
-                                                .title(n.getTitle())
-                                                .target(n.getId()).build()),
+                                                .title(n.title())
+                                                .target(n.id()).build()),
                                 t -> notifyService.send(user.id, EventType.USER_NOTIFICATION,
                                         UserNotification.error(t.getLocalizedMessage())))
                 ))
@@ -103,8 +103,8 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
         return raw.map(Try.of(news::withRaw))
                 .onErrorResume(e -> {
                     AtomEntry atomEntry = new AtomEntry(
-                            news.getId(), news.getTitle(), news.getImage(), news.getDescription(), news.getPublication(),
-                            news.getLink(), news.getFeeds());
+                            news.id(), news.title(), news.image(), news.description(), news.publication(),
+                            news.link(), news.getFeeds());
                     return Mono.just(Try.fail(new NewsScrapingException(atomEntry, e)));
                 });
     }

@@ -160,15 +160,15 @@ public final class RssAtomParserImpl implements RssAtomParser {
         }
 
         RawNews rawNews = bldr.build();
-        if (rawNews.getLink().getScheme() == null
-                || !ALLOWED_PROTOCOL.contains(rawNews.getLink().getScheme())) {
-            log.warn("Illegal URL detected : {} in feed :{}", rawNews.getLink(), feed.id().substring(0, 10));
+        if (rawNews.link().getScheme() == null
+                || !ALLOWED_PROTOCOL.contains(rawNews.link().getScheme())) {
+            log.warn("Illegal URL detected : {} in feed :{}", rawNews.link(), feed.id().substring(0, 10));
             return Mono.empty();
         }
 
         return Mono.just(rawNews
-                .withTitle(rawNews.title)
-                .withDescription(rawNews.description));
+                .withTitle(rawNews.title())
+                .withDescription(rawNews.description()));
     }
 
     private RawNews.RawNewsBuilder onItemEntry() {
@@ -178,24 +178,28 @@ public final class RssAtomParserImpl implements RssAtomParser {
 
     private RawNews.RawNewsBuilder onTitle(RawNews.RawNewsBuilder bldr,
                                            List<XMLEvent> events, int idx) {
-        if (bldr == null) {
-            return null;
+        RawNews.RawNewsBuilder result = null;
+        if (bldr != null) {
+            String title = readElementText(events, idx);
+            result = bldr.title(title);
         }
-        String title = readElementText(events, idx);
-        return bldr.title(title);
+        return result;
     }
 
     private RawNews.RawNewsBuilder onContentDescription(RawNews.RawNewsBuilder bldr,
                                                         List<XMLEvent> events, int idx) {
+        RawNews.RawNewsBuilder result;
         if (bldr == null) {
-            return null;
-        }
-        String content = readElementText(events, idx);
-        if (content.isBlank()) {
-            return bldr;
+            result = null;
         } else {
-            return bldr.description(content);
+            String content = readElementText(events, idx);
+            if (content.isBlank()) {
+                result = bldr;
+            } else {
+                result = bldr.description(content);
+            }
         }
+        return result;
     }
 
     private RawNews.RawNewsBuilder onLink(RawNews.RawNewsBuilder bldr, ScrapedFeed feed,
@@ -216,24 +220,26 @@ public final class RssAtomParserImpl implements RssAtomParser {
 
     private RawNews.RawNewsBuilder onUpdated(RawNews.RawNewsBuilder bldr,
                                              List<XMLEvent> events, int idx) {
-        if (bldr == null) {
-            return null;
+        RawNews.RawNewsBuilder result = null;
+        if (bldr != null) {
+            String updated = readElementText(events, idx);
+            Instant updatedAt = DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(updated, Instant::from);
+            result = bldr.publication(updatedAt);
         }
-        String updated = readElementText(events, idx);
-        Instant updatedAt = DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(updated, Instant::from);
-        return bldr.publication(updatedAt);
+        return result;
     }
 
     private RawNews.RawNewsBuilder onPublicationDate(RawNews.RawNewsBuilder bldr,
                                                      List<XMLEvent> events, int idx) {
-        if (bldr == null) {
-            return null;
+        RawNews.RawNewsBuilder result = null;
+        if (bldr != null) {
+            String pubDate = readElementText(events, idx);
+            Instant datetime = Exceptions.silence().get(() -> DateTimeFormatter.RFC_1123_DATE_TIME.parse(pubDate, Instant::from))
+                    .orElseGet(Exceptions.silence().supplier(() -> DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(pubDate, Instant::from))
+                            .orElseGet(() -> NON_STANDARD_DATETIME.parse(pubDate, Instant::from)));
+            result = bldr.publication(datetime);
         }
-        String pubDate = readElementText(events, idx);
-        Instant datetime = Exceptions.silence().get(() -> DateTimeFormatter.RFC_1123_DATE_TIME.parse(pubDate, Instant::from))
-                .orElseGet(Exceptions.silence().supplier(() -> DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(pubDate, Instant::from))
-                        .orElseGet(() -> NON_STANDARD_DATETIME.parse(pubDate, Instant::from)));
-        return bldr.publication(datetime);
+        return result;
     }
 
     private static String readElementText(List<XMLEvent> events, int idx) {

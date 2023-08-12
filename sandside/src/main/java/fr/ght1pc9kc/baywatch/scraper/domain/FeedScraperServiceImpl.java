@@ -97,13 +97,13 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                     .concatMap(feed -> wgetFeedNews(feed, maxRetention, errors))
                     .sequential()
 
-                    .filterWhen(n -> alreadyHave.map(l -> !l.contains(n.getId())))
+                    .filterWhen(n -> alreadyHave.map(l -> !l.contains(n.id())))
                     .parallel(4).runOn(scraperScheduler)
                     .concatMap(scrapEnrichmentService::applyNewsFilters)
                     .sequential()
 
                     .flatMap(tn -> this.handleEnrichmentException(tn, errors))
-                    .filterWhen(n -> alreadyHave.map(l -> !l.contains(n.getId())))
+                    .filterWhen(n -> alreadyHave.map(l -> !l.contains(n.id())))
                     .buffer(100)
                     .flatMap(newsMaintenance::newsLoad)
 
@@ -169,7 +169,7 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                 .skipUntil(feedParser.firstItemEvent())
                 .bufferUntil(feedParser.itemEndEvent())
                 .flatMap(entry -> feedParser.readEntryEvents(entry, feed))
-                .takeWhile(news -> news.getPublication().isAfter(maxAge))
+                .takeWhile(news -> news.publication().isAfter(maxAge))
                 .map(raw -> News.builder()
                         .raw(raw)
                         .feeds(Set.of(feed.id()))

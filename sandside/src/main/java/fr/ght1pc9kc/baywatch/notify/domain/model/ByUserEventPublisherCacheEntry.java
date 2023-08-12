@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public record ByUserEventPublisherCacheEntry(
         AtomicReference<Subscription> subscription,
-        Sinks.Many<ServerEvent<Object>> sink,
-        Flux<ServerEvent<Object>> flux
+        Sinks.Many<ServerEvent> sink,
+        Flux<ServerEvent> flux
 ) {
 }

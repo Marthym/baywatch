@@ -38,12 +38,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.FEED_ID;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
-import static fr.ght1pc9kc.baywatch.tests.samples.UserSamples.LUKE;
-import static fr.ght1pc9kc.baywatch.tests.samples.UserSamples.OBIWAN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
@@ -140,7 +137,7 @@ class NewsRepositoryTest {
         tracker.skipNextSampleLoad();
         List<News> actual = tested.list().collectList().block();
         assertThat(actual).hasSize(51);
-        assertThat(actual).extracting(News::getId).startsWith(
+        assertThat(actual).extracting(News::id).startsWith(
                 "134d1ba72a9cf41060f39349c8042d203c02b69b9082383153c423f3633a419f",
                 "155759bd7796715f439c9c25739bc34b8fa4cac7036f8bdd61148a4ceac76a57",
                 "1fff2b3142d5d27677567a0da6811c09a428e7636f169d77006dede02ee6cec0",
@@ -161,15 +158,15 @@ class NewsRepositoryTest {
         )).withUserId(UsersRecordSamples.LSKYWALKER.getUserId());
 
         StepVerifier.create(tested.list(qCtx))
-                .assertNext(actual -> Assertions.assertThat(actual.getId())
+                .assertNext(actual -> Assertions.assertThat(actual.id())
                         .isEqualTo("134d1ba72a9cf41060f39349c8042d203c02b69b9082383153c423f3633a419f"))
-                .assertNext(actual -> Assertions.assertThat(actual.getId())
+                .assertNext(actual -> Assertions.assertThat(actual.id())
                         .isEqualTo("155759bd7796715f439c9c25739bc34b8fa4cac7036f8bdd61148a4ceac76a57"))
-                .assertNext(actual -> Assertions.assertThat(actual.getId())
+                .assertNext(actual -> Assertions.assertThat(actual.id())
                         .isEqualTo("1fff2b3142d5d27677567a0da6811c09a428e7636f169d77006dede02ee6cec0"))
-                .assertNext(actual -> Assertions.assertThat(actual.getId())
+                .assertNext(actual -> Assertions.assertThat(actual.id())
                         .isEqualTo("22f530b91e1dac4854cd3273b1ca45784e08a00fac25ca01792c6989db152fc0"))
-                .assertNext(actual -> Assertions.assertThat(actual.getId())
+                .assertNext(actual -> Assertions.assertThat(actual.id())
                         .isEqualTo("26897ef9efde81583efc3b5e690d00c548a8e6fd8d9d8de08fc6543da5fffd9d"))
                 .verifyComplete();
     }
@@ -196,9 +193,9 @@ class NewsRepositoryTest {
                 .assertNext(actual -> {
                     assertThat(actual).isNotNull();
                     assertAll(
-                            () -> assertThat(actual.getLink()).hasToString(expected.getNewsLink()),
-                            () -> assertThat(actual.getTitle()).isEqualTo(expected.getNewsTitle()),
-                            () -> assertThat(actual.getId()).isEqualTo(expected.getNewsId()),
+                            () -> assertThat(actual.link()).hasToString(expected.getNewsLink()),
+                            () -> assertThat(actual.title()).isEqualTo(expected.getNewsTitle()),
+                            () -> assertThat(actual.id()).isEqualTo(expected.getNewsId()),
                             () -> assertThat(actual.getFeeds()).isEqualTo(Set.of(expectedNefe.getNefeFeedId())),
                             () -> assertThat(actual.isRead()).isEqualTo(State.of(expectedState.getNursState()).isRead()),
                             () -> assertThat(actual.isShared()).isEqualTo((expectedState.getNursState() & Flags.SHARED) != 0)

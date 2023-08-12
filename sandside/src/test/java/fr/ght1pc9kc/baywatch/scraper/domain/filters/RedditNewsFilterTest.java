@@ -30,10 +30,10 @@ class RedditNewsFilterTest {
     void should_filter_reddit() {
         StepVerifier.create(tested.filter(RAW))
                 .assertNext(actual -> Assertions.assertAll(
-                        () -> assertThat(actual.getId()).isEqualTo("c74cb819fe7a596814406c9ec164dfa5d502fba8659ec13e634a33d1ae7cbd56"),
-                        () -> assertThat(actual.getTitle()).isEqualTo(RAW.getTitle()),
-                        () -> assertThat(actual.getDescription()).isEqualTo(RAW.getDescription()),
-                        () -> assertThat(actual.getLink()).isEqualTo(URI.create("https://www.reddit.com/r/java/comments/k3hmfl/deploying_jakarta_ee_9_applications_to_wildfly/"))
+                        () -> assertThat(actual.id()).isEqualTo("c74cb819fe7a596814406c9ec164dfa5d502fba8659ec13e634a33d1ae7cbd56"),
+                        () -> assertThat(actual.title()).isEqualTo(RAW.title()),
+                        () -> assertThat(actual.description()).isEqualTo(RAW.description()),
+                        () -> assertThat(actual.link()).isEqualTo(URI.create("https://www.reddit.com/r/java/comments/k3hmfl/deploying_jakarta_ee_9_applications_to_wildfly/"))
                 )).verifyComplete();
     }
 

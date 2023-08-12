@@ -27,7 +27,7 @@ class SanitizerFilterTest {
                 .build();
 
         StepVerifier.create(tested.filter(raw))
-                .assertNext(actual -> Assertions.assertThat(actual.getTitle()).isEqualTo(
+                .assertNext(actual -> Assertions.assertThat(actual.title()).isEqualTo(
                         "Illegal H1 usageIllegal A usageLorem ipsum dolor sit amet, consectetur adipiscing " +
                                 "elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad " +
                                 "minim veniam, quis nostrud exercitati"))
@@ -43,7 +43,7 @@ class SanitizerFilterTest {
                 .build();
 
         StepVerifier.create(tested.filter(raw))
-                .assertNext(actual -> Assertions.assertThat(actual.getDescription()).startsWith(
+                .assertNext(actual -> Assertions.assertThat(actual.description()).startsWith(
                                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor " +
                                         "incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis " +
                                         "nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. " +

@@ -34,7 +34,7 @@ public class NewsRecordSamples implements RelationalDataSet<NewsRecord> {
                 .setNewsLink(BASE_TEST_URI.resolve(String.format("%03d", i)).toString())
                 .setNewsTitle(String.format("%s %03d", BASE_TEST_URI.getHost(), i))
                 .setNewsPublication(LocalDateTime.parse("2020-12-10T10:42:42").plus(Period.ofMonths(i)))
-        ).collect(Collectors.toUnmodifiableList());
+        ).toList();
 
         NEWS_FEEDS_RECORDS = buildNewsFeedRecords();
 
@@ -48,7 +48,7 @@ public class NewsRecordSamples implements RelationalDataSet<NewsRecord> {
                         .setNursNewsId(RECORDS.get(i % RECORDS.size()).getNewsId())
                         .setNursUserId(USERS[i % USERS.length])
                         .setNursState(FLAGS[i % FLAGS.length])
-        ).collect(Collectors.toUnmodifiableList());
+        ).toList();
     }
 
     public static List<NewsFeedsRecord> buildNewsFeedRecords() {

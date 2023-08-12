@@ -195,7 +195,7 @@ public class NewsRepository implements NewsPersistencePort {
     private static Stream<NewsFeedsRecord> toNewsFeedsRecords(News news) {
         return news.getFeeds().stream()
                 .map(f -> NEWS_FEEDS.newRecord()
-                        .setNefeNewsId(news.getId())
+                        .setNefeNewsId(news.id())
                         .setNefeFeedId(f));
     }
 }

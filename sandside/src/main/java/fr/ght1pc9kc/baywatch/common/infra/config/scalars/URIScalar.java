@@ -1,6 +1,8 @@
 package fr.ght1pc9kc.baywatch.common.infra.config.scalars;
 
 import com.machinezoo.noexception.Exceptions;
+import graphql.GraphQLContext;
+import graphql.execution.CoercedVariables;
 import graphql.language.StringValue;
 import graphql.language.Value;
 import graphql.schema.Coercing;
@@ -14,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import java.util.Locale;
 import java.util.Optional;
 
 @UtilityClass
@@ -24,7 +27,9 @@ public class URIScalar {
     static {
         Coercing<URI, URI> coercing = new Coercing<>() {
             @Override
-            public URI serialize(@NotNull Object input) throws CoercingSerializeException {
+            public URI serialize(@NotNull Object input,
+                                 @NotNull GraphQLContext graphQLContext,
+                                 @NotNull Locale locale) throws CoercingSerializeException {
                 Optional<URI> url;
                 if (input instanceof String) {
                     url = Optional.of(parseURL(input.toString()));
@@ -40,7 +45,9 @@ public class URIScalar {
             }
 
             @Override
-            public @NotNull URI parseValue(@NotNull Object input) throws CoercingParseValueException {
+            public @NotNull URI parseValue(@NotNull Object input,
+                                           @NotNull GraphQLContext graphQLContext,
+                                           @NotNull Locale locale) throws CoercingParseValueException {
                 String urlStr;
                 if (input instanceof String) {
                     urlStr = String.valueOf(input);
@@ -57,7 +64,10 @@ public class URIScalar {
             }
 
             @Override
-            public @NotNull URI parseLiteral(@NotNull Object input) throws CoercingParseLiteralException {
+            public @NotNull URI parseLiteral(@NotNull Value<?> input,
+                                             @NotNull CoercedVariables variables,
+                                             @NotNull GraphQLContext graphQLContext,
+                                             @NotNull Locale locale) throws CoercingParseLiteralException {
                 if (!(input instanceof StringValue)) {
                     throw new CoercingParseLiteralException(
                             "Expected AST type 'StringValue' but was '" + input.getClass().getSimpleName() + "'."
@@ -67,8 +77,10 @@ public class URIScalar {
             }
 
             @Override
-            public @NotNull Value<StringValue> valueToLiteral(@NotNull Object input) {
-                URI url = serialize(input);
+            public @NotNull Value<StringValue> valueToLiteral(@NotNull Object input,
+                                                              @NotNull GraphQLContext graphQLContext,
+                                                              @NotNull Locale locale) {
+                URI url = serialize(input, graphQLContext, locale);
                 return StringValue.newStringValue(url.toString()).build();
             }
 
