@@ -120,7 +120,7 @@ public class FeedServiceImpl implements FeedService {
                             .raw(RawFeed.builder()
                                     .id(oldf.getId())
                                     .description(newf.getDescription())
-                                    .name(newf.getRaw().getName())
+                                    .name(newf.getRaw().name())
                                     .url(oldf.getUrl())
                                     .lastWatch(oldf.getLastWatch())
                                     .build())

@@ -37,8 +37,8 @@ class NotifyServiceImplTest {
 
     @Test
     void should_broadcast_notification() {
-        List<ServerEvent<Object>> actualObiwan = new CopyOnWriteArrayList<>();
-        List<ServerEvent<Object>> actualLuke = new CopyOnWriteArrayList<>();
+        List<ServerEvent> actualObiwan = new CopyOnWriteArrayList<>();
+        List<ServerEvent> actualLuke = new CopyOnWriteArrayList<>();
         List<Throwable> errorsObiwan = new CopyOnWriteArrayList<>();
         List<Throwable> errorsLuke = new CopyOnWriteArrayList<>();
         AtomicBoolean isObiwanComplete = new AtomicBoolean(false);
@@ -52,8 +52,8 @@ class NotifyServiceImplTest {
                 actualLuke::add, errorsLuke::add,
                 () -> isLukeComplete.set(true)
         );
-        ServerEvent<Object> eventBroadcast = tested.broadcast(EventType.NEWS_UPDATE, 42);
-        ServerEvent<Object> eventUser = tested.send(UserSamples.LUKE.id, EventType.USER_NOTIFICATION, "I'm your father");
+        ServerEvent eventBroadcast = tested.broadcast(EventType.NEWS_UPDATE, 42);
+        ServerEvent eventUser = tested.send(UserSamples.LUKE.id, EventType.USER_NOTIFICATION, "I'm your father");
         tested.unsubscribe().block();
         tested.unsubscribe().block();
 

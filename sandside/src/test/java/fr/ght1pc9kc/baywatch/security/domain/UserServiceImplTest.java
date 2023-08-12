@@ -47,6 +47,7 @@ class UserServiceImplTest {
     private UserServiceImpl tested;
 
     @BeforeEach
+    @SuppressWarnings("deprecation")
     void setUp() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
         when(mockUserRepository.get(any())).thenReturn(Mono.just(UserSamples.LUKE));
@@ -57,7 +58,6 @@ class UserServiceImplTest {
         when(mockUserRepository.count(any())).thenReturn(Mono.just(3));
         when(mockAuthorizationRepository.count(any())).thenReturn(Mono.just(0));
 
-        //noinspection deprecation
         tested = new UserServiceImpl(mockUserRepository, mockAuthorizationRepository,
                 mockAuthFacade, NoOpPasswordEncoder.getInstance(),
                 Clock.fixed(CURRENT, ZoneOffset.UTC), mockUlidFactory);

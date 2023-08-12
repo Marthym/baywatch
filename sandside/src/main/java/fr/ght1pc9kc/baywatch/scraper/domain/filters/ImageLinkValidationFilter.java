@@ -24,18 +24,18 @@ public class ImageLinkValidationFilter implements NewsFilter {
 
     @Override
     public Mono<RawNews> filter(RawNews news) {
-        if (Objects.isNull(news.getImage())
-                || !SUPPORTED_SCHEMES.contains(news.getImage().getScheme())) {
+        if (Objects.isNull(news.image())
+                || !SUPPORTED_SCHEMES.contains(news.image().getScheme())) {
             return Mono.just(news.withImage(null));
         }
-        URI tested = (news.getImage().getQuery() == null) ? news.getImage() :
-                URI.create(OGScrapperUtils.removeQueryString(news.getImage().toString())
-                        + "?" + HtmlEscape.unescapeHtml(news.getImage().getQuery()));
+        URI tested = (news.image().getQuery() == null) ? news.image() :
+                URI.create(OGScrapperUtils.removeQueryString(news.image().toString())
+                        + "?" + HtmlEscape.unescapeHtml(news.image().getQuery()));
         return http.get().uri(tested).exchangeToMono(ClientResponse::toBodilessEntity)
                 .map(response -> {
                     if (response.getStatusCode().is2xxSuccessful()) {
                         log.trace("SUCCESS  {}", tested);
-                        if (tested.equals(news.getImage()))
+                        if (tested.equals(news.image()))
                             return news;
                         else
                             return news.withImage(tested);

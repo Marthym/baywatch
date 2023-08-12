@@ -14,7 +14,7 @@ public interface NotifyManager extends NotifyService {
      *
      * @return The notification flux
      */
-    Flux<ServerEvent<Object>> subscribe();
+    Flux<ServerEvent> subscribe();
 
     /**
      * Allow unsubscribing to notifications flux. This will make a {@link Disposable#dispose()}

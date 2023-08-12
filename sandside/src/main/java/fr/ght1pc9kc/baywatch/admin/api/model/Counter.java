@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.admin.api.model;
 import fr.ght1pc9kc.baywatch.common.api.model.HeroIcons;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings({"java:S1133", "java:S6207", "java:S1874"})
 public record Counter(
         String name,
         @Nullable HeroIcons icon,
@@ -15,7 +16,6 @@ public record Counter(
      * @deprecated Use {@link Counter#create(String, String, String)} or {@link Counter#create(String, HeroIcons, String, String)}
      */
     @Deprecated(forRemoval = false)
-    @SuppressWarnings("java:S1133")
     public Counter {
         // In order to mask implementation
     }

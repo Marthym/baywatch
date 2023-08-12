@@ -26,13 +26,13 @@ public class ImageProxyGqlMapper {
     public Mono<Map<News, Optional<URI>>> imgm(List<News> news) {
         return Mono.fromCallable(() -> news.stream()
                 .collect(Collectors.toUnmodifiableMap(Function.identity(),
-                        n -> Optional.ofNullable(imageProxyService.proxify(n.getImage(), ImagePresets.MOBILE)))));
+                        n -> Optional.ofNullable(imageProxyService.proxify(n.image(), ImagePresets.MOBILE)))));
     }
 
     @BatchMapping
     public Mono<Map<News, Optional<URI>>> imgd(List<News> news) {
         return Mono.fromCallable(() -> news.stream()
                 .collect(Collectors.toUnmodifiableMap(Function.identity(),
-                        n -> Optional.ofNullable(imageProxyService.proxify(n.getImage(), ImagePresets.DESKTOP)))));
+                        n -> Optional.ofNullable(imageProxyService.proxify(n.image(), ImagePresets.DESKTOP)))));
     }
 }

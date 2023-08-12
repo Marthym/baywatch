@@ -83,7 +83,7 @@ class SystemMaintenanceServiceImplTest {
 
         {
             StepVerifier.create(tested.feedList())
-                    .expectNextMatches(r -> r.getId().equals(FeedRecordSamples.JEDI.getFeedId()))
+                    .expectNextMatches(r -> r.id().equals(FeedRecordSamples.JEDI.getFeedId()))
                     .verifyComplete();
 
             verify(mockFeedRepository, times(1)).list(captor.capture());
@@ -93,7 +93,7 @@ class SystemMaintenanceServiceImplTest {
         {
             clearInvocations(mockFeedRepository);
             StepVerifier.create(tested.feedList(PageRequest.one(Criteria.property("name").eq("jedi"))))
-                    .expectNextMatches(r -> r.getId().equals(FeedRecordSamples.JEDI.getFeedId()))
+                    .expectNextMatches(r -> r.id().equals(FeedRecordSamples.JEDI.getFeedId()))
                     .verifyComplete();
 
             verify(mockFeedRepository, times(1)).list(captor.capture());
@@ -123,7 +123,7 @@ class SystemMaintenanceServiceImplTest {
     void should_list_news_for_authenticated_user() {
         Criteria filter = Criteria.or(
                 Criteria.property(FEED_ID).in(JEDI.getId(), SITH.getId()),
-                Criteria.property(NEWS_ID).in(MAY_THE_FORCE.getId())
+                Criteria.property(NEWS_ID).in(MAY_THE_FORCE.id())
         );
         StepVerifier.create(tested.newsList(PageRequest.all(filter)))
                 .assertNext(actual -> {

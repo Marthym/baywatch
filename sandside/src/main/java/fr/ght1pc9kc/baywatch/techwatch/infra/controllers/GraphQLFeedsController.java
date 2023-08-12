@@ -89,11 +89,11 @@ public class GraphQLFeedsController {
         if (news.isEmpty()) {
             return Mono.just(Map.of());
         }
-        List<String> newsIds = news.stream().map(News::getId).toList();
+        List<String> newsIds = news.stream().map(News::id).toList();
         return popularService.get(newsIds).collect(Collectors.toUnmodifiableMap(Popularity::id, Function.identity()))
                 .map(pops -> news.stream()
-                        .filter(n -> pops.containsKey(n.getId()))
-                        .collect(Collectors.toUnmodifiableMap(Function.identity(), n -> pops.get(n.getId()))));
+                        .filter(n -> pops.containsKey(n.id()))
+                        .collect(Collectors.toUnmodifiableMap(Function.identity(), n -> pops.get(n.id()))));
     }
 
     @MutationMapping

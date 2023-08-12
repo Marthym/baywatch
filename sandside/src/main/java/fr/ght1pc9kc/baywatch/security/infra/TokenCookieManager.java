@@ -18,6 +18,7 @@ import java.util.Optional;
 
 @Component
 public final class TokenCookieManager {
+    private static final String HTTP_SECURE_SCHEME = "https";
     private final String baseRoute;
     private final CookieParams params;
 
@@ -36,7 +37,7 @@ public final class TokenCookieManager {
                 "/" : baseRoute;
         return ResponseCookie.from(params.name, bwAuth.token())
                 .httpOnly(true)
-                .secure("https".equals(scheme))
+                .secure(HTTP_SECURE_SCHEME.equals(scheme))
                 .sameSite(Cookie.SameSite.STRICT.attributeValue())
                 .maxAge(maxAge)
                 .path(path)
@@ -47,14 +48,14 @@ public final class TokenCookieManager {
         return List.of(
                 ResponseCookie.from(params.name, "")
                         .httpOnly(true)
-                        .secure("https".equals(scheme))
+                        .secure(HTTP_SECURE_SCHEME.equals(scheme))
                         .sameSite(Cookie.SameSite.STRICT.attributeValue())
                         .path("/")
                         .maxAge(0)
                         .build(),
                 ResponseCookie.from(params.name, "")
                         .httpOnly(true)
-                        .secure("https".equals(scheme))
+                        .secure(HTTP_SECURE_SCHEME.equals(scheme))
                         .sameSite(Cookie.SameSite.STRICT.attributeValue())
                         .path(baseRoute)
                         .maxAge(0)

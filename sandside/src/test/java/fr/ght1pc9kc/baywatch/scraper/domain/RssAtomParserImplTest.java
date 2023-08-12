@@ -133,13 +133,13 @@ class RssAtomParserImplTest {
     void should_read_rss_item(String inputFileName, String expectedTitle, String expectedUrl, String expectedPubDate, String expectedDescription) {
         List<XMLEvent> xmlEvents = toXmlEventList(inputFileName);
 
-        ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.getRaw().id, FeedSamples.JEDI.getRaw().url);
+        ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.getRaw().id(), FeedSamples.JEDI.getRaw().url());
         StepVerifier.create(tested.readEntryEvents(xmlEvents, sampleFeed))
                 .assertNext(actual -> Assertions.assertAll(
-                        () -> assertThat(actual).extracting(RawNews::getTitle).isEqualTo(expectedTitle),
-                        () -> assertThat(actual).extracting(RawNews::getLink).isEqualTo(URI.create(expectedUrl)),
-                        () -> assertThat(actual).extracting(RawNews::getPublication).isEqualTo(Instant.parse(expectedPubDate)),
-                        () -> assertThat(actual).extracting(RawNews::getDescription).isEqualTo(expectedDescription)
+                        () -> assertThat(actual).extracting(RawNews::title).isEqualTo(expectedTitle),
+                        () -> assertThat(actual).extracting(RawNews::link).isEqualTo(URI.create(expectedUrl)),
+                        () -> assertThat(actual).extracting(RawNews::publication).isEqualTo(Instant.parse(expectedPubDate)),
+                        () -> assertThat(actual).extracting(RawNews::description).isEqualTo(expectedDescription)
                 )).verifyComplete();
     }
 
@@ -147,16 +147,16 @@ class RssAtomParserImplTest {
     void should_read_atom_entry() {
         List<XMLEvent> xmlEvents = toXmlEventList("feeds/atom_entry.xml");
 
-        ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.getRaw().id, FeedSamples.JEDI.getRaw().url);
+        ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.getRaw().id(), FeedSamples.JEDI.getRaw().url());
         StepVerifier.create(tested.readEntryEvents(xmlEvents, sampleFeed))
                 .assertNext(actual -> Assertions.assertAll(
-                        () -> assertThat(actual).extracting(RawNews::getTitle)
+                        () -> assertThat(actual).extracting(RawNews::title)
                                 .isEqualTo("What's New in Maven 4 · Maarten on IT"),
-                        () -> assertThat(actual).extracting(RawNews::getLink)
+                        () -> assertThat(actual).extracting(RawNews::link)
                                 .isEqualTo(URI.create("https://www.reddit.com/r/java/comments/k3rv35/whats_new_in_maven_4_maarten_on_it/")),
-                        () -> assertThat(actual).extracting(RawNews::getPublication)
+                        () -> assertThat(actual).extracting(RawNews::publication)
                                 .isEqualTo(Instant.parse("2020-11-30T08:20:58Z")),
-                        () -> assertThat(actual).extracting(RawNews::getDescription)
+                        () -> assertThat(actual).extracting(RawNews::description)
                                 .isEqualTo("&amp;#32; submitted by &amp;#32; &lt;a " +
                                         "href=\"https://www.reddit.com/user/nonusedaccountname\"> /u/nonusedaccountname " +
                                         "&lt;/a> &lt;br/> &lt;span>&lt;a href=\"https://maarten.mulders.it/2020/11/whats-new-in-maven-4/\">" +
@@ -170,16 +170,16 @@ class RssAtomParserImplTest {
     void should_read_atom_entry_with_html_content() {
         List<XMLEvent> xmlEvents = toXmlEventList("feeds/atom_entry_with_html_content.xml");
 
-        ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.getRaw().id, FeedSamples.JEDI.getRaw().url);
+        ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.getRaw().id(), FeedSamples.JEDI.getRaw().url());
         StepVerifier.create(tested.readEntryEvents(xmlEvents, sampleFeed))
                 .assertNext(actual -> Assertions.assertAll(
-                                () -> assertThat(actual).extracting(RawNews::getTitle)
+                                () -> assertThat(actual).extracting(RawNews::title)
                                         .isEqualTo("Spring Data 2020.0 - New and Noteworthy in Spring Data for Apache Cassandra 3.1"),
-                                () -> assertThat(actual).extracting(RawNews::getLink)
+                                () -> assertThat(actual).extracting(RawNews::link)
                                         .isEqualTo(URI.create("https://spring.io/blog/2020/11/26/spring-data-2020-0-new-and-noteworthy-in-spring-data-for-apache-cassandra-3-1")),
-                                () -> assertThat(actual).extracting(RawNews::getPublication)
+                                () -> assertThat(actual).extracting(RawNews::publication)
                                         .isEqualTo(Instant.parse("2020-11-26T14:08:50Z")),
-                                () -> assertThat(actual).extracting(RawNews::getDescription)
+                                () -> assertThat(actual).extracting(RawNews::description)
                                         .asString().startsWith("&lt;p>&lt;a href=\"https://")
                                         .endsWith("&lt;!-- rendered by Sagan Renderer Service -->")
                         )
@@ -190,16 +190,16 @@ class RssAtomParserImplTest {
     void should_read_rss_item_with_encoded_content() {
         List<XMLEvent> xmlEvents = toXmlEventList("feeds/rss_item_with_encoded_content.xml");
 
-        ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.getRaw().id, FeedSamples.JEDI.getRaw().url);
+        ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.getRaw().id(), FeedSamples.JEDI.getRaw().url());
         StepVerifier.create(tested.readEntryEvents(xmlEvents, sampleFeed))
                 .assertNext(actual -> Assertions.assertAll(
-                                () -> assertThat(actual).extracting(RawNews::getTitle)
+                                () -> assertThat(actual).extracting(RawNews::title)
                                         .isEqualTo("Passage à la fibre : c’est mon tour !"),
-                                () -> assertThat(actual).extracting(RawNews::getLink)
+                                () -> assertThat(actual).extracting(RawNews::link)
                                         .isEqualTo(URI.create("https://blog.seboss666.info/2020/11/passage-a-la-fibre-cest-mon-tour/")),
-                                () -> assertThat(actual).extracting(RawNews::getPublication)
+                                () -> assertThat(actual).extracting(RawNews::publication)
                                         .isEqualTo(Instant.parse("2020-11-18T17:00:47Z")),
-                                () -> assertThat(actual).extracting(RawNews::getDescription).asString()
+                                () -> assertThat(actual).extracting(RawNews::description).asString()
                                         .startsWith("Et dieu sait que je rageais d&#8217;être")
                                         .endsWith("Mon propriétaire à fini par faire les travaux [...]")
                         )
@@ -210,16 +210,16 @@ class RssAtomParserImplTest {
     void should_read_rss_item_with_cdata() {
         List<XMLEvent> xmlEvents = toXmlEventList("feeds/rss_item_with_cdata.xml");
 
-        ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.getRaw().id, FeedSamples.JEDI.getRaw().url);
+        ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.getRaw().id(), FeedSamples.JEDI.getRaw().url());
         StepVerifier.create(tested.readEntryEvents(xmlEvents, sampleFeed))
                 .assertNext(actual -> Assertions.assertAll(
-                                () -> assertThat(actual).extracting(RawNews::getTitle)
+                                () -> assertThat(actual).extracting(RawNews::title)
                                         .isEqualTo("Des milliers de policiers ont manifesté pour appeler à « protéger ceux qui protègent la République »"),
-                                () -> assertThat(actual).extracting(RawNews::getLink)
+                                () -> assertThat(actual).extracting(RawNews::link)
                                         .isEqualTo(URI.create("https://www.lemonde.fr/societe/article/2021/05/20/des-milliers-de-policiers-ont-manifeste-pour-appeler-a-proteger-ceux-qui-protegent-la-republique_6080801_3224.html")),
-                                () -> assertThat(actual).extracting(RawNews::getPublication)
+                                () -> assertThat(actual).extracting(RawNews::publication)
                                         .isEqualTo(Instant.parse("2021-05-20T03:14:23Z")),
-                                () -> assertThat(actual).extracting(RawNews::getDescription).asString()
+                                () -> assertThat(actual).extracting(RawNews::description).asString()
                                         .startsWith("Les principaux syndicats policiers étaient rassemblés, mercredi")
                                         .endsWith("l’institution judiciaire ».")
                         )
@@ -230,16 +230,16 @@ class RssAtomParserImplTest {
     void should_read_rss_item_with_relative_link() {
         List<XMLEvent> xmlEvents = toXmlEventList("feeds/rss_item_with_relative_link.xml");
 
-        ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.getRaw().id, FeedSamples.JEDI.getRaw().url);
+        ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.getRaw().id(), FeedSamples.JEDI.getRaw().url());
         StepVerifier.create(tested.readEntryEvents(xmlEvents, sampleFeed))
                 .assertNext(actual -> Assertions.assertAll(
-                        () -> assertThat(actual).extracting(RawNews::getTitle)
+                        () -> assertThat(actual).extracting(RawNews::title)
                                 .isEqualTo("DBaaS: Tout comprendre des bases de données managées"),
-                        () -> assertThat(actual).extracting(RawNews::getLink)
+                        () -> assertThat(actual).extracting(RawNews::link)
                                 .isEqualTo(URI.create("https://www.jedi.com/dbaas-la-base-de-donnees-dans-le-cloud/")),
-                        () -> assertThat(actual).extracting(RawNews::getPublication)
+                        () -> assertThat(actual).extracting(RawNews::publication)
                                 .isEqualTo(Instant.parse("2020-11-30T15:58:26Z")),
-                        () -> assertThat(actual).extracting(RawNews::getDescription).isEqualTo(
+                        () -> assertThat(actual).extracting(RawNews::description).isEqualTo(
                                 "&lt;p>&lt;a href=\"https://www.journalduhacker.net/s/vzuiyr/dbaas_tout_comprendre_des_bases_de_donn_es\">Comments&lt;/a>&lt;/p>")
                 )).verifyComplete();
     }
@@ -247,7 +247,7 @@ class RssAtomParserImplTest {
     @Test
     void should_read_rss_item_with_illegal_protocol() {
         List<XMLEvent> xmlEvents = toXmlEventList("feeds/rss_item_with_illegal_protocol.xml");
-        ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.getRaw().id, FeedSamples.JEDI.getRaw().url);
+        ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.getRaw().id(), FeedSamples.JEDI.getRaw().url());
         StepVerifier.create(tested.readEntryEvents(xmlEvents, sampleFeed))
                 // Illegal link give empty Mono
                 .verifyComplete();

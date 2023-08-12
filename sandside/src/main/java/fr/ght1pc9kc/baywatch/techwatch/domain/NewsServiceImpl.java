@@ -99,7 +99,7 @@ public class NewsServiceImpl implements NewsService {
                 .concatWith(Mono.just(qCtx.getUserId()))
                 .collectList()
                 .flatMap(teamMates -> {
-                    Mono<List<String>> states = getStateQueryContext(teamMates, qCtx);
+                    Mono<List<String>> states = getStateQueryContext(teamMates);
                     Mono<List<String>> feeds = getFeedFor(qCtx, props);
 
                     return Mono.zip(states, feeds).map(contexts -> {
@@ -144,7 +144,7 @@ public class NewsServiceImpl implements NewsService {
                 });
     }
 
-    public Mono<List<String>> getStateQueryContext(List<String> teamMates, QueryContext qCtx) {
+    public Mono<List<String>> getStateQueryContext(List<String> teamMates) {
 
         if (teamMates.isEmpty()) {
             return Mono.empty();

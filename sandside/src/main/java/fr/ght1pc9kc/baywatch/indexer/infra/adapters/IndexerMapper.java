@@ -18,7 +18,7 @@ import java.util.Set;
 public interface IndexerMapper {
     @Mapping(source = "name", target = "title")
     @Mapping(source = "description", target = "description")
-    @Mapping(target = "link", expression = "java(rf.getUrl().toString())")
+    @Mapping(target = "link", expression = "java(rf.url().toString())")
     IndexableFeed getIndexableFromFeed(RawFeed rf);
 
     IndexableFeedEntry getIndexableFromEntry(RawNews rn);
