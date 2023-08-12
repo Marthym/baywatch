@@ -3,12 +3,12 @@ class KeyboardControl {
     private listeners: Map<string, (event: KeyboardEvent) => void> = new Map();
     private listener = event => this.onKeyDownListener(event);
 
-    registerListener(key: string, consumer: (event: KeyboardEvent) => void): KeyboardControl {
+    registerListener(key: string, consumer: (event: KeyboardEvent) => void): this {
         this.listeners.set(key, consumer);
         return this;
     }
 
-    unregisterListener(...keys: string[]): KeyboardControl {
+    unregisterListener(...keys: string[]): this {
         keys.forEach(k => this.listeners.delete(k));
         return this;
     }

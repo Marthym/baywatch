@@ -5,7 +5,7 @@ let reloadFunction: FunctionStringCallback = EMPTY_CALLBACK;
 
 export function actionServiceReload(context?: string): void {
     if (reloadFunction) {
-        reloadFunction(context ? context : '');
+        reloadFunction(context ?? '');
     }
 }
 
@@ -17,7 +17,7 @@ export function actionServiceUnregisterFunction(): void {
  * Register the function call on reload
  * This allows others components to reload news list
  *
- * @param apply [VoidFunction] The call function
+ * @param {FunctionStringCallback} apply The call function
  */
 export function actionServiceRegisterFunction(apply: FunctionStringCallback): void {
     reloadFunction = apply;
