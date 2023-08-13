@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-5xl">
+  <div class="max-w-5xl" ref="news-list">
     <template v-for="(card, idx) in news" :key="card.data.id">
       <NewsCard :ref="card.data.id" :card="card" @activate="activateNewsCard(idx)" @addFilter="onAddFilter">
         <template #actions v-if="userStore.isAuthenticated">
@@ -60,11 +60,11 @@ import {
 } from '@/common/services/ReloadActionService';
 import { NewsSearchRequest } from '@/techwatch/model/NewsSearchRequest.type';
 import { News } from '@/techwatch/model/News.type';
-import keyboardControl from '@/common/services/KeyboardControl';
 import { NEWS_FILTER_FEED_MUTATION, NewsStore } from '@/common/model/store/NewsStore.type';
 import { Feed } from '@/techwatch/model/Feed.type';
 import { EnvelopeIcon, EnvelopeOpenIcon, PaperClipIcon, ShareIcon } from '@heroicons/vue/24/outline';
 import { FireIcon } from '@heroicons/vue/20/solid';
+import { KeyboardController, listener, useKeyboardController } from '@/common/services/KeyboardController';
 
 @Component({
   name: 'NewsList',
@@ -80,6 +80,7 @@ import { FireIcon } from '@heroicons/vue/20/solid';
       newsStore: store.state.news,
       activateOnScroll: useScrollingActivation(),
       infiniteScroll: useInfiniteScroll(),
+      keyboardController: useKeyboardController(),
     };
   },
 })
@@ -89,6 +90,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   private readonly newsStore: NewsStore;
   private readonly activateOnScroll: ScrollingActivationBehaviour;
   private readonly infiniteScroll: InfiniteScrollBehaviour;
+  private keyboardController: KeyboardController;
 
   private news: NewsView[] = [];
 
@@ -111,24 +113,30 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
       this.onAuthenticationChange();
     }
 
-    keyboardControl.registerListener('n', event => {
-      event.preventDefault();
-      this.activateNewsCard(this.activeNews + 1);
-      this.scrollToActivateNews();
-    }).registerListener('k', event => {
-      event.preventDefault();
-      this.activateNewsCard(this.activeNews - 1);
-      this.scrollToActivateNews();
-    }).registerListener('m', event => {
-      event.preventDefault();
-      this.toggleRead(this.activeNews);
-    }).registerListener('c', event => {
-      event.preventDefault();
-      this.toggleNewsKeep(this.activeNews);
-    }).registerListener('s', event => {
-      event.preventDefault();
-      this.toggleNewsShared(this.activeNews);
-    });
+    this.keyboardController.register(
+        listener('n', event => {
+          event.preventDefault();
+          this.activateNewsCard(this.activeNews + 1);
+          this.scrollToActivateNews();
+        }),
+        listener('k', event => {
+          event.preventDefault();
+          this.activateNewsCard(this.activeNews - 1);
+          this.scrollToActivateNews();
+        }),
+        listener('m', event => {
+          event.preventDefault();
+          this.toggleRead(this.activeNews);
+        }),
+        listener('c', event => {
+          event.preventDefault();
+          this.toggleNewsKeep(this.activeNews);
+        }),
+        listener('s', event => {
+          event.preventDefault();
+          this.toggleNewsShared(this.activeNews);
+        }),
+    ).start();
 
     actionServiceRegisterFunction((context) => {
       if (context === 'news' || context === '') {
@@ -267,6 +275,9 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
       return;
     }
     const target = this.news[idx];
+    if (!target) {
+      return;
+    }
     if (target.data.state.read === mark) {
       return;
     }
@@ -286,6 +297,9 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
       return;
     }
     const target = this.news[idx];
+    if (!target) {
+      return;
+    }
     const markObs = (!target.data.state.shared)
         ? newsMark(target.data.id, Mark.SHARED)
         : newsService.unmark(target.data.id, Mark.SHARED);
@@ -308,6 +322,9 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
       return;
     }
     const target = this.news[idx];
+    if (!target) {
+      return;
+    }
     const markObs = (!target.data.state.keep)
         ? newsMark(target.data.id, Mark.KEEP)
         : newsService.unmark(target.data.id, Mark.KEEP);
@@ -354,11 +371,10 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     actionServiceReload('news');
   }
 
-  // noinspection JSUnusedGlobalSymbols
   unmounted(): void {
     this.activateOnScroll.disconnect();
     this.infiniteScroll.disconnect();
-    keyboardControl.unregisterListener('n', 'm', 'k');
+    this.keyboardController.purge();
     actionServiceUnregisterFunction();
   }
 

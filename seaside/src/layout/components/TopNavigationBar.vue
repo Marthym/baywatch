@@ -79,7 +79,6 @@ import { Store, useStore } from 'vuex';
 import { RESET_UPDATED_MUTATION } from '@/techwatch/store/statistics/StatisticsConstants';
 import TopNavActionOverlay from '@/layout/components/TopNavActionOverlay.vue';
 import { defineAsyncComponent } from 'vue';
-import keyboardControl from '@/common/services/KeyboardControl';
 import {
   ArrowPathIcon,
   ChevronDoubleRightIcon,
@@ -154,14 +153,6 @@ export default class TopNavigationBar extends Vue {
         this.actionOverlayOpen = true;
       },
     });
-  }
-
-  private onBlur(): void {
-    keyboardControl.startKeyboardControl();
-  }
-
-  private onFocus(): void {
-    keyboardControl.stopKeyboardControl();
   }
 
   private exitOverlay(): void {
