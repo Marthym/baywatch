@@ -25,7 +25,6 @@ import { Notification } from '@/services/notification/Notification.type';
 import { registerNotificationListener, unregisterNotificationListener } from '@/layout/services/ServerEventService';
 import { refresh } from '@/security/services/AuthenticationService';
 import notificationService from '@/services/notification/NotificationService';
-import keyboardControl from '@/common/services/KeyboardControl';
 import { useStore } from 'vuex';
 import { UPDATE_MUTATION as STATS_UPDATE_MUTATION } from '@/techwatch/store/statistics/StatisticsConstants';
 import {
@@ -69,7 +68,6 @@ export default class App extends Vue {
             });
       },
     });
-    keyboardControl.startKeyboardControl();
   }
 
   private registerSessionNotifications(): void {
@@ -90,11 +88,6 @@ export default class App extends Vue {
       console.error('Unable to parse JSON notification', err);
       console.debug('Notification message: ', evt);
     }
-  }
-
-  // noinspection JSUnusedGlobalSymbols
-  unmounted(): void {
-    keyboardControl.stopKeyboardControl();
   }
 }
 </script>

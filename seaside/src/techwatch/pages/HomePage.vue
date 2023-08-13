@@ -40,9 +40,6 @@ export default class HomePage extends Vue {
   private router: Router;
   private store: Store<any>;
 
-  /**
-   * @see mounted
-   */
   private mounted(): void {
     this.readQueryParameters();
   }
