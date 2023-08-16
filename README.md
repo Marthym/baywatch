@@ -1,6 +1,6 @@
 # Baywatch
 
-<img src="./seaside/public/favicon.ico" alt="Size Limit CLI" width="100" align="right">
+<img src="./seaside/public/favicon.ico" alt="Size Limit CLI" style="float: right; margin: auto; width: 100px">
 
 Baywatch is an application that lets you keep an eye on the latest technology.
 Simply hosted, Baywatch will scrape the news feeds that interest you at regular intervals to 
@@ -26,11 +26,47 @@ Baywatch has a multitude of features, the main ones being
   This powerful search suggests news feeds based on what users have posted on the feeds, 
   increasing the quality of the results.*
 
-<img src="./.docs/baywatch-capture-01.webp" alt="Size Limit CLI" width="100%" align="center">
+<img src="./.docs/baywatch-capture-01.webp" alt="Size Limit CLI" style="display: block; margin: auto; width: 80%" >
 
 ## Installation
 
+Baywatch is packaged as a docker image, and installation is insanely simple, 
+just start a container :
+```shell
+docker run --rm --name baywatch -d \
+  -e BAYWATCH_HOME=/var/lib/baywatch \
+  -v /tmp/testbaywatch/:/var/lib/baywatch/.baywatch \ 
+  -v /tmp/testbaywatch/tmp:/tmp \ 
+  -p 8082:8081 --read-only \ 
+  marthym/baywatch:2.0.0-SNAPSHOT
+```
+
+Baywatch will automatically create the SQLite database in `BAYWATCH_HOME` and need be able to 
+write in `/tmp`
+
 ### Configure
+
+Baywatch offers many configuration parameters, almost all of which are not mandatory.
+
+| Env                            | Description                                             | Optional | Default Value |
+|--------------------------------|---------------------------------------------------------|----------|---------------|
+| BAYWATCH_COOKIE_VALIDITY       | The time the session cookie is valid                    | X        | 24h           |
+| BAYWATCH_DNS_TIMEOUT           | The timeout duration for DNS query                      | X        | 10s           |
+| BAYWATCH_GRAPHIQL_ENABLE       | Enable the GraphiQL interface                           | X        | false         |
+| BAYWATCH_GRAPHQL_INTROSPECTION | Enable the GraphQL introspection                        | X        | false         |
+| BAYWATCH_HOME                  | The path where BW will create database file             | -        |               |
+| BAYWATCH_IMGPROXY_BASEPATH     | IMGProxy base path to allow reverse proxy               | X        | /img          |
+| BAYWATCH_IMGPROXY_ENABLE       | Minify image with ImgProxy                              | X        | true          |
+| BAYWATCH_IMGPROXY_SALT         | IMGProxy signing salt                                   | X        | -             |
+| BAYWATCH_IMGPROXY_SIGNKEY      | IMGProxy signing key                                    | X        | -             |
+| BAYWATCH_INDEXER_ENABLE        | Enable lucene to index news end feed                    | X        | true          |
+| BAYWATCH_LOG_LEVEL             | Change the log level                                    | X        | INFO          |
+| BAYWATCH_SCRAPER_CONSERVATION  | The time the news was conserved since their publication | X        | 3 month       |
+| BAYWATCH_SCRAPER_ENABLE        | Start the feeds scraping at start up                    | X        | true          |
+| BAYWATCH_SCRAPER_FREQUENCY     | The frequency of the scraping process                   | X        | 1h            |
+| BAYWATCH_SCRAPER_TIMEOUT       | The timeout duration for scraping news or feed          | X        | 2s            |
+| BAYWATCH_SERVER_PORT           | Change the server port                                  | X        | 8080          |
+| BAYWATCH_TOKEN_VALIDITY        | The time the JWToken is valid                           | X        | 1h            |
 
 ## Contribute
 
