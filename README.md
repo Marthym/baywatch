@@ -68,9 +68,35 @@ Baywatch offers many configuration parameters, almost all of which are not manda
 | BAYWATCH_SERVER_PORT           | Change the server port                                  | X        | 8080          |
 | BAYWATCH_TOKEN_VALIDITY        | The time the JWToken is valid                           | X        | 1h            |
 
+### Docker compose
+A [docker-compose.yaml](docker-compose.yml) file provides an example of a complete Baywatch 
+server configuration, with ImgProxy for image minification and a grafana stack for observability. 
+Please note, however, that this is an example file, not a production configuration. 
+It will be necessary to secure the installation more reliably for production.
+
 ## Contribute
 
 ### Application structure
+
+Baywatch is based on Springboot 3 and uses the Webflux model. Spring serves both the frontend 
+and backend, but it is advisable to place them behind a proxy for caching purposes.
+
+#### sandside
+Sandside is the backend of Baywatch. Developed according to the hexagonal architecture, 
+the module is divided into business components:
+
+* **admin**: Baywatch's administration domain
+* **common**: Tools required by other business components
+* **indexer**: Manages the indexing and searching of articles and news feeds
+* **notify**: Handles asynchronous communication with application clients
+* **opml**: Manages OMPL files
+* **scraper**: Contains all scraping machinery for news feeds
+* **security**: Manages application security and users
+* **teams**: Contains team management
+* **techwatch**: Manages all aspects of technology watch
+
+#### Seaside
+
 ### Used libraries
 ### Reports
 
