@@ -134,5 +134,13 @@
             </plugin>
         </plugins>
     </build>
-
+    <profiles>
+        <profile>
+            <id>sonar</id>
+            <properties>
+                <sonar.sources>src</sonar.sources>
+                <sonar.tests>tests</sonar.tests>
+            </properties>
+        </profile>
+    </profiles>
 </project>
