@@ -1,6 +1,6 @@
 # Baywatch
 
-<img src="./seaside/public/favicon.ico" alt="Size Limit CLI" style="float: right; margin: auto; width: 100px">
+<img src="./seaside/public/favicon.ico" alt="Size Limit CLI" align="right" style="float: right; margin: auto; width: 100px">
 
 Baywatch is an application that lets you keep an eye on the latest technology.
 Simply hosted, Baywatch will scrape the news feeds that interest you at regular intervals to
@@ -26,7 +26,7 @@ Baywatch has a multitude of features, the main ones being
   This powerful search suggests news feeds based on what users have posted on the feeds,
   increasing the quality of the results.*
 
-<img src="./.docs/baywatch-capture-01.webp" alt="Size Limit CLI" style="display: block; margin: auto; width: 80%" >
+<img src="./.docs/baywatch-capture-01.webp" alt="Size Limit CLI" align="center" style="display: block; margin: auto; width: 80%" >
 
 ## Installation
 
