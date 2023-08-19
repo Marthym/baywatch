@@ -3,35 +3,36 @@
 <img src="./seaside/public/favicon.ico" alt="Size Limit CLI" style="float: right; margin: auto; width: 100px">
 
 Baywatch is an application that lets you keep an eye on the latest technology.
-Simply hosted, Baywatch will scrape the news feeds that interest you at regular intervals to 
+Simply hosted, Baywatch will scrape the news feeds that interest you at regular intervals to
 provide you with the most relevant articles in a readable way.
 
 Baywatch has a multitude of features, the main ones being
 
 * **Article deduplication**\
-  *Even if the same article is published in several news feeds, 
-   it will only appear once in your watch.*
+  *Even if the same article is published in several news feeds,
+  it will only appear once in your watch.*
 * **News feed tagging**\
   *News feeds can now be tagged, making it easier to filter what you want to read.*
 * **Team management**\
-  *Baywatch lets you create teams with whom you can share the articles you've enjoyed. 
-   These articles will then appear in your teammates' watch.*
+  *Baywatch lets you create teams with whom you can share the articles you've enjoyed.
+  These articles will then appear in your teammates' watch.*
 * **Read later**\
-  *Mark an article for later reading. 
-   If you want to take the time to read it and test what it says.
-   Or simply if you don't want to lose it.*
+  *Mark an article for later reading.
+  If you want to take the time to read it and test what it says.
+  Or simply if you don't want to lose it.*
 * **News feed search**\
-  *The News Feed Search lets you find news feeds among all those already added by other 
+  *The News Feed Search lets you find news feeds among all those already added by other
   Baywatch users.
-  This powerful search suggests news feeds based on what users have posted on the feeds, 
+  This powerful search suggests news feeds based on what users have posted on the feeds,
   increasing the quality of the results.*
 
 <img src="./.docs/baywatch-capture-01.webp" alt="Size Limit CLI" style="display: block; margin: auto; width: 80%" >
 
 ## Installation
 
-Baywatch is packaged as a docker image, and installation is insanely simple, 
+Baywatch is packaged as a docker image, and installation is insanely simple,
 just start a container :
+
 ```shell
 docker run --rm --name baywatch -d \
   -e BAYWATCH_HOME=/var/lib/baywatch \
@@ -41,7 +42,7 @@ docker run --rm --name baywatch -d \
   marthym/baywatch:2.0.0-SNAPSHOT
 ```
 
-Baywatch will automatically create the SQLite database in `BAYWATCH_HOME` and need be able to 
+Baywatch will automatically create the SQLite database in `BAYWATCH_HOME` and need be able to
 write in `/tmp`
 
 ### Configure
@@ -69,20 +70,23 @@ Baywatch offers many configuration parameters, almost all of which are not manda
 | BAYWATCH_TOKEN_VALIDITY        | The time the JWToken is valid                           | X        | 1h            |
 
 ### Docker compose
-A [docker-compose.yaml](docker-compose.yml) file provides an example of a complete Baywatch 
-server configuration, with ImgProxy for image minification and a grafana stack for observability. 
-Please note, however, that this is an example file, not a production configuration. 
+
+A [docker-compose.yaml](docker-compose.yml) file provides an example of a complete Baywatch
+server configuration, with ImgProxy for image minification and a grafana stack for observability.
+Please note, however, that this is an example file, not a production configuration.
 It will be necessary to secure the installation more reliably for production.
 
 ## Contribute
 
-### Application structure
-
-Baywatch is based on Springboot 3 and uses the Webflux model. Spring serves both the frontend 
+Baywatch is based on Springboot 3 and uses the Webflux model. Spring serves both the frontend
 and backend, but it is advisable to place them behind a proxy for caching purposes.
 
-#### sandside
-Sandside is the backend of Baywatch. Developed according to the hexagonal architecture, 
+In order to compile and run the Baywatch code, it is necessary to have installed versions 
+later than or equal to **Java 17**, **Node 18** and **Maven 3**.
+
+### Sandside
+
+Sandside is the backend of Baywatch. Developed according to the hexagonal architecture,
 the module is divided into business components:
 
 * **admin**: Baywatch's administration domain
@@ -95,8 +99,12 @@ the module is divided into business components:
 * **teams**: Contains team management
 * **techwatch**: Manages all aspects of technology watch
 
-#### Seaside
+### Seaside
 
-### Used libraries
-### Reports
+Seaside is the Baywatch front end. Developed from Vue.js v3 with Tailwind as CSS framework
+and DaisyUI as component framework.
 
+### Build
+
+The complete build of the application (front and back) is done with the command:
+`mvn clean package jib:dockerBuil`.
