@@ -1,4 +1,4 @@
-# Baywatch
+# Baywatch [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Marthym_baywatch&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Marthym_baywatch) [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Marthym_baywatch&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Marthym_baywatch) [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Marthym_baywatch&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=Marthym_baywatch)
 
 <img src="./seaside/public/favicon.ico" alt="Size Limit CLI" align="right" style="float: right; margin: auto; width: 100px">
 
