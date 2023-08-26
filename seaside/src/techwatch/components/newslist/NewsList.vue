@@ -1,7 +1,8 @@
 <template>
   <div class="max-w-5xl" ref="news-list">
     <template v-for="(card, idx) in news" :key="card.data.id">
-      <NewsCard :ref="card.data.id" :card="card" @activate="activateNewsCard(idx)" @addFilter="onAddFilter">
+      <NewsCard :ref="card.data.id" :card="card"
+                @activate="activateNewsCard(idx)" @addFilter="onAddFilter" @clickTitle="markNewsRead(idx, true)">
         <template #actions v-if="userStore.isAuthenticated">
           <div class="join -ml-2 lg:ml-0">
             <button v-if="card.data.state.read" @click.stop="toggleRead(idx)"
@@ -271,6 +272,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   }
 
   private markNewsRead(idx: number, mark: boolean) {
+    console.log("markNewsRead", idx)
     if (!this.isAuthenticated) {
       return;
     }
