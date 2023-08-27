@@ -5,6 +5,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.scraphead.core.HeadScraper;
 import fr.ght1pc9kc.scraphead.core.http.ScrapRequest;
 import fr.ght1pc9kc.scraphead.core.model.Metas;
+import fr.ght1pc9kc.scraphead.core.model.ex.HeadScrapingException;
 import fr.ght1pc9kc.scraphead.core.model.links.Links;
 import fr.ght1pc9kc.scraphead.core.model.opengraph.OpenGraph;
 import org.junit.jupiter.api.Assertions;
@@ -49,8 +50,9 @@ class OpenGraphFilterTest {
                                 .title("Opengraph title")
                                 .description("Opengraph description")
                                 .image(URI.create("https://open.graph.img/image.jpg"))
-                                .build()
-                        ).build()
+                                .build())
+                        .error(new HeadScrapingException("Test error message"))
+                        .build()
         ));
 
         StepVerifier.create(tested.filter(RAW))

@@ -23,7 +23,7 @@
       <div class="flex flex-col h-full overflow-hidden">
         <a class="font-semibold text-xl" target="_blank" :href="card.data.link" :title="card.data.link"
            @auxclick="$emit('clickTitle')"
-           @click="$emit('clickTitle')" v-html="card.data.title"></a>
+           @click="$emit('clickTitle')" v-html="card.data.title"></a><!-- //NOSONAR typescript:S6299 String is sanitized on backend -->
         <span v-html="card.data.description" class="mt-2 text-base flex-grow max-h-80 overflow-hidden"></span>
 
         <div class="flex flex-row flex-wrap-reverse lg:justify-end text-xs mt-2">
