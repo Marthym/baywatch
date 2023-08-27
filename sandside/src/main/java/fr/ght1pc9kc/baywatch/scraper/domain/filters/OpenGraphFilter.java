@@ -71,15 +71,23 @@ public class OpenGraphFilter implements NewsFilter {
             raw = raw.withTitle(metas.title());
         }
 
+        if (!metas.errors().isEmpty()) {
+            metas.errors().forEach(e -> log.atDebug()
+                    .addArgument(e.getLocalizedMessage())
+                    .addArgument(news.link())
+                    .setMessage("Error when parsing headers: {} on {}")
+                    .log());
+        }
         OpenGraph og = metas.og();
         if (nonNull(og) && !og.isEmpty()) {
-            raw = Optional.ofNullable(og.title).map(raw::withTitle).orElse(raw);
-            raw = Optional.ofNullable(og.description).map(raw::withDescription).orElse(raw);
-            raw = Optional.ofNullable(og.image)
+            raw = Optional.ofNullable(og.title()).map(raw::withTitle).orElse(raw);
+            raw = Optional.ofNullable(og.description()).map(raw::withDescription).orElse(raw);
+            raw = Optional.ofNullable(og.image())
                     .filter(i -> SUPPORTED_SCHEMES.contains(i.getScheme()))
                     .map(raw::withImage).orElse(raw);
         } else {
-            log.debug("No OG meta found for {}", news.link());
+            log.atDebug().addArgument(news.link())
+                    .setMessage("No OG meta found for {}").log();
         }
 
         if (nonNull(links) && isNull(raw.image())) {
