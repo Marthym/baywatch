@@ -57,13 +57,13 @@ public class GraphQLFeedsController {
     }
 
     @SchemaMapping(typeName = "SearchFeedsResponse")
-    public Flux<News> entities(Page<News> searchNewsResponse) {
-        return searchNewsResponse.getBody();
+    public Flux<Feed> entities(Page<Feed> searchFeedsResponse) {
+        return searchFeedsResponse.getBody();
     }
 
     @SchemaMapping(typeName = "SearchFeedsResponse")
-    public Mono<Integer> totalCount(Page<News> searchNewsResponse) {
-        return Mono.justOrEmpty(searchNewsResponse.getHeaders().get("X-Total-Count"))
+    public Mono<Integer> totalCount(Page<Feed> searchFeedsResponse) {
+        return Mono.justOrEmpty(searchFeedsResponse.getHeaders().get("X-Total-Count"))
                 .map(h -> h.get(0))
                 .map(Integer::parseInt)
                 .switchIfEmpty(Mono.just(0));
