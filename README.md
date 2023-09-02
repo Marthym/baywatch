@@ -84,6 +84,9 @@ and backend, but it is advisable to place them behind a proxy for caching purpos
 In order to compile and run the Baywatch code, it is necessary to have installed versions 
 later than or equal to **Java 17**, **Node 18** and **Maven 3**.
 
+Find more informations in [CONTRIBUTING.md](./CONTRIBUTING.md). 
+Take a look on our [Code of Conduct](./CODE_OF_CONDUCT.md)
+
 ### Sandside
 
 Sandside is the backend of Baywatch. Developed according to the hexagonal architecture,
@@ -108,3 +111,8 @@ and DaisyUI as component framework.
 
 The complete build of the application (front and back) is done with the command:
 `mvn clean package jib:dockerBuil`.
+
+## Links
+
+* Our [Security Policy](./SECURITY.md).
+* This project is under [GPLv3](./LICENSE) license.
