@@ -1,14 +1,14 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.common.infra.model.Page;
 import fr.ght1pc9kc.baywatch.common.infra.model.PatchPayload;
 import fr.ght1pc9kc.baywatch.common.infra.model.ResourcePatch;
 import fr.ght1pc9kc.baywatch.techwatch.api.FeedService;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedForm;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
@@ -56,16 +56,16 @@ public class FeedController {
     private final ObjectMapper mapper;
 
     @GetMapping("/{id}")
-    public Mono<Feed> get(@PathVariable("id") String id) {
+    public Mono<Entity<WebFeed>> get(@PathVariable("id") String id) {
         return feedService.get(id)
                 .onErrorMap(BadRequestCriteria.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
     }
 
     @GetMapping
     @PreAuthorize("permitAll()")
-    public Mono<Page<Feed>> list(ServerHttpRequest request) {
+    public Mono<Page<Entity<WebFeed>>> list(ServerHttpRequest request) {
         PageRequest pageRequest = qsParser.parse(request.getQueryParams());
-        Flux<Feed> feeds = feedService.list(pageRequest)
+        Flux<Entity<WebFeed>> feeds = feedService.list(pageRequest)
                 .onErrorMap(BadRequestCriteria.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
 
         return feedService.count(pageRequest)
@@ -82,40 +82,38 @@ public class FeedController {
                 continue;
             }
             switch (resource.op()) {
-                case remove:
+                case remove -> {
                     try {
                         String id = FEED_BASE.relativize(resource.path()).toString();
                         operations.add(feedService.delete(List.of(id)).map(deleted -> resource.path()));
                     } catch (Exception e) {
                         return Flux.error(new IllegalArgumentException("Malformed PATCH (remove) request !", e));
                     }
-                    break;
-
-                case add:
+                }
+                case add -> {
                     try {
                         FeedForm toPersist = mapper.readerFor(FeedForm.class).readValue(resource.value(), FeedForm.class);
                         Mono<URI> persisted = subscribe(Mono.just(toPersist))
-                                .map(re -> URI.create(FEED_BASE.getPath() + "/" + Objects.requireNonNull(re.getBody()).getId()));
+                                .map(re -> URI.create(FEED_BASE.getPath() + "/" + Objects.requireNonNull(re.getBody()).id));
                         operations.add(persisted);
-                        break;
                     } catch (IOException e) {
                         return Flux.error(new IllegalArgumentException("Malformed PATCH (add) request !", e));
                     }
-
-                case replace:
+                }
+                case replace -> {
                     try {
                         String id = FEED_BASE.relativize(resource.path()).toString();
                         FeedForm toPersist = mapper.readerFor(FeedForm.class).readValue(resource.value(), FeedForm.class);
                         Mono<URI> persisted = update(id, Mono.just(toPersist))
-                                .map(re -> URI.create(FEED_BASE.getPath() + "/" + re.getId()));
+                                .map(re -> URI.create(FEED_BASE.getPath() + "/" + re.id));
                         operations.add(persisted);
-                        break;
                     } catch (IOException e) {
                         return Flux.error(new IllegalArgumentException("Malformed PATCH (replace) request !", e));
                     }
-
-                default:
+                }
+                default -> {
                     return Flux.error(new IllegalArgumentException("Unsupported PATCH operation !"));
+                }
             }
         }
 
@@ -123,65 +121,60 @@ public class FeedController {
     }
 
     @PutMapping("/{id}")
-    public Mono<Feed> update(@PathVariable("id") String id, @Valid @RequestBody Mono<FeedForm> feedForm) {
-        return feedForm.map(ff -> {
-                    URI uri = URI.create(ff.url());
-                    if (!id.equals(Hasher.identify(uri))) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Inconsistent ID for URL !");
+    public Mono<Entity<WebFeed>> update(@PathVariable("id") String id, @Valid @RequestBody Mono<FeedForm> feedForm) {
+        return feedForm.<WebFeed>handle((ff, sink) -> {
+                    URI feedLocation = URI.create(ff.location());
+                    if (!id.equals(Hasher.identify(feedLocation))) {
+                        sink.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Inconsistent ID for URL !"));
+                        return;
                     }
-                    return Feed.builder()
-                            .raw(RawFeed.builder()
-                                    .id(id)
-                                    .url(uri)
-                                    .name(ff.name())
-                                    .build())
+                    sink.next(WebFeed.builder()
+                            .reference(id)
+                            .location(feedLocation)
                             .tags(Set.of(ff.tags()))
                             .name(ff.name())
-                            .build();
-                }).flatMap(feedService::update)
+                            .build());
+                })
+                .flatMap(feedService::update)
                 .onErrorMap(BadRequestCriteria.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
     }
 
     @RequestMapping(method = {RequestMethod.POST, RequestMethod.PUT})
-    public Mono<ResponseEntity<Feed>> subscribe(@Valid @RequestBody Mono<FeedForm> feedForm) {
+    public Mono<ResponseEntity<Entity<WebFeed>>> subscribe(@Valid @RequestBody Mono<FeedForm> feedForm) {
         return feedForm.map(form -> {
-                    URI uri = URI.create(form.url());
+                    URI uri = URI.create(form.location());
                     Set<String> tags = Optional.ofNullable(form.tags()).map(Set::of).orElseGet(Set::of);
-                    return Feed.builder()
-                            .raw(RawFeed.builder()
-                                    .id(Hasher.identify(uri))
-                                    .url(uri)
-                                    .name(form.name())
-                                    .build())
+                    return WebFeed.builder()
+                            .reference(Hasher.identify(uri))
+                            .location(uri)
                             .tags(tags)
                             .name(form.name())
                             .build();
                 })
                 .flatMap(feed -> feedService.addAndSubscribe(Collections.singleton(feed)).next())
-                .map(feed -> ResponseEntity.created(URI.create("/api/feeds/" + feed.getId())).body(feed))
+                .map(feed -> ResponseEntity.created(URI.create("/api/feeds/" + feed.id)).body(feed))
                 .onErrorMap(WebExchangeBindException.class, e -> {
-                    String message = e.getFieldErrors().stream().map(err -> err.getField() + " " + err.getDefaultMessage()).collect(Collectors.joining("\n"));
+                    String message = e.getFieldErrors().stream().map(err ->
+                            err.getField() + " " + err.getDefaultMessage()).collect(Collectors.joining("\n"));
                     return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
                 });
 
     }
 
     @DeleteMapping("/{id}")
-    public Mono<Feed> unsubscribe(@PathVariable("id") String id) {
+    public Mono<Entity<WebFeed>> unsubscribe(@PathVariable("id") String id) {
         return feedService.get(id)
                 .flatMap(feed -> feedService.delete(Collections.singleton(id)).thenReturn(feed));
     }
 
     @PostMapping("/import")
-    public Flux<Feed> importFeeds(@RequestBody @Valid Flux<FeedForm> feedForms) {
+    public Flux<Entity<WebFeed>> importFeeds(@RequestBody @Valid Flux<FeedForm> feedForms) {
         return feedForms.map(form -> {
-                    URI uri = URI.create(form.url());
-                    return Feed.builder()
-                            .raw(RawFeed.builder()
-                                    .id(Hasher.identify(uri))
-                                    .url(uri)
-                                    .name(Optional.ofNullable(form.name()).orElseGet(uri::getHost))
-                                    .build())
+                    URI uri = URI.create(form.location());
+                    return WebFeed.builder()
+                            .reference(Hasher.identify(uri))
+                            .location(uri)
+                            .name(Optional.ofNullable(form.name()).orElseGet(uri::getHost))
                             .tags(Set.of(form.tags()))
                             .build();
                 }).collectList()

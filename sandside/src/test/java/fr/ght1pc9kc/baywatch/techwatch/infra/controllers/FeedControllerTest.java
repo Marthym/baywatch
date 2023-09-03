@@ -32,7 +32,6 @@ class FeedControllerTest {
     private FeedService mockFeedService;
 
     @BeforeEach
-    @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     void setUp() {
         mockFeedService = mock(FeedService.class);
         when(mockFeedService.delete(any())).thenReturn(Mono.just(1));
@@ -60,8 +59,8 @@ class FeedControllerTest {
         ));
         StepVerifier.create(tested.bulkUpdate(payload))
                 .expectNext(
-                        URI.create("/feeds/" + FeedSamples.SITH.getId()),
-                        URI.create("/feeds/" + FeedSamples.JEDI.getId()),
+                        URI.create("/feeds/" + FeedSamples.SITH.id),
+                        URI.create("/feeds/" + FeedSamples.JEDI.id),
                         URI.create("/feeds/42"))
                 .verifyComplete();
 

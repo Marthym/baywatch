@@ -134,7 +134,7 @@ public class NewsServiceImpl implements NewsService {
                 ? QueryContext.all(qCtx.filter)
                 : QueryContext.all(qCtx.filter).withUserId(qCtx.userId);
         return feedRepository.list(feedQCtx)
-                .map(Feed::getId)
+                .map(f -> f.id)
                 .collectList()
                 .map(feeds -> {
                     if (feedQCtx.isScoped()) {

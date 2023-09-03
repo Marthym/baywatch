@@ -7,6 +7,7 @@ import lombok.With;
 import java.net.URI;
 import java.time.Instant;
 
+@Deprecated
 @Builder
 public record RawFeed(
         @NonNull String id,

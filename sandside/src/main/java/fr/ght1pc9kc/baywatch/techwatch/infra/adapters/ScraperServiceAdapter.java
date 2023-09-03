@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.ScraperServicePort;
 import fr.ght1pc9kc.baywatch.techwatch.infra.config.TechwatchMapper;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ public class ScraperServiceAdapter implements ScraperServicePort {
     private final TechwatchMapper mapper;
 
     @Override
-    public Mono<Feed> fetchFeedData(URI link) {
+    public Mono<WebFeed> fetchFeedData(URI link) {
         return feedScraperService.scrapFeedHeader(link)
                 .map(mapper::getFeedFromAtom);
     }

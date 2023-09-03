@@ -1,13 +1,15 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
+import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
 import lombok.AllArgsConstructor;
@@ -32,6 +34,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers.FEEDS_PROPERTIES_MAPPING;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
@@ -40,7 +43,7 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 @Slf4j
 @Repository
 @AllArgsConstructor
-@SuppressWarnings("resource")
+@SuppressWarnings("BlockingMethodInNonBlockingContext")
 public class FeedRepository implements FeedPersistencePort {
     private static final JooqConditionVisitor JOOQ_CONDITION_VISITOR =
             new JooqConditionVisitor(FEEDS_PROPERTIES_MAPPING::get);
@@ -50,12 +53,13 @@ public class FeedRepository implements FeedPersistencePort {
     private final BaywatchMapper baywatchMapper;
 
     @Override
-    public Mono<Feed> get(QueryContext qCtx) {
+    public Mono<Entity<WebFeed>> get(QueryContext qCtx) {
         return list(QueryContext.first(qCtx)).next();
     }
 
     @Override
-    public Flux<Feed> list(QueryContext qCtx) {
+    @SuppressWarnings("resource")
+    public Flux<Entity<WebFeed>> list(QueryContext qCtx) {
         Select<Record> select = buildSelectQuery(qCtx);
 
         return Flux.<Record>create(sink -> {
@@ -67,7 +71,8 @@ public class FeedRepository implements FeedPersistencePort {
                             sink.complete();
                         }
                     });
-                }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
+                }).limitRate(Integer.MAX_VALUE - 1)
+                .subscribeOn(databaseScheduler)
                 .map(baywatchMapper::recordToFeed);
     }
 
@@ -79,16 +84,16 @@ public class FeedRepository implements FeedPersistencePort {
     }
 
     @Override
-    public Mono<Feed> update(Feed toUpdate, String userId) {
+    public Mono<Entity<WebFeed>> update(String id, String userId, WebFeed toUpdate) {
         FeedsUsersRecord feedsUsersRecord = baywatchMapper.feedToFeedsUsersRecord(toUpdate);
         feedsUsersRecord.setFeusUserId(userId);
         return Mono.fromCallable(() -> dsl.executeUpdate(feedsUsersRecord))
                 .subscribeOn(databaseScheduler)
-                .flatMap(i -> get(QueryContext.id(toUpdate.getId()).withUserId(userId)));
+                .flatMap(i -> get(QueryContext.id(id).withUserId(userId)));
     }
 
     @Override
-    public Flux<Feed> persist(Collection<Feed> toPersist) {
+    public Flux<Entity<WebFeed>> persist(Collection<WebFeed> toPersist) {
         List<FeedsRecord> records = toPersist.stream()
                 .map(baywatchMapper::feedToFeedsRecord)
                 .toList();
@@ -107,12 +112,15 @@ public class FeedRepository implements FeedPersistencePort {
                     log.debug("Load {} Feeds with {} error(s) and {} ignored",
                             loader.stored(), loader.errors().size(), loader.ignored());
                     return loader;
+                })
 
-                }).thenMany(Flux.fromIterable(toPersist));
+                .thenMany(Flux.fromIterable(toPersist))
+                .map(WebFeed::reference)
+                .flatMap(refs -> this.list(QueryContext.all(Criteria.property(ID).in(refs))));
     }
 
     @Override
-    public Flux<Feed> persistUserRelation(Collection<Feed> feeds, String userId) {
+    public Flux<Entity<WebFeed>> persistUserRelation(Collection<WebFeed> feeds, String userId) {
         List<FeedsUsersRecord> feedsUsersRecords = feeds.stream()
                 .map(baywatchMapper::feedToFeedsUsersRecord)
                 .filter(Objects::nonNull)
@@ -128,7 +136,12 @@ public class FeedRepository implements FeedPersistencePort {
                                 .fieldsCorresponding()
                                 .execute())
                 .subscribeOn(databaseScheduler)
-                .thenMany(Flux.fromIterable(feeds));
+                .thenMany(Flux.fromIterable(feeds))
+                .map(WebFeed::reference)
+                .flatMap(refs -> this.list(QueryContext.builder()
+                        .userId(userId)
+                        .filter(Criteria.property(ID).in(refs))
+                        .build()));
     }
 
     @Override
