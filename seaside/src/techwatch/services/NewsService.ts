@@ -34,7 +34,7 @@ export class NewsService {
             totalCount
             entities {
                 id title description publication image imgd imgm link
-                feeds { id name }
+                feeds { _id name }
             }
         }
     }`;
@@ -50,7 +50,7 @@ export class NewsService {
             totalCount
             entities {
                 id title description publication image imgd imgm link
-                feeds { id name }
+                feeds { _id name }
                 state { read shared keep }
                 popularity { score }
             }

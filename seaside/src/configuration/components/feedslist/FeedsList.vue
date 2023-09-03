@@ -27,7 +27,7 @@
       </tr>
       </thead>
       <tbody>
-      <template v-if="feeds.length > 0" v-for="vFeed in this.feeds" v-bind:key="vFeed.data.id">
+      <template v-if="feeds.length > 0" v-for="vFeed in this.feeds" v-bind:key="vFeed.data._id">
         <tr>
           <th scope="row" v-if="userState.isAuthenticated">
             <label>
@@ -36,7 +36,7 @@
             </label>
           </th>
           <td class="grid grid-cols-1 md:grid-cols-12 auto-cols-auto">
-            <FeedListItem :ref="vFeed.data.id" :view="vFeed"
+            <FeedListItem :ref="vFeed.data._id" :view="vFeed"
                           @item-update="itemUpdate" @item-delete="itemDelete"/>
           </td>
         </tr>
@@ -148,7 +148,7 @@ export default class FeedsList extends Vue {
 
   modelToView(feed: Feed): FeedView {
     return {
-      icon: new URL(feed.url).origin + '/favicon.ico',
+      icon: new URL(feed.location).origin + '/favicon.ico',
       data: feed,
       isSelected: false,
     } as FeedView;
@@ -170,7 +170,7 @@ export default class FeedsList extends Vue {
   private itemUpdate(item: Feed): void {
     this.feedEditor.openFeed({ ...item }).pipe(
         take(1),
-        switchMap(feed => feedsService.update(feed, item.url !== feed.url)),
+        switchMap(feed => feedsService.update(feed, item.location !== feed.url)),
         switchMap(() => this.loadFeedPage(this.activePage)),
     ).subscribe({
       next: () => notificationService.pushSimpleOk('Mis à jour avec succès'),
@@ -182,17 +182,17 @@ export default class FeedsList extends Vue {
   }
 
   private itemDelete(itemId: string): void {
-    const idx = this.feeds.findIndex(fv => fv.data.id === itemId);
+    const idx = this.feeds.findIndex(fv => fv.data._id === itemId);
     const message = `Supprimer l’abonnement au fil <br/> <b>${this.feeds[idx].data.name}</b>`;
     this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
         filter(response => response === AlertResponse.CONFIRM),
         switchMap(() => feedsService.remove(itemId)),
         tap(() => {
-          const concernedIndexes = this.feeds.findIndex(fv => fv.data.id === itemId);
+          const concernedIndexes = this.feeds.findIndex(fv => fv.data._id === itemId);
           this.feeds.splice(concernedIndexes, 1);
         }),
     ).subscribe({
-      next: feed => notificationService.pushSimpleOk(`Feed ${feed.id.substring(0, 10)} deleted successfully !`),
+      next: feed => notificationService.pushSimpleOk(`Feed ${feed._id.substring(0, 10)} deleted successfully !`),
       error: e => {
         console.error(e);
         notificationService.pushSimpleError('Impossible de mettre à jour le fil');
@@ -201,7 +201,7 @@ export default class FeedsList extends Vue {
   }
 
   private bulkDelete(): void {
-    const ids = this.feeds.filter(f => f.isSelected).map(f => f.data.id);
+    const ids = this.feeds.filter(f => f.isSelected).map(f => f.data._id);
     if (ids.length == 0) {
       return;
     } else if (ids.length == 1) {
@@ -213,7 +213,7 @@ export default class FeedsList extends Vue {
         switchMap(() => feedsService.bulkRemove(ids)),
         tap(() => {
           ids.forEach(id => {
-            const idx = this.feeds.findIndex(fv => fv.data.id === id);
+            const idx = this.feeds.findIndex(fv => fv.data._id === id);
             this.feeds.splice(idx, 1);
           });
         }),
