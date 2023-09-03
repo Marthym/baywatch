@@ -1,7 +1,7 @@
 export type Feed = {
-    id: string;
+    _id: string;
     name: string;
     description: string;
-    url: string;
+    location: string;
     tags: string[];
 }

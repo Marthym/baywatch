@@ -4,7 +4,7 @@
         <button class="btn btn-sm btn-square btn-ghost" @click="$emit('item-update', view.data)">
             <PencilIcon class="h-6 w-6"/>
         </button>
-        <button class="btn btn-sm btn-square btn-ghost" @click="$emit('item-delete', view.data.id)">
+        <button class="btn btn-sm btn-square btn-ghost" @click="$emit('item-delete', view.data._id)">
             <TrashIcon class="h-6 w-6"/>
         </button>
     </div>
