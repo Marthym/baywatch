@@ -8,7 +8,7 @@ import java.util.Objects;
 
 public record FeedForm(
         String name,
-        @NotBlank @URL String url,
+        @NotBlank @URL String location,
         String[] tags
 ) {
     @Override
@@ -19,14 +19,14 @@ public record FeedForm(
         FeedForm feedForm = (FeedForm) o;
 
         if (!Objects.equals(name, feedForm.name)) return false;
-        if (!Objects.equals(url, feedForm.url)) return false;
+        if (!Objects.equals(location, feedForm.location)) return false;
         return Arrays.equals(tags, feedForm.tags);
     }
 
     @Override
     public int hashCode() {
         int result = name != null ? name.hashCode() : 0;
-        result = 31 * result + (url != null ? url.hashCode() : 0);
+        result = 31 * result + (location != null ? location.hashCode() : 0);
         result = 31 * result + Arrays.hashCode(tags);
         return result;
     }
@@ -35,7 +35,7 @@ public record FeedForm(
     public String toString() {
         return "FeedForm{" +
                 "name='" + name + '\'' +
-                ", url='" + url + '\'' +
+                ", location='" + location + '\'' +
                 ", tags=" + Arrays.toString(tags) +
                 '}';
     }

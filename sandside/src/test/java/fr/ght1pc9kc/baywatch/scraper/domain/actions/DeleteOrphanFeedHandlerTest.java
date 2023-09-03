@@ -2,7 +2,6 @@ package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
 import fr.ght1pc9kc.baywatch.techwatch.api.NewsService;
 import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.tests.samples.FeedSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.NewsSamples;
@@ -25,11 +24,11 @@ import static org.mockito.Mockito.when;
 class DeleteOrphanFeedHandlerTest {
 
     private DeleteOrphanFeedHandler tested;
-    private SystemMaintenanceService systemMaintenanceMock = mock(SystemMaintenanceService.class);
+    private final SystemMaintenanceService systemMaintenanceMock = mock(SystemMaintenanceService.class);
 
     @BeforeEach
     void setUp() {
-        when(systemMaintenanceMock.feedList(any())).thenReturn(Flux.fromIterable(FeedSamples.SAMPLES).map(Feed::getRaw));
+        when(systemMaintenanceMock.feedList(any())).thenReturn(Flux.fromIterable(FeedSamples.SAMPLES));
         when(systemMaintenanceMock.feedDelete(anyCollection())).thenReturn(Mono.just(2));
         when(systemMaintenanceMock.newsList(any())).thenReturn(Flux.fromIterable(NewsSamples.SAMPLES).map(News::getRaw));
         when(systemMaintenanceMock.newsDelete(anyCollection())).thenReturn(Mono.just(2));

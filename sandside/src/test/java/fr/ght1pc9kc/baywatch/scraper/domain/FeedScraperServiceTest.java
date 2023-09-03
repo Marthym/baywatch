@@ -10,9 +10,7 @@ import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.FeedScrapingException;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.NewsScrapingException;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.NewsMaintenancePort;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import org.assertj.core.api.Assertions;
 import org.jetbrains.annotations.NotNull;
@@ -185,13 +183,9 @@ class FeedScraperServiceTest {
 
     @Test
     void should_fail_on_unsupported_scheme() {
-        when(newsMaintenanceMock.feedList()).thenAnswer((Answer<Flux<Feed>>) invocationOnMock -> Flux.just(
-                Feed.builder().raw(RawFeed.builder()
-                        .id("0")
-                        .name("Unsupported")
-                        .url(URI.create("file://localhost/.env"))
-                        .build()).name("Reddit").build()
-        ).delayElements(Duration.ofMillis(100)));  // Delay avoid Awaitility start polling after the and of scraping
+        when(newsMaintenanceMock.feedList()).thenAnswer((Answer<Flux<ScrapedFeed>>) invocationOnMock -> Flux.just(
+                new ScrapedFeed("0", URI.create("file://localhost/.env"))
+        ).delayElements(Duration.ofMillis(100)));  // Delay avoid Awaitility start polling after the end of scraping
 
         StepVerifier.create(tested.scrap(SCRAPER_RETENTION_PERIOD))
                 .expectErrorSatisfies(t -> Assertions.assertThat(t)

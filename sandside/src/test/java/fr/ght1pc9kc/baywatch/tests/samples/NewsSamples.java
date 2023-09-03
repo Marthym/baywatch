@@ -43,7 +43,7 @@ public final class NewsSamples {
                     .publication(Instant.parse("2022-04-01T22:00:42Z"))
                     .build())
             .state(State.of(Flags.READ))
-            .feeds(Set.of(FeedSamples.JEDI.getId()))
+            .feeds(Set.of(FeedSamples.JEDI.id))
             .build();
 
     public static final List<News> SAMPLES = List.of(MAY_THE_FORCE, ORDER_66);

@@ -1,8 +1,7 @@
 package fr.ght1pc9kc.baywatch.opml.domain;
 
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.xml.namespace.QName;
@@ -20,11 +19,11 @@ import java.util.function.Consumer;
 
 @Slf4j
 public class OpmlReader {
-    private final Consumer<Feed> onOutline;
+    private final Consumer<WebFeed> onOutline;
     private final Runnable onComplete;
     private final Consumer<Throwable> onError;
 
-    public OpmlReader(Consumer<Feed> onOutline, Runnable onComplete, Consumer<Throwable> onError) {
+    public OpmlReader(Consumer<WebFeed> onOutline, Runnable onComplete, Consumer<Throwable> onError) {
         this.onOutline = onOutline;
         this.onComplete = onComplete;
         this.onError = onError;
@@ -56,12 +55,10 @@ public class OpmlReader {
                                 .map(t -> Set.of(t.split(",")))
                                 .orElseGet(Set::of);
 
-                        Feed feed = Feed.builder()
-                                .raw(RawFeed.builder()
-                                        .id(Hasher.identify(uri))
-                                        .url(uri)
-                                        .name(Optional.ofNullable(text).orElseGet(uri::getHost))
-                                        .build())
+                        WebFeed feed = WebFeed.builder()
+                                .reference(Hasher.identify(uri))
+                                .location(uri)
+                                .name(Optional.ofNullable(text).orElseGet(uri::getHost))
                                 .tags(tags)
                                 .build();
                         this.onOutline.accept(feed);

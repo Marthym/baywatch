@@ -1,9 +1,8 @@
 type Feed {
-    id: ID!
+    _id: ID!
     name: String
     description: String
-    url: String!
-    lastWatch: String
+    location: String!
     tags: [String]
 }
 
