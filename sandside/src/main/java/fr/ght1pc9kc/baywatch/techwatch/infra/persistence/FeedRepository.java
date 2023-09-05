@@ -201,7 +201,7 @@ public class FeedRepository implements FeedPersistencePort {
             select.addJoin(FEEDS_USERS, JoinType.JOIN,
                     FEEDS.FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID).and(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId)));
         } else {
-            select.addSelect(DSL.count(FEEDS_USERS.FEUS_USER_ID).as(FEEDS_USERS.FEUS_USER_ID));
+            select.addSelect(DSL.groupConcat(FEEDS_USERS.FEUS_USER_ID).as(FEEDS_USERS.FEUS_USER_ID));
             select.addJoin(FEEDS_USERS, JoinType.LEFT_OUTER_JOIN,
                     FEEDS.FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID));
             select.addGroupBy(FEEDS.fields());

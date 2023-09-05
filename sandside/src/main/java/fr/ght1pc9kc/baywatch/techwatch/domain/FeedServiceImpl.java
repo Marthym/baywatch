@@ -18,6 +18,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -46,15 +47,21 @@ public class FeedServiceImpl implements FeedService {
 
     @Override
     public Flux<Entity<WebFeed>> list(PageRequest pageRequest) {
-        if (pageRequest.filter().accept(propertiesVisitor).contains(EntitiesProperties.ID)) {
-            return feedRepository.list(QueryContext.from(pageRequest));
-        } else {
-            return authFacade.getConnectedUser()
-                    .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                    .map(u -> QueryContext.from(pageRequest).withUserId(u.id))
-                    .onErrorResume(UnauthenticatedUser.class, e -> Mono.just(QueryContext.from(pageRequest)))
-                    .flatMapMany(feedRepository::list);
-        }
+        return authFacade.getConnectedUser()
+                .map(u -> {
+                    if (pageRequest.filter().accept(propertiesVisitor).contains(EntitiesProperties.ID)) {
+                        return Tuples.of(QueryContext.from(pageRequest), u.id);
+                    }
+                    return Tuples.of(QueryContext.from(pageRequest).withUserId(u.id), u.id);
+                })
+                .switchIfEmpty(Mono.just(Tuples.of(QueryContext.from(pageRequest), Entity.NO_ONE)))
+                .flatMapMany(qc -> feedRepository.list(qc.getT1())
+                        .map(re -> {
+                            String createdBy = Arrays.stream(re.createdBy.split(","))
+                                    .filter(u -> qc.getT2().equals(u))
+                                    .findAny().orElse(Entity.NO_ONE);
+                            return Entity.identify(re.id, createdBy, re.self);
+                        }));
     }
 
     @Override
