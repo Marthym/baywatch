@@ -14,7 +14,7 @@ export class SearchService {
     private static readonly FEEDS_DATA_REQUEST = `#graphql
     query SearchFeedsQuery ($ids: [ID]) {
         feedsSearch(id: $ids) {
-            entities { _id name location }
+            entities { _id _createdBy name location }
         }
     }`
 
@@ -25,6 +25,7 @@ export class SearchService {
                 return feeds.map(f => ({
                     id: f._id,
                     type: SearchResultType.FEED,
+                    _createdBy: f._createdBy,
                     name: f.name,
                     url: f.location
                 } as SearchEntry))

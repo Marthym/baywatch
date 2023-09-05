@@ -12,7 +12,8 @@
         <button class="btn btn-sm btn-square btn-ghost" @click.stop="displayFeed(e.id, e.name)">
           <EyeIcon class="h-6 w-6"/>
         </button>
-        <button class="btn btn-sm btn-square btn-ghost" @click.stop="subscribeFeed(e.id)">
+        <button v-if="e._createdBy == undefined" class="btn btn-sm btn-square btn-ghost"
+                @click.stop="subscribeFeed(e.id)">
           <PlusCircleIcon class="h-6 w-6"/>
         </button>
       </div>
@@ -47,7 +48,7 @@ export default class SearchResultAction extends Vue {
   private store;
 
   private toFeed(searchEntry: SearchEntry): FeedCardView {
-    const { id, url, type, ...subFeed } = searchEntry;
+    const { id, _createdBy, url, type, ...subFeed } = searchEntry;
     return {
       _id: searchEntry.id,
       location: searchEntry.url,
