@@ -7,7 +7,7 @@
       </button>
     </li>
     <li v-for="e in entries" class="grid grid-cols-10 px-2 hover:bg-neutral">
-      <FeedCard :view="{...e, icon: toIcon(e)}" :dense="true"/>
+      <FeedCard :view="{...toFeed(e), icon: toIcon(e)}" :dense="true"/>
       <div class="btn-group justify-self-end place-self-center col-span-3">
         <button class="btn btn-sm btn-square btn-ghost" @click.stop="displayFeed(e.id, e.name)">
           <EyeIcon class="h-6 w-6"/>
@@ -23,7 +23,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-facing-decorator';
 import { SearchEntry } from '@/layout/model/SearchResult.type';
-import FeedCard from '@/common/components/FeedCard.vue';
+import FeedCard, { FeedCardView } from '@/common/components/FeedCard.vue';
 import { EyeIcon, PlusCircleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import feedsService from '@/configuration/services/FeedService';
 import notificationService from '@/services/notification/NotificationService';
@@ -45,6 +45,17 @@ import { actionServiceReload } from '@/common/services/ReloadActionService';
 export default class SearchResultAction extends Vue {
   @Prop() private entries!: SearchEntry[];
   private store;
+
+  private toFeed(searchEntry: SearchEntry): FeedCardView {
+    const { id, url, type, ...subFeed } = searchEntry;
+    return {
+      _id: searchEntry.id,
+      location: searchEntry.url,
+      ...subFeed,
+      tags: [] as string[],
+      icon: '',
+    };
+  }
 
   // noinspection JSMethodCanBeStatic
   private toIcon(entry: SearchEntry): string {
