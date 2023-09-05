@@ -14,7 +14,7 @@ export class SearchService {
     private static readonly FEEDS_DATA_REQUEST = `#graphql
     query SearchFeedsQuery ($ids: [ID]) {
         feedsSearch(id: $ids) {
-            entities { id name url }
+            entities { _id name location }
         }
     }`
 
@@ -23,10 +23,10 @@ export class SearchService {
             switchMap(response => SearchService.getFeeds(response.data.searchIndex.map(si => si.id))),
             map(feeds => {
                 return feeds.map(f => ({
-                    id: f.id,
+                    id: f._id,
                     type: SearchResultType.FEED,
                     name: f.name,
-                    url: f.url
+                    url: f.location
                 } as SearchEntry))
             }),
             take(1)
@@ -37,8 +37,8 @@ export class SearchService {
         return send(SearchService.FEEDS_DATA_REQUEST, {ids: ids}).pipe(
             take(1),
             map(response => ids
-                .filter(i => response.data.feedsSearch.entities.findIndex(f => f.id === i) >= 0)
-                .map(i => response.data.feedsSearch.entities.find(f => f.id === i))),
+                .filter(i => response.data.feedsSearch.entities.findIndex(f => f._id === i) >= 0)
+                .map(i => response.data.feedsSearch.entities.find(f => f._id === i))),
         );
     }
 }
