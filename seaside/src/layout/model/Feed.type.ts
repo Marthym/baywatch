@@ -1,7 +1,8 @@
 export type Feed = {
-    id: string
+    _id: string
+    _createdBy?: string,
     name?: string
-    url: string
+    location: string
     lastWatch?: string
     tags?: string[]
 }

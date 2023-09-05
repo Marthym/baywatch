@@ -3,8 +3,9 @@ export enum SearchResultType {
 }
 
 export type SearchEntry = {
-    type: SearchResultType,
     id: string,
+    _createdBy?: string,
+    type: SearchResultType,
     name: string,
     url: string,
 }
