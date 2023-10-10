@@ -20,16 +20,12 @@ const router = createRouter({
     ],
 } as RouterOptions);
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async to => {
     if (to.matched.some(record => record.meta.requiresAuth)) {
         const isAuthenticated = useStore<UserState>().state.user.isAuthenticated;
-        if (isAuthenticated === undefined || isAuthenticated === true) {
-            next();
-        } else {
-            next({ name: 'LoginPage' });
+        if (isAuthenticated !== true) {
+            return { name: 'LoginPage', query: {redirect: to.path} };
         }
-    } else {
-        next();
     }
 });
 
