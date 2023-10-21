@@ -46,13 +46,13 @@ class FeedControllerTest {
                 new ResourcePatch(PatchOperation.replace, null, URI.create("/feeds/42"), mapper.readTree("""
                             {
                                 "name": "Test Feed",
-                                "url": "https://www.jedi.com/obiwan"
+                                "location": "https://www.jedi.com/obiwan"
                             }
                         """)),
                 new ResourcePatch(PatchOperation.add, null, URI.create("/feeds"), mapper.readTree("""
                             {
                                 "name": "Test Feed",
-                                "url": "https://www.jedi.com/obiwan"
+                                "location": "https://www.jedi.com/obiwan"
                             }
                         """)),
                 new ResourcePatch(PatchOperation.remove, null, URI.create("/feeds/42"), null)

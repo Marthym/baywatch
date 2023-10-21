@@ -109,6 +109,7 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
 
                     .reduce(Integer::sum)
                     .onErrorMap(t -> new ScrapingException("Fatal error when scraping !", t))
+                    .doOnTerminate(errors::tryEmitComplete)
 
                     .switchIfEmpty(Mono.just(0))
                     .flatMap(count -> errors.asFlux().collectList().map(
@@ -132,7 +133,9 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
         URI feedUrl = (hostPlugin != null) ? hostPlugin.uriModifier(feed.link()) : feed.link();
 
         if (!SUPPORTED_SCHEMES.contains(feedUrl.getScheme())) {
-            log.warn("Unsupported scheme for {} !", feedUrl);
+            errors.tryEmitNext(new FeedScrapingException(AtomFeed.of(feed.id(), feed.link()),
+                            new IllegalArgumentException("Unsupported scheme for " + feedUrl + " !")));
+                    log.warn("Unsupported scheme for {} !", feedUrl);
             return Flux.empty();
         }
 
