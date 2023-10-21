@@ -188,9 +188,13 @@ class FeedScraperServiceTest {
         ).delayElements(Duration.ofMillis(100)));  // Delay avoid Awaitility start polling after the end of scraping
 
         StepVerifier.create(tested.scrap(SCRAPER_RETENTION_PERIOD))
-                .expectErrorSatisfies(t -> Assertions.assertThat(t)
-                        .hasRootCauseInstanceOf(ClassCastException.class))
-                .verify();
+                .assertNext(next -> assertAll(
+                        () -> Assertions.assertThat(next.inserted()).isZero(),
+                        () -> Assertions.assertThat(next.errors()).hasSize(1)
+                                .anySatisfy(s -> Assertions.assertThat(s)
+                                        .isInstanceOf(FeedScrapingException.class)
+                                        .hasRootCauseInstanceOf(IllegalArgumentException.class))
+                )).verifyComplete();
 
         verify(mockExchangeFunction, never()).exchange(any());
         verify(rssAtomParserMock, never()).readEntryEvents(any(), any());

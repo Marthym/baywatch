@@ -8,9 +8,9 @@ import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
 import fr.ght1pc9kc.baywatch.techwatch.api.NewsService;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.baywatch.techwatch.domain.filter.CriteriaModifierVisitor;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
@@ -97,6 +97,7 @@ public class NewsServiceImpl implements NewsService {
         }
         return teamServicePort.getTeamMates(qCtx.getUserId())
                 .concatWith(Mono.just(qCtx.getUserId()))
+                .distinct()
                 .collectList()
                 .flatMap(teamMates -> {
                     Mono<List<String>> states = getStateQueryContext(teamMates);
@@ -120,7 +121,7 @@ public class NewsServiceImpl implements NewsService {
     }
 
     /**
-     * <p>Return the list of {@link Feed#getId()} corresponding to the {@link QueryContext}.</p>
+     * <p>Return the list of {@link WebFeed#reference()} corresponding to the {@link QueryContext}.</p>
      * <p>The User ID was concat to the list because User ID was the ID of the Feed containing orphan News</p>
      * <p>{@link Pagination} was removed from {@link QueryContext} because it must only impact the main query, Feed
      * query must not be impacted by the offset</p>
