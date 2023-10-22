@@ -4,10 +4,10 @@
       <fieldset :disabled="isFormLock" class="flex flex-col">
         <legend></legend>
         <label class="label" for="feedUrl">
-          <span class="label-text">URL</span>
+          <span class="label-text">Location</span>
         </label>
-        <input id="feedUrl" v-model="feed.url" type="url" placeholder="https://..." class="input input-bordered"
-               :class="{'input-error': errors.indexOf('url') > -1}"
+        <input id="feedUrl" v-model="feed.location" type="url" placeholder="https://..." class="input input-bordered"
+               :class="{'input-error': errors.indexOf('location') > -1}"
                @blur="onUriBlur">
         <label class="label" for="feedName">
           <span class="label-text">Nom</span>
@@ -80,8 +80,8 @@ export default class FeedEditor extends Vue {
     if (this.feed.name === undefined || /^ *$/.exec(this.feed.name) !== null) {
       this.errors.push('name');
     }
-    if (!URL_PATTERN.test(this.feed.url)) {
-      this.errors.push('url');
+    if (!URL_PATTERN.test(this.feed.location)) {
+      this.errors.push('location');
     }
     if (this.errors.length === 0) {
       this.subject?.next(this.feed);
@@ -90,13 +90,13 @@ export default class FeedEditor extends Vue {
   }
 
   private onUriBlur(): void {
-    if (!URL_PATTERN.test(this.feed.url)) {
-      this.errors.push('url');
+    if (!URL_PATTERN.test(this.feed.location)) {
+      this.errors.push('location');
       return;
     }
     this.isFormLock = true;
-    feedService.fetchFeedInformation(this.feed.url).subscribe({
-      next: f => Object.assign(this.feed, { ...f, url: this.feed.url }),
+    feedService.fetchFeedInformation(this.feed.location).subscribe({
+      next: f => Object.assign(this.feed, { ...f, url: this.feed.location }),
       complete: () => this.isFormLock = false,
       error: () => this.isFormLock = false,
     });

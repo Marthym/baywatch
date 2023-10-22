@@ -1,10 +1,11 @@
 package fr.ght1pc9kc.baywatch.techwatch.api;
 
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -13,19 +14,19 @@ import java.util.Collection;
 
 public interface SystemMaintenanceService {
     /**
-     * List {@link RawFeed} independently of the {@link User} or any other entity
+     * List {@link WebFeed} independently of the {@link User} or any other entity
      *
-     * @return The {@link RawFeed} version of the feed
+     * @return The {@link WebFeed} version of the feed
      */
-    Flux<RawFeed> feedList();
+    Flux<Entity<WebFeed>> feedList();
 
     /**
-     * List {@link RawFeed} independently of the {@link User} or any other entity.
+     * List {@link WebFeed} independently of the {@link User} or any other entity.
      *
      * @param pageRequest The query parameters
-     * @return The {@link RawFeed} version of the feed
+     * @return The {@link WebFeed} version of the feed
      */
-    Flux<RawFeed> feedList(PageRequest pageRequest);
+    Flux<Entity<WebFeed>> feedList(PageRequest pageRequest);
 
     Mono<Integer> feedDelete(Collection<String> toDelete);
 

@@ -38,7 +38,7 @@ public interface TeamsService {
     Mono<Entity<Team>> create(String name, String topic);
 
     /**
-     * List all teh {@link Team} depending on the {@link PageRequest}
+     * List all the {@link Team} depending on the {@link PageRequest}
      * pass in parameter.
      *
      * @param pageRequest The filter and pagination information for the request

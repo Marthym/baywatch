@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.techwatch.api;
 
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -9,19 +10,19 @@ import java.util.Collection;
 
 public interface FeedService {
     /**
-     * Get a single {@link Feed}
+     * Get a single {@link WebFeed}
      *
      * @param id the ID of the requested Feed
      * @return The Feed
      */
-    Mono<Feed> get(String id);
+    Mono<Entity<WebFeed>> get(String id);
 
     /**
-     * List all the {@link Feed} of the connected user
+     * List all the {@link WebFeed} of the connected user
      *
      * @return a Flux of Feed
      */
-    Flux<Feed> list();
+    Flux<Entity<WebFeed>> list();
 
     /**
      * Depending on the filters this return the list of news, scoped by the current user.
@@ -30,7 +31,7 @@ public interface FeedService {
      * @param pageRequest The page request
      * @return The list of feeds
      */
-    Flux<Feed> list(PageRequest pageRequest);
+    Flux<Entity<WebFeed>> list(PageRequest pageRequest);
 
     /**
      * Count the total number of elements returned by the {@link PageRequest}
@@ -43,30 +44,30 @@ public interface FeedService {
     Mono<Integer> count(PageRequest pageRequest);
 
     /**
-     * Update the subscription to a {@link Feed}
+     * Update the subscription to a {@link WebFeed}
      *
      * @param toPersist the Feed of the subscription to update
      * @return The new Feed of the subscription
      */
-    Mono<Feed> update(Feed toPersist);
+    Mono<Entity<WebFeed>> update(WebFeed toPersist);
 
     /**
-     * Add a {@link Feed} to the available Feed list in database
+     * Add a {@link WebFeed} to the available Feed list in database
      *
-     * @param toAdd The list of {@link Feed} to add
-     * @return The list of  {@link Feed} added
+     * @param toAdd The list of {@link WebFeed} to add
+     * @return The list of  {@link WebFeed} added
      */
-    Flux<Feed> add(Collection<Feed> toAdd);
+    Flux<Entity<WebFeed>> add(Collection<WebFeed> toAdd);
 
     /**
-     * Subscribe to a {@link Feed} present in database
+     * Subscribe to a {@link WebFeed} present in database
      *
      * @param feeds The list of feed IDs the current user want to subscribe
-     * @return The {@link Feed} the user have effectively subscribed
+     * @return The {@link WebFeed} the user have effectively subscribed
      */
-    Flux<Feed> subscribe(Collection<Feed> feeds);
+    Flux<Entity<WebFeed>> subscribe(Collection<WebFeed> feeds);
 
-    Flux<Feed> addAndSubscribe(Collection<Feed> feeds);
+    Flux<Entity<WebFeed>> addAndSubscribe(Collection<WebFeed> feeds);
 
     Mono<Integer> delete(Collection<String> toDelete);
 }

@@ -1,14 +1,14 @@
 package fr.ght1pc9kc.baywatch.common.infra.mappers;
 
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
-import fr.ght1pc9kc.baywatch.common.domain.Hasher;
-import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
+import fr.ght1pc9kc.baywatch.common.domain.Hasher;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultConfiguration;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
@@ -48,15 +48,14 @@ class RecordToFeedConverterTest {
         record.set(FEEDS.FEED_LAST_WATCH, DateUtils.toLocalDateTime(PUBLICATION));
         record.set(FEEDS_USERS.FEUS_TAGS, "jedi,light");
 
-        Feed actual = tested.recordToFeed(record);
+        Entity<WebFeed> actual = tested.recordToFeed(record);
 
-        assertThat(actual).isEqualTo(Feed.builder().raw(RawFeed.builder()
-                        .id(TEST_SHA3)
-                        .name("Blog ght1pc9kc")
-                        .lastWatch(PUBLICATION)
-                        .url(TEST_URL)
-                        .build())
-                .name("Blog ght1pc9kc")
-                .tags(Set.of("jedi", "light")).build());
+        Assertions.assertAll(
+                () -> assertThat(actual.id).isEqualTo(TEST_SHA3),
+                () -> assertThat(actual.self.reference()).isEqualTo(TEST_SHA3),
+                () -> assertThat(actual.self.name()).isEqualTo("Blog ght1pc9kc"),
+                () -> assertThat(actual.self.location()).isEqualTo(TEST_URL),
+                () -> assertThat(actual.self.tags()).isEqualTo(Set.of("jedi", "light"))
+        );
     }
 }
