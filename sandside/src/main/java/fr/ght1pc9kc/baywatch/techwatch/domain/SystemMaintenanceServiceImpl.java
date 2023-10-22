@@ -1,14 +1,14 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
@@ -32,17 +32,16 @@ public class SystemMaintenanceServiceImpl implements SystemMaintenanceService {
     private final AuthenticationFacade authFacade;
 
     @Override
-    public Flux<RawFeed> feedList() {
+    public Flux<Entity<WebFeed>> feedList() {
         return feedList(PageRequest.all());
     }
 
     @Override
-    public Flux<RawFeed> feedList(PageRequest pageRequest) {
+    public Flux<Entity<WebFeed>> feedList(PageRequest pageRequest) {
         return authFacade.getConnectedUser()
                 .filter(user -> RoleUtils.hasRole(user.self, Role.SYSTEM))
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(EXCEPTION_MESSAGE)))
-                .flatMapMany(u -> feedRepository.list(QueryContext.from(pageRequest)))
-                .map(Feed::getRaw);
+                .flatMapMany(u -> feedRepository.list(QueryContext.from(pageRequest)));
     }
 
     @Override

@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.controllers;
 
-import fr.ght1pc9kc.baywatch.techwatch.api.FeedService;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
+import fr.ght1pc9kc.baywatch.techwatch.api.FeedService;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,7 +25,7 @@ public class TagsController {
     @GetMapping
     public Mono<List<String>> list() {
         return feedService.list(PageRequest.all())
-                .flatMap(f -> Flux.fromIterable(f.getTags()))
+                .flatMap(f -> Flux.fromIterable(f.self.tags()))
                 .distinct()
                 .sort()
                 .collectList()

@@ -32,7 +32,6 @@ class FeedControllerTest {
     private FeedService mockFeedService;
 
     @BeforeEach
-    @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     void setUp() {
         mockFeedService = mock(FeedService.class);
         when(mockFeedService.delete(any())).thenReturn(Mono.just(1));
@@ -47,21 +46,21 @@ class FeedControllerTest {
                 new ResourcePatch(PatchOperation.replace, null, URI.create("/feeds/42"), mapper.readTree("""
                             {
                                 "name": "Test Feed",
-                                "url": "https://www.jedi.com/obiwan"
+                                "location": "https://www.jedi.com/obiwan"
                             }
                         """)),
                 new ResourcePatch(PatchOperation.add, null, URI.create("/feeds"), mapper.readTree("""
                             {
                                 "name": "Test Feed",
-                                "url": "https://www.jedi.com/obiwan"
+                                "location": "https://www.jedi.com/obiwan"
                             }
                         """)),
                 new ResourcePatch(PatchOperation.remove, null, URI.create("/feeds/42"), null)
         ));
         StepVerifier.create(tested.bulkUpdate(payload))
                 .expectNext(
-                        URI.create("/feeds/" + FeedSamples.SITH.getId()),
-                        URI.create("/feeds/" + FeedSamples.JEDI.getId()),
+                        URI.create("/feeds/" + FeedSamples.SITH.id),
+                        URI.create("/feeds/" + FeedSamples.JEDI.id),
                         URI.create("/feeds/42"))
                 .verifyComplete();
 

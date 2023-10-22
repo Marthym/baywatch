@@ -1,7 +1,7 @@
 package fr.ght1pc9kc.baywatch.opml.domain;
 
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.VisibleForTesting;
 
@@ -82,14 +82,14 @@ public final class OpmlWriter {
         }
     }
 
-    public void writeOutline(Feed feed) {
+    public void writeOutline(WebFeed feed) {
         try {
             xmlWriter.writeStartElement(OPMLTags.OUTLINE);
-            xmlWriter.writeAttribute(OPMLTags.ATTRIBUTE_TEXT, feed.getName());
+            xmlWriter.writeAttribute(OPMLTags.ATTRIBUTE_TEXT, feed.name());
             xmlWriter.writeAttribute(OPMLTags.ATTRIBUTE_TYPE, OPMLTags.VALUE_TYPE_RSS);
-            xmlWriter.writeAttribute(OPMLTags.ATTRIBUTE_XML_URL, feed.getUrl().toString());
-            xmlWriter.writeAttribute(OPMLTags.TITLE, feed.getName());
-            xmlWriter.writeAttribute(OPMLTags.ATTRIBUTE_CATEGORY, String.join(",", feed.getTags()));
+            xmlWriter.writeAttribute(OPMLTags.ATTRIBUTE_XML_URL, feed.location().toString());
+            xmlWriter.writeAttribute(OPMLTags.TITLE, feed.name());
+            xmlWriter.writeAttribute(OPMLTags.ATTRIBUTE_CATEGORY, String.join(",", feed.tags()));
             xmlWriter.writeEndElement(); // outline
             xmlWriter.flush();
         } catch (XMLStreamException e) {

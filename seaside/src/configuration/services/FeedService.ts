@@ -24,7 +24,7 @@ export class FeedService {
     query SearchFeedsQuery ($_p: Int = 0, $_pp: Int = ${FeedService.DEFAULT_PER_PAGE}, $_s: String = "name") {
         feedsSearch(_p: $_p, _pp: $_pp, _s: $_s) {
             totalCount
-            entities {id name url tags}
+            entities {_id name location tags}
         }
     }`
 
@@ -38,7 +38,7 @@ export class FeedService {
 
     private static readonly FEED_SUBSCRIBE = `#graphql
     mutation Subscription($feedId: ID) {
-        subscribe(id: $feedId) {id name}
+        subscribe(id: $feedId) {_id name}
     }`;
 
     /**
@@ -71,14 +71,14 @@ export class FeedService {
 
     public update(feed: Feed, urlChange: boolean = true): Observable<string> {
         if (!urlChange) {
-            return rest.put(`/feeds/${feed.id}`, feed).pipe(
+            return rest.put(`/feeds/${feed._id}`, feed).pipe(
                 switchMap(this.responseToFeed),
-                map((updatedFeed: Feed) => updatedFeed.id),
+                map((updatedFeed: Feed) => updatedFeed._id),
                 take(1)
             );
         } else {
             const jsonPatch: OpPatch[] = [];
-            jsonPatch.push({op: 'remove', path: `/feeds/${feed.id}`});
+            jsonPatch.push({op: 'remove', path: `/feeds/${feed._id}`});
             jsonPatch.push({op: 'add', path: '/feeds', value: feed});
 
             return this.patch(jsonPatch).pipe(

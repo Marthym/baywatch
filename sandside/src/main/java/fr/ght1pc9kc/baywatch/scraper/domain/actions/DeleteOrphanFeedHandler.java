@@ -2,7 +2,6 @@ package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
 import fr.ght1pc9kc.baywatch.common.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
@@ -17,7 +16,7 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.COUNT;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.FEED_ID;
 
 /**
- * Delete the orphan {@link Feed}. Orphan was the Feeds followed by nobody.
+ * Delete the orphan {@link fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed}. Orphan was the Feeds followed by nobody.
  * <p>
  * If the Feed to delete have {@link News} the News are deleted
  */
@@ -50,9 +49,9 @@ public class DeleteOrphanFeedHandler implements ScrapingEventHandler {
                 .then();
 
         return maintenanceService.feedList(PageRequest.all(Criteria.property(COUNT).eq(0)))
-                .doOnNext(feed -> feeds.tryEmitNext(feed.id()))
+                .doOnNext(feed -> feeds.tryEmitNext(feed.id))
                 .doOnComplete(feeds::tryEmitComplete)
-                .flatMap(feed -> maintenanceService.newsList(PageRequest.all(Criteria.property(FEED_ID).eq(feed.id()))))
+                .flatMap(feed -> maintenanceService.newsList(PageRequest.all(Criteria.property(FEED_ID).eq(feed.id))))
                 .doOnComplete(newsSink::tryEmitComplete)
                 .doOnNext(news -> newsSink.tryEmitNext(news.id()))
                 .then(deleted)
