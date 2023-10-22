@@ -7,7 +7,16 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 
+/**
+ * Enrich a single news
+ */
 public interface ScrapEnrichmentService {
+    /**
+     * Start the process to scrap a single {@link News} from it {@link URI}
+     *
+     * @param uri The location to scrap
+     * @return {@code Void} when process was terminated
+     */
     Mono<Void> scrapSingleNews(URI uri);
 
     Mono<News> buildStandaloneNews(URI uri);
