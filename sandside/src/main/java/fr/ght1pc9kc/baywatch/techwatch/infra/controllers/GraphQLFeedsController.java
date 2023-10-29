@@ -46,8 +46,10 @@ public class GraphQLFeedsController {
     private final ObjectMapper jsonMapper;
 
     @QueryMapping
-    public Mono<Entity<WebFeed>> getFeed(@Argument("id") String id) {
+    public Mono<Map<String, Object>> getFeed(@Argument("id") String id) {
+        MapType gqlType = jsonMapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
         return feedService.get(id)
+                .map(e -> jsonMapper.<Map<String, Object>>convertValue(e, gqlType))
                 .onErrorMap(BadRequestCriteria.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
     }
 
