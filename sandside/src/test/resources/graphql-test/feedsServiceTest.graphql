@@ -1,0 +1,23 @@
+query GetFeed ($feedId: ID) {
+    getFeed(id: $feedId) {
+        _id name location tags
+    }
+}
+
+query SearchFeedsQuery ($_p: Int = 0, $_pp: Int = 20, $_s: String = "name") {
+    feedsSearch(_p: $_p, _pp: $_pp, _s: $_s) {
+        totalCount
+        entities {_id name location tags}
+    }
+}
+
+query ScrapFeedHeader($link: URI!) {
+    scrapFeedHeader(link: $link) {
+        title
+        description
+    }
+}
+
+mutation FeedSubscription($feedId: ID) {
+    subscribe(id: $feedId) {_id name}
+}
