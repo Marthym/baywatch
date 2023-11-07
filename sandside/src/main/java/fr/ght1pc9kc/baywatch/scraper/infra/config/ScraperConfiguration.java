@@ -5,6 +5,7 @@ import fr.ght1pc9kc.baywatch.scraper.domain.filters.OpenGraphFilter;
 import fr.ght1pc9kc.baywatch.scraper.domain.filters.RedditNewsFilter;
 import fr.ght1pc9kc.baywatch.scraper.domain.filters.SanitizerFilter;
 import fr.ght1pc9kc.scraphead.core.HeadScraper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -22,8 +23,8 @@ public class ScraperConfiguration {
 
     @Bean
     @Order(1)
-    public NewsFilter redditNews() {
-        return new RedditNewsFilter();
+    public NewsFilter redditNews(@Value("${baywatch.scraper.reddit.image}") String redditImage) {
+        return new RedditNewsFilter(redditImage);
     }
 
     @Bean
