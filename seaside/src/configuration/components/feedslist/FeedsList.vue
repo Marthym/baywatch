@@ -37,7 +37,7 @@
           </th>
           <td class="grid grid-cols-1 md:grid-cols-12 auto-cols-auto">
             <FeedListItem :ref="vFeed.data._id" :view="vFeed"
-                          @item-update="itemUpdate" @item-delete="itemDelete"/>
+                          @item-view="itemView" @item-update="itemUpdate" @item-delete="itemDelete"/>
           </td>
         </tr>
       </template>
@@ -87,8 +87,10 @@ import { actionServiceRegisterFunction, actionServiceUnregisterFunction } from '
 import { defineAsyncComponent } from 'vue';
 import { AlertResponse, AlertType } from '@/common/components/alertdialog/AlertDialog.types';
 import FeedActions from '@/configuration/components/feedslist/FeedActions.vue';
-import { useStore } from 'vuex';
+import { Store, useStore } from 'vuex';
 import { UserState } from '@/store/user/user';
+import { NEWS_FILTER_FEED_MUTATION } from '@/common/model/store/NewsStore.type';
+import { Router, useRouter } from 'vue-router';
 
 const FileUploadWindow = defineAsyncComponent(() => import('@/common/components/FileUploadWindow.vue'));
 
@@ -96,13 +98,18 @@ const FileUploadWindow = defineAsyncComponent(() => import('@/common/components/
   name: 'FeedsList',
   components: { FeedActions, FeedEditor, FeedListItem, FileUploadWindow },
   setup() {
+    const store: Store<UserState> = useStore();
     return {
-      userState: useStore().state.user,
+      store: store,
+      userState: store.state.user,
+      router: useRouter(),
     };
   },
 })
 export default class FeedsList extends Vue {
+  private store: Store<UserState>;
   private userState: UserState;
+  private router: Router;
   private feedEditor!: FeedEditor;
 // noinspection JSMismatchedCollectionQueryUpdate
   private feeds: FeedView[] = new Array(0);
@@ -165,6 +172,11 @@ export default class FeedsList extends Vue {
         notificationService.pushSimpleError(e.message);
       },
     });
+  }
+
+  private itemView(item: Feed): void {
+    this.store.commit(NEWS_FILTER_FEED_MUTATION, { id: item._id, label: item.name });
+    this.router.push('/news');
   }
 
   private itemUpdate(item: Feed): void {
