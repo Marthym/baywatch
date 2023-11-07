@@ -23,15 +23,11 @@ import NotificationArea from '@/common/components/notificationArea/NotificationA
 import { EventType } from '@/techwatch/model/EventType.enum';
 import { Notification } from '@/services/notification/Notification.type';
 import { registerNotificationListener, unregisterNotificationListener } from '@/layout/services/ServerEventService';
-import { refresh } from '@/security/services/AuthenticationService';
 import notificationService from '@/services/notification/NotificationService';
-import { useStore } from 'vuex';
+import { Store, useStore } from 'vuex';
 import { UPDATE_MUTATION as STATS_UPDATE_MUTATION } from '@/techwatch/store/statistics/StatisticsConstants';
-import {
-  HAS_ROLE_USER_GETTER,
-  LOGOUT_MUTATION,
-  UPDATE_MUTATION as USER_UPDATE_MUTATION,
-} from '@/store/user/UserConstants';
+import { HAS_ROLE_USER_GETTER } from '@/store/user/UserConstants';
+import { UserState } from '@/store/user/user';
 
 @Component({
   components: {
@@ -47,27 +43,22 @@ import {
   },
 })
 export default class App extends Vue {
-  private readonly store;
+  private readonly store: Store<UserState>;
 
   mounted(): void {
-    refresh().subscribe({
-      next: session => {
-        this.store.commit(USER_UPDATE_MUTATION, session.user);
-        this.registerSessionNotifications();
-      },
-      error: () => {
-        this.store.commit(LOGOUT_MUTATION);
-        unregisterNotificationListener(EventType.NEWS_UPDATE, this.onServerMessage);
-        const unwatch = this.store.watch(
-            (state, getters) => getters[HAS_ROLE_USER_GETTER],
-            newValue => {
-              unwatch();
-              if (newValue) {
-                this.registerSessionNotifications();
-              }
-            });
-      },
-    });
+    if (this.store.state.user.isAuthenticated) {
+      this.registerSessionNotifications();
+    } else {
+      unregisterNotificationListener(EventType.NEWS_UPDATE, this.onServerMessage);
+      const unwatch = this.store.watch(
+          (state, getters) => getters[HAS_ROLE_USER_GETTER],
+          newValue => {
+            unwatch();
+            if (newValue) {
+              this.registerSessionNotifications();
+            }
+          });
+    }
   }
 
   private registerSessionNotifications(): void {
