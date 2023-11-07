@@ -82,7 +82,7 @@ Baywatch is based on Springboot 3 and uses the Webflux model. Spring serves both
 and backend, but it is advisable to place them behind a proxy for caching purposes.
 
 In order to compile and run the Baywatch code, it is necessary to have installed versions 
-later than or equal to **Java 17**, **Node 18** and **Maven 3**.
+later than or equal to **Java 21**, **Node 18** and **Maven 3**.
 
 Find more informations in [CONTRIBUTING.md](./CONTRIBUTING.md). 
 Take a look on our [Code of Conduct](./CODE_OF_CONDUCT.md)

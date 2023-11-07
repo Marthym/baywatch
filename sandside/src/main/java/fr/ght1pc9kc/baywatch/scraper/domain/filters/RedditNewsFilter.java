@@ -16,6 +16,12 @@ public class RedditNewsFilter implements NewsFilter {
     private static final Pattern LINK_EXTRACT_PATTERN =
             Pattern.compile("href=\"(?<" + LINK + ">[^\"]*)\">\\[link]", Pattern.MULTILINE);
 
+    private final URI redditImage;
+
+    public RedditNewsFilter(String redditImage) {
+        this.redditImage = URI.create(redditImage);
+    }
+
     @Override
     public Mono<RawNews> filter(RawNews news) {
         if (!news.link().getHost().contains("reddit.com")) {
@@ -34,6 +40,7 @@ public class RedditNewsFilter implements NewsFilter {
         return Mono.just(
                 news.withId(Hasher.identify(realLink))
                         .withLink(realLink)
+                        .withImage(redditImage)
         );
     }
 }

@@ -24,7 +24,7 @@ class RedditNewsFilterTest {
                     &amp;#32; &lt;span&gt;&lt;a href=&quot;https://www.reddit.com/r/java/comments/k3hmfl/deploying_jakarta_ee_9_applications_to_wildfly/&quot;&gt;[commentaires]&lt;/a&gt;&lt;/span&gt;
                     """).build();
 
-    private final RedditNewsFilter tested = new RedditNewsFilter();
+    private final RedditNewsFilter tested = new RedditNewsFilter("https://www.jide.com/reddit.png");
 
     @Test
     void should_filter_reddit() {
@@ -33,6 +33,7 @@ class RedditNewsFilterTest {
                         () -> assertThat(actual.id()).isEqualTo("c74cb819fe7a596814406c9ec164dfa5d502fba8659ec13e634a33d1ae7cbd56"),
                         () -> assertThat(actual.title()).isEqualTo(RAW.title()),
                         () -> assertThat(actual.description()).isEqualTo(RAW.description()),
+                        () -> assertThat(actual.image()).hasToString("https://www.jide.com/reddit.png"),
                         () -> assertThat(actual.link()).isEqualTo(URI.create("https://www.reddit.com/r/java/comments/k3hmfl/deploying_jakarta_ee_9_applications_to_wildfly/"))
                 )).verifyComplete();
     }

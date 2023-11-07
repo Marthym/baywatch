@@ -26,6 +26,7 @@ import static java.util.Objects.nonNull;
 public class OpenGraphFilter implements NewsFilter {
     private static final Set<String> SUPPORTED_SCHEMES = Set.of("http", "https");
     private static final Pattern YOUTUBE_URI_PATTERN = Pattern.compile("(youtube|youtu\\.be|googlevideo|ytimg)");
+    private static final Pattern REDDIT_URI_PATTERN = Pattern.compile("www\\.reddit\\.com");
     private final HeadScraper headScrapper;
 
     @Override
@@ -35,7 +36,12 @@ public class OpenGraphFilter implements NewsFilter {
                 return Mono.just(news);
             }
             ScrapRequestBuilder scrapRequestBldr = ScrapRequest.builder(news.link());
-            if (YOUTUBE_URI_PATTERN.matcher(news.link().getHost()).find()) {
+
+            if (REDDIT_URI_PATTERN.matcher(news.link().getHost()).find()) {
+                // Ignore Reddit, OG was placed by JS after page loaded
+                return Mono.just(news);
+
+            } else if (YOUTUBE_URI_PATTERN.matcher(news.link().getHost()).find()) {
                 HttpCookie ytCookie = new HttpCookie("CONSENT", "YES+0");
                 ytCookie.setPath("/");
                 ytCookie.setDomain("youtube.com");
@@ -44,6 +50,7 @@ public class OpenGraphFilter implements NewsFilter {
                 ytCookie.setHttpOnly(true);
                 scrapRequestBldr.addCookie(ytCookie);
             }
+
 
             return headScrapper.scrap(scrapRequestBldr.build())
                     .map(headMetas -> handleMetaData(news, headMetas))

@@ -59,6 +59,8 @@ baywatch:
     conservation: ${BAYWATCH_SCRAPER_CONSERVATION:3m}
     timeout: ${BAYWATCH_SCRAPER_TIMEOUT:2s}
     dns.timeout: ${BAYWATCH_DNS_TIMEOUT:10s}
+    reddit:
+      image: ${BAYWATCH_SCRAPER_REDDIT_IMAGE:https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png}
   indexer:
     enable: ${BAYWATCH_INDEXER_ENABLE:true}
     directory: ${BAYWATCH_HOME:.}/.baywatch/feedidx
