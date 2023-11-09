@@ -369,7 +369,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   }
 
   private onAddFilter(event: { type: string, entity: Feed }): void {
-    this.store.commit(NEWS_FILTER_FEED_MUTATION, { id: event.entity.id, label: event.entity.name });
+    this.store.commit(NEWS_FILTER_FEED_MUTATION, { id: event.entity._id, label: event.entity.name });
     actionServiceReload('news');
   }
 

@@ -1,5 +1,5 @@
 export type Feed = {
-    id: string
+    _id: string
     name?: string
     url: string
     tags?: string[]
