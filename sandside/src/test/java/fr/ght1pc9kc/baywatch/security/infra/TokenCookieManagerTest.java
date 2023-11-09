@@ -5,15 +5,12 @@ import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.infra.model.SecurityParams;
+import fr.ght1pc9kc.testy.params.aggregators.StringVargsAggregator;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.aggregator.AggregateWith;
-import org.junit.jupiter.params.aggregator.ArgumentsAccessor;
-import org.junit.jupiter.params.aggregator.ArgumentsAggregationException;
-import org.junit.jupiter.params.aggregator.ArgumentsAggregator;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.ResponseCookie;
@@ -77,20 +74,10 @@ class TokenCookieManagerTest {
             "http | X-TOKEN=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict" +
                     "| X-TOKEN=; Path=/api; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict",
     })
-    void should_delete_token_cookie(String scheme, @AggregateWith(VarargsAggregator.class) String... expected) {
+    void should_delete_token_cookie(String scheme, @AggregateWith(StringVargsAggregator.class) String... expected) {
         List<ResponseCookie> actual = tested.buildTokenCookieDeletion(scheme);
         Assertions.assertThat(actual).hasSize(2)
                 .extracting(ResponseCookie::toString)
                 .containsExactly(expected);
-    }
-
-    static class VarargsAggregator implements ArgumentsAggregator {
-        @Override
-        public Object aggregateArguments(ArgumentsAccessor accessor, ParameterContext context) throws ArgumentsAggregationException {
-            return accessor.toList().stream()
-                    .skip(context.getIndex())
-                    .map(String::valueOf)
-                    .toArray(String[]::new);
-        }
     }
 }
