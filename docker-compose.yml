@@ -12,7 +12,7 @@ networks:
 services:
 
   baywatch:
-    image: 'marthym/baywatch:2.0.0-SNAPSHOT'
+    image: 'ghcr.io/marthym/baywatch:2.0.0-SNAPSHOT'
     depends_on:
       - opentelemetry
     labels:
