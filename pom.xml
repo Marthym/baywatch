@@ -44,7 +44,7 @@
         <nimbus-jose-jwt.version>9.31</nimbus-jose-jwt.version>
         <noexception.version>1.9.0</noexception.version>
         <scraphead.version>1.4.1</scraphead.version>
-        <testy-box.version>1.6.1</testy-box.version>
+        <testy-box.version>1.6.2</testy-box.version>
         <ulid-creator.version>5.2.1</ulid-creator.version>
         <unbescape.version>1.1.6.RELEASE</unbescape.version>
 
