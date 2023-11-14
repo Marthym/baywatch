@@ -31,14 +31,14 @@ public interface SystemMaintenanceService {
     Mono<Integer> feedDelete(Collection<String> toDelete);
 
     /**
-     * List {@link RawNews} for connected user or {@link RawNews} for anonymous.
+     * List {@link News} for connected user or {@link News} for anonymous.
      * For Anonymous, {@link State} is always
      * {@link State#NONE}
      *
      * @param pageRequest {@see PageRequest}
-     * @return The {@link RawNews} for connected user or {@link RawNews} for anonymous
+     * @return The {@link News} for connected user or {@link News} for anonymous
      */
-    Flux<RawNews> newsList(PageRequest pageRequest);
+    Flux<News> newsList(PageRequest pageRequest);
 
     Flux<String> newsIdList(PageRequest pageRequest);
 

@@ -20,6 +20,8 @@ import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
+import fr.ght1pc9kc.juery.api.Criteria;
+import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -32,6 +34,9 @@ import java.time.Clock;
 import java.time.Duration;
 import java.util.List;
 import java.util.Set;
+
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.USER_ID;
 
 @RequiredArgsConstructor
 public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
@@ -60,8 +65,10 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
         return authFacade.getConnectedUser()
                 .transformDeferredContextual((original, context) -> original.doOnNext(user -> buildStandaloneNews(uri)
                         .flatMap(this::applyNewsFilters)
-                        .flatMap(t -> Mono.fromCallable(t::get))
-                        .flatMap(this::saveAndShare)
+                        .flatMap(t -> Mono.fromCallable(t::get)
+                                .filterWhen(this::notAlreadyExists)
+                                .flatMap(this::saveAndShare)
+                                .switchIfEmpty(Mono.fromCallable(t::get)))
                         .contextWrite(context)
                         .subscribeOn(scraperScheduler)
                         .subscribe(n -> notifyService.send(user.id, EventType.USER_NOTIFICATION,
@@ -107,6 +114,21 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
                             news.link(), news.getFeeds());
                     return Mono.just(Try.fail(new NewsScrapingException(atomEntry, e)));
                 });
+    }
+
+    private Mono<Boolean> notAlreadyExists(News news) {
+        return authFacade.getConnectedUser()
+                .filter(u -> RoleUtils.hasRole(u.self, Role.USER))
+                .switchIfEmpty(Mono.error(() -> new UnauthorizedException(OPERATION_NOT_PERMITTED)))
+
+                .flatMapMany(u ->
+                        systemMaintenanceService.newsList(PageRequest.one(Criteria.property(ID).eq(news.id())))
+                                .map(News::getFeeds)
+                                .flatMap(feeds -> systemMaintenanceService.feedList(PageRequest.all(Criteria.property(ID).in(feeds)
+                                        .and(Criteria.property(USER_ID).eq(u.id)))))
+                                .contextWrite(AuthenticationFacade.withSystemAuthentication()))
+
+                .hasElements().map(b -> !b);
     }
 
     @Override

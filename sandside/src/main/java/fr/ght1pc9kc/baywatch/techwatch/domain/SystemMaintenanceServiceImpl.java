@@ -55,12 +55,11 @@ public class SystemMaintenanceServiceImpl implements SystemMaintenanceService {
     }
 
     @Override
-    public Flux<RawNews> newsList(PageRequest pageRequest) {
+    public Flux<News> newsList(PageRequest pageRequest) {
         return authFacade.getConnectedUser()
                 .filter(user -> RoleUtils.hasRole(user.self, Role.SYSTEM))
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(EXCEPTION_MESSAGE)))
-                .flatMapMany(u -> newsRepository.list(QueryContext.from(pageRequest)))
-                .map(News::getRaw);
+                .flatMapMany(u -> newsRepository.list(QueryContext.from(pageRequest)));
     }
 
     @Override

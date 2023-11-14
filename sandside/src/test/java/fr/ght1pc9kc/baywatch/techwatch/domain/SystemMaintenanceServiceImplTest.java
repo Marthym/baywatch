@@ -129,7 +129,7 @@ class SystemMaintenanceServiceImplTest {
         StepVerifier.create(tested.newsList(PageRequest.all(filter)))
                 .assertNext(actual -> {
                     Assertions.assertThat(actual).isNotNull();
-                    Assertions.assertThat(actual).isEqualTo(MAY_THE_FORCE.getRaw());
+                    Assertions.assertThat(actual).isEqualTo(MAY_THE_FORCE);
                 })
                 .expectNextCount(1)
                 .verifyComplete();
