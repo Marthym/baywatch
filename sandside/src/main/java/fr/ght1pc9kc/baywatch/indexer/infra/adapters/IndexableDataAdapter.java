@@ -4,6 +4,7 @@ import fr.ght1pc9kc.baywatch.indexer.domain.model.IndexableFeed;
 import fr.ght1pc9kc.baywatch.indexer.domain.model.IndexableFeedEntry;
 import fr.ght1pc9kc.baywatch.indexer.domain.ports.IndexableDataPort;
 import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,7 @@ public class IndexableDataAdapter implements IndexableDataPort {
     @Override
     public Flux<IndexableFeedEntry> listEntries(PageRequest pg) {
         return systemMaintenanceService.newsList(pg)
+                .map(News::getRaw)
                 .map(mapper::getIndexableFromEntry);
     }
 }

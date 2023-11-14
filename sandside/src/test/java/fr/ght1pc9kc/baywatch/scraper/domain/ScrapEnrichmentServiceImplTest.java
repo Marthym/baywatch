@@ -4,18 +4,22 @@ import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
+import fr.ght1pc9kc.baywatch.tests.samples.FeedSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.NewsSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -36,9 +40,23 @@ class ScrapEnrichmentServiceImplTest {
 
     @Test
     void should_scrap_single_news() {
+        when(mockSystemMaintenance.newsList(any()))
+                .thenReturn(Flux.just(NewsSamples.A_NEW_HOPE));
+        when(mockSystemMaintenance.feedList(any())).thenReturn(Flux.empty());
         StepVerifier.create(tested.scrapSingleNews(NewsSamples.MAY_THE_FORCE.getRaw().link()))
                 .verifyComplete();
 
         verify(mockSystemMaintenance).newsLoad(anyCollection());
     }
+
+    @Test
+    void should_scrap_existing_single_news() {
+        when(mockSystemMaintenance.newsList(any()))
+                .thenReturn(Flux.just(NewsSamples.MAY_THE_FORCE));
+        StepVerifier.create(tested.scrapSingleNews(NewsSamples.MAY_THE_FORCE.getRaw().link()))
+                .verifyComplete();
+
+        verify(mockSystemMaintenance, never()).newsLoad(anyCollection());
+    }
+
 }
