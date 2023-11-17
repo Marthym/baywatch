@@ -101,13 +101,11 @@ public class URIScalar {
     }
 
     private static Optional<URI> toURI(Object input) {
-        if (input instanceof URL url) {
-            return Optional.of(url).map(Exceptions.wrap().function(URL::toURI));
-        } else if (input instanceof URI uri) {
-            return Optional.of((uri));
-        } else if (input instanceof File file) {
-            return Optional.of((file).toURI());
-        }
-        return Optional.empty();
+        return switch (input) {
+            case URL url -> Optional.of(url).map(Exceptions.wrap().function(URL::toURI));
+            case URI uri -> Optional.of((uri));
+            case File file -> Optional.of((file).toURI());
+            default -> Optional.empty();
+        };
     }
 }
