@@ -23,14 +23,16 @@ server:
     include-message: ALWAYS
 
 management:
+  tracing.sampling.probability: 1.0
   endpoints.web.exposure.include: prometheus,health
   metrics:
     distribution.percentiles-histogram:
       http.server.requests: true
     tags:
-      application:
+      application: ${spring.application.name}
 
 logging:
+  #  pattern.level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
   # Avoid infinite stacktrace due to reactor
   exception-conversion-word: "%wEx{full, reactor.core.publisher}"
   level:
