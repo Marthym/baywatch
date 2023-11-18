@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import reactor.core.publisher.Hooks;
 
 import java.util.Locale;
 
@@ -12,9 +13,8 @@ import java.util.Locale;
 @ConfigurationPropertiesScan
 public class BaywatchApplication {
 
-    public static final String APPLICATION_NAME = "Baywatch";
-
     public static void main(String[] args) {
+        Hooks.enableAutomaticContextPropagation();
         Locale.setDefault(Locale.US);
         SpringApplication.run(BaywatchApplication.class, args);
     }

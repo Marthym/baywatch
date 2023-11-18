@@ -33,6 +33,20 @@
             <artifactId>logback-jackson</artifactId>
             <version>${logback-json.version}</version>
         </dependency>
+
+        <!--        OBSERVABILITY-->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-otel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -69,7 +83,9 @@
                 <artifactId>jib-maven-plugin</artifactId>
                 <configuration>
                     <from>
-                        <image>bellsoft/liberica-openjre-alpine-musl:21.0.1-12@sha256:dd041847d6f3cba887916cb8e8f422d77e05ffb4fd241e75fb57f63358463df1</image>
+                        <image>
+                            bellsoft/liberica-openjre-alpine-musl:21.0.1-12@sha256:dd041847d6f3cba887916cb8e8f422d77e05ffb4fd241e75fb57f63358463df1
+                        </image>
                     </from>
                     <to>
                         <image>ghcr.io/marthym/baywatch:${project.version}</image>
