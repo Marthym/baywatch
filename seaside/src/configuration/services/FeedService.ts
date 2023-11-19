@@ -1,20 +1,14 @@
-import {map, switchMap, take} from "rxjs/operators";
-import {HttpStatusError} from "@/common/errors/HttpStatusError";
-import {Feed} from "@/configuration/model/Feed.type";
-import {Page} from "@/services/model/Page";
-import {from, Observable, of, throwError} from "rxjs";
+import { map, switchMap, take } from 'rxjs/operators';
+import { HttpStatusError } from '@/common/errors/HttpStatusError';
+import { Feed } from '@/configuration/model/Feed.type';
+import { Page } from '@/services/model/Page';
+import { from, Observable, of, throwError } from 'rxjs';
 import rest from '@/common/services/RestWrapper';
-import {OpPatch} from "json-patch";
-import {AtomFeed, ScrapFeedHeaderResponse} from "@/configuration/model/GraphQLScraper.type";
-import {SearchFeedsRequest, SearchFeedsResponse} from "@/configuration/model/SearchFeedsResponse.type";
-import {send} from "@/common/services/GraphQLClient";
-
-export const URL_PATTERN = new RegExp('^(https?:\\/\\/)?' + // protocol
-    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-    '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-    '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-    '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+import { OpPatch } from 'json-patch';
+import { AtomFeed, ScrapFeedHeaderResponse } from '@/configuration/model/GraphQLScraper.type';
+import { SearchFeedsRequest, SearchFeedsResponse } from '@/configuration/model/SearchFeedsResponse.type';
+import { send } from '@/common/services/GraphQLClient';
+import { URL_PATTERN } from '@/common/services/RegexPattern';
 
 export class FeedService {
 
@@ -26,7 +20,7 @@ export class FeedService {
             totalCount
             entities {_id name location tags}
         }
-    }`
+    }`;
 
     private static readonly SCRAP_FEED_HEAD_REQUEST = `#graphql
     query ScrapFeedHeader($link: URI!) {
@@ -56,7 +50,7 @@ export class FeedService {
                     totalPage: Math.ceil(
                         res.data.feedsSearch.totalCount / (options._pp | FeedService.DEFAULT_PER_PAGE)),
                     data: of(res.data.feedsSearch.entities),
-                }
+                };
             }),
             take(1),
         );
@@ -65,7 +59,7 @@ export class FeedService {
     public add(feed: Feed): Observable<Feed> {
         return rest.post('/feeds', feed).pipe(
             switchMap(this.responseToFeed),
-            take(1)
+            take(1),
         );
     }
 
@@ -74,15 +68,15 @@ export class FeedService {
             return rest.put(`/feeds/${feed._id}`, feed).pipe(
                 switchMap(this.responseToFeed),
                 map((updatedFeed: Feed) => updatedFeed._id),
-                take(1)
+                take(1),
             );
         } else {
             const jsonPatch: OpPatch[] = [];
-            jsonPatch.push({op: 'remove', path: `/feeds/${feed._id}`});
-            jsonPatch.push({op: 'add', path: '/feeds', value: feed});
+            jsonPatch.push({ op: 'remove', path: `/feeds/${feed._id}` });
+            jsonPatch.push({ op: 'add', path: '/feeds', value: feed });
 
             return this.patch(jsonPatch).pipe(
-                map(updated => updated.pop())
+                map(updated => updated.pop()),
             );
         }
     }
@@ -90,22 +84,22 @@ export class FeedService {
     public remove(id: string): Observable<Feed> {
         return rest.delete(`/feeds/${id}`).pipe(
             switchMap(this.responseToFeed),
-            take(1)
+            take(1),
         );
     }
 
     public bulkRemove(ids: string[]): Observable<number> {
         const jsonPatch: OpPatch[] = [];
-        ids.forEach(id => jsonPatch.push({op: 'remove', path: `/feeds/${id}`}));
+        ids.forEach(id => jsonPatch.push({ op: 'remove', path: `/feeds/${id}` }));
         return this.patch(jsonPatch).pipe(
-            map(deleted => deleted.length)
+            map(deleted => deleted.length),
         );
     }
 
     private patch(payload: OpPatch[]): Observable<string[]> {
         return rest.patch('/feeds', payload).pipe(
             switchMap(this.responseToFeed),
-            take(1)
+            take(1),
         );
     }
 
@@ -125,7 +119,7 @@ export class FeedService {
             return throwError(() => new Error('Argument link must be a valid URL !'));
         }
 
-        return send<ScrapFeedHeaderResponse>(FeedService.SCRAP_FEED_HEAD_REQUEST, {link: link}).pipe(
+        return send<ScrapFeedHeaderResponse>(FeedService.SCRAP_FEED_HEAD_REQUEST, { link: link }).pipe(
             map(data => data.data.scrapFeedHeader),
             map((atom: AtomFeed) => ({
                 name: atom.title,
@@ -140,7 +134,7 @@ export class FeedService {
             return throwError(() => new Error('Feed id is mandatory !'));
         }
 
-        return send<{ subscribe: Feed }>(FeedService.FEED_SUBSCRIBE, {feedId: id}).pipe(
+        return send<{ subscribe: Feed }>(FeedService.FEED_SUBSCRIBE, { feedId: id }).pipe(
             map(data => data.data.subscribe),
             take(1),
         );

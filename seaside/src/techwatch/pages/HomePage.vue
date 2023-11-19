@@ -4,7 +4,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
-import { NavigationGuardNext, RouteLocationNormalized, Router, useRouter } from 'vue-router';
+import { NavigationGuardNext, RouteLocationNormalized } from 'vue-router';
 import { Store, useStore } from 'vuex';
 import {
   NEWS_REPLACE_TAGS_MUTATION,
@@ -31,30 +31,22 @@ import { actionServiceReload } from '@/common/services/ReloadActionService';
   },
   setup() {
     return {
-      router: useRouter(),
       store: useStore(),
     };
   },
 })
 export default class HomePage extends Vue {
-  private router: Router;
   private store: Store<any>;
 
-  private mounted(): void {
-    this.readQueryParameters();
-  }
-
-  private readQueryParameters(): void {
-    const queryTag: string = this.router.currentRoute.value.query.tag as string;
+  public onPageEnter(to: RouteLocationNormalized) {
+    const queryTag: string = to.query.tag as string;
 
     if (queryTag && queryTag.length > 0) {
       this.store.commit(NEWS_REPLACE_TAGS_MUTATION, [queryTag]);
     } else {
       this.store.commit(NEWS_REPLACE_TAGS_MUTATION, []);
     }
-  }
 
-  public onPageEnter(to: RouteLocationNormalized) {
     if (to.path === '/clipped') {
       this.store.commit(NEWS_RESET_FILTERS_MUTATION);
       this.store.commit(NEWS_TOGGLE_KEEP_MUTATION);

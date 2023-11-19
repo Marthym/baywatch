@@ -45,8 +45,6 @@ function refreshSession(store: Store<UserState>): Promise<boolean> {
 router.beforeEach(async to => {
     const isAuthenticated = await refreshSession(useStore<UserState>());
     if (to.matched.some(record => record.meta.requiresAuth)) {
-        console.debug('to', to);
-        console.debug('isAuthenticated', isAuthenticated);
         if (!isAuthenticated) {
             return { name: 'LoginPage', query: { redirect: to.path } };
         }
