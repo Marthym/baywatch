@@ -1,13 +1,7 @@
-import {Observable, throwError} from "rxjs";
-import {map, take} from "rxjs/operators";
-import {send} from "@/common/services/GraphQLClient";
-
-const URL_PATTERN = new RegExp('^(https?:\\/\\/)?' + // protocol
-    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-    '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-    '(\\:\\d+)?(\\/[-a-z\\d%_.~+@]*)*' + // port and path
-    '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-    '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+import { Observable, throwError } from 'rxjs';
+import { map, take } from 'rxjs/operators';
+import { send } from '@/common/services/GraphQLClient';
+import { URL_PATTERN } from '@/common/services/RegexPattern';
 
 export class ScraperService {
     private static readonly SCRAP_SINGLE_NEWS_REQUEST = `#graphql
@@ -22,9 +16,9 @@ export class ScraperService {
             return throwError(() => new Error('Argument link must be a valid URL !'));
         }
 
-        return send(ScraperService.SCRAP_SINGLE_NEWS_REQUEST, {newsLink: link}).pipe(
+        return send(ScraperService.SCRAP_SINGLE_NEWS_REQUEST, { newsLink: link }).pipe(
             take(1),
-            map(() => undefined)
+            map(() => undefined),
         );
     }
 }
