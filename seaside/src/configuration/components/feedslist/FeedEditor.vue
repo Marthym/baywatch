@@ -39,7 +39,8 @@ import { Observable, Subject } from 'rxjs';
 import ModalWindow from '@/common/components/ModalWindow.vue';
 import TagInput from '@/common/components/TagInput.vue';
 import tagsService from '@/techwatch/services/TagsService';
-import feedService, { URL_PATTERN } from '@/configuration/services/FeedService';
+import feedService from '@/configuration/services/FeedService';
+import { URL_PATTERN } from '@/common/services/RegexPattern';
 
 @Component({
   name: 'FeedEditor',
