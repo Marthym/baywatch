@@ -7,7 +7,7 @@
     <!-- The left side of top bar -->
     <div class="navbar-start border-b border-base-content/20 ml-8 h-full">
       <!-- The NEWS Tab-->
-      <router-link to="/news"
+      <router-link :to="newsToLink"
                    active-class="border-b-2 text-accent border-accent"
                    class="py-2 font-medium capitalize focus:outline-none transition duration-500 ease-in-out"
                    aria-label="display news list">
@@ -49,7 +49,7 @@
       <!-- Right Search Bar -->
       <div class="relative">
         <input type="text" placeholder="Search" class="w-full pr-16 input input-sm input-ghost input-bordered"
-               v-model="searchQuery" @focus.prevent="onFocus" @blur="onBlur"
+               v-model="searchQuery"
                @keydown.enter.stop="onSearchClick"
                @keydown.esc.stop="exitOverlay">
         <button class="absolute top-0 right-0 rounded-l-none btn btn-ghost btn-sm"
@@ -88,6 +88,7 @@ import {
   SquaresPlusIcon,
 } from '@heroicons/vue/24/outline';
 import { NewspaperIcon } from '@heroicons/vue/24/solid';
+import { LocationQueryRaw, RouteLocationRaw } from 'vue-router';
 
 const AddSingleNewsAction = defineAsyncComponent(() => import('@/layout/components/AddSingleNewsAction.vue'));
 const SearchResultAction = defineAsyncComponent(() => import('@/layout/components/SearchResultAction.vue'));
@@ -129,6 +130,14 @@ export default class TopNavigationBar extends Vue {
 
   get isAuthenticated(): boolean {
     return this.store.state.user.isAuthenticated || false;
+  }
+
+  get newsToLink(): RouteLocationRaw {
+    const filtersQuery: LocationQueryRaw = {};
+    if (this.store.state.news.tags.length > 0) {
+      filtersQuery.tag = this.store.state.news.tags;
+    }
+    return { name: 'HomePage', query: filtersQuery };
   }
 
   private toggleSidenav(): void {
