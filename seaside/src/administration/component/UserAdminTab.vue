@@ -34,9 +34,9 @@
         <th scope="col">Role</th>
         <th scope="col">Created At</th>
         <th scope="col">
-          <div class="btn-group justify-end" v-if="pagesNumber > 1">
+          <div class="join justify-end" v-if="pagesNumber > 1">
             <button v-for="i in pagesNumber" :key="i"
-                    :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
+                    :class="{'btn-active': activePage === i-1}" class="join-item btn btn-sm"
                     v-on:click="loadUserPage(i-1).subscribe()">
               {{ i }}
             </button>
@@ -86,9 +86,9 @@
         <th scope="col">Role</th>
         <th scope="col">Created At</th>
         <th scope="col">
-          <div class="btn-group justify-end" v-if="pagesNumber > 1">
+          <div class="join justify-end" v-if="pagesNumber > 1">
             <button v-for="i in pagesNumber" :key="i"
-                    :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
+                    :class="{'btn-active': activePage === i-1}" class="join-item btn btn-sm"
                     v-on:click="loadUserPage(i-1).subscribe()">
               {{ i }}
             </button>

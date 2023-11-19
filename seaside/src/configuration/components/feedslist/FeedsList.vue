@@ -15,9 +15,9 @@
           <div class="grid grid-cols-1 md:grid-cols-12">
             <div class="md:col-span-3 my-auto">Name</div>
             <div class="md:col-span-7 my-auto">Link / Categories</div>
-            <div class="md:col-span-2 btn-group justify-end" v-if="pagesNumber > 1">
+            <div class="md:col-span-2 join justify-end" v-if="pagesNumber > 1">
               <button v-for="i in pagesNumber" :key="i"
-                      :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
+                      :class="{'btn-active': activePage === i-1}" class="join-item btn btn-sm"
                       v-on:click="loadFeedPage(i-1).subscribe()">
                 {{ i }}
               </button>
@@ -56,9 +56,9 @@
           <div class="grid grid-cols-1 md:grid-cols-12">
             <div class="md:col-span-3 my-auto">Name</div>
             <div class="md:col-span-7 my-auto">Link / Categories</div>
-            <div class="md:col-span-2 btn-group justify-end" v-if="pagesNumber > 1">
+            <div class="md:col-span-2 join justify-end" v-if="pagesNumber > 1">
               <button v-for="i in pagesNumber" :key="i"
-                      :class="{'btn-active': activePage === i-1}" class="btn btn-sm"
+                      :class="{'btn-active': activePage === i-1}" class="join-item btn btn-sm"
                       v-on:click="loadFeedPage(i-1).subscribe()">
                 {{ i }}
               </button>

@@ -1,7 +1,7 @@
 <template>
-  <nav class="tabs tabs-boxed">
-    <router-link to="/config/feeds" class="tab" active-class="tab-active">Feeds</router-link>
-    <router-link to="/config/profile" class="tab" active-class="tab-active">Profile</router-link>
+  <nav role="tablist" class="tabs tabs-boxed place-content-start">
+    <router-link to="/config/feeds" role="tab" class="tab" active-class="tab-active">Feeds</router-link>
+    <router-link to="/config/profile" role="tab" class="tab" active-class="tab-active">Profile</router-link>
   </nav>
   <router-view></router-view>
 </template>
