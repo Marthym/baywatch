@@ -7,6 +7,7 @@ import org.springframework.web.util.HtmlUtils;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,19 +29,19 @@ public class RedditNewsFilter implements NewsFilter {
             return Mono.just(news);
         }
 
-        URI realLink = news.link();
         String description = news.description();
         String parsableContent = HtmlUtils.htmlUnescape(description);
         Matcher m = LINK_EXTRACT_PATTERN.matcher(parsableContent);
         if (m.find()) {
             URI link = URI.create(m.group(LINK));
-            realLink = (link.isAbsolute()) ? link : REDDIT.resolve(link);
+            URI realLink = (link.isAbsolute()) ? link : REDDIT.resolve(link);
+            if (!news.link().equals(realLink)) {
+                return Mono.just(
+                        news.withId(Hasher.identify(realLink))
+                                .withLink(realLink));
+            }
         }
-
-        return Mono.just(
-                news.withId(Hasher.identify(realLink))
-                        .withLink(realLink)
-                        .withImage(redditImage)
-        );
+        URI image = Optional.ofNullable(news.image()).orElse(redditImage);
+        return Mono.just(news.withImage(image));
     }
 }
