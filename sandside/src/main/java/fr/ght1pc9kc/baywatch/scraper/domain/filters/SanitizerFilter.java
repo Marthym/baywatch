@@ -21,7 +21,7 @@ import java.util.function.Function;
 @Slf4j
 public class SanitizerFilter implements NewsFilter, FeedsFilter {
     private static final int PLAIN_TEXT_MAX_LENGTH = 250;
-    private static final int HTML_MAX_LENGTH = 3_000;
+    private static final int HTML_MAX_LENGTH = 1_000;
 
     private static final Function<HtmlStreamEventReceiver, HtmlSanitizer.Policy> TITLE_POLICY =
             new HtmlPolicyBuilder().toFactory();
@@ -50,7 +50,8 @@ public class SanitizerFilter implements NewsFilter, FeedsFilter {
 
         String htmlEllipsed = html.substring(0, Math.min(HTML_MAX_LENGTH, html.length()));
         StringBuilder htmlBuilder = new StringBuilder();
-        HtmlStreamRenderer htmlRenderer = HtmlStreamRenderer.create(htmlBuilder, invalid -> log.trace("Invalid tag detected in description {}", invalid));
+        HtmlStreamRenderer htmlRenderer = HtmlStreamRenderer.create(htmlBuilder, invalid ->
+                log.atTrace().addArgument(invalid).setMessage("Invalid tag detected in description {}").log());
         HtmlSanitizer.sanitize(HtmlUtils.htmlUnescape(htmlEllipsed), DESCRIPTION_POLICY.apply(htmlRenderer));
         String saneHtml = htmlBuilder.toString();
 
@@ -64,7 +65,8 @@ public class SanitizerFilter implements NewsFilter, FeedsFilter {
 
         String txtEllipsed = text.substring(0, Math.min(PLAIN_TEXT_MAX_LENGTH, text.length()));
         StringBuilder txtBuilder = new StringBuilder();
-        HtmlStreamRenderer txtRenderer = HtmlStreamRenderer.create(txtBuilder, invalid -> log.trace("Invalid tag detected in title {}", invalid));
+        HtmlStreamRenderer txtRenderer = HtmlStreamRenderer.create(txtBuilder, invalid ->
+                log.atTrace().setMessage("Invalid tag detected in title {}").addArgument(invalid).log());
         HtmlSanitizer.sanitize(HtmlUtils.htmlUnescape(txtEllipsed), TITLE_POLICY.apply(txtRenderer));
         String saneText = txtBuilder.toString();
 

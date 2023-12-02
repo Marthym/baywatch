@@ -51,7 +51,7 @@ class SanitizerFilterTest {
                                         "fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in " +
                                         "culpa qui officia deserunt mollit anim id est laborum. " +
                                         "Illegal H1 usageIllegal A usage<b>Lorem ipsum dolor")
-                        .endsWith("quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irur</b>"))
+                        .endsWith("sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, co</b>"))
                 .verifyComplete();
     }
 }
