@@ -11,7 +11,8 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
-import fr.ght1pc9kc.baywatch.security.api.model.Role;
+import fr.ght1pc9kc.baywatch.security.api.model.Permission;
+import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.SecurityException;
 import fr.ght1pc9kc.baywatch.security.domain.ports.JwtTokenProvider;
@@ -32,7 +33,13 @@ import static java.util.function.Predicate.not;
 
 @Slf4j
 public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
+    private static final String ISSUER = "baywatch/sandside";
     private static final String AUTHORITIES_KEY = "roles";
+    private static final String LOGIN_KEY = "login";
+    private static final String NAME_KEY = "name";
+    private static final String MAIL_KEY = "mail";
+    private static final String CREATED_AT_KEY = "createdAt";
+    private static final String REMEMBER_ME_KEY = "remember";
     private final byte[] secretKey;
     private final Duration validity;
 
@@ -47,7 +54,7 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
     @Override
     public BaywatchAuthentication createToken(Entity<User> user, boolean remember, Collection<String> authorities) {
         List<String> auth = new ArrayList<>(authorities);
-        auth.add(user.self.role.authority());
+        auth.addAll(user.self.roles.stream().map(RoleUtils::toSpringAuthority).toList());
         String auths = String.join(",", auth);
 
         try {
@@ -56,14 +63,14 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
             Instant now = clock.instant();
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                     .subject(user.id)
-                    .issuer("baywatch/sandside")
+                    .issuer(ISSUER)
                     .issueTime(Date.from(now))
                     .expirationTime(Date.from(now.plus(validity)))
-                    .claim("login", user.self.login)
-                    .claim("name", user.self.name)
-                    .claim("mail", user.self.mail)
-                    .claim("createdAt", Date.from(user.createdAt))
-                    .claim("remember", remember)
+                    .claim(LOGIN_KEY, user.self.login)
+                    .claim(NAME_KEY, user.self.name)
+                    .claim(MAIL_KEY, user.self.mail)
+                    .claim(CREATED_AT_KEY, Date.from(user.createdAt))
+                    .claim(REMEMBER_ME_KEY, remember)
                     .claim(AUTHORITIES_KEY, auths)
                     .build();
             SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
@@ -92,22 +99,24 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
                     .filter(not(String::isBlank))
                     .toList();
 
-            Role role = Arrays.stream(Role.values())
-                    .filter(r -> authorities.contains(r.authority()))
-                    .findAny().orElse(Role.ANONYMOUS);
+            List<Permission> roles = authorities.stream()
+                    .map(RoleUtils::fromSpringAuthority)
+                    .sorted(Permission.COMPARATOR)
+                    .distinct()
+                    .toList();
 
-            Instant createdAt = Optional.ofNullable(claims.getDateClaim("createdAt"))
+            Instant createdAt = Optional.ofNullable(claims.getDateClaim(CREATED_AT_KEY))
                     .map(Date::toInstant)
                     .orElse(Instant.EPOCH);
 
             Entity<User> user = new Entity<>(claims.getSubject(), Entity.NO_ONE, createdAt, User.builder()
-                    .login(claims.getStringClaim("login"))
-                    .name(claims.getStringClaim("name"))
-                    .mail(claims.getStringClaim("mail"))
-                    .role(role)
+                    .login(claims.getStringClaim(LOGIN_KEY))
+                    .name(claims.getStringClaim(NAME_KEY))
+                    .mail(claims.getStringClaim(MAIL_KEY))
+                    .roles(roles)
                     .build());
 
-            boolean rememberMe = Optional.ofNullable(claims.getBooleanClaim("remember")).orElse(false);
+            boolean rememberMe = Optional.ofNullable(claims.getBooleanClaim(REMEMBER_ME_KEY)).orElse(false);
             return new BaywatchAuthentication(user, token, rememberMe, authorities);
         } catch (ParseException | JOSEException e) {
             log.debug("Token: {}", token);

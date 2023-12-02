@@ -1,8 +1,11 @@
 package fr.ght1pc9kc.baywatch.security.infra.adapters;
 
+import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.security.api.AuthorizationService;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.domain.UserServiceImpl;
+import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.security.infra.model.BaywatchUserDetails;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -22,14 +25,21 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.LOGIN;
 
 @Service
 @Qualifier("Baywatch")
-public class UserServiceAdapter implements UserService, ReactiveUserDetailsService {
+public class UserServiceAdapter implements AuthorizationService, UserService, ReactiveUserDetailsService {
     @Delegate
     private final UserService delegate;
+    @Delegate
+    private final AuthorizationService delegateA;
 
     @Autowired
-    public UserServiceAdapter(UserPersistencePort userPersistencePort, AuthenticationFacade authFacade,
+    public UserServiceAdapter(UserPersistencePort userPersistencePort,
+                              AuthorizationPersistencePort authorizationRepository,
+                              AuthenticationFacade authFacade,
                               PasswordEncoder passwordEncoder) {
-        this.delegate = new UserServiceImpl(userPersistencePort, authFacade, passwordEncoder, Clock.systemUTC());
+        this.delegate = new UserServiceImpl(
+                userPersistencePort, authorizationRepository, authFacade, passwordEncoder, Clock.systemUTC(),
+                UlidFactory.newInstance());
+        this.delegateA = (UserServiceImpl) this.delegate;
     }
 
     @Override

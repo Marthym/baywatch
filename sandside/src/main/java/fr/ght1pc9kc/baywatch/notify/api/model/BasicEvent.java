@@ -4,7 +4,7 @@ public record BasicEvent<T>(
         String id,
         EventType type,
         T message
-) implements ServerEvent<T> {
+) implements ServerEvent {
     @Override
     public <R> R accept(ServerEventVisitor<R> visitor) {
         return visitor.visit(this);

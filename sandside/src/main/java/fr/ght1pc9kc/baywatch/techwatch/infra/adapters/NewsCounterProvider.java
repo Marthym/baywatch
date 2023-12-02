@@ -1,8 +1,9 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
+import fr.ght1pc9kc.baywatch.admin.api.model.CounterGroup;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
-import fr.ght1pc9kc.baywatch.admin.api.model.CounterType;
+import fr.ght1pc9kc.baywatch.common.api.model.HeroIcons;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.infra.persistence.NewsRepository;
@@ -22,8 +23,8 @@ public class NewsCounterProvider implements CounterProvider {
     private final NewsRepository newsRepository;
 
     @Override
-    public CounterType name() {
-        return CounterType.NEWS_COUNT;
+    public CounterGroup group() {
+        return CounterGroup.TECHWATCH;
     }
 
     @Override
@@ -33,6 +34,6 @@ public class NewsCounterProvider implements CounterProvider {
                 .build()).next();
         Mono<Integer> count = newsRepository.count(QueryContext.empty());
         return Mono.zip(lastNews, count)
-                .map(r -> new Counter("News Count", Integer.toString(r.getT2()), "last at " + r.getT1().getPublication()));
+                .map(r -> Counter.create("News Count", HeroIcons.RSS_ICON, Integer.toString(r.getT2()), "last at " + r.getT1().publication()));
     }
 }

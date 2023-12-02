@@ -1,7 +1,7 @@
 import {switchMap, take} from "rxjs/operators";
-import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
+import {HttpStatusError} from "@/common/errors/HttpStatusError";
 import {from, Observable} from "rxjs";
-import rest from '@/services/http/RestWrapper';
+import rest from '@/common/services/RestWrapper';
 
 export class TagsService {
     /**

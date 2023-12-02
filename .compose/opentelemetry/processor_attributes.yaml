@@ -1,0 +1,8 @@
+---
+
+processors:
+  attributes:
+    actions:
+      - action: insert
+        key: loki.resource.labels
+        value: 'application, container_id, container_name, container_image'

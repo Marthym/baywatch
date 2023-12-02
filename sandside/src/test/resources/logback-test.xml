@@ -10,6 +10,7 @@
         <appender-ref ref="STDOUT"/>
     </root>
 <!--    <logger name="fr.ght1pc9kc" level="DEBUG"/>-->
+<!--    <logger name="fr.ght1pc9kc.baywatch.indexer" level="TRACE"/>-->
 <!--    <logger name="reactor.test" level="DEBUG"/>-->
 <!--    <logger name="org.flywaydb" level="INFO"/>-->
 <!--    <logger name="org.jooq.tools.LoggerListener" level="DEBUG"/>-->

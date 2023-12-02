@@ -1,7 +1,7 @@
 import {Observable, of} from "rxjs";
-import rest from "@/services/http/RestWrapper";
+import rest from "@/common/services/RestWrapper";
 import {switchMap, take} from "rxjs/operators";
-import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
+import {HttpStatusError} from "@/common/errors/HttpStatusError";
 
 export class OpmlService {
     upload(opml: File): Observable<boolean> {

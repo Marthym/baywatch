@@ -1,34 +1,132 @@
 package fr.ght1pc9kc.baywatch.security.api.model;
 
-import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+/**
+ * Utility class to help test {@link User} {@link Role}
+ */
 @UtilityClass
 public final class RoleUtils {
-    public static boolean hasRole(User user, @NotNull Role expectedRole) {
-        Objects.requireNonNull(expectedRole);
-        if (Objects.isNull(user)) {
-            return false;
-        }
-        boolean hasRole = false;
-        for (Role role : Role.values()) {
-            if (role == user.role) {
-                hasRole = true;
-            }
-            if (role == expectedRole) {
-                return hasRole;
-            }
-        }
-        return false;
+
+    private static final String SPRING_ROLE_PREFIX = "ROLE_";
+    private static final Entity<User> SYSTEM = Entity.identify(Role.SYSTEM.name(), User.builder()
+            .name(Role.SYSTEM.name())
+            .login(Role.SYSTEM.name().toLowerCase())
+            .roles(List.of(Role.SYSTEM)).build());
+
+    public static Entity<User> getSystemUser() {
+        return SYSTEM;
     }
 
-    public static User hasRoleOrThrow(User user, @NotNull Role expectedRole) {
-        if (!hasRole(user, expectedRole)) {
-            throw new UnauthorizedOperation(String.format("%s have no authority for getting raw feed !", user.login));
+    /**
+     * Check if {@link User} has an expected {@link Role} or higher.
+     *
+     * @param user         The user to test
+     * @param expectedRole The minimal expected role
+     * @return {@code TRUE} if the user has the role
+     */
+    public static boolean hasRole(User user, @NotNull Role expectedRole) {
+        return hasPermission(user, expectedRole);
+    }
+
+    /**
+     * Check if {@link User} has an expected {@link Permission} or higher for a specified entity ID.
+     *
+     * @param user       The user to test
+     * @param permission The permission check for the user
+     * @return {@code TRUE} if the user entity or for the specified entity
+     */
+    public static boolean hasPermission(User user, @NotNull Permission permission) {
+        if (Objects.isNull(user) || user.roles.isEmpty()) {
+            return false;
         }
-        return user;
+
+        return user.roles.stream()
+                .anyMatch(perm -> {
+                    if (perm.equals(permission) || perm.role().ordinal() < permission.role().ordinal()) {
+                        return true;
+                    }
+                    if (perm.role().ordinal() > permission.role().ordinal()) {
+                        return false;
+                    }
+                    if (permission.entity().isEmpty()) {
+                        return true;
+                    }
+                    if (perm.entity().isPresent()) {
+                        return perm.entity().equals(permission.entity());
+                    }
+                    return false;
+                });
+    }
+
+    /**
+     * returns the set of {@link Entity#id} for which the {@link User} has the given {@link Role}
+     *
+     * @param user The user to inspect
+     * @param role The checked role
+     * @return The list of entities
+     */
+    public static Set<String> getEntitiesFor(User user, Role role) {
+        if (Objects.isNull(user) || Objects.isNull(role)) {
+            return Set.of();
+        }
+
+        return user.roles.stream()
+                .filter(perm -> role == perm.role() && perm.entity().isPresent())
+                .map(perm -> perm.entity().orElse(""))
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    /**
+     * Return the {@link Role} prefixed by {@code "ROLE_"} for Spring authority
+     * or the Permission authority if the role string contains an entity ID
+     *
+     * @param permission The permission to change into Spring Authority
+     * @return The Spring authority string
+     */
+    public String toSpringAuthority(String permission) {
+        try {
+            return toSpringAuthority(Permission.from(permission));
+        } catch (Exception e) {
+            throw new IllegalArgumentException(permission + " is not a valid Role", e);
+        }
+    }
+
+    /**
+     * Return the {@link Role} prefixed by {@code "ROLE_"} for Spring authority
+     * or the Permission authority if the role string contains an entity ID
+     *
+     * @param perm The permission to change into Spring Authority
+     * @return The Spring authority string
+     */
+    public String toSpringAuthority(Permission perm) {
+        if (perm.entity().isPresent()) {
+            return perm.toString();
+        } else {
+            return SPRING_ROLE_PREFIX + perm.role().name();
+        }
+    }
+
+    /**
+     * Return the {@link Role} for application without Spring prefix if authority was role
+     * return authorities if not
+     *
+     * @param authority The spring authority
+     * @return The application role
+     */
+    public Permission fromSpringAuthority(String authority) {
+        try {
+            String[] withoutPrefix = authority.split(SPRING_ROLE_PREFIX);
+            return Permission.from(withoutPrefix[withoutPrefix.length - 1]);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(authority + " is not a valid Authority", e);
+        }
     }
 }

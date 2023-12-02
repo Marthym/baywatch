@@ -14,18 +14,13 @@ public class MailAddress {
         boolean ignore = false;
         StringBuilder sanitized = new StringBuilder();
         for (char c : mail.toCharArray()) {
-            switch (c) {
-                case ' ':
-                    continue;
-                case '+':
-                case '<':
-                    ignore = true;
-                    break;
-                case '@':
-                    ignore = false;
-                default:
-                    if (ignore) continue;
-                    sanitized.append(c);
+            if (c == '@') {
+                ignore = false;
+                sanitized.append(c);
+            } else if (c == '+' || c == '<') {
+                ignore = true;
+            } else if (c != ' ' && !ignore) {
+                sanitized.append(c);
             }
         }
         return sanitized.toString();

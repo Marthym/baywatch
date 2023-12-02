@@ -25,4 +25,8 @@ public class State {
     public boolean isShared() {
         return (flags & Flags.SHARED) == Flags.SHARED;
     }
+
+    public boolean isKeep() {
+        return (flags & Flags.KEEP) == Flags.KEEP;
+    }
 }

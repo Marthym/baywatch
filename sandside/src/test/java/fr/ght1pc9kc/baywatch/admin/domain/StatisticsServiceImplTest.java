@@ -1,8 +1,8 @@
 package fr.ght1pc9kc.baywatch.admin.domain;
 
 import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
+import fr.ght1pc9kc.baywatch.admin.api.model.CounterGroup;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
-import fr.ght1pc9kc.baywatch.admin.api.model.CounterType;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,20 +35,20 @@ class StatisticsServiceImplTest {
         when(mockFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
         CounterProvider provider = new CounterProvider() {
             @Override
-            public CounterType name() {
-                return CounterType.NEWS_COUNT;
+            public CounterGroup group() {
+                return CounterGroup.TECHWATCH;
             }
 
             @Override
             public Mono<Counter> computeCounter() {
-                return Mono.just(new Counter("42", "42", "42"));
+                return Mono.just(Counter.create("42", "42", "42"));
             }
         };
         CounterProvider spyProvider = spy(provider);
         providers.add(spyProvider);
 
-        StepVerifier.create(tested.compute(CounterType.NEWS_COUNT))
-                .expectNext(new Counter("42", "42", "42"))
+        StepVerifier.create(tested.compute(CounterGroup.TECHWATCH))
+                .expectNext(Counter.create("42", "42", "42"))
                 .verifyComplete();
     }
 }

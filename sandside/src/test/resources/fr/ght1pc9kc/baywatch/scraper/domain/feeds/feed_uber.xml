@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<rss version="2.0">
+    <channel>
+        <title>
+            <![CDATA[Engineering &#8211; Uber Blog]]>
+        </title>
+        <link>https://www.uber.com/</link>
+        <description>
+            <![CDATA[Check out the official blog from Uber to get the latest news, announcements, and things to do in US." /><meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" /><link rel="canonical" href="https://www.uber.com/blog/" /><meta property="og:locale" content="en_US" /><meta property="og:type" content="article" /><meta property="og:title" content="US Archives" /><meta property="og:description" content="Check out the official blog from Uber to get the latest news, announcements, and things to do in your community." /><meta property="og:url" content="https://www.uber.com/blog/" /><meta property="og:site_name" content="Uber Blog" /><meta property="og:image" content="https://blog.uber-cdn.com/cdn-cgi/image/width=500,height=300,quality=80,onerror=redirect,format=auto/wp-content/uploads/2018/09/uber_blog_seo.png" /><meta property="og:image:width" content="500" /><meta property="og:image:height" content="300" /><meta property="og:image:type" content="image/png" /><meta name="twitter:card" content="summary_large_image" /><meta property="fb:pages" content="120945717945722]]>
+        </description>
+        <lastBuildDate>Sun Sep 04 2022 09:30:20 GMT+0000 (Coordinated Universal Time)</lastBuildDate>
+        <language>en</language>
+        <item>
+            <title>
+                <![CDATA[MySQL to MyRocks Migration in Uber&#8217;s Distributed Datastores]]>
+            </title>
+            <link>
+                <![CDATA[https://www.uber.com/blog/mysql-to-myrocks-migration-in-uber-distributed-datastores/]]>
+            </link>
+            <pubDate>
+                <![CDATA[2022-09-01 16:30:00]]>
+            </pubDate>
+            <category>
+                <![CDATA[Backend]]>
+            </category>
+            <description>
+                <![CDATA[<p>Uber&#8217;s Storage Platform team talks about the massive strategic undertaking to migrate their Distributed Databases from MySQL to MyRocks resulting in significant Storage usage reduction. The blog details the migration process and challenges faced.</p>
+]]>
+            </description>
+        </item>
+    </channel>
+</rss>

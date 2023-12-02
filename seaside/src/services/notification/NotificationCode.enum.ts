@@ -1,6 +1,7 @@
 export enum NotificationCode {
-    UNAUTHENTICATED,
-    UNAUTHORIZED,
-    OK,
-    ERROR,
+    UNAUTHENTICATED = 'UNAUTHENTICATED',
+    UNAUTHORIZED = 'UNAUTHORIZED',
+    OK = 'OK',
+    ERROR = 'ERROR',
+    NEWS_ADD = 'NEWS_ADD',
 }

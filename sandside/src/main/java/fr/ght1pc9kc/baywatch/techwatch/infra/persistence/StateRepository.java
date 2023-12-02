@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
@@ -32,7 +33,7 @@ public class StateRepository implements StatePersistencePort {
     public static final JooqConditionVisitor STATE_CONDITION_VISITOR =
             new JooqConditionVisitor(PropertiesMappers.STATE_PROPERTIES_MAPPING);
 
-    private final Scheduler databaseScheduler;
+    private final @DatabaseQualifier Scheduler databaseScheduler;
     private final DSLContext dsl;
 
     @Override

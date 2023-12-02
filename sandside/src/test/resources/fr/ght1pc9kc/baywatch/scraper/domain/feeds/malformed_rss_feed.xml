@@ -1,0 +1,43 @@
+<link rel="canonical" href="https://www.solutions-numeriques.com/dossiers/editorial-ransomwares-la-bourse-ou-la-vie/" />
+<link rel="canonical" href="https://www.solutions-numeriques.com/dossiers/editorial-ransomwares-la-bourse-ou-la-vie/" />
+        <?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/"
+     xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:atom="http://www.w3.org/2005/Atom"
+     xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+     xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+>
+<channel>
+    <title>Dossiers Archive - Informatique</title>
+    <atom:link href="https://www.solutions-numeriques.com/dossiers/feed/" rel="self" type="application/rss+xml" />
+    <link>
+        <link rel="canonical" href="https://www.solutions-numeriques.com/dossiers/editorial-ransomwares-la-bourse-ou-la-vie/" /></link>
+    <description>Le digital transforme l&#039;entreprise</description>
+    <lastBuildDate>Wed, 09 Nov 2022 11:10:01 +0000</lastBuildDate>
+    <language>fr-FR</language>
+    <sy:updatePeriod>
+        hourly	</sy:updatePeriod>
+    <sy:updateFrequency>
+        1	</sy:updateFrequency>
+    <generator>https://wordpress.org/?v=6.0.2</generator>
+    <item>
+        <title>EDITORIAL &#8211; Ransomwares : « la bourse ou la vie ! »</title>
+        <link>https://www.solutions-numeriques.com/dossiers/editorial-ransomwares-la-bourse-ou-la-vie/</link>
+        <dc:creator>
+            <![CDATA[claudemarrel]]>
+        </dc:creator>
+        <pubDate>Fri, 07 Oct 2022 11:45:41 +0000</pubDate>
+        <guid isPermaLink="false">https://www.solutions-numeriques.com/?post_type=dossier&#038;p=213161</guid>
+        <description>
+            <![CDATA[<p>Dans une guerre classique, les hôpitaux sont paralysés par l’afflux de blessés, dans une cyberguerre ils le sont par des ransomwares. Le blocage informatique que subit depuis 5 semaines -le jour où j’écris ces lignes-, le centre hospitalier sud-francilien à Corbeil-Essonnes est le plus long feuilleton sans doute autour d’une prise d’otage. Un piratage opéré [&#8230;]</p><p>The post <a rel="nofollow" href="https://www.solutions-numeriques.com/dossiers/editorial-ransomwares-la-bourse-ou-la-vie/">EDITORIAL &#8211; Ransomwares : « la bourse ou la vie ! »</a> appeared first on<a rel="nofollow" href="https://www.solutions-numeriques.com">Informatique</a>.</p>
+]]>
+        </description>
+        <content:encoded>
+            <![CDATA[<p><strong>Dans une guerre classique, les hôpitaux sont paralysés par l’afflux de blessés, dans une cyberguerre ils le sont par des ransomwares.</strong></p><figure id="attachment_213162" aria-describedby="caption-attachment-213162" style="width: 200px" class="wp-caption alignleft"><a href="https://www.solutions-numeriques.com/wp-content/uploads/2022/10/jk_portrait-linkdn-2019.jpg"><img class="size-full wp-image-213162" src="https://www.solutions-numeriques.com/wp-content/uploads/2022/10/jk_portrait-linkdn-2019.jpg" alt="" width="200" height="200" srcset="https://www.solutions-numeriques.com/wp-content/uploads/2022/10/jk_portrait-linkdn-2019.jpg 200w, https://www.solutions-numeriques.com/wp-content/uploads/2022/10/jk_portrait-linkdn-2019-150x150.jpg 150w, https://www.solutions-numeriques.com/wp-content/uploads/2022/10/jk_portrait-linkdn-2019-100x100.jpg 100w" sizes="(max-width: 200px) 100vw, 200px" /></a><figcaption id="caption-attachment-213162" class="wp-caption-text">Jean Kaminsky &#8211; Directeur de la publication</figcaption></figure><p>Le blocage informatique que subit depuis 5 semaines -le jour où j’écris ces lignes-, le centre hospitalier sud-francilien à Corbeil-Essonnes est le plus long feuilleton sans doute autour d’une prise d’otage. Un piratage opéré par des <em>« “criminels”…pour en rester là »</em>, indique d’un air entendu le ministre de la santé et médecin urgentiste,<strong>François Braun</strong> qui les qualifiera sur Europe 1 un autre jour de « cyber-terroristes ». Le détail est important : les maîtres chanteurs seraient-ils de simples braqueurs sans scrupule ou des mercenaires opérant pour un état ? Des pirates ou des corsaires ?</p><p>La question est, du reste, presque tranchée, quand on sait que les experts désignent comme auteur de l’attaque le trop fameux groupe criminel russophone Lockbit 3.0, auteur du cyber-piratage de près de 150 organisations, essentiellement européennes, sur les 3 premières semaines de septembre seulement. On peut donc soupçonner la Russie, sans en avoir la preuve.</p><p><em>« Il est hors de question de payer la rançon, la santé des français ne sera pas prise en otage »</em> a déclaré, bravache, le ministre de la santé, aux côtés du ministre du numérique. C’est donc le gouvernement qui est à la manœuvre dans un bras de fer devenu affaire d’état, mais à l’issue incertaine… A ce jour, le montant de la rançon demandée -en échange de la clé de chiffrement et de la destruction des données volées &#8211; est divisé par 5 par rapport à la revendication initiale (2 millions au lieu de 10). Mais un échantillon d’une douzaine de gigaoctets de données personnelles sensibles a été mis en ligne dans le darkweb par les pirates, pour montrer leur pouvoir de nuisance.</p><p>Cependant, le bénéfice collatéral est l’augmentation de 20 millions du budget en cybersécurité du secteur de la santé, le portant à 45 millions.</p><p><strong>Faut-il payer les cyber-rançons, et les assurances doivent-elles les indemniser ?</strong></p><p>Un projet de loi présenté en Conseil des ministres autorise l’indemnisation, sous condition de déposer une plainte. Mais le débat fait rage.</p><p>Le Cesin (Club de Experts de Sécurité de l’Information et du Numérique) a sondé ses membres sur ces dispositions réglementaires, le résultat révèle que 82% des 249 répondants se positionnent contre. L’association explique : <em>« Cette annonce provoque de vives réactions dans la communauté des professionnels de la cybersécurité, et soulève de nombreuses questions, comme le risque d’encourager le cybercrime, les pressions que pourraient exercer les assureurs auprès de leurs clients pour payer la rançon si celle-ci s’avère moins élevée que les coûts de remédiation, les risques accrus de récidives pour l’entreprise quand celle-ci a été estampillée “bon payeur” par la communauté des cybercriminels (…). Quant aux réserves concernant les indemnisations sur les attaques lorsqu’elles sont d&rsquo;origine étatique, elles ne sont simplement pas applicables tant les questions d&rsquo;assignation sont complexes et les frontières floues.(…) Le CESIN est cependant bien conscient que certains dirigeants de PME-PMI, qui n’ont pas suffisamment anticipé le risque cyber, sont tentés de payer les rançons pour pouvoir récupérer l’accès à leurs données lorsque la pérennité de leur entreprise est en jeu. »</em></p><p>La cybersécurité et la résilience deviennent en effet un impératif de survie pour les entreprises. Et au moins une garantie de santé économique. <em>« La cybersécurité est partie intégrante de la compétitivité de toute entreprise et de la confiance de ses clients »</em> nous expliquait Farid Illikoud, Ciso groupe de Décathlon. Après l’ère des directions commerciales et des Daf, le RSSI deviendrait-il le nouvel homme fort des organisations ?</p><p>The post <a rel="nofollow" href="https://www.solutions-numeriques.com/dossiers/editorial-ransomwares-la-bourse-ou-la-vie/">EDITORIAL &#8211; Ransomwares : « la bourse ou la vie ! »</a> appeared first on<a rel="nofollow" href="https://www.solutions-numeriques.com">Informatique</a>.</p>
+]]>
+        </content:encoded>
+    </item>
+</channel>
+</rss>

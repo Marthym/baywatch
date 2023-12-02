@@ -6,7 +6,7 @@
     <parent>
         <groupId>fr.ght1pc9kc</groupId>
         <artifactId>baywatch</artifactId>
-        <version>1.0.2</version>
+        <version>2.0.0</version>
     </parent>
 
     <artifactId>assembly</artifactId>
@@ -22,9 +22,35 @@
             <artifactId>seaside</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback.contrib</groupId>
+            <artifactId>logback-json-classic</artifactId>
+            <version>${logback-json.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback.contrib</groupId>
+            <artifactId>logback-jackson</artifactId>
+            <version>${logback-json.version}</version>
+        </dependency>
+
+        <!--        OBSERVABILITY-->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-otel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
+        <finalName>${project.parent.artifactId}-${project.parent.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -44,7 +70,6 @@
                             <goal>single</goal>
                         </goals>
                         <configuration>
-                            <finalName>${project.parent.artifactId}-${project.parent.version}</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                             <descriptorRefs>
                                 <descriptorRef>baywatch</descriptorRef>
@@ -57,8 +82,13 @@
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
                 <configuration>
+                    <from>
+                        <image>
+                            bellsoft/liberica-openjre-alpine-musl:21.0.1-12@sha256:8fa3b24bc2da328c30ef9d8981ae135dd03cce683b40eb7f81baa375588bd153
+                        </image>
+                    </from>
                     <to>
-                        <image>marthym/baywatch:${project.version}</image>
+                        <image>ghcr.io/marthym/baywatch:${project.version}</image>
                     </to>
                     <container>
                         <mainClass>fr.ght1pc9kc.baywatch.BaywatchApplication</mainClass>
@@ -70,6 +100,7 @@
                             <jvmFlag>-server</jvmFlag>
                             <jvmFlag>-Xms256m</jvmFlag>
                             <jvmFlag>-Xmx512m</jvmFlag>
+                            <jvmFlag>-XX:-UsePerfData</jvmFlag>
                         </jvmFlags>
                     </container>
                 </configuration>

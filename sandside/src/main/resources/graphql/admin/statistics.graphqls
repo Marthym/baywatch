@@ -1,0 +1,19 @@
+enum HeroIcons {
+    CLOCK_ICON,
+    CLOUD_ARROWUP_ICON,
+    NEWSPAPER_ICON,
+    RSS_ICON,
+    USERS_ICON,
+    USER_GROUP_ICON,
+}
+
+type Counter {
+    name: String
+    icon: HeroIcons
+    value: String
+    description: String
+}
+
+extend type Query {
+    statistics: [Counter]
+}

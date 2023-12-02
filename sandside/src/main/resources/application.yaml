@@ -1,15 +1,35 @@
 ---
 spring:
+  application.name: Baywatch
+
   datasource:
-    url: jdbc:h2:file:${BAYWATCH_HOME:.}/.baywatch/baywatch
-    driver-class-name: org.h2.Driver
+    url: jdbc:sqlite:file:${BAYWATCH_HOME:.}/.baywatch/data.db?cache=shared&journal_mode=WAL&synchronous=NORMAL&read_uncommitted=true
+    driver-class-name: org.sqlite.JDBC
     username: baywatch
     password: hasselhoff
+    hikari:
+      data-source-properties.foreign_keys=true: true
+#      maximum-pool-size: 1
+  jooq:
+    sql-dialect: sqlite
+  graphql:
+    graphiql.enabled: ${BAYWATCH_GRAPHIQL_ENABLE:false}
+    schema.introspection.enabled: ${BAYWATCH_GRAPHQL_INTROSPECTION:false}
+    path: /api/g
 
 server:
   port: ${BAYWATCH_SERVER_PORT:8081}
   error:
     include-message: ALWAYS
+
+management:
+  tracing.sampling.probability: 1.0
+  endpoints.web.exposure.include: prometheus,health
+  metrics:
+    distribution.percentiles-histogram:
+      http.server.requests: true
+    tags:
+      application: ${spring.application.name}
 
 logging:
   # Avoid infinite stacktrace due to reactor
@@ -19,8 +39,12 @@ logging:
     org.jooq: WARN
     fr.ght1pc9kc.baywatch: ${BAYWATCH_LOG_LEVEL:DEBUG}
     fr.ght1pc9kc.scraphead: ${BAYWATCH_LOG_LEVEL:DEBUG}
+    fr.ght1pc9kc.scraphead.core.scrap.HeadScraperImpl: DEBUG
+    #    fr.ght1pc9kc.baywatch.indexer: TRACE
     # Avoid unwanted log error ...
-    org.springframework.boot.autoconfigure.jooq.JooqExceptionTranslator: OFF
+    org.springframework:
+      boot.autoconfigure.jooq.JooqExceptionTranslator: OFF
+#      graphql: DEBUG
     reactor.netty.http.client: ERROR
 
 baywatch:
@@ -31,8 +55,18 @@ baywatch:
       validity: ${BAYWATCH_COOKIE_VALIDITY:24h}
     jwt.validity: ${BAYWATCH_TOKEN_VALIDITY:1h}
   scraper:
-    start: true
+    enable: ${BAYWATCH_SCRAPER_ENABLE:true}
     frequency: ${BAYWATCH_SCRAPER_FREQUENCY:1h}
     conservation: ${BAYWATCH_SCRAPER_CONSERVATION:3m}
     timeout: ${BAYWATCH_SCRAPER_TIMEOUT:2s}
     dns.timeout: ${BAYWATCH_DNS_TIMEOUT:10s}
+    reddit:
+      image: ${BAYWATCH_SCRAPER_REDDIT_IMAGE:https://www.redditstatic.com/desktop2x/img/favicon/android-icon-192x192.png}
+  indexer:
+    enable: ${BAYWATCH_INDEXER_ENABLE:true}
+    directory: ${BAYWATCH_HOME:.}/.baywatch/feedidx
+  imgproxy:
+    enable: ${BAYWATCH_IMGPROXY_ENABLE:false}
+    signingKey: ${BAYWATCH_IMGPROXY_SIGNKEY:}
+    signingSalt: ${BAYWATCH_IMGPROXY_SALT:}
+    pathBase: ${BAYWATCH_IMGPROXY_BASEPATH:/img}

@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.common.api.model;
 
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import java.time.Instant;
  *
  * @param <T> The type of the persisted object
  */
+@Builder
 @ToString
 @EqualsAndHashCode
 @RequiredArgsConstructor

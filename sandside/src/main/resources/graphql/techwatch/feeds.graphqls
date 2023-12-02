@@ -1,0 +1,33 @@
+type Feed {
+    _id: ID!
+    _createdBy: String,
+    name: String
+    description: String
+    location: String!
+    tags: [String]
+}
+
+type SearchFeedsResponse {
+    entities: [Feed]
+    totalCount: Int
+}
+
+extend type Query {
+    getFeed(id: ID): Feed
+    feedsSearch(
+        _p: Int
+        _pp: Int
+        _from: Int
+        _to: Int
+        _s: String
+        id: [ID]
+        name: String
+        url: String
+        lastWatch: String
+        tags: [String]
+    ): SearchFeedsResponse
+}
+
+extend type Mutation {
+    subscribe(id: ID, name: String, tags: [String]): Feed
+}

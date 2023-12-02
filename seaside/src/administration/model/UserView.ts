@@ -1,4 +1,4 @@
-import {User} from "@/services/model/User";
+import {User} from "@/security/model/User";
 
 export type UserView = {
     data: User;

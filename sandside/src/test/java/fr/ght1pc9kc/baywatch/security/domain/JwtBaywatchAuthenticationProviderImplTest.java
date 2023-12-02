@@ -37,8 +37,9 @@ class JwtBaywatchAuthenticationProviderImplTest {
 
     @Test
     void should_create_token() throws IOException {
-        Entity<User> user = new Entity<>("42", Entity.NO_ONE, Instant.EPOCH, User.builder().login("okenobi").role(Role.USER).build());
-        String actual = tested.createToken(user, false, Collections.emptyList()).getToken();
+        Entity<User> user = new Entity<>("42", Entity.NO_ONE, Instant.EPOCH, User.builder().login("okenobi")
+                .role(Role.USER).build());
+        String actual = tested.createToken(user, false, Collections.emptyList()).token();
 
         Assertions.assertThat(actual).isNotBlank();
 
@@ -53,8 +54,8 @@ class JwtBaywatchAuthenticationProviderImplTest {
     void should_get_authentication() {
         BaywatchAuthentication actual = tested.getAuthentication(GOOD_TOKEN);
 
-        Assertions.assertThat(actual.token).isEqualTo(GOOD_TOKEN);
-        Assertions.assertThat(actual.user).isEqualTo(
+        Assertions.assertThat(actual.token()).isEqualTo(GOOD_TOKEN);
+        Assertions.assertThat(actual.user()).isEqualTo(
                 new Entity<>("42", Entity.NO_ONE, Instant.EPOCH, User.builder().login("okenobi").role(Role.USER).build()));
     }
 

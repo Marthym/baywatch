@@ -1,5 +1,4 @@
 export type Popularity = {
-    id: string;
-    popularity: number;
+    score: number;
     fans: string[];
 }

@@ -1,3 +1,5 @@
 export enum EventType {
-    NEWS = 'news',
+    NEWS_ADD = 'newsAdd',
+    NEWS_UPDATE = 'newsUpdate',
+    USER_NOTIFICATION = 'userNotification',
 }

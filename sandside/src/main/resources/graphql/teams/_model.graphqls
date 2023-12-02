@@ -1,0 +1,28 @@
+type Team {
+    _id: String
+    _createdAt: String
+    _createdBy: User
+    _managers: [User]
+    _me: TeamMember
+    name: String
+    topic: String
+}
+
+type TeamMember {
+    _id: ID
+    _createdAt: String
+    _createdBy: User
+    _user: User
+    userId: String!
+    pending: String
+}
+
+type SearchTeamsResponse {
+    entities: [Team]
+    totalCount: Int
+}
+
+input TeamForm {
+    name: String!
+    topic: String
+}

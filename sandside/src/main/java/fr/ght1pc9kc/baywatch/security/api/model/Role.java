@@ -1,9 +1,23 @@
 package fr.ght1pc9kc.baywatch.security.api.model;
 
-public enum Role {
-    SYSTEM, ADMIN, MANAGER, USER, ANONYMOUS;
+import java.util.Optional;
 
-    public String authority() {
-        return "ROLE_" + name();
+public enum Role implements Permission {
+    SYSTEM, ADMIN, MANAGER, USER, ACTUATOR;
+
+    @Override
+    public Role role() {
+        return this;
+    }
+
+    @Override
+    public Optional<String> entity() {
+        return Optional.empty();
+    }
+
+
+    @Override
+    public String toString() {
+        return this.name();
     }
 }

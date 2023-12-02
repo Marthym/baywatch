@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.tests.samples.infra;
 
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.News;
 import fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds;
@@ -9,7 +8,8 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsFeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
-import fr.irun.testy.jooq.model.RelationalDataSet;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
+import fr.ght1pc9kc.testy.jooq.model.RelationalDataSet;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -34,7 +34,7 @@ public class NewsRecordSamples implements RelationalDataSet<NewsRecord> {
                 .setNewsLink(BASE_TEST_URI.resolve(String.format("%03d", i)).toString())
                 .setNewsTitle(String.format("%s %03d", BASE_TEST_URI.getHost(), i))
                 .setNewsPublication(LocalDateTime.parse("2020-12-10T10:42:42").plus(Period.ofMonths(i)))
-        ).collect(Collectors.toUnmodifiableList());
+        ).toList();
 
         NEWS_FEEDS_RECORDS = buildNewsFeedRecords();
 
@@ -48,7 +48,7 @@ public class NewsRecordSamples implements RelationalDataSet<NewsRecord> {
                         .setNursNewsId(RECORDS.get(i % RECORDS.size()).getNewsId())
                         .setNursUserId(USERS[i % USERS.length])
                         .setNursState(FLAGS[i % FLAGS.length])
-        ).collect(Collectors.toUnmodifiableList());
+        ).toList();
     }
 
     public static List<NewsFeedsRecord> buildNewsFeedRecords() {

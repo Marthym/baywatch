@@ -1,8 +1,8 @@
 import {Observable, switchMap} from "rxjs";
 import {Popularity} from "@/techwatch/model/Popularity.type";
-import rest from "@/services/http/RestWrapper";
+import rest from "@/common/services/RestWrapper";
 import {take} from "rxjs/operators";
-import {HttpStatusError} from "@/services/model/exceptions/HttpStatusError";
+import {HttpStatusError} from "@/common/errors/HttpStatusError";
 
 export class PopularNewsService {
 
