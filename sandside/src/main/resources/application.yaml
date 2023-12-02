@@ -32,7 +32,6 @@ management:
       application: ${spring.application.name}
 
 logging:
-  #  pattern.level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
   # Avoid infinite stacktrace due to reactor
   exception-conversion-word: "%wEx{full, reactor.core.publisher}"
   level:
