@@ -1,26 +1,26 @@
 <template>
-  <nav class="tabs tabs-boxed">
-    <a class="tab" :class="{'tab-active': 'UserAdminTab' === activeTab}"
+  <nav role="tablist" class="tabs tabs-boxed place-content-start">
+    <a role="tab" class="tab" :class="{'tab-active': 'UserAdminTab' === activeTab}"
        @click.prevent="onChangeTab('UserAdminTab')">Users</a>
-    <a class="tab" :class="{'tab-active': 'ConfigAdminTab' === activeTab}"
+    <a role="tab" class="tab" :class="{'tab-active': 'ConfigAdminTab' === activeTab}"
        @click.prevent="onChangeTab('ConfigAdminTab')">Configuration</a>
-    <a class="tab" :class="{'tab-active': 'StatisticsAdminTab' === activeTab}"
+    <a role="tab" class="tab" :class="{'tab-active': 'StatisticsAdminTab' === activeTab}"
        @click.prevent="onChangeTab('StatisticsAdminTab')">Statistiques</a>
   </nav>
   <component :is="activeTab"></component>
 </template>
 
 <script lang="ts">
-import {Options, Vue} from 'vue-property-decorator';
+import { Component, Vue } from 'vue-facing-decorator';
 import UserAdminTab from '@/administration/component/UserAdminTab.vue';
 import ConfigAdminTab from '@/administration/component/ConfigAdminTab.vue';
-import {defineAsyncComponent} from "vue";
+import { defineAsyncComponent } from 'vue';
 
 const StatisticsAdminTab = defineAsyncComponent(() => import('@/administration/component/StatisticsAdminTab.vue'));
 
 type Tab = 'UserAdminTab' | 'ConfigAdminTab' | 'StatisticsAdminTab';
 
-@Options({
+@Component({
   name: 'AdministrationPage',
   components: {
     UserAdminTab,

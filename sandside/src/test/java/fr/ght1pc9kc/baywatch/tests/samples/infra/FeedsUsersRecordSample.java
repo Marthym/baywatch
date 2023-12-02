@@ -3,11 +3,11 @@ package fr.ght1pc9kc.baywatch.tests.samples.infra;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
-import fr.irun.testy.jooq.model.RelationalDataSet;
+import fr.ght1pc9kc.testy.jooq.model.RelationalDataSet;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 
@@ -22,7 +22,7 @@ public class FeedsUsersRecordSample implements RelationalDataSet<FeedsUsersRecor
                 "cpp"
         };
         // -1 allow to keep one orphan feed for tests
-        FEEDS_USERS_RECORDS = IntStream.range(0, FeedRecordSamples.FEEDS_RECORDS.size() - 1)
+        FEEDS_USERS_RECORDS = Stream.concat(IntStream.range(0, FeedRecordSamples.FEEDS_RECORDS.size() - 1)
                 .mapToObj(f -> {
                     FeedsRecord feed = FeedRecordSamples.FEEDS_RECORDS.get(f);
                     List<UsersRecord> users = UsersRecordSamples.SAMPLE.records();
@@ -30,7 +30,12 @@ public class FeedsUsersRecordSample implements RelationalDataSet<FeedsUsersRecor
                             .setFeusFeedId(feed.getFeedId())
                             .setFeusUserId(users.get(f % users.size()).getUserId())
                             .setFeusTags(tags[f % tags.length]);
-                }).collect(Collectors.toUnmodifiableList());
+                }), Stream.of( // Link the first FEED to Obiwan AND Luke
+                FEEDS_USERS.newRecord()
+                        .setFeusFeedId(FeedRecordSamples.FEEDS_RECORDS.get(1).getFeedId())
+                        .setFeusUserId(UsersRecordSamples.SAMPLE.records().get(0).getUserId())
+                        .setFeusTags("cpp")
+        )).toList();
     }
 
     @Override

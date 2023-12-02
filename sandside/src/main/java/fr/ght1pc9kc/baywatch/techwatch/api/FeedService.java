@@ -1,8 +1,7 @@
 package fr.ght1pc9kc.baywatch.techwatch.api;
 
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.RawFeed;
-import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -10,15 +9,34 @@ import reactor.core.publisher.Mono;
 import java.util.Collection;
 
 public interface FeedService {
-    Mono<Feed> get(String id);
+    /**
+     * Get a single {@link WebFeed}
+     *
+     * @param id the ID of the requested Feed
+     * @return The Feed
+     */
+    Mono<Entity<WebFeed>> get(String id);
 
-    Flux<Feed> list();
+    /**
+     * List all the {@link WebFeed} of the connected user
+     *
+     * @return a Flux of Feed
+     */
+    Flux<Entity<WebFeed>> list();
 
-    Flux<Feed> list(PageRequest pageRequest);
+    /**
+     * Depending on the filters this return the list of news, scoped by the current user.
+     * If specifics feeds ID was asked, the list was not scoped to the user, it has no sens.
+     *
+     * @param pageRequest The page request
+     * @return The list of feeds
+     */
+    Flux<Entity<WebFeed>> list(PageRequest pageRequest);
 
     /**
      * Count the total number of elements returned by the {@link PageRequest}
      * ignoring {@link fr.ght1pc9kc.juery.api.Pagination}
+     * If specifics feeds ID was asked, the count was not limited to the user's Feed, it has no sens.
      *
      * @param pageRequest The page request with filters
      * @return The total elements count
@@ -26,16 +44,30 @@ public interface FeedService {
     Mono<Integer> count(PageRequest pageRequest);
 
     /**
-     * List {@link Feed} independently of the {@link User} or any other entity.
+     * Update the subscription to a {@link WebFeed}
      *
-     * @param pageRequest The query parameters
-     * @return The {@link RawFeed} version of the {@link Feed}
+     * @param toPersist the Feed of the subscription to update
+     * @return The new Feed of the subscription
      */
-    Flux<RawFeed> raw(PageRequest pageRequest);
+    Mono<Entity<WebFeed>> update(WebFeed toPersist);
 
-    Mono<Feed> update(Feed toPersist);
+    /**
+     * Add a {@link WebFeed} to the available Feed list in database
+     *
+     * @param toAdd The list of {@link WebFeed} to add
+     * @return The list of  {@link WebFeed} added
+     */
+    Flux<Entity<WebFeed>> add(Collection<WebFeed> toAdd);
 
-    Mono<Void> persist(Collection<Feed> toPersist);
+    /**
+     * Subscribe to a {@link WebFeed} present in database
+     *
+     * @param feeds The list of feed IDs the current user want to subscribe
+     * @return The {@link WebFeed} the user have effectively subscribed
+     */
+    Flux<Entity<WebFeed>> subscribe(Collection<WebFeed> feeds);
+
+    Flux<Entity<WebFeed>> addAndSubscribe(Collection<WebFeed> feeds);
 
     Mono<Integer> delete(Collection<String> toDelete);
 }

@@ -1,14 +1,16 @@
 package fr.ght1pc9kc.baywatch.security.infra;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
-import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.security.infra.model.SecurityParams;
+import fr.ght1pc9kc.testy.params.aggregators.StringVargsAggregator;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.aggregator.AggregateWith;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.ResponseCookie;
@@ -17,6 +19,7 @@ import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 class TokenCookieManagerTest {
@@ -66,11 +69,15 @@ class TokenCookieManagerTest {
 
     @ParameterizedTest
     @CsvSource(delimiter = '|', value = {
-            "https | X-TOKEN=; Path=/api; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly; SameSite=Strict",
-            "http | X-TOKEN=; Path=/api; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict",
+            "https | X-TOKEN=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly; SameSite=Strict" +
+                    "| X-TOKEN=; Path=/api; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly; SameSite=Strict",
+            "http | X-TOKEN=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict" +
+                    "| X-TOKEN=; Path=/api; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict",
     })
-    void should_delete_token_cookie(String scheme, String expected) {
-        ResponseCookie actual = tested.buildTokenCookieDeletion(scheme);
-        Assertions.assertThat(actual.toString()).isEqualTo(expected);
+    void should_delete_token_cookie(String scheme, @AggregateWith(StringVargsAggregator.class) String... expected) {
+        List<ResponseCookie> actual = tested.buildTokenCookieDeletion(scheme);
+        Assertions.assertThat(actual).hasSize(2)
+                .extracting(ResponseCookie::toString)
+                .containsExactly(expected);
     }
 }

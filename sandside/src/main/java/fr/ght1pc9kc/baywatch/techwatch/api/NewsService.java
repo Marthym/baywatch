@@ -2,7 +2,6 @@ package fr.ght1pc9kc.baywatch.techwatch.api;
 
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Feed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
@@ -52,14 +51,6 @@ public interface NewsService {
      * @return The updated {@link Entity<State>}
      */
     Mono<Entity<State>> unmark(String id, @MagicConstant(flagsFromClass = Flags.class) int flag);
-
-    /**
-     * Delete all links between {@link News} and {@link Feed}
-     *
-     * @param toOrphanize The {@link News} to be orphans
-     * @return nothing
-     */
-    Mono<Integer> orphanize(Collection<String> toOrphanize);
 
     /**
      * Delete {@link News} from the database

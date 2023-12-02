@@ -11,7 +11,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.Popularity;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
-import lombok.AllArgsConstructor;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.intellij.lang.annotations.MagicConstant;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,7 +29,6 @@ import reactor.core.publisher.Mono;
 import java.util.Set;
 
 @RestController
-@AllArgsConstructor
 @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
 @RequestMapping("${baywatch.base-route}/news")
 public class NewsController {
@@ -37,17 +36,22 @@ public class NewsController {
     private static final QueryStringParser qsParser = QueryStringParser.withDefaultConfig();
     private final NewsService newsService;
     private final PopularNewsService popularService;
+    private final MeterRegistry meterRegistry;
+
+    public NewsController(NewsService newsService, PopularNewsService popularService, MeterRegistry meterRegistry) {
+        this.newsService = newsService;
+        this.popularService = popularService;
+        this.meterRegistry = meterRegistry;
+    }
 
     @MagicConstant(flagsFromClass = Flags.class)
     private static int stringToFlag(String flag) {
-        switch (flag.toUpperCase()) {
-            case "READ":
-                return Flags.READ;
-            case "SHARED":
-                return Flags.SHARED;
-            default:
-                return Flags.NONE;
-        }
+        return switch (flag.toUpperCase()) {
+            case "READ" -> Flags.READ;
+            case "SHARED" -> Flags.SHARED;
+            case "KEEP" -> Flags.KEEP;
+            default -> Flags.NONE;
+        };
     }
 
     @GetMapping("/popularity")
@@ -75,7 +79,11 @@ public class NewsController {
             return Mono.error(new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, String.format("Unknown flag %s !", flag)));
         } else {
-            return newsService.mark(newsId, iFlag);
+            return newsService.mark(newsId, iFlag)
+                    .doOnSuccess(e -> meterRegistry.counter(
+                                    "bw.news.mark",
+                                    "flag", flag, "onoff", "on")
+                            .increment());
         }
     }
 
@@ -86,7 +94,11 @@ public class NewsController {
             return Mono.error(new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, String.format("Unknown flag %s !", flag)));
         } else {
-            return newsService.unmark(newsId, iFlag);
+            return newsService.unmark(newsId, iFlag)
+                    .doOnSuccess(e -> meterRegistry.counter(
+                                    "bw.news.mark",
+                                    "flag", flag, "onoff", "off")
+                            .increment());
         }
     }
 

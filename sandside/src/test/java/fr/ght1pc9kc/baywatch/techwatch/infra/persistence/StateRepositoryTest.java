@@ -6,14 +6,15 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
+import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsUsersRecordSample;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
+import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRolesSamples;
 import fr.ght1pc9kc.juery.api.Criteria;
-import fr.irun.testy.core.extensions.ChainedExtension;
-import fr.irun.testy.jooq.WithDatabaseLoaded;
-import fr.irun.testy.jooq.WithDslContext;
-import fr.irun.testy.jooq.WithInMemoryDatasource;
-import fr.irun.testy.jooq.WithSampleDataLoaded;
+import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;
+import fr.ght1pc9kc.testy.jooq.WithDslContext;
+import fr.ght1pc9kc.testy.jooq.WithInMemoryDatasource;
+import fr.ght1pc9kc.testy.jooq.WithSampleDataLoaded;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,25 +32,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class StateRepositoryTest {
     private static final WithInMemoryDatasource wDs = WithInMemoryDatasource.builder().build();
-    private static final WithDatabaseLoaded wBaywatchDb = WithDatabaseLoaded.builder()
-            .setDatasourceExtension(wDs)
-            .useFlywayDefaultLocation()
-            .build();
+
     private static final WithDslContext wDslContext = WithDslContext.builder()
             .setDatasourceExtension(wDs).build();
     private static final WithSampleDataLoaded wSamples = WithSampleDataLoaded.builder(wDslContext)
+            .createTablesIfNotExists()
             .addDataset(UsersRecordSamples.SAMPLE)
+            .addDataset(UsersRolesSamples.SAMPLE)
             .addDataset(FeedRecordSamples.SAMPLE)
             .addDataset(NewsRecordSamples.SAMPLE)
             .addDataset(NewsRecordSamples.NewsFeedsRecordSample.SAMPLE)
             .addDataset(NewsRecordSamples.NewsUserStateSample.SAMPLE)
-            .addDataset(FeedRecordSamples.FeedUserRecordSamples.SAMPLE)
+            .addDataset(FeedsUsersRecordSample.SAMPLE)
             .build();
 
     @RegisterExtension
     @SuppressWarnings("unused")
     static ChainedExtension chain = ChainedExtension.outer(wDs)
-            .append(wBaywatchDb)
             .append(wDslContext)
             .append(wSamples)
             .register();
@@ -90,7 +89,7 @@ class StateRepositoryTest {
             Flags.SHARED + ", " + Flags.READ + ", true, true",
             Flags.READ + ", " + Flags.READ + ", true, false",
     })
-    void should_add_state_flag(int startState, int removeFlag, boolean expectedRead, boolean expectedShared, DSLContext dsl) {
+    void should_add_state_flag(int startState, int newFlag, boolean expectedRead, boolean expectedShared, DSLContext dsl) {
         final String newsId = "37c8fbce87cae77f34aac2a2a52511f60b1369317dec57f38df3f3ae30c42840";
         dsl.update(NEWS_USER_STATE)
                 .set(NEWS_USER_STATE.NURS_STATE, startState)
@@ -98,7 +97,7 @@ class StateRepositoryTest {
                 .execute();
 
         tested.flag(newsId,
-                OKENOBI.getUserId(), removeFlag).block();
+                OKENOBI.getUserId(), newFlag).block();
 
         Integer actual = dsl.select(NEWS_USER_STATE.NURS_STATE)
                 .from(NEWS_USER_STATE)

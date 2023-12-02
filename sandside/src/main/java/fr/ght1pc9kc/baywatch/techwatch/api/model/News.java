@@ -9,7 +9,7 @@ import lombok.experimental.Delegate;
 import java.util.Set;
 
 /**
- * The News element customized with state and {@link RawFeed#id}
+ * The News element customized with state and {@link WebFeed#reference()}
  */
 @With
 @Value

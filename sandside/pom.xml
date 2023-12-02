@@ -6,7 +6,7 @@
     <parent>
         <artifactId>baywatch</artifactId>
         <groupId>fr.ght1pc9kc</groupId>
-        <version>1.0.2</version>
+        <version>2.0.0</version>
     </parent>
 
     <artifactId>sandside</artifactId>
@@ -38,6 +38,10 @@
         </dependency>
 
         <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core-micrometer</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
@@ -48,6 +52,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-graphql</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.session</groupId>
@@ -67,10 +75,10 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
 
-
         <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>${sqlite-jdbc.version}</version>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -91,6 +99,26 @@
             <version>${html-sanitizer.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-backward-codecs</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.machinezoo.noexception</groupId>
             <artifactId>noexception</artifactId>
             <version>${noexception.version}</version>
@@ -106,10 +134,6 @@
             <version>${nimbus-jose-jwt.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
         </dependency>
@@ -122,6 +146,11 @@
             <groupId>com.fasterxml</groupId>
             <artifactId>aalto-xml</artifactId>
             <version>${aalto-xml.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>me.gosimple</groupId>
+            <artifactId>nbvcxz</artifactId>
+            <version>${nbvcxz.version}</version>
         </dependency>
 
         <dependency>
@@ -147,7 +176,6 @@
             <optional>true</optional>
         </dependency>
 
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -164,9 +192,13 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.tomakehurst</groupId>
-            <artifactId>wiremock-standalone</artifactId>
-            <version>${wiremock.version}</version>
+            <groupId>org.springframework.graphql</groupId>
+            <artifactId>spring-graphql-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-observation-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -175,13 +207,46 @@
             <version>${awaitility.version}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
-            <groupId>fr.irun</groupId>
+            <groupId>net.javacrumbs.json-unit</groupId>
+            <artifactId>json-unit</artifactId>
+            <version>${json-unit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.json-unit</groupId>
+            <artifactId>json-unit-fluent</artifactId>
+            <version>${json-unit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.json-unit</groupId>
+            <artifactId>json-unit-assertj</artifactId>
+            <version>${json-unit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.ght1pc9kc</groupId>
+            <artifactId>testy-params-box</artifactId>
+            <version>${testy-box.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.ght1pc9kc</groupId>
             <artifactId>testy-jooq-box</artifactId>
             <version>${testy-box.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.samskivert</groupId>
+            <artifactId>jmustache</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -189,8 +254,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
+                    <implicit>class</implicit>
                     <generatedSourcesDirectory>target/generated-sources</generatedSourcesDirectory>
                     <annotationProcessorPaths>
                         <path>
@@ -203,15 +269,37 @@
                             <artifactId>lombok</artifactId>
                             <version>${lombok.version}</version>
                         </path>
-
-                        <!-- additional annotation processor required as of Lombok 1.18.16 -->
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok-mapstruct-binding</artifactId>
-                            <version>0.2.0</version>
+                            <version>${lombok-mapstruct-binding.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
+            </plugin>
+            <plugin> <!-- Only present in order to create target dir for flyway -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-folder</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>../.run</directory>
+                                    <includes>
+                                        <include>*.db</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.flywaydb</groupId>
@@ -252,11 +340,10 @@
                             </jdbc>
                             <generator>
                                 <database>
-                                    <name>org.jooq.meta.h2.H2Database</name>
+                                    <name>org.jooq.meta.sqlite.SQLiteDatabase</name>
                                     <includes>.*</includes>
                                     <excludes>FLYWAY_SCHEMA_HISTORY</excludes>
                                     <outputSchemaToDefault>false</outputSchemaToDefault>
-                                    <inputSchema>PUBLIC</inputSchema>
                                 </database>
                                 <generate>
                                     <generatedAnnotation>true</generatedAnnotation>

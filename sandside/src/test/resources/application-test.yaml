@@ -1,16 +1,16 @@
 ---
 spring:
   datasource:
-    url: jdbc:h2:file:./target/baywatch
+    url: jdbc:sqlite:file:./target/test_baywatch.db
   main:
     banner-mode: off
 
-server:
-  port: 0
-
 baywatch:
-  scrapper:
-    start: false
+  scraper:
+    enable: false
+  indexer:
+    enable: false
+    directory: ${BAYWATCH_HOME:.}/target/feedidx
 
 logging:
   # Avoid infinite stacktrace due to reactor

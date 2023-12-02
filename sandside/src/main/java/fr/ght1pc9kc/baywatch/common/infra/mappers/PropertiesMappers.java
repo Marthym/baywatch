@@ -16,6 +16,7 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Users.USERS;
+import static fr.ght1pc9kc.baywatch.dsl.tables.UsersRoles.USERS_ROLES;
 
 @UtilityClass
 public final class PropertiesMappers {
@@ -40,6 +41,8 @@ public final class PropertiesMappers {
             EntitiesProperties.PUBLICATION, NEWS.NEWS_PUBLICATION,
             EntitiesProperties.FEED_ID, NEWS_FEEDS.NEFE_FEED_ID,
             EntitiesProperties.READ, DSL.coalesce(NEWS_STATE.NURS_STATE, Flags.NONE).bitAnd(Flags.READ),
+            EntitiesProperties.KEEP, DSL.field(DSL.coalesce(NEWS_STATE.NURS_STATE, Flags.NONE)
+                    .bitAnd(Flags.KEEP).eq(Flags.KEEP)),
             EntitiesProperties.POPULAR, DSL.field(DSL.coalesce(POPULAR.NURS_STATE, Flags.NONE)
                     .bitAnd(Flags.SHARED).eq(Flags.SHARED)),
             EntitiesProperties.TITLE, NEWS.NEWS_TITLE
@@ -58,6 +61,6 @@ public final class PropertiesMappers {
             EntitiesProperties.LOGIN, USERS.USER_LOGIN,
             EntitiesProperties.NAME, USERS.USER_NAME,
             EntitiesProperties.MAIL, USERS.USER_EMAIL,
-            EntitiesProperties.ROLE, USERS.USER_ROLE
+            EntitiesProperties.ROLES, USERS_ROLES.USRO_ROLE
     );
 }

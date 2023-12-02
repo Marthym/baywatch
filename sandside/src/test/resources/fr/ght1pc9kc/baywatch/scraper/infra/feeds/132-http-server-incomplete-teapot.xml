@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--suppress HttpUrlsUsage -->
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <updated>{{datetime}}</updated>
+    <title>Test canonical link</title>
+    <entry>
+        <content type="html">No Content</content>
+        <link href="http://{{hostname}}:{{port}}/entries/132-http-server-teapot"/>
+        <updated>{{datetime}}</updated>
+        <title>HTTP server never complete response</title>
+    </entry>
+</feed>

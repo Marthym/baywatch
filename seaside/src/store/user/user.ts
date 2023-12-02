@@ -1,6 +1,7 @@
-import {ANONYMOUS, User} from "@/services/model/User";
-import {UserRole} from "@/services/model/UserRole.enum";
-import {LOGOUT, UPDATE} from "@/store/user/UserConstants";
+import {ANONYMOUS, User} from "@/security/model/User";
+import {UserRole} from "@/security/model/UserRole.enum";
+import {ADD_ROLE, HAS_ROLE_ADMIN, HAS_ROLE_MANAGER, HAS_ROLE_USER, LOGOUT, UPDATE} from "@/store/user/UserConstants";
+import {GetterTree} from "vuex";
 
 export type UserState = {
     user: User;
@@ -13,21 +14,15 @@ const state = (): UserState => ({
 });
 
 // getters
-const getters = {
-    hasRoleUser(state): boolean {
-        const keys = Object.keys(UserRole);
-        const idx = keys.indexOf(state.user.role);
-        return idx >= 0 && idx <= keys.indexOf(UserRole.USER);
+const getters: GetterTree<UserState, UserState> = {
+    [HAS_ROLE_USER](st: UserState): boolean {
+        return hasRole(st.user, UserRole.USER);
     },
-    hasRoleManager(state): boolean {
-        const keys = Object.keys(UserRole);
-        const idx = keys.indexOf(state.user.role);
-        return idx >= 0 && idx <= keys.indexOf(UserRole.MANAGER);
+    [HAS_ROLE_MANAGER](st: UserState): (entity: string) => boolean {
+        return (e) => hasRole(st.user, UserRole.MANAGER, e);
     },
-    hasRoleAdmin(state): boolean {
-        const keys = Object.keys(UserRole);
-        const idx = keys.indexOf(state.user.role);
-        return idx >= 0 && idx <= keys.indexOf(UserRole.ADMIN);
+    [HAS_ROLE_ADMIN](st: UserState): boolean {
+        return hasRole(st.user, UserRole.ADMIN);
     },
 }
 
@@ -36,16 +31,41 @@ const actions = {}
 
 // mutations
 const mutations = {
-    [LOGOUT](state: UserState): void {
-        state.user = ANONYMOUS;
-        state.isAuthenticated = false;
+    [LOGOUT](st: UserState): void {
+        st.user = ANONYMOUS;
+        st.isAuthenticated = false;
     },
-    [UPDATE](state: UserState, payload: User): void {
-        state.user = payload;
-        const keys = Object.keys(UserRole);
-        const idx = keys.indexOf(state.user.role);
-        state.isAuthenticated = idx >= 0 && idx <= keys.indexOf(UserRole.USER);
+    [UPDATE](st: UserState, payload: User): void {
+        st.user = payload;
+        st.isAuthenticated = hasRole(st.user, UserRole.USER);
     },
+    [ADD_ROLE](st: UserState, payload: string): void {
+        st.user.roles.push(payload);
+    },
+}
+
+const hasRole = (user: User, expectedRole: UserRole, entity?: string): boolean => {
+    if (!expectedRole) {
+        throw new Error();
+    }
+    if (!user && user === null) {
+        return false
+    }
+    let hasRole = false;
+    let userRoles: string[] = (entity)
+        ? user.roles.map(r => r.split(':')[0])
+        : user.roles;
+
+    for (let role of Object.keys(UserRole)) {
+        if (userRoles.indexOf(role) >= 0 ||
+            ((entity) && userRoles.indexOf(`${role}:${entity}`) >= 0)) {
+            hasRole = true;
+        }
+        if (role == expectedRole) {
+            return hasRole;
+        }
+    }
+    return false;
 }
 
 export default {

@@ -1,19 +1,19 @@
-import {Notification} from "@/services/notification/Notification.type";
-import NotificationListener from "@/services/notification/NotificationListener";
-import {NotificationCode} from "@/services/notification/NotificationCode.enum";
-import {Severity} from "@/services/notification/Severity.enum";
+import { Notification } from '@/services/notification/Notification.type';
+import NotificationListener from '@/services/notification/NotificationListener';
+import { NotificationCode } from '@/services/notification/NotificationCode.enum';
+import { Severity } from '@/services/notification/Severity.enum';
 
-const DELAY = 3000;
+const DEFAUTL_DELAY = 5000;
 
 export class NotificationService {
-    private readonly delay: number;
+    private readonly defaultDelay: number;
     private notifs: Notification[] = [];
     private listeners: NotificationListener[] = [];
     private timeout?: number;
 
 
-    constructor(delay: number = DELAY) {
-        this.delay = delay;
+    constructor(delay: number = DEFAUTL_DELAY) {
+        this.defaultDelay = delay;
     }
 
     /**
@@ -23,7 +23,8 @@ export class NotificationService {
     public pushNotification(notif: Notification): void {
         this.notifs.push(notif);
         if (!this.timeout) {
-            this.timeout = window.setTimeout(NotificationService.onNotificationExpiration, this.delay, this);
+            const delay = notif.delay ?? this.defaultDelay;
+            this.timeout = window.setTimeout(NotificationService.onNotificationExpiration, delay, this);
         }
         this.listeners.forEach(listener => {
             listener.onPushNotification(notif);
@@ -44,12 +45,15 @@ export class NotificationService {
     }
 
     private static onNotificationExpiration(ns: NotificationService): void {
-        window.clearTimeout(ns.timeout);
-        ns.timeout = undefined;
+        if (ns.timeout) {
+            window.clearTimeout(ns.timeout);
+            ns.timeout = undefined;
+        }
         const notif = ns.notifs.shift();
         if (notif) {
             if (ns.notifs.length > 0) {
-                ns.timeout = window.setTimeout(NotificationService.onNotificationExpiration, ns.delay, ns);
+                const delay = notif.delay ?? ns.defaultDelay;
+                ns.timeout = window.setTimeout(NotificationService.onNotificationExpiration, delay, ns);
             }
             ns.listeners.forEach(listener => listener.onPopNotification(notif));
         }
@@ -70,7 +74,7 @@ export class NotificationService {
             code: NotificationCode.OK,
             severity: Severity.info,
             message: message,
-        })
+        });
     }
 
     public pushSimpleError(message: string): void {
@@ -78,7 +82,7 @@ export class NotificationService {
             code: NotificationCode.ERROR,
             severity: Severity.error,
             message: message,
-        })
+        });
     }
 }
 

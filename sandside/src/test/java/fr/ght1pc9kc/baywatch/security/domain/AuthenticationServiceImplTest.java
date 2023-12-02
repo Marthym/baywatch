@@ -57,7 +57,7 @@ class AuthenticationServiceImplTest {
         BaywatchAuthentication actual = tested.refresh("FAKE_OLD_TOKEN").block();
 
         Assertions.assertThat(actual).isNotNull();
-        Assertions.assertThat(actual.token).isEqualTo("FAKE_OLD_TOKEN");
+        Assertions.assertThat(actual.token()).isEqualTo("FAKE_TOKEN");
     }
 
     @Test
@@ -66,6 +66,6 @@ class AuthenticationServiceImplTest {
         BaywatchAuthentication actual = tested.refresh("FAKE_OLD_TOKEN").block();
 
         Assertions.assertThat(actual).isNotNull();
-        Assertions.assertThat(actual.token).isEqualTo("FAKE_TOKEN");
+        Assertions.assertThat(actual.token()).isEqualTo("FAKE_TOKEN");
     }
 }

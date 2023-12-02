@@ -10,15 +10,19 @@
           <h2 class="card-title">Baywatch</h2>
           <div class="form-control">
             <label class="label"><span class="label-text">Email Address</span></label>
-            <input ref="usrInput" v-model="username" class="input input-bordered" type="text" placeholder="Username"
+            <input ref="usrInput" v-model="username" class="input input-bordered" type="text"
+                   placeholder="Username"
                    tabindex="1"
-                   :class="{'input-error': usernameError}">
+                   :class="{'input-error': formValidation}">
           </div>
           <div class="form-control mt-4">
             <label class="label"><span class="label-text">Password</span>
               <a href="#" class="label-text-alt">Forget password ?</a></label>
-            <input v-model="password" class="input input-bordered" type="password" placeholder="Password" tabindex="2"
-                   :class="{'input-error': passwordError}">
+            <input v-model="password" class="input input-bordered" type="password"
+                   placeholder="Password"
+                   tabindex="2"
+                   @keyup="formValidation=false"
+                   :class="{'input-error': formValidation}">
             <button type="submit" class="btn btn-primary mt-4" tabindex="3">Se connecter</button>
           </div>
         </form>
@@ -28,18 +32,26 @@
 </template>
 
 <script lang="ts">
-import {Options, Vue} from 'vue-property-decorator';
-import {setup} from "vue-class-component";
-import {useStore} from "vuex";
-import {UPDATE_MUTATION} from "@/store/user/UserConstants";
+import { Component, Vue } from 'vue-facing-decorator';
+import { useStore } from 'vuex';
+import { UPDATE_MUTATION } from '@/store/user/UserConstants';
 
-import authenticationService from "@/services/AuthenticationService";
-import {useRouter} from "vue-router";
+import authenticationService from '@/security/services/AuthenticationService';
+import notificationService from '@/services/notification/NotificationService';
+import { Router, useRouter } from 'vue-router';
 
-@Options({name: 'LoginPage'})
+@Component({
+  name: 'LoginPage',
+  setup() {
+    return {
+      store: useStore(),
+      router: useRouter(),
+    };
+  },
+})
 export default class LoginPage extends Vue {
-  private store = setup(() => useStore());
-  private router = setup(() => useRouter());
+  private store;
+  private router: Router;
 
   public username = '';
   public password = '';
@@ -51,21 +63,28 @@ export default class LoginPage extends Vue {
 
   onLogin(): void {
     if (this.username !== '' && this.password !== '') {
-      authenticationService.login(this.username, this.password).subscribe(user => {
-        this.store.commit(UPDATE_MUTATION, user);
-        this.router.back();
+      authenticationService.login(this.username, this.password).subscribe({
+        next: user => {
+          this.store.commit(UPDATE_MUTATION, user);
+          if (this.router.currentRoute.value.query.redirect) {
+            for (let route of this.router.getRoutes()) {
+              if (route.path === this.router.currentRoute.value.query.redirect) {
+                this.router.push(route);
+                return;
+              }
+            }
+          }
+          this.router.back();
+        },
+        error: err => {
+          this.formValidation = true;
+          notificationService.pushSimpleError('Wrong login or password !');
+          console.debug(err);
+        },
       });
     } else {
       this.formValidation = true;
     }
-  }
-
-  get usernameError(): boolean {
-    return this.username === '' && this.formValidation;
-  }
-
-  get passwordError(): boolean {
-    return this.password === '' && this.formValidation;
   }
 
   public closeLoginWindow(): void {

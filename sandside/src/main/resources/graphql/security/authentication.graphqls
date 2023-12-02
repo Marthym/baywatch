@@ -1,0 +1,10 @@
+extend type Mutation {
+    login(username: String!, password: String!, remember: Boolean): User
+    logout: Void
+    refreshSession: Session
+}
+
+extend type Query {
+    currentUser: User
+}
+

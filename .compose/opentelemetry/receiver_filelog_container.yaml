@@ -1,0 +1,83 @@
+---
+
+receivers:
+  filelog/containers:
+    include: ["/var/lib/docker/containers/*/*.log"]
+    exclude: ["/var/lib/docker/containers/32a*"]
+    start_at: end
+    include_file_path: false
+    include_file_name: false
+    operators:
+      - type: json_parser
+        id: parser-docker
+        output: filter_non_tagged_containers
+        timestamp:
+          parse_from: attributes.time
+          layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+      - type: filter
+        id: filter_non_tagged_containers
+        expr: '(attributes?.attrs?.tag ?? "empty") == "empty"'
+        output: extract_metadata_from_tag
+      - type: key_value_parser
+        id: extract_metadata_from_tag
+        parse_from: attributes["attrs"]["tag"]
+        parse_to: resource.container
+        on_error: drop
+        output: mv_container_id
+      - type: move
+        id: mv_container_id
+        from: resource.container.id
+        to: resource.container_id
+        output: mv_container_name
+      - type: move
+        id: mv_container_name
+        from: resource.container.name
+        to: resource.container_name
+        output: mv_container_image
+      - type: move
+        id: mv_container_image
+        from: resource.container.image
+        to: resource.container_image
+        output: parse_body
+      - type: move
+        id: parse_body
+        from: attributes.log
+        to: body
+        output: move_app
+      - type: move
+        id: move_app
+        from: attributes["attrs"]["application"]
+        to: resource.application
+        output: app-json-parse
+      - type: json_parser
+        id: app-json-parse
+        output: app-move-body
+        timestamp:
+          parse_from: attributes.timestamp
+          layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+        severity:
+          parse_from: attributes.level
+          mapping:
+            warn: WARN
+            error: ERROR
+            info: INFO
+            debug: DEBUG
+      - type: move
+        id: app-move-body
+        from: attributes.message
+        to: body
+      - type: remove
+        id: remove_time
+        field: attributes.time
+      - type: remove
+        id: remove_stream
+        field: attributes.stream
+      - type: remove
+        id: remove_timestamp
+        field: attributes["timestamp"]
+      - type: remove
+        id: remove_level
+        field: attributes["level"]
+      - type: remove
+        id: remove_attrs
+        field: attributes["attrs"]

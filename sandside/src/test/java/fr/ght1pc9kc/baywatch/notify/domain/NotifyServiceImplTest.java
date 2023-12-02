@@ -22,37 +22,58 @@ class NotifyServiceImplTest {
     private NotifyServiceImpl tested;
 
     @BeforeEach
+    @SuppressWarnings("unchecked")
     void setUp() {
         AuthenticationFacade authFacadeMock = mock(AuthenticationFacade.class);
-        when(authFacadeMock.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
+        when(authFacadeMock.getConnectedUser()).thenReturn(
+                Mono.just(UserSamples.OBIWAN),
+                Mono.just(UserSamples.LUKE),
+                Mono.just(UserSamples.OBIWAN),
+                Mono.just(UserSamples.LUKE),
+                Mono.just(UserSamples.OBIWAN),
+                Mono.just(UserSamples.LUKE));
         tested = new NotifyServiceImpl(authFacadeMock);
     }
 
     @Test
-    void should_send_notification() {
-        List<ServerEvent<Object>> actual = new CopyOnWriteArrayList<>();
-        List<Throwable> errors = new CopyOnWriteArrayList<>();
-        AtomicBoolean isComplete = new AtomicBoolean(false);
+    void should_broadcast_notification() {
+        List<ServerEvent> actualObiwan = new CopyOnWriteArrayList<>();
+        List<ServerEvent> actualLuke = new CopyOnWriteArrayList<>();
+        List<Throwable> errorsObiwan = new CopyOnWriteArrayList<>();
+        List<Throwable> errorsLuke = new CopyOnWriteArrayList<>();
+        AtomicBoolean isObiwanComplete = new AtomicBoolean(false);
+        AtomicBoolean isLukeComplete = new AtomicBoolean(false);
 
-        tested.subscribe().subscribe(
-                actual::add, errors::add,
-                () -> isComplete.set(true)
+        tested.subscribe().doOnTerminate(() -> isObiwanComplete.set(true)).subscribe(
+                actualObiwan::add, errorsObiwan::add,
+                () -> isObiwanComplete.set(true)
         );
-        ServerEvent<Object> event1 = tested.send(EventType.NEWS, 42);
+        tested.subscribe().doOnCancel(() -> isLukeComplete.set(true)).subscribe(
+                actualLuke::add, errorsLuke::add,
+                () -> isLukeComplete.set(true)
+        );
+        ServerEvent eventBroadcast = tested.broadcast(EventType.NEWS_UPDATE, 42);
+        ServerEvent eventUser = tested.send(UserSamples.LUKE.id, EventType.USER_NOTIFICATION, "I'm your father");
         tested.unsubscribe().block();
-        tested.send(EventType.NEWS, Mono.just(66));
+        tested.unsubscribe().block();
+
+        tested.broadcast(EventType.NEWS_UPDATE, Mono.just(66));
         tested.close();
 
-        Assertions.assertThat(actual).containsExactly(event1);
-        Assertions.assertThat(errors).isEmpty();
-        Assertions.assertThat(isComplete).isTrue();
+        Assertions.assertThat(actualObiwan).containsExactly(eventBroadcast);
+        Assertions.assertThat(actualLuke).containsExactly(eventBroadcast, eventUser);
+
+        Assertions.assertThat(errorsObiwan).isEmpty();
+        Assertions.assertThat(errorsLuke).isEmpty();
+
+        Assertions.assertThat(isObiwanComplete).isTrue();
+        Assertions.assertThat(isLukeComplete).isTrue();
     }
 
     @Test
     void should_send_notification_without_subscriber() {
-        tested.send(EventType.NEWS, Mono.just(42));
+        tested.broadcast(EventType.NEWS_UPDATE, Mono.just(42));
         tested.close();
-
-        StepVerifier.create(tested.subscribe()).verifyComplete();
+        StepVerifier.create(tested.subscribe()).verifyError();
     }
 }

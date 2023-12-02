@@ -8,13 +8,13 @@ import reactor.core.publisher.Mono;
 /**
  * The service to use for Notification Flux manipulation
  */
-public interface NotifyManager {
+public interface NotifyManager extends NotifyService {
     /**
      * This allows Service or whatever to subscribe to notifications
      *
      * @return The notification flux
      */
-    Flux<ServerEvent<Object>> subscribe();
+    Flux<ServerEvent> subscribe();
 
     /**
      * Allow unsubscribing to notifications flux. This will make a {@link Disposable#dispose()}

@@ -1,0 +1,115 @@
+---
+version: "3.9"
+
+volumes:
+  prometheus_data: {}
+  loki_data: {}
+  grafana_data: {}
+
+networks:
+  bwnet:
+
+services:
+
+  baywatch:
+    image: 'ghcr.io/marthym/baywatch:2.0.0-SNAPSHOT'
+    depends_on:
+      - opentelemetry
+    labels:
+      application: baywatch
+    read_only: true
+    environment:
+      BAYWATCH_DNS_SERVERS: 9.9.9.9, 8.8.8.8, 2620:fe::fe
+      BAYWATCH_GRAPHQL_INTROSPECTION: true
+      BAYWATCH_HOME: /var/lib/baywatch
+      BAYWATCH_IMGPROXY_ENABLE: 'false'
+      BAYWATCH_LOG_LEVEL: DEBUG
+      SPRING_MAIN_BANNER-MODE: off
+      SPRING_PROFILES_ACTIVE: json-logging
+    logging:
+      options:
+        labels: 'application'
+        tag: 'id={{.ID}} name={{.Name}} image={{.ImageName}}'
+    ports:
+      - '8081:8081'
+    networks:
+      - bwnet
+    volumes:
+      - /home/marthym:/var/lib/baywatch
+      - /tmp/baywatch:/tmp
+
+  prometheus:
+    image: prom/prometheus:v2.43.0
+    depends_on:
+      - opentelemetry
+    networks:
+      - bwnet
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    volumes:
+      - ./.compose/prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+
+  loki:
+    image: grafana/loki:2.8.1
+    networks:
+      - bwnet
+    command:
+      - -config.file=/etc/loki/local-config.yaml
+      - -config.expand-env=true
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+    volumes:
+      - ./.compose/loki/local-config.yaml:/etc/loki/local-config.yaml
+      - loki_data:/loki
+
+  grafana:
+    image: grafana/grafana:8.5.22
+    user: "472"
+    depends_on:
+      - prometheus
+      - loki
+    ports:
+      - '3000:3000'
+    networks:
+      - bwnet
+    environment:
+      GF_SECURITY_ADMIN_USER: baywatch
+      GF_SECURITY_ADMIN_PASSWORD: baywatch
+      GF_USERS_ALLOW_SIGN_UP: false
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./.compose/grafana/provisioning/:/etc/grafana/provisioning/
+
+  opentelemetry:
+    image: otel/opentelemetry-collector-contrib:0.75.0
+    depends_on:
+      - loki
+    user: '0:0'
+    command:
+      - '--config=/etc/otel/receiver_filelog_container.yaml'
+      - '--config=/etc/otel/receiver_prometheus.yaml'
+      - '--config=/etc/otel/processor_batch.yaml'
+      - '--config=/etc/otel/processor_attributes.yaml'
+      - '--config=/etc/otel/exporter_loki.yaml'
+      - '--config=/etc/otel/exporter_logging.yaml'
+      - '--config=/etc/otel/exporter_prometheus.yaml'
+      - '--config=/etc/otel/service.yaml'
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+    networks:
+      - bwnet
+    volumes:
+      - './.compose/opentelemetry:/etc/otel:ro'
+      - '/home/docker/containers:/var/lib/docker/containers:ro'

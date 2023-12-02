@@ -1,0 +1,12 @@
+enum IndexEntryType {
+    NEWS, FEED
+}
+
+type IndexEntry {
+    id: ID,
+    type: IndexEntryType
+}
+
+extend type Query {
+    searchIndex(q: String): [IndexEntry]
+}

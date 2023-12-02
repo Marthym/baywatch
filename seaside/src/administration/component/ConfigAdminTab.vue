@@ -1,13 +1,13 @@
 <template>
-Config
+  Config
 </template>
 
 <script lang="ts">
-import {Options, Vue} from 'vue-property-decorator';
+import {Component, Vue} from 'vue-facing-decorator';
 
-@Options({
-  name: 'ConfigAdminTab',
-  components: {},
+@Component({
+    name: 'ConfigAdminTab',
+    components: {},
 })
 export default class ConfigAdminTab extends Vue {
 }
