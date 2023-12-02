@@ -13,7 +13,7 @@
   "dependencies": {
     "@heroicons/vue": "2.0.18",
     "core-js": "3.33.2",
-    "daisyui": "4.4.2",
+    "daisyui": "4.4.17",
     "lodash": "4.17.21",
     "md5-js-tools": "1.0.2",
     "rxjs": "7.8.1",
@@ -37,7 +37,7 @@
     "postcss": "8.4.31",
     "tailwindcss": "3.3.5",
     "ts-jest": "29.1.1",
-    "typescript": "5.2.2",
+    "typescript": "5.3.2",
     "vite": "5.0.0",
     "vue-tsc": "1.8.22"
   }
