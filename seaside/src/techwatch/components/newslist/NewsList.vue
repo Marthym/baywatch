@@ -118,12 +118,12 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
         listener('n', event => {
           event.preventDefault();
           this.activateNewsCard(this.activeNews + 1);
-          this.scrollToActivateNews();
+          this.scrollToActivateNews('center');
         }),
         listener('k', event => {
           event.preventDefault();
           this.activateNewsCard(this.activeNews - 1);
-          this.scrollToActivateNews();
+          this.scrollToActivateNews('center');
         }),
         listener('m', event => {
           event.preventDefault();
@@ -272,7 +272,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   }
 
   private markNewsRead(idx: number, mark: boolean) {
-    console.log("markNewsRead", idx)
+    console.log('markNewsRead', idx);
     if (!this.isAuthenticated) {
       return;
     }
@@ -348,15 +348,15 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
    *
    * @private
    */
-  private scrollToActivateNews() {
+  private scrollToActivateNews(block: string = 'center') {
     if (this.activeNews >= this.news.length - 2 || this.activeNews < 0) {
       // Stop if last news
       return;
     }
-    const current = this.news[this.activeNews + 1];
+    const current = this.news[this.activeNews];
     this.$nextTick(() => {
       this.getRefElement(current.data.id).scrollIntoView(
-          { block: 'center', scrollBehavior: 'smooth' } as ScrollIntoViewOptions);
+          { block: block, behavior: 'smooth' } as ScrollIntoViewOptions);
     });
   }
 
