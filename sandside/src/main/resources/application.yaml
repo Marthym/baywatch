@@ -10,11 +10,16 @@ spring:
     hikari:
       data-source-properties.foreign_keys=true: true
 #      maximum-pool-size: 1
+  flyway:
+    baseline-on-migrate: true
+    baseline-version: 2.0.0
   jooq:
     sql-dialect: sqlite
   graphql:
     graphiql.enabled: ${BAYWATCH_GRAPHIQL_ENABLE:false}
-    schema.introspection.enabled: ${BAYWATCH_GRAPHQL_INTROSPECTION:false}
+    schema:
+      introspection.enabled: ${BAYWATCH_GRAPHQL_INTROSPECTION:false}
+      inspection.enabled: false
     path: /api/g
 
 server:
@@ -39,12 +44,11 @@ logging:
     org.jooq: WARN
     fr.ght1pc9kc.baywatch: ${BAYWATCH_LOG_LEVEL:DEBUG}
     fr.ght1pc9kc.scraphead: ${BAYWATCH_LOG_LEVEL:DEBUG}
-    fr.ght1pc9kc.scraphead.core.scrap.HeadScraperImpl: DEBUG
+#    fr.ght1pc9kc.scraphead.core.scrap.HeadScraperImpl: DEBUG
     #    fr.ght1pc9kc.baywatch.indexer: TRACE
     # Avoid unwanted log error ...
     org.springframework:
       boot.autoconfigure.jooq.JooqExceptionTranslator: OFF
-#      graphql: DEBUG
     reactor.netty.http.client: ERROR
 
 baywatch:
