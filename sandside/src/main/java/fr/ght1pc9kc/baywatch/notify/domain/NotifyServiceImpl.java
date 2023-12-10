@@ -10,6 +10,7 @@ import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.model.ReactiveEvent;
 import fr.ght1pc9kc.baywatch.notify.api.model.ServerEvent;
 import fr.ght1pc9kc.baywatch.notify.domain.model.ByUserEventPublisherCacheEntry;
+import fr.ght1pc9kc.baywatch.notify.domain.ports.NotificationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
@@ -27,12 +28,17 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class NotifyServiceImpl implements NotifyService, NotifyManager {
+    private static final String PREFIX = "EV";
+
     private final AuthenticationFacade authFacade;
+    private final NotificationPersistencePort notificationPersistence;
 
     private final Sinks.Many<ServerEvent> multicast;
     private final Cache<String, ByUserEventPublisherCacheEntry> cache;
 
-    public NotifyServiceImpl(AuthenticationFacade authenticationFacade) {
+    public NotifyServiceImpl(
+            AuthenticationFacade authenticationFacade, NotificationPersistencePort notificationPersistence) {
+        this.notificationPersistence = notificationPersistence;
         this.authFacade = authenticationFacade;
         this.multicast = Sinks.many().multicast().directBestEffort();
         this.cache = Caffeine.newBuilder()
@@ -60,7 +66,11 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
                     Sinks.Many<ServerEvent> sink = Sinks.many().multicast().directBestEffort();
                     AtomicReference<Subscription> subscription = new AtomicReference<>();
                     Flux<ServerEvent> multicastFlux = this.multicast.asFlux().doOnSubscribe(subscription::set);
-                    Flux<ServerEvent> eventPublisher = Flux.merge(sink.asFlux(), multicastFlux)
+                    Flux<ServerEvent> eventPublisher = Flux.merge(
+                                    notificationPersistence.consume(u.id),
+                                    sink.asFlux(),
+                                    multicastFlux
+                            )
                             .takeWhile(e -> cache.asMap().containsKey(id))
                             .map(e -> {
                                 log.debug("Event: {}", e);
@@ -90,7 +100,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
 
     @Override
     public <T> BasicEvent<T> send(String userId, EventType type, T data) {
-        BasicEvent<T> event = new BasicEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
+        BasicEvent<T> event = new BasicEvent<>(PREFIX + UlidCreator.getMonotonicUlid().toString(), type, data);
         Optional.ofNullable(cache.getIfPresent(userId))
                 .map(ByUserEventPublisherCacheEntry::sink)
                 .ifPresent(sk -> emit(sk, event));
@@ -99,7 +109,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
 
     @Override
     public <T> ReactiveEvent<T> send(String userId, EventType type, Mono<T> data) {
-        ReactiveEvent<T> event = new ReactiveEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
+        ReactiveEvent<T> event = new ReactiveEvent<>(PREFIX + UlidCreator.getMonotonicUlid().toString(), type, data);
         Optional.ofNullable(cache.getIfPresent(userId))
                 .map(ByUserEventPublisherCacheEntry::sink)
                 .ifPresent(sk -> emit(sk, event));
@@ -108,14 +118,14 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
 
     @Override
     public <T> BasicEvent<T> broadcast(EventType type, T data) {
-        BasicEvent<T> event = new BasicEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
+        BasicEvent<T> event = new BasicEvent<>(PREFIX + UlidCreator.getMonotonicUlid().toString(), type, data);
         emit(this.multicast, event);
         return event;
     }
 
     @Override
     public <T> ReactiveEvent<T> broadcast(EventType type, Mono<T> data) {
-        ReactiveEvent<T> event = new ReactiveEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
+        ReactiveEvent<T> event = new ReactiveEvent<>(PREFIX + UlidCreator.getMonotonicUlid().toString(), type, data);
         emit(this.multicast, event);
         return event;
     }
