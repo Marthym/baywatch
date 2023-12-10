@@ -45,13 +45,16 @@ public class NotificationPersistenceAdapter implements NotificationPersistencePo
                         int count = (int) n;
                         var rs = cursor.fetchNext(count);
                         rs.forEach(sink::next);
-                        dsl.deleteFrom(NOTIFICATIONS).where(NOTIFICATIONS.NOTI_ID.eq(rs.field(NOTIFICATIONS.NOTI_ID)))
-                                .execute();
                         if (rs.size() < count) {
                             sink.complete();
                         }
                     }).onDispose(cursor::close);
                 }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
+                .flatMap(r -> Mono.fromCallable(() ->
+                                dsl.deleteFrom(NOTIFICATIONS)
+                                        .where(NOTIFICATIONS.NOTI_ID.eq(r.getNotiId()))
+                                        .execute())
+                        .then(Mono.just(r)))
                 .map(this::buildServerEvent);
     }
 
