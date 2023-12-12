@@ -2,11 +2,13 @@ package fr.ght1pc9kc.baywatch.notify.domain;
 
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.model.ServerEvent;
+import fr.ght1pc9kc.baywatch.notify.domain.ports.NotificationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,7 +35,9 @@ class NotifyServiceImplTest {
                 Mono.just(UserSamples.LUKE),
                 Mono.just(UserSamples.OBIWAN),
                 Mono.just(UserSamples.LUKE));
-        tested = new NotifyServiceImpl(authFacadeMock);
+        NotificationPersistencePort notificationPersistenceMock = mock(NotificationPersistencePort.class);
+        when(notificationPersistenceMock.consume(anyString())).thenReturn(Flux.empty());
+        tested = new NotifyServiceImpl(authFacadeMock, notificationPersistenceMock);
     }
 
     @Test
