@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.notify.domain;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.f4b6a3.ulid.UlidCreator;
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyManager;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.notify.api.model.BasicEvent;
@@ -21,6 +22,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.core.publisher.Sinks.EmitResult;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
@@ -35,12 +37,15 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
 
     private final Sinks.Many<ServerEvent> multicast;
     private final Cache<String, ByUserEventPublisherCacheEntry> cache;
+    private final Clock clock;
 
     public NotifyServiceImpl(
-            AuthenticationFacade authenticationFacade, NotificationPersistencePort notificationPersistence) {
+            AuthenticationFacade authenticationFacade, NotificationPersistencePort notificationPersistence,
+            Clock clock) {
         this.notificationPersistence = notificationPersistence;
         this.authFacade = authenticationFacade;
         this.multicast = Sinks.many().multicast().directBestEffort();
+        this.clock = clock;
         this.cache = Caffeine.newBuilder()
                 .expireAfterAccess(Duration.ofMinutes(30))
                 .maximumSize(1000)
@@ -103,7 +108,13 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         BasicEvent<T> event = new BasicEvent<>(PREFIX + UlidCreator.getMonotonicUlid().toString(), type, data);
         Optional.ofNullable(cache.getIfPresent(userId))
                 .map(ByUserEventPublisherCacheEntry::sink)
-                .ifPresent(sk -> emit(sk, event));
+                .ifPresentOrElse(
+                        sk -> emit(sk, event),
+                        () -> notificationPersistence.persist(Entity.<ServerEvent>builder()
+                                .id(event.id())
+                                .createdBy(userId)
+                                .createdAt(clock.instant())
+                                .self(event).build()).subscribe());
         return event;
     }
 
@@ -112,7 +123,13 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         ReactiveEvent<T> event = new ReactiveEvent<>(PREFIX + UlidCreator.getMonotonicUlid().toString(), type, data);
         Optional.ofNullable(cache.getIfPresent(userId))
                 .map(ByUserEventPublisherCacheEntry::sink)
-                .ifPresent(sk -> emit(sk, event));
+                .ifPresentOrElse(
+                        sk -> emit(sk, event),
+                        () -> notificationPersistence.persist(Entity.<ServerEvent>builder()
+                                .id(event.id())
+                                .createdBy(userId)
+                                .createdAt(clock.instant())
+                                .self(event).build()).subscribe());
         return event;
     }
 

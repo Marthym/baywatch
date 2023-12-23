@@ -12,6 +12,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,7 +40,7 @@ class NotifyServiceImplTest {
                 Mono.just(UserSamples.LUKE));
         NotificationPersistencePort notificationPersistenceMock = mock(NotificationPersistencePort.class);
         when(notificationPersistenceMock.consume(anyString())).thenReturn(Flux.empty());
-        tested = new NotifyServiceImpl(authFacadeMock, notificationPersistenceMock);
+        tested = new NotifyServiceImpl(authFacadeMock, notificationPersistenceMock, Clock.fixed(Instant.parse("2023-12-12T10:10:10Z"), ZoneOffset.UTC));
     }
 
     @Test

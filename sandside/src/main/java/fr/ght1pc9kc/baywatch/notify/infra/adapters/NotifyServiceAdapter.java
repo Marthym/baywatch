@@ -17,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.Clock;
+
 @Slf4j
 @Service
 public class NotifyServiceAdapter implements NotifyService, NotifyManager, CounterProvider {
@@ -25,7 +27,7 @@ public class NotifyServiceAdapter implements NotifyService, NotifyManager, Count
 
     public NotifyServiceAdapter(
             AuthenticationFacade authFacade, NotificationPersistencePort notificationPersistence, MeterRegistry registry) {
-        this.delegate = new NotifyServiceImpl(authFacade, notificationPersistence);
+        this.delegate = new NotifyServiceImpl(authFacade, notificationPersistence, Clock.systemUTC());
 
         Gauge.builder("bw.session_count", delegate::countCacheEntries)
                 .baseUnit("gauge")
