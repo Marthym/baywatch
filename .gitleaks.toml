@@ -1,0 +1,12 @@
+title = "Gitleaks Baywatch"
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Ignore false positive"
+commits = [
+    "5a5bffb6a3fd2b0cb7d40849bd9f8c8d7f97dd5f"
+]
+paths = [
+    "sandside/src/test"
+]
