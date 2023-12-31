@@ -69,7 +69,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         }
         return authFacade.getConnectedUser().flatMapMany(u ->
                 Objects.requireNonNull(cache.get(u.id, id -> {
-                    Sinks.Many<ServerEvent> sink = Sinks.many().unicast().onBackpressureBuffer();
+                    Sinks.Many<ServerEvent> sink = Sinks.many().multicast().onBackpressureBuffer();
                     AtomicReference<Subscription> subscription = new AtomicReference<>();
                     Flux<ServerEvent> multicastFlux = this.multicast.asFlux()
                             .doOnSubscribe(subscription::set);
