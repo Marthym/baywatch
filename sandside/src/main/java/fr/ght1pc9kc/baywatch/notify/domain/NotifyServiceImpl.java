@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.notify.domain;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.f4b6a3.ulid.UlidCreator;
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyManager;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.notify.api.model.BasicEvent;
@@ -21,6 +22,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.core.publisher.Sinks.EmitResult;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
@@ -35,17 +37,21 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
 
     private final Sinks.Many<ServerEvent> multicast;
     private final Cache<String, ByUserEventPublisherCacheEntry> cache;
+    private final Clock clock;
 
     public NotifyServiceImpl(
-            AuthenticationFacade authenticationFacade, NotificationPersistencePort notificationPersistence) {
+            AuthenticationFacade authenticationFacade, NotificationPersistencePort notificationPersistence,
+            Clock clock) {
         this.notificationPersistence = notificationPersistence;
         this.authFacade = authenticationFacade;
         this.multicast = Sinks.many().multicast().directBestEffort();
+        this.clock = clock;
         this.cache = Caffeine.newBuilder()
                 .expireAfterAccess(Duration.ofMinutes(30))
                 .maximumSize(1000)
-                .<String, ByUserEventPublisherCacheEntry>evictionListener((key, value, cause) -> {
+                .<String, ByUserEventPublisherCacheEntry>removalListener((key, value, cause) -> {
                     if (value != null) {
+                        log.atTrace().addArgument(key).log("Remove {} from the cache");
                         value.sink().tryEmitComplete();
                         Subscription subscription = value.subscription().getAndSet(null);
                         if (subscription != null) {
@@ -63,9 +69,12 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         }
         return authFacade.getConnectedUser().flatMapMany(u ->
                 Objects.requireNonNull(cache.get(u.id, id -> {
-                    Sinks.Many<ServerEvent> sink = Sinks.many().multicast().directBestEffort();
+                    Sinks.Many<ServerEvent> sink = Sinks.many().unicast().onBackpressureBuffer();
                     AtomicReference<Subscription> subscription = new AtomicReference<>();
-                    Flux<ServerEvent> multicastFlux = this.multicast.asFlux().doOnSubscribe(subscription::set);
+                    Flux<ServerEvent> multicastFlux = this.multicast.asFlux()
+                            .doOnSubscribe(subscription::set);
+                    log.atDebug().addArgument(u.id)
+                            .log("Subscribe notification for {}");
                     Flux<ServerEvent> eventPublisher = Flux.merge(
                                     notificationPersistence.consume(u.id),
                                     sink.asFlux(),
@@ -73,7 +82,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
                             )
                             .takeWhile(e -> cache.asMap().containsKey(id))
                             .map(e -> {
-                                log.debug("Event: {}", e);
+                                log.atDebug().addArgument(u.id).addArgument(e).log("{} receive Event: {}");
                                 return e;
                             }).cache(0);
                     return new ByUserEventPublisherCacheEntry(subscription, sink, eventPublisher);
@@ -85,7 +94,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         return authFacade.getConnectedUser()
                 .filter(u -> cache.asMap().containsKey(u.id))
                 .map(u -> {
-                    log.debug("Dispose SSE Subscription for {}", u.self.login);
+                    log.atDebug().addArgument(u.id).log("Dispose SSE Subscription for {}");
                     cache.invalidate(u.id);
                     return true;
                 });
@@ -96,6 +105,8 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         this.multicast.tryEmitComplete();
         this.cache.invalidateAll();
         this.cache.cleanUp();
+        log.atWarn().addArgument(this.multicast.currentSubscriberCount())
+                .log("Close multicast notifications channel ({} indisposed subscription(s))!");
     }
 
     @Override
@@ -103,7 +114,13 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         BasicEvent<T> event = new BasicEvent<>(PREFIX + UlidCreator.getMonotonicUlid().toString(), type, data);
         Optional.ofNullable(cache.getIfPresent(userId))
                 .map(ByUserEventPublisherCacheEntry::sink)
-                .ifPresent(sk -> emit(sk, event));
+                .ifPresentOrElse(
+                        sk -> emit(sk, event),
+                        () -> notificationPersistence.persist(Entity.<ServerEvent>builder()
+                                .id(event.id())
+                                .createdBy(userId)
+                                .createdAt(clock.instant())
+                                .self(event).build()).subscribe());
         return event;
     }
 
@@ -112,7 +129,13 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         ReactiveEvent<T> event = new ReactiveEvent<>(PREFIX + UlidCreator.getMonotonicUlid().toString(), type, data);
         Optional.ofNullable(cache.getIfPresent(userId))
                 .map(ByUserEventPublisherCacheEntry::sink)
-                .ifPresent(sk -> emit(sk, event));
+                .ifPresentOrElse(
+                        sk -> emit(sk, event),
+                        () -> notificationPersistence.persist(Entity.<ServerEvent>builder()
+                                .id(event.id())
+                                .createdBy(userId)
+                                .createdAt(clock.instant())
+                                .self(event).build()).subscribe());
         return event;
     }
 
@@ -136,15 +159,15 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
 
     private void emit(@Nullable Sinks.Many<ServerEvent> sink, ServerEvent event) {
         if (sink == null) {
-            log.debug("No subscriber listening the SSE entry point.");
+            log.atDebug().log("No subscriber listening the SSE entry point.");
             return;
         }
         EmitResult result = sink.tryEmitNext(event);
         if (result.isFailure()) {
             if (result == EmitResult.FAIL_ZERO_SUBSCRIBER) {
-                log.debug("No subscriber listening the SSE entry point.");
+                log.atDebug().log("No subscriber listening the SSE entry point.");
             } else {
-                log.warn("{} on emit notification", result);
+                log.atWarn().addArgument(result).log("{} on emit notification");
             }
         }
     }

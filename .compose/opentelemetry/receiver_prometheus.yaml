@@ -7,9 +7,6 @@ receivers:
         - job_name: 'otel-collector'
           scrape_interval: 5s
           metrics_path: '/actuator/prometheus'
-          basic_auth:
-            username: "prometheus"
-            password: "***REMOVED***"
           static_configs:
             - targets: [baywatch:8081]
               labels:
