@@ -4,6 +4,8 @@ import com.github.f4b6a3.ulid.Ulid;
 import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.baywatch.notify.api.model.BasicEvent;
+import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
@@ -11,6 +13,7 @@ import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
+import fr.ght1pc9kc.baywatch.security.domain.ports.NotificationPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
@@ -43,6 +46,7 @@ class UserServiceImplTest {
     private final AuthorizationPersistencePort mockAuthorizationRepository = mock(AuthorizationPersistencePort.class);
     private final AuthenticationFacade mockAuthFacade = mock(AuthenticationFacade.class);
     private final UlidFactory mockUlidFactory = mock(UlidFactory.class);
+    private final NotificationPort mockNotificationPort = mock(NotificationPort.class);
 
     private UserServiceImpl tested;
 
@@ -57,8 +61,10 @@ class UserServiceImplTest {
         when(mockUserRepository.delete(anyString(), anyCollection())).thenReturn(Mono.empty().then());
         when(mockUserRepository.count(any())).thenReturn(Mono.just(3));
         when(mockAuthorizationRepository.count(any())).thenReturn(Mono.just(0));
+        when(mockNotificationPort.send(anyString(), any(EventType.class), any()))
+                .thenReturn(new BasicEvent<>(Ulid.fast().toString(), EventType.USER_NOTIFICATION, "New jedi in the force"));
 
-        tested = new UserServiceImpl(mockUserRepository, mockAuthorizationRepository,
+        tested = new UserServiceImpl(mockUserRepository, mockAuthorizationRepository, mockNotificationPort,
                 mockAuthFacade, NoOpPasswordEncoder.getInstance(),
                 Clock.fixed(CURRENT, ZoneOffset.UTC), mockUlidFactory);
     }
@@ -117,7 +123,7 @@ class UserServiceImplTest {
         ArgumentCaptor<List<Entity<User>>> users = ArgumentCaptor.forClass(List.class);
         verify(mockUserRepository).persist(users.capture());
 
-        Entity<User> actual = users.getValue().get(0);
+        Entity<User> actual = users.getValue().getFirst();
         Assertions.assertThat(actual).isEqualTo(Entity.identify(UserSamples.OBIWAN.id, CURRENT, UserSamples.OBIWAN.self));
     }
 
