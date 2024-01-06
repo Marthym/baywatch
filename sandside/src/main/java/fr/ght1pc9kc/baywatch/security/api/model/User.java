@@ -49,4 +49,12 @@ public class User {
                 .roles(List.copyOf(verifiedRoles))
                 .build();
     }
+
+    public UpdatableUser.UpdatableUserBuilder updatable() {
+        return UpdatableUser.builder()
+                .login(login)
+                .name(Optional.of(name))
+                .mail(mail)
+                .roles(roles);
+    }
 }
