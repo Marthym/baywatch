@@ -13,6 +13,7 @@ import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
+import fr.ght1pc9kc.baywatch.security.domain.ports.NotificationPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -33,7 +34,10 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ROLES;
+import static fr.ght1pc9kc.baywatch.notify.api.model.EventType.USER_NOTIFICATION;
 import static fr.ght1pc9kc.baywatch.security.api.model.RoleUtils.hasRole;
+import static java.util.function.Predicate.not;
 
 @Slf4j
 @AllArgsConstructor
@@ -44,6 +48,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
 
     private final UserPersistencePort userRepository;
     private final AuthorizationPersistencePort authorizationRepository;
+    private final NotificationPort notificationPort;
     private final AuthenticationFacade authFacade;
     private final PasswordEncoder passwordEncoder;
     private final Clock clock;
@@ -77,7 +82,16 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
         Entity<User> entity = Entity.identify(userId, clock.instant(), withPassword);
         return authorizeAllData()
                 .flatMap(u -> userRepository.persist(List.of(entity)).single())
-                .then(userRepository.persist(userId, user.roles.stream().map(Permission::toString).distinct().toList()));
+                .then(userRepository.persist(userId, user.roles.stream().map(Permission::toString).distinct().toList()))
+                .flatMap(this::notifyAdmins);
+    }
+
+    private Mono<Entity<User>> notifyAdmins(Entity<User> newUser) {
+        return this.list(PageRequest.all(Criteria.property(ROLES).eq(Role.ADMIN.toString())))
+                .filter(not(admin -> admin.id.equals(newUser.createdBy)))
+                .map(admin -> notificationPort.send(admin.id, USER_NOTIFICATION,
+                        String.format("New user %s created by %s.", newUser.self.login, newUser.createdBy)))
+                .then(Mono.just(newUser));
     }
 
     @Override
