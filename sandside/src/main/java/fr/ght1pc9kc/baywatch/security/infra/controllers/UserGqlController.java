@@ -67,6 +67,7 @@ public class UserGqlController {
     }
 
     @MutationMapping
+    @PreAuthorize("isAuthenticated()")
     public Mono<Map<String, Object>> userCreate(@Validated({CreateValidation.class}) @Argument("user") UserForm user) {
         MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
 
