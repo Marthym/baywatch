@@ -39,7 +39,6 @@ import java.util.stream.Stream;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -61,7 +60,7 @@ class UserServiceImplTest {
     void setUp() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
         doAnswer(answer -> Stream.of(UserSamples.LUKE, UserSamples.YODA, UserSamples.OBIWAN)
-                .filter(u -> u.id.equals(answer.getArgument(0, String.class)))
+                .filter(u -> u.id().equals(answer.getArgument(0, String.class)))
                 .findAny().map(Mono::just).orElseThrow()
         ).when(mockUserRepository).get(anyString());
         when(mockUserRepository.list(any())).thenReturn(Flux.just(UserSamples.LUKE, UserSamples.OBIWAN, UserSamples.YODA));
@@ -80,7 +79,7 @@ class UserServiceImplTest {
 
     @Test
     void should_get_user() {
-        StepVerifier.create(tested.get(UserSamples.LUKE.id))
+        StepVerifier.create(tested.get(UserSamples.LUKE.id()))
                 .expectNext(UserSamples.LUKE)
                 .verifyComplete();
     }
@@ -105,7 +104,7 @@ class UserServiceImplTest {
     void should_create_user_without_authentication() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.empty());
 
-        StepVerifier.create(tested.create(UserSamples.OBIWAN.self))
+        StepVerifier.create(tested.create(UserSamples.OBIWAN.self()))
                 .verifyError(UnauthenticatedUser.class);
     }
 
@@ -113,7 +112,7 @@ class UserServiceImplTest {
     void should_create_user_without_admin() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
 
-        StepVerifier.create(tested.create(UserSamples.OBIWAN.self))
+        StepVerifier.create(tested.create(UserSamples.OBIWAN.self()))
                 .verifyError(UnauthorizedOperation.class);
     }
 
@@ -123,9 +122,9 @@ class UserServiceImplTest {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
         when(mockUserRepository.persist(any())).thenReturn(Flux.just(UserSamples.OBIWAN));
         when(mockUserRepository.persist(anyString(), anyCollection())).thenReturn(Mono.just(UserSamples.OBIWAN));
-        when(mockUlidFactory.create()).thenReturn(Ulid.from(UserSamples.OBIWAN.id.substring(2)));
+        when(mockUlidFactory.create()).thenReturn(Ulid.from(UserSamples.OBIWAN.id().substring(2)));
 
-        StepVerifier.create(tested.create(UserSamples.OBIWAN.self))
+        StepVerifier.create(tested.create(UserSamples.OBIWAN.self()))
                 .expectNext(UserSamples.OBIWAN)
                 .verifyComplete();
 
@@ -133,57 +132,57 @@ class UserServiceImplTest {
         verify(mockUserRepository).persist(users.capture());
 
         Entity<User> actual = users.getValue().getFirst();
-        Assertions.assertThat(actual).isEqualTo(Entity.identify(UserSamples.OBIWAN.id, CURRENT, UserSamples.OBIWAN.self));
+        Assertions.assertThat(actual).isEqualTo(Entity.identify(UserSamples.OBIWAN.id(), CURRENT, UserSamples.OBIWAN.self()));
     }
 
     @Test
     void should_update_other_user_as_admin() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
         when(mockUserRepository.update(anyString(), any())).thenReturn(Mono.just(UserSamples.OBIWAN));
-        UpdatableUser obiChan = UserSamples.OBIWAN.self.updatable()
+        UpdatableUser obiChan = UserSamples.OBIWAN.self().updatable()
                 .name(Optional.of("Obi Chan"))
                 .build();
 
-        Mono<Entity<User>> actual = tested.update(UserSamples.OBIWAN.id, obiChan, "kenobi");
+        Mono<Entity<User>> actual = tested.update(UserSamples.OBIWAN.id(), obiChan, "kenobi");
 
         StepVerifier.create(actual)
                 .assertNext(a -> Assertions.assertThat(a).isNotNull())
                 .verifyComplete();
 
-        verify(mockUserRepository).update(UserSamples.OBIWAN.id, obiChan);
+        verify(mockUserRepository).update(UserSamples.OBIWAN.id(), obiChan);
     }
 
     @Test
     void should_update_my_user() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
         when(mockUserRepository.update(anyString(), any())).thenReturn(Mono.just(UserSamples.OBIWAN));
-        UpdatableUser obiChan = UserSamples.OBIWAN.self.updatable()
+        UpdatableUser obiChan = UserSamples.OBIWAN.self().updatable()
                 .name(Optional.of("Obi Chan"))
                 .build();
 
-        Mono<Entity<User>> actual = tested.update(UserSamples.OBIWAN.id, obiChan, UserSamples.OBIWAN.self.password);
+        Mono<Entity<User>> actual = tested.update(UserSamples.OBIWAN.id(), obiChan, UserSamples.OBIWAN.self().password);
 
         StepVerifier.create(actual)
                 .assertNext(a -> Assertions.assertThat(a).isNotNull())
                 .verifyComplete();
 
-        verify(mockUserRepository).update(UserSamples.OBIWAN.id, obiChan);
+        verify(mockUserRepository).update(UserSamples.OBIWAN.id(), obiChan);
     }
 
     @Test
     void should_fail_update_user_with_invalid_password() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
         when(mockUserRepository.update(anyString(), any())).thenReturn(Mono.just(UserSamples.OBIWAN));
-        UpdatableUser obiChan = UserSamples.OBIWAN.self.updatable()
+        UpdatableUser obiChan = UserSamples.OBIWAN.self().updatable()
                 .name(Optional.of("Obi Chan"))
                 .build();
 
-        Mono<Entity<User>> actual = tested.update(UserSamples.OBIWAN.id, obiChan, "Invalid Password");
+        Mono<Entity<User>> actual = tested.update(UserSamples.OBIWAN.id(), obiChan, "Invalid Password");
 
         StepVerifier.create(actual)
                 .verifyError(UnauthorizedOperation.class);
 
-        verify(mockUserRepository, never()).update(UserSamples.OBIWAN.id, obiChan);
+        verify(mockUserRepository, never()).update(UserSamples.OBIWAN.id(), obiChan);
     }
 
     @Test
@@ -193,7 +192,7 @@ class UserServiceImplTest {
         when(mockUserRepository.list(any())).thenReturn(Flux.just(UserSamples.OBIWAN));
         when(mockUserRepository.delete(anyCollection())).thenReturn(Mono.just(1));
 
-        StepVerifier.create(tested.delete(List.of(UserSamples.OBIWAN.id)))
+        StepVerifier.create(tested.delete(List.of(UserSamples.OBIWAN.id())))
                 .expectNext(UserSamples.OBIWAN)
                 .verifyComplete();
 
@@ -203,37 +202,37 @@ class UserServiceImplTest {
         verify(mockUserRepository).delete(deleted.capture());
 
         Assertions.assertThat(selected.getValue())
-                .isEqualTo(QueryContext.all(Criteria.property(EntitiesProperties.ID).in(UserSamples.OBIWAN.id)));
-        Assertions.assertThat(deleted.getValue()).isEqualTo(List.of(UserSamples.OBIWAN.id));
+                .isEqualTo(QueryContext.all(Criteria.property(EntitiesProperties.ID).in(UserSamples.OBIWAN.id())));
+        Assertions.assertThat(deleted.getValue()).isEqualTo(List.of(UserSamples.OBIWAN.id()));
     }
 
     @Test
     void should_grant_role_as_admin() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
 
-        StepVerifier.create(tested.grants(UserSamples.LUKE.id, List.of(Permission.manager("42"))))
+        StepVerifier.create(tested.grants(UserSamples.LUKE.id(), List.of(Permission.manager("42"))))
                 .expectNext(UserSamples.LUKE)
                 .verifyComplete();
 
-        verify(mockUserRepository).persist(UserSamples.LUKE.id, List.of("MANAGER:42"));
+        verify(mockUserRepository).persist(UserSamples.LUKE.id(), List.of("MANAGER:42"));
     }
 
     @Test
     void should_grant_role_as_user() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
 
-        StepVerifier.create(tested.grants(UserSamples.LUKE.id, List.of(Permission.manager("42"))))
+        StepVerifier.create(tested.grants(UserSamples.LUKE.id(), List.of(Permission.manager("42"))))
                 .expectNext(UserSamples.LUKE)
                 .verifyComplete();
 
-        verify(mockUserRepository).persist(UserSamples.LUKE.id, List.of("MANAGER:42"));
+        verify(mockUserRepository).persist(UserSamples.LUKE.id(), List.of("MANAGER:42"));
     }
 
     @Test
     void should_fail_to_elevate_self_role() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
 
-        StepVerifier.create(tested.grants(UserSamples.LUKE.id, List.of(Role.ADMIN)))
+        StepVerifier.create(tested.grants(UserSamples.LUKE.id(), List.of(Role.ADMIN)))
                 .verifyError(UnauthorizedOperation.class);
     }
 
@@ -241,7 +240,7 @@ class UserServiceImplTest {
     void should_fail_to_grant_other_user() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
 
-        StepVerifier.create(tested.grants(UserSamples.OBIWAN.id, List.of(Permission.manager("42"))))
+        StepVerifier.create(tested.grants(UserSamples.OBIWAN.id(), List.of(Permission.manager("42"))))
                 .verifyError(UnauthorizedOperation.class);
     }
 
@@ -249,29 +248,29 @@ class UserServiceImplTest {
     void should_revoke_role_as_admin() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
 
-        StepVerifier.create(tested.revokes(Permission.manager("42"), List.of(UserSamples.LUKE.id)))
+        StepVerifier.create(tested.revokes(Permission.manager("42"), List.of(UserSamples.LUKE.id())))
                 .expectNext()
                 .verifyComplete();
 
-        verify(mockUserRepository).delete("MANAGER:42", List.of(UserSamples.LUKE.id));
+        verify(mockUserRepository).delete("MANAGER:42", List.of(UserSamples.LUKE.id()));
     }
 
     @Test
     void should_revoke_role_as_user() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
 
-        StepVerifier.create(tested.revokes(Permission.manager("42"), List.of(UserSamples.LUKE.id)))
+        StepVerifier.create(tested.revokes(Permission.manager("42"), List.of(UserSamples.LUKE.id())))
                 .expectNext()
                 .verifyComplete();
 
-        verify(mockUserRepository).delete("MANAGER:42", List.of(UserSamples.LUKE.id));
+        verify(mockUserRepository).delete("MANAGER:42", List.of(UserSamples.LUKE.id()));
     }
 
     @Test
     void should_fail_to_revoke_other_user() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
 
-        StepVerifier.create(tested.revokes(Role.MANAGER, List.of(UserSamples.OBIWAN.id)))
+        StepVerifier.create(tested.revokes(Role.MANAGER, List.of(UserSamples.OBIWAN.id())))
                 .verifyError(UnauthorizedOperation.class);
     }
 }

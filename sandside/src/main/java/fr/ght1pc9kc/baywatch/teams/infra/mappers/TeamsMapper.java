@@ -26,7 +26,7 @@ public interface TeamsMapper {
     Entity<Team> getTeamEntity(TeamsRecord teamsRecord);
 
     @InheritInverseConfiguration
-    @Mapping(target = "teamCreatedAt", expression = "java( DateUtils.toLocalDateTime(team.createdAt) )")
+    @Mapping(target = "teamCreatedAt", expression = "java( DateUtils.toLocalDateTime(team.createdAt()) )")
     TeamsRecord getTeamRecord(Entity<Team> team);
 
     @Mapping(source = "temeTeamId", target = "id")
@@ -37,8 +37,8 @@ public interface TeamsMapper {
     Entity<TeamMember> getMemberEntity(TeamsMembersRecord teamsMembersRecord);
 
     @InheritInverseConfiguration
-    @Mapping(target = "temePendingFor", expression = "java( request.self.pending().value() )")
-    @Mapping(target = "temeCreatedAt", expression = "java( DateUtils.toLocalDateTime(request.createdAt) )")
+    @Mapping(target = "temePendingFor", expression = "java( request.self().pending().value() )")
+    @Mapping(target = "temeCreatedAt", expression = "java( DateUtils.toLocalDateTime(request.createdAt()) )")
     TeamsMembersRecord getTeamsMemberRecord(Entity<TeamMember> request);
 
     default Instant fromLocalDateTime(LocalDateTime date) {

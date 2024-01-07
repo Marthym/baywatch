@@ -19,7 +19,7 @@ public class IndexableDataAdapter implements IndexableDataPort {
     @Override
     public Flux<IndexableFeed> listFeed() {
         return systemMaintenanceService.feedList()
-                .map(f -> mapper.getIndexableFromFeed(f.self));
+                .map(f -> mapper.getIndexableFromFeed(f.self()));
     }
 
     @Override

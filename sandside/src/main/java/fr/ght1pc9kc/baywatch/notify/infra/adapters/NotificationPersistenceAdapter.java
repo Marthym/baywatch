@@ -36,7 +36,7 @@ public class NotificationPersistenceAdapter implements NotificationPersistencePo
 
     @Override
     public Mono<ServerEvent> persist(Entity<ServerEvent> event) {
-        Mono<NotificationsRecord> notificationsRecord = event.self.accept(new ServerEventVisitor<>() {
+        Mono<NotificationsRecord> notificationsRecord = event.self().accept(new ServerEventVisitor<>() {
             @Override
             public <T> Mono<NotificationsRecord> visit(BasicEvent<T> event) {
                 return Mono.just(NOTIFICATIONS.newRecord()
@@ -50,14 +50,14 @@ public class NotificationPersistenceAdapter implements NotificationPersistencePo
             }
         });
         return notificationsRecord.map(r ->
-                        r.setNotiCreatedAt(DateUtils.toLocalDateTime(event.createdAt))
-                                .setNotiEventType(event.self.type().getName())
-                                .setNotiId(event.id)
-                                .setNotiUserId(event.createdBy))
+                        r.setNotiCreatedAt(DateUtils.toLocalDateTime(event.createdAt()))
+                                .setNotiEventType(event.self().type().getName())
+                                .setNotiId(event.id())
+                                .setNotiUserId(event.createdBy()))
                 .flatMap(r ->
                         Mono.fromCompletionStage(dsl.insertInto(NOTIFICATIONS).set(r).executeAsync())
                                 .subscribeOn(databaseScheduler))
-                .thenReturn(event.self);
+                .thenReturn(event.self());
     }
 
     @Override

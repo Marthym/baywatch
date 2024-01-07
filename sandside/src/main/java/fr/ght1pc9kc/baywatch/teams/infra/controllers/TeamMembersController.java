@@ -70,8 +70,8 @@ public class TeamMembersController {
         MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
 
         return authFacade.getConnectedUser()
-                .flatMapMany(userEntity -> teamsService.members(PageRequest.all(Criteria.property(USER_ID).eq(userEntity.id))))
-                .collectMap(e -> e.id, Function.identity())
+                .flatMapMany(userEntity -> teamsService.members(PageRequest.all(Criteria.property(USER_ID).eq(userEntity.id()))))
+                .collectMap(Entity::id, Function.identity())
                 .map(currentUsers -> teams.stream().map(t -> {
                     String teamId = Optional.ofNullable(t.get("_id")).map(Object::toString).orElse("");
                     Entity<TeamMember> meForTeam = currentUsers.get(teamId);

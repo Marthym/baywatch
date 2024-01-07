@@ -71,11 +71,11 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
                                 .switchIfEmpty(Mono.fromCallable(t::get)))
                         .contextWrite(context)
                         .subscribeOn(scraperScheduler)
-                        .subscribe(n -> notifyService.send(user.id, EventType.USER_NOTIFICATION,
+                        .subscribe(n -> notifyService.send(user.id(), EventType.USER_NOTIFICATION,
                                         DEFAULT_NOTIFICATION.toBuilder()
                                                 .title(n.title())
                                                 .target(n.id()).build()),
-                                t -> notifyService.send(user.id, EventType.USER_NOTIFICATION,
+                                t -> notifyService.send(user.id(), EventType.USER_NOTIFICATION,
                                         UserNotification.error(t.getLocalizedMessage())))
                 ))
                 .then();
@@ -84,7 +84,7 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
     @Override
     public Mono<News> buildStandaloneNews(URI link) {
         return authFacade.getConnectedUser()
-                .filter(u -> RoleUtils.hasRole(u.self, Role.USER))
+                .filter(u -> RoleUtils.hasRole(u.self(), Role.USER))
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(OPERATION_NOT_PERMITTED)))
                 .map(u -> News.builder()
                         .raw(RawNews.builder()
@@ -92,7 +92,7 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
                                 .link(link)
                                 .publication(clock.instant())
                                 .build())
-                        .feeds(Set.of(u.id))
+                        .feeds(Set.of(u.id()))
                         .state(State.NONE)
                         .build());
     }
@@ -100,7 +100,7 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
     @Override
     public Mono<Try<News>> applyNewsFilters(News news) {
         Mono<RawNews> raw = authFacade.getConnectedUser()
-                .filter(u -> RoleUtils.hasRole(u.self, Role.USER))
+                .filter(u -> RoleUtils.hasRole(u.self(), Role.USER))
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(OPERATION_NOT_PERMITTED)))
                 .then(Mono.just(news.getRaw()));
 
@@ -118,14 +118,14 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
 
     private Mono<Boolean> notAlreadyExists(News news) {
         return authFacade.getConnectedUser()
-                .filter(u -> RoleUtils.hasRole(u.self, Role.USER))
+                .filter(u -> RoleUtils.hasRole(u.self(), Role.USER))
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(OPERATION_NOT_PERMITTED)))
 
                 .flatMapMany(u ->
                         systemMaintenanceService.newsList(PageRequest.one(Criteria.property(ID).eq(news.id())))
                                 .map(News::getFeeds)
                                 .flatMap(feeds -> systemMaintenanceService.feedList(PageRequest.all(Criteria.property(ID).in(feeds)
-                                        .and(Criteria.property(USER_ID).eq(u.id)))))
+                                        .and(Criteria.property(USER_ID).eq(u.id())))))
                                 .contextWrite(AuthenticationFacade.withSystemAuthentication()))
 
                 .hasElements().map(b -> !b);
@@ -134,7 +134,7 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
     @Override
     public Mono<News> saveAndShare(News news) {
         return authFacade.getConnectedUser()
-                .filter(u -> RoleUtils.hasRole(u.self, Role.USER))
+                .filter(u -> RoleUtils.hasRole(u.self(), Role.USER))
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(OPERATION_NOT_PERMITTED)))
 
                 .flatMap(u ->
@@ -150,7 +150,7 @@ public class ScrapEnrichmentServiceImpl implements ScrapEnrichmentService {
     @Override
     public Mono<AtomFeed> applyFeedsFilters(AtomFeed feed) {
         Mono<AtomFeed> raw = authFacade.getConnectedUser()
-                .filter(u -> RoleUtils.hasRole(u.self, Role.USER))
+                .filter(u -> RoleUtils.hasRole(u.self(), Role.USER))
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(OPERATION_NOT_PERMITTED)))
                 .then(Mono.just(feed));
 

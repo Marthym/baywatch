@@ -72,7 +72,7 @@ public class GraphQLFeedsController {
     @SchemaMapping(typeName = "SearchFeedsResponse")
     public Mono<Integer> totalCount(Page<Entity<WebFeed>> searchFeedsResponse) {
         return Mono.justOrEmpty(searchFeedsResponse.getHeaders().get("X-Total-Count"))
-                .map(h -> h.get(0))
+                .map(List::getFirst)
                 .map(Integer::parseInt)
                 .switchIfEmpty(Mono.just(0));
     }
@@ -86,7 +86,7 @@ public class GraphQLFeedsController {
         List<String> feedsIds = news.stream().flatMap(n -> n.getFeeds().stream()).distinct().toList();
         PageRequest pageRequest = qsParser.parse(Map.of(EntitiesProperties.ID, feedsIds));
         return feedService.list(pageRequest).collectList()
-                .map(feeds -> feeds.stream().collect(Collectors.toUnmodifiableMap(e -> e.id, Function.identity())))
+                .map(feeds -> feeds.stream().collect(Collectors.toUnmodifiableMap(Entity::id, Function.identity())))
                 .map(feeds -> news.stream()
                         .collect(Collectors.toUnmodifiableMap(Function.identity(), n -> n.getFeeds().stream()
                                 .filter(feeds::containsKey)
@@ -110,7 +110,7 @@ public class GraphQLFeedsController {
     public Mono<Entity<WebFeed>> subscribe(@Argument String id, @Argument String name, @Argument Collection<String> tags) {
         Set<String> tagsSet = Optional.ofNullable(tags).map(Set::copyOf).orElse(Set.of());
         return feedService.get(id)
-                .map(f -> f.self.toBuilder().name(name).tags(tagsSet).build())
+                .map(f -> f.self().toBuilder().name(name).tags(tagsSet).build())
                 .flatMapMany(f -> feedService.subscribe(Collections.singleton(f)))
                 .next();
     }

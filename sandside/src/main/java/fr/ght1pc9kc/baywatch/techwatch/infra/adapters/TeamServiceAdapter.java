@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.adapters;
 
+import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.teams.api.TeamsService;
 import fr.ght1pc9kc.baywatch.teams.domain.model.PendingFor;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.TeamServicePort;
@@ -20,10 +21,10 @@ public class TeamServiceAdapter implements TeamServicePort {
     @Override
     public Flux<String> getTeamMates(String userId) {
         return teamsService.list(PageRequest.all())
-                .map(t -> t.id)
+                .map(Entity::id)
                 .collectList().flatMapMany(teamsId ->
                         teamsService.members(PageRequest.all(Criteria.property(ID).in(teamsId))))
-                .filter(t -> t.self.pending().equals(PendingFor.NONE))
-                .map(t -> t.self.userId());
+                .filter(t -> t.self().pending().equals(PendingFor.NONE))
+                .map(t -> t.self().userId());
     }
 }

@@ -40,7 +40,7 @@ public class UserServiceAdapter implements AuthorizationService, UserService, Re
                               PasswordEncoder passwordEncoder) {
         this.delegate = new UserServiceImpl(
                 userPersistencePort, authorizationRepository, notificationPort, authFacade, passwordEncoder,
-                Clock.systemUTC(), UlidFactory.newInstance());
+                Clock.systemUTC(), UlidFactory.newMonotonicInstance());
         this.delegateA = (UserServiceImpl) this.delegate;
     }
 

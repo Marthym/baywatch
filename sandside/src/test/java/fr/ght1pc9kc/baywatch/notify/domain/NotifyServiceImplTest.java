@@ -65,7 +65,7 @@ class NotifyServiceImplTest {
                 actualLuke::add, errorsLuke::add);
 
         ServerEvent eventBroadcast = tested.broadcast(EventType.NEWS_UPDATE, 42);
-        ServerEvent eventUser = tested.send(LUKE.id, EventType.USER_NOTIFICATION, "I'm your father");
+        ServerEvent eventUser = tested.send(LUKE.id(), EventType.USER_NOTIFICATION, "I'm your father");
 
         assertThat(disposableObiwan.isDisposed()).isFalse();
         assertThat(disposableLuke.isDisposed()).isFalse();
@@ -104,7 +104,7 @@ class NotifyServiceImplTest {
         Disposable disposable = tested.subscribe().subscribe(
                 actualObiwan::add, errorsObiwan::add);
 
-        ServerEvent eventUser = tested.send(UserSamples.OBIWAN.id, EventType.USER_NOTIFICATION, "I'm your father");
+        ServerEvent eventUser = tested.send(UserSamples.OBIWAN.id(), EventType.USER_NOTIFICATION, "I'm your father");
 
         tested.close();
 
@@ -137,14 +137,14 @@ class NotifyServiceImplTest {
         BasicEvent<String> event = new BasicEvent<>(Ulid.fast().toString(), EventType.USER_NOTIFICATION, "I'm your father");
         when(authFacadeMock.getConnectedUser()).thenReturn(Mono.just(OBIWAN));
 
-        tested.send(UserSamples.OBIWAN.id, EventType.USER_NOTIFICATION, "I'm your father");
+        tested.send(UserSamples.OBIWAN.id(), EventType.USER_NOTIFICATION, "I'm your father");
 
         verify(notificationPersistenceMock).persist(any());
 
         reset(notificationPersistenceMock);
         when(notificationPersistenceMock.persist(any())).thenReturn(Mono.just(event));
 
-        tested.send(UserSamples.OBIWAN.id, EventType.USER_NOTIFICATION, Mono.just("I'm your father"));
+        tested.send(UserSamples.OBIWAN.id(), EventType.USER_NOTIFICATION, Mono.just("I'm your father"));
 
         verify(notificationPersistenceMock).persist(any());
     }

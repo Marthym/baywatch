@@ -68,21 +68,21 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
             return Flux.error(() -> new IllegalStateException("Publisher was closed !"));
         }
         return authFacade.getConnectedUser().flatMapMany(u ->
-                Objects.requireNonNull(cache.get(u.id, id -> {
+                Objects.requireNonNull(cache.get(u.id(), id -> {
                     Sinks.Many<ServerEvent> sink = Sinks.many().multicast().onBackpressureBuffer();
                     AtomicReference<Subscription> subscription = new AtomicReference<>();
                     Flux<ServerEvent> multicastFlux = this.multicast.asFlux()
                             .doOnSubscribe(subscription::set);
-                    log.atDebug().addArgument(u.id)
+                    log.atDebug().addArgument(u.id())
                             .log("Subscribe notification for {}");
                     Flux<ServerEvent> eventPublisher = Flux.merge(
-                                    notificationPersistence.consume(u.id),
+                                    notificationPersistence.consume(u.id()),
                                     sink.asFlux(),
                                     multicastFlux
                             )
                             .takeWhile(e -> cache.asMap().containsKey(id))
                             .map(e -> {
-                                log.atDebug().addArgument(u.id).addArgument(e).log("{} receive Event: {}");
+                                log.atDebug().addArgument(u.id()).addArgument(e).log("{} receive Event: {}");
                                 return e;
                             }).cache(0);
                     return new ByUserEventPublisherCacheEntry(subscription, sink, eventPublisher);
@@ -92,10 +92,10 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
     @Override
     public Mono<Boolean> unsubscribe() {
         return authFacade.getConnectedUser()
-                .filter(u -> cache.asMap().containsKey(u.id))
+                .filter(u -> cache.asMap().containsKey(u.id()))
                 .map(u -> {
-                    log.atDebug().addArgument(u.id).log("Dispose SSE Subscription for {}");
-                    cache.invalidate(u.id);
+                    log.atDebug().addArgument(u.id()).log("Dispose SSE Subscription for {}");
+                    cache.invalidate(u.id());
                     return true;
                 });
     }

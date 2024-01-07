@@ -59,8 +59,8 @@ class FeedControllerTest {
         ));
         StepVerifier.create(tested.bulkUpdate(payload))
                 .expectNext(
-                        URI.create("/feeds/" + FeedSamples.SITH.id),
-                        URI.create("/feeds/" + FeedSamples.JEDI.id),
+                        URI.create("/feeds/" + FeedSamples.SITH.id()),
+                        URI.create("/feeds/" + FeedSamples.JEDI.id()),
                         URI.create("/feeds/42"))
                 .verifyComplete();
 
