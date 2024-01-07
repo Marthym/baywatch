@@ -11,7 +11,6 @@ import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.UpdatableUser;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
-import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.NotificationPort;
@@ -32,16 +31,19 @@ import reactor.test.StepVerifier;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -50,7 +52,7 @@ class UserServiceImplTest {
     private final UserPersistencePort mockUserRepository = mock(UserPersistencePort.class);
     private final AuthorizationPersistencePort mockAuthorizationRepository = mock(AuthorizationPersistencePort.class);
     private final AuthenticationFacade mockAuthFacade = mock(AuthenticationFacade.class);
-    private final UlidFactory mockUlidFactory = mock(UlidFactory.class);
+    private final UlidFactory mockUlidFactory = spy(UlidFactory.newMonotonicInstance());
     private final NotificationPort mockNotificationPort = mock(NotificationPort.class);
 
     private UserServiceImpl tested;
@@ -64,8 +66,9 @@ class UserServiceImplTest {
                 .findAny().map(Mono::just).orElseThrow()
         ).when(mockUserRepository).get(anyString());
         when(mockUserRepository.list(any())).thenReturn(Flux.just(UserSamples.LUKE, UserSamples.OBIWAN, UserSamples.YODA));
-        when(mockUserRepository.persist(any())).thenReturn(Flux.just(UserSamples.LUKE, UserSamples.OBIWAN, UserSamples.YODA));
-        when(mockUserRepository.persist(anyString(), anyCollection())).thenReturn(Mono.just(UserSamples.LUKE));
+        doAnswer(answer -> Flux.fromIterable(answer.getArgument(0, Collection.class)))
+                .when(mockUserRepository).persist(anyCollection());
+        doAnswer(answer -> Mono.just(UserSamples.LUKE)).when(mockUserRepository).persist(anyString(), anyCollection());
         when(mockUserRepository.delete(anyString(), anyCollection())).thenReturn(Mono.empty().then());
         when(mockUserRepository.count(any())).thenReturn(Mono.just(3));
         when(mockAuthorizationRepository.count(any())).thenReturn(Mono.just(0));
@@ -101,11 +104,24 @@ class UserServiceImplTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void should_create_user_without_authentication() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.empty());
 
         StepVerifier.create(tested.create(UserSamples.OBIWAN.self()))
-                .verifyError(UnauthenticatedUser.class);
+                .expectNextCount(1)
+                .verifyComplete();
+
+        ArgumentCaptor<List<Entity<User>>> actuals = ArgumentCaptor.forClass(List.class);
+        verify(mockUserRepository).persist(actuals.capture());
+
+        Entity<User> actual = actuals.getValue().getFirst();
+        assertAll(
+                () -> Assertions.assertThat(actual.id()).isNotBlank(),
+                () -> Assertions.assertThat(actual.createdBy()).isEqualTo(actual.id()),
+                () -> Assertions.assertThat(actual.createdAt()).isEqualTo(CURRENT),
+                () -> Assertions.assertThat(actual.self()).isEqualTo(UserSamples.OBIWAN.self())
+        );
     }
 
     @Test
@@ -120,19 +136,22 @@ class UserServiceImplTest {
     @SuppressWarnings("unchecked")
     void should_create_user_with_admin() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
-        when(mockUserRepository.persist(any())).thenReturn(Flux.just(UserSamples.OBIWAN));
-        when(mockUserRepository.persist(anyString(), anyCollection())).thenReturn(Mono.just(UserSamples.OBIWAN));
         when(mockUlidFactory.create()).thenReturn(Ulid.from(UserSamples.OBIWAN.id().substring(2)));
 
         StepVerifier.create(tested.create(UserSamples.OBIWAN.self()))
-                .expectNext(UserSamples.OBIWAN)
+                .expectNextCount(1)
                 .verifyComplete();
 
         ArgumentCaptor<List<Entity<User>>> users = ArgumentCaptor.forClass(List.class);
         verify(mockUserRepository).persist(users.capture());
 
         Entity<User> actual = users.getValue().getFirst();
-        Assertions.assertThat(actual).isEqualTo(Entity.identify(UserSamples.OBIWAN.id(), CURRENT, UserSamples.OBIWAN.self()));
+        assertAll(
+                () -> Assertions.assertThat(actual.id()).isNotBlank(),
+                () -> Assertions.assertThat(actual.createdBy()).isEqualTo(UserSamples.YODA.id()),
+                () -> Assertions.assertThat(actual.createdAt()).isEqualTo(CURRENT),
+                () -> Assertions.assertThat(actual.self()).isEqualTo(UserSamples.OBIWAN.self())
+        );
     }
 
     @Test

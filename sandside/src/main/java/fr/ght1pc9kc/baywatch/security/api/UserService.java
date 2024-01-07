@@ -26,7 +26,9 @@ public interface UserService {
     Mono<Integer> count(PageRequest pageRequest);
 
     /**
-     * Create new {@link User}
+     * <p>Create new {@link User}</p>
+     * <p>Only {@link Role#ADMIN} and {@link User#ANONYMOUS} users can create new user. Regular Users have no permission
+     * for that.</p>
      *
      * @param user The user data to create
      * @return The new {@link User} {@link Entity} created. With ID and Created Date.

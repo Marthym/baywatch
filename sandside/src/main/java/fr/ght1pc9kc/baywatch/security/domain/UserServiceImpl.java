@@ -79,9 +79,24 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     public Mono<Entity<User>> create(User user) {
         String userId = String.format("%s%s", ID_PREFIX, idGenerator.create());
         User withPassword = user.withPassword(passwordEncoder.encode(user.password));
-        Entity<User> entity = Entity.identify(userId, clock.instant(), withPassword);
-        return authorizeAllData()
-                .flatMap(u -> userRepository.persist(List.of(entity)).single())
+        Instant now = clock.instant();
+        return authFacade.getConnectedUser()
+                .<String>handle((u, sink) -> {
+                    if (hasRole(u.self(), Role.ADMIN)) {
+                        sink.next(u.id());
+                        return;
+                    }
+                    sink.error(new UnauthorizedOperation(UNAUTHORIZED_USER));
+                })
+                .switchIfEmpty(Mono.just(userId))
+
+                .map(currentUserId -> Entity.<User>builder()
+                        .id(userId)
+                        .createdAt(now)
+                        .createdBy(currentUserId)
+                        .self(withPassword)
+                        .build())
+                .flatMap(entity -> userRepository.persist(List.of(entity)).single())
                 .then(userRepository.persist(userId, user.roles.stream().map(Permission::toString).distinct().toList()))
                 .flatMap(this::notifyAdmins);
     }
