@@ -94,7 +94,7 @@ public class FeedController {
                     try {
                         FeedForm toPersist = mapper.readerFor(FeedForm.class).readValue(resource.value(), FeedForm.class);
                         Mono<URI> persisted = subscribe(Mono.just(toPersist))
-                                .map(re -> URI.create(FEED_BASE.getPath() + "/" + Objects.requireNonNull(re.getBody()).id));
+                                .map(re -> URI.create(FEED_BASE.getPath() + "/" + Objects.requireNonNull(re.getBody()).id()));
                         operations.add(persisted);
                     } catch (IOException e) {
                         return Flux.error(new IllegalArgumentException("Malformed PATCH (add) request !", e));
@@ -105,7 +105,7 @@ public class FeedController {
                         String id = FEED_BASE.relativize(resource.path()).toString();
                         FeedForm toPersist = mapper.readerFor(FeedForm.class).readValue(resource.value(), FeedForm.class);
                         Mono<URI> persisted = update(id, Mono.just(toPersist))
-                                .map(re -> URI.create(FEED_BASE.getPath() + "/" + re.id));
+                                .map(re -> URI.create(FEED_BASE.getPath() + "/" + re.id()));
                         operations.add(persisted);
                     } catch (IOException e) {
                         return Flux.error(new IllegalArgumentException("Malformed PATCH (replace) request !", e));
@@ -152,7 +152,7 @@ public class FeedController {
                             .build();
                 })
                 .flatMap(feed -> feedService.addAndSubscribe(Collections.singleton(feed)).next())
-                .map(feed -> ResponseEntity.created(URI.create("/api/feeds/" + feed.id)).body(feed))
+                .map(feed -> ResponseEntity.created(URI.create("/api/feeds/" + feed.id())).body(feed))
                 .onErrorMap(WebExchangeBindException.class, e -> {
                     String message = e.getFieldErrors().stream().map(err ->
                             err.getField() + " " + err.getDefaultMessage()).collect(Collectors.joining("\n"));

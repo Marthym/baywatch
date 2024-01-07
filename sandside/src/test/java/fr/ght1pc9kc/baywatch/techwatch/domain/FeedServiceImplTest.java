@@ -58,7 +58,7 @@ class FeedServiceImplTest {
         when(mockFeedRepository.count(any())).thenReturn(Mono.just(42));
 
         ScraperServicePort mockScraperService = mock(ScraperServicePort.class);
-        when(mockScraperService.fetchFeedData(any())).thenReturn(Mono.just(FeedSamples.JEDI.self));
+        when(mockScraperService.fetchFeedData(any())).thenReturn(Mono.just(FeedSamples.JEDI.self()));
         tested = new FeedServiceImpl(mockFeedRepository, mockScraperService, mockAuthFacade, new ListPropertiesCriteriaVisitor() {
         });
     }
@@ -90,7 +90,7 @@ class FeedServiceImplTest {
             tested.list().collectList().block();
 
             verify(mockFeedRepository, times(1)).list(captor.capture());
-            assertThat(captor.getValue()).isEqualTo(QueryContext.empty().withUserId(UserSamples.OBIWAN.id));
+            assertThat(captor.getValue()).isEqualTo(QueryContext.empty().withUserId(UserSamples.OBIWAN.id()));
         }
 
         {
@@ -99,7 +99,7 @@ class FeedServiceImplTest {
 
             verify(mockFeedRepository, times(1)).list(captor.capture());
             assertThat(captor.getValue()).isEqualTo(QueryContext.first(
-                    Criteria.property("name").eq("jedi")).withUserId(UserSamples.OBIWAN.id));
+                    Criteria.property("name").eq("jedi")).withUserId(UserSamples.OBIWAN.id()));
         }
     }
 
@@ -121,18 +121,18 @@ class FeedServiceImplTest {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
         ArgumentCaptor<List<WebFeed>> captor = ArgumentCaptor.forClass(List.class);
 
-        StepVerifier.create(tested.add(List.of(FeedSamples.JEDI.self)))
+        StepVerifier.create(tested.add(List.of(FeedSamples.JEDI.self())))
                 .expectNext(FeedSamples.JEDI)
                 .verifyComplete();
 
         verify(mockFeedRepository, times(1)).persist(captor.capture());
-        assertThat(captor.getValue()).containsExactly(FeedSamples.JEDI.self);
+        assertThat(captor.getValue()).containsExactly(FeedSamples.JEDI.self());
     }
 
     @Test
     @SuppressWarnings("unchecked")
     void should_subscribe_feeds_for_user() {
-        WebFeed jediFeed = BAYWATCH_MAPPER.recordToFeed(FeedRecordSamples.JEDI).self;
+        WebFeed jediFeed = BAYWATCH_MAPPER.recordToFeed(FeedRecordSamples.JEDI).self();
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
         ArgumentCaptor<List<WebFeed>> captor = ArgumentCaptor.forClass(List.class);
 
@@ -148,10 +148,10 @@ class FeedServiceImplTest {
     @Test
     void should_add_unsecured_url() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
-        StepVerifier.create(tested.add(List.of(FeedSamples.UNSECURE_PROTOCOL.self)))
+        StepVerifier.create(tested.add(List.of(FeedSamples.UNSECURE_PROTOCOL.self())))
                 .verifyError(IllegalArgumentException.class);
 
-        StepVerifier.create(tested.update(FeedSamples.UNSECURE_PROTOCOL.self))
+        StepVerifier.create(tested.update(FeedSamples.UNSECURE_PROTOCOL.self()))
                 .verifyError(IllegalArgumentException.class);
 
     }

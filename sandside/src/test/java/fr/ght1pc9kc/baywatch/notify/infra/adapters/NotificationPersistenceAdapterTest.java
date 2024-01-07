@@ -49,7 +49,7 @@ class NotificationPersistenceAdapterTest {
     void should_consume_notifications(DSLContext dsl) {
         assertThat(dsl.fetchCount(Notifications.NOTIFICATIONS)).isNotZero();
 
-        Flux<ServerEvent> actuals = tested.consume(UserSamples.OBIWAN.id);
+        Flux<ServerEvent> actuals = tested.consume(UserSamples.OBIWAN.id());
 
         StepVerifier.create(actuals)
                 .assertNext(actual -> Assertions.assertAll(
@@ -64,7 +64,7 @@ class NotificationPersistenceAdapterTest {
     void should_consume_dummy_notifications(DSLContext dsl) {
         assertThat(dsl.fetchCount(Notifications.NOTIFICATIONS)).isNotZero();
 
-        Flux<ServerEvent> actuals = tested.consume(UserSamples.MWINDU.id);
+        Flux<ServerEvent> actuals = tested.consume(UserSamples.MWINDU.id());
 
         StepVerifier.create(actuals)
                 .assertNext(actual -> Assertions.assertAll(
@@ -79,7 +79,7 @@ class NotificationPersistenceAdapterTest {
     void should_not_consume_notifications(DSLContext dsl) {
         assertThat(dsl.fetchCount(Notifications.NOTIFICATIONS)).isNotZero();
 
-        Flux<ServerEvent> actuals = tested.consume(UserSamples.DSIDIOUS.id);
+        Flux<ServerEvent> actuals = tested.consume(UserSamples.DSIDIOUS.id());
 
         StepVerifier.create(actuals).verifyComplete();
 

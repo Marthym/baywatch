@@ -61,7 +61,7 @@ class GraphQLFeedsControllerTest {
     void should_call_get() throws JsonProcessingException {
 
         Map<String, Object> response = gqlClient.documentName("feedsServiceTest").operationName("GetFeed")
-                .variable("feedId", FeedSamples.JEDI.id)
+                .variable("feedId", FeedSamples.JEDI.id())
                 .execute().path("getFeed")
                 .entity(new ParameterizedTypeReference<Map<String, Object>>() {
                 }).get();

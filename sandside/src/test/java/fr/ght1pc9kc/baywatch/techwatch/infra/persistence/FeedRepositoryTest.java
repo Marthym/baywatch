@@ -72,15 +72,15 @@ class FeedRepositoryTest {
 
     @Test
     void should_get_user_feed() {
-        FeedsRecord expected = FeedRecordSamples.SAMPLE.records().get(0);
+        FeedsRecord expected = FeedRecordSamples.SAMPLE.records().getFirst();
         Entity<WebFeed> actual = tested.get(QueryContext.id(expected.getFeedId())).block();
 
         assertThat(actual).isNotNull();
         assertAll(
-                () -> assertThat(actual.id).isEqualTo(expected.getFeedId()),
-                () -> assertThat(actual.self.location()).isEqualTo(URI.create(expected.getFeedUrl())),
-                () -> assertThat(actual.self.name()).isEqualTo(expected.getFeedName()),
-                () -> assertThat(actual.self.tags()).isEqualTo(Set.of())
+                () -> assertThat(actual.id()).isEqualTo(expected.getFeedId()),
+                () -> assertThat(actual.self().location()).isEqualTo(URI.create(expected.getFeedUrl())),
+                () -> assertThat(actual.self().name()).isEqualTo(expected.getFeedName()),
+                () -> assertThat(actual.self().tags()).isEqualTo(Set.of())
         );
 
     }
@@ -123,27 +123,27 @@ class FeedRepositoryTest {
         Entity<WebFeed> expected = Entity.identify(
                 FeedRecordSamples.JEDI.getFeedId(),
                 Mappers.getMapper(BaywatchMapper.class).recordToFeed(FeedRecordSamples.JEDI)
-                        .self.toBuilder()
+                        .self().toBuilder()
                         .name(FeedRecordSamples.JEDI.getFeedName() + " of Obiwan")
                         .tags(Set.of("jedi", "saber"))
                         .build());
 
 
-        StepVerifier.create(tested.persistUserRelation(Collections.singleton(expected.self), OKENOBI.getUserId()))
+        StepVerifier.create(tested.persistUserRelation(Collections.singleton(expected.self()), OKENOBI.getUserId()))
                 .assertNext(actual -> assertThat(actual).isEqualTo(expected))
                 .verifyComplete();
 
         {
-            FeedsRecord actual = dsl.selectFrom(FEEDS).where(FEEDS.FEED_ID.eq(expected.id)).fetchOne();
+            FeedsRecord actual = dsl.selectFrom(FEEDS).where(FEEDS.FEED_ID.eq(expected.id())).fetchOne();
             assertThat(actual).isNotNull();
             assertThat(actual.getFeedName()).isEqualTo(FeedRecordSamples.JEDI.getFeedName());
         }
         {
-            FeedsUsersRecord actual = dsl.selectFrom(FEEDS_USERS).where(FEEDS_USERS.FEUS_FEED_ID.eq(expected.id))
+            FeedsUsersRecord actual = dsl.selectFrom(FEEDS_USERS).where(FEEDS_USERS.FEUS_FEED_ID.eq(expected.id()))
                     .fetchOne();
             assertThat(actual).isNotNull();
             assertThat(actual.getFeusUserId()).isEqualTo(OKENOBI.getUserId());
-            assertThat(actual.getFeusTags()).isEqualTo(String.join(",", expected.self.tags()));
+            assertThat(actual.getFeusTags()).isEqualTo(String.join(",", expected.self().tags()));
         }
     }
 
@@ -158,7 +158,7 @@ class FeedRepositoryTest {
                         .name("Obiwan Kenobi")
                         .tags(Set.of("jedi", "light"))
                         .build());
-        Mono<Entity<WebFeed>> update = tested.update(expected.id, OKENOBI.getUserId(), expected.self);
+        Mono<Entity<WebFeed>> update = tested.update(expected.id(), OKENOBI.getUserId(), expected.self());
         StepVerifier.create(update)
                 .expectNext(expected)
                 .verifyComplete();
@@ -212,13 +212,13 @@ class FeedRepositoryTest {
 
         {
             int countUser = dsl.fetchCount(FEEDS_USERS, FEEDS_USERS.FEUS_FEED_ID.in(ids)
-                    .and(FEEDS_USERS.FEUS_USER_ID.eq(OBIWAN.id)));
+                    .and(FEEDS_USERS.FEUS_USER_ID.eq(OBIWAN.id())));
             assertThat(countUser).isEqualTo(2);
         }
 
         tested.delete(QueryContext.builder()
                 .filter(Criteria.property(FEED_ID).in(ids))
-                .userId(OBIWAN.id)
+                .userId(OBIWAN.id())
                 .build()).block();
 
         {
@@ -232,7 +232,7 @@ class FeedRepositoryTest {
     @Test
     void should_list_orphan_feed() {
         List<Entity<WebFeed>> actuals = tested.list(QueryContext.all(Criteria.property(COUNT).eq(0))).collectList().block();
-        assertThat(actuals).extracting(e -> e.id).containsExactly(
-                FeedRecordSamples.FEEDS_RECORDS.get(FeedRecordSamples.FEEDS_RECORDS.size() - 1).getFeedId());
+        assertThat(actuals).extracting(Entity::id).containsExactly(
+                FeedRecordSamples.FEEDS_RECORDS.getLast().getFeedId());
     }
 }

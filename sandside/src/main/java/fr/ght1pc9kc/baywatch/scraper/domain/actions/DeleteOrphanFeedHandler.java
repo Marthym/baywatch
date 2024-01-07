@@ -49,9 +49,9 @@ public class DeleteOrphanFeedHandler implements ScrapingEventHandler {
                 .then();
 
         return maintenanceService.feedList(PageRequest.all(Criteria.property(COUNT).eq(0)))
-                .doOnNext(feed -> feeds.tryEmitNext(feed.id))
+                .doOnNext(feed -> feeds.tryEmitNext(feed.id()))
                 .doOnComplete(feeds::tryEmitComplete)
-                .flatMap(feed -> maintenanceService.newsList(PageRequest.all(Criteria.property(FEED_ID).eq(feed.id))))
+                .flatMap(feed -> maintenanceService.newsList(PageRequest.all(Criteria.property(FEED_ID).eq(feed.id()))))
                 .doOnComplete(newsSink::tryEmitComplete)
                 .doOnNext(news -> newsSink.tryEmitNext(news.id()))
                 .then(deleted)
