@@ -41,9 +41,9 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
 
             return Mono.just(!this.tokenProvider.validateToken(token, true))
                     .filter(Predicate.isEqual(true))
-                    .flatMap(x -> userService.findByUsername(bwAuth.user().self.login))
+                    .flatMap(x -> userService.findByUsername(bwAuth.user().self().login))
                     .map(updated -> {
-                        log.debug("Refresh valid expired token for {}", bwAuth.user().self.login);
+                        log.debug("Refresh valid expired token for {}", bwAuth.user().self().login);
                         BaywatchAuthentication freshBaywatchAuth = this.tokenProvider.createToken(bwAuth.user(), bwAuth.rememberMe(), Collections.emptyList());
                         refreshCookieOrHeader(freshBaywatchAuth, exchange.getRequest(), exchange.getResponse());
                         return exchange;

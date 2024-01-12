@@ -60,8 +60,8 @@ public class NotificationController {
     @PreAuthorize("hasRole('ADMIN')")
     public Mono<Void> test(@RequestParam("msg") String msg) {
         return facade.getConnectedUser().map(user -> {
-            notifyManager.broadcast(EventType.NEWS_UPDATE, "UPDATE");
-            notifyManager.send(user.id, EventType.USER_NOTIFICATION, "PERSO");
+            notifyManager.broadcast(EventType.NEWS_UPDATE, "UPDATE " + msg);
+            notifyManager.send(user.id(), EventType.USER_NOTIFICATION, "PERSO " + msg);
             return user;
         }).then();
     }

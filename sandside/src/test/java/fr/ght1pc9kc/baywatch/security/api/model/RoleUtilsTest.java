@@ -26,19 +26,19 @@ class RoleUtilsTest {
                 NOT_A_ROLE                              | USER    |                                 | false
             """)
     void should_check_user_has_role(String role, Role compare, String entity, boolean expected) {
-        assertThat(RoleUtils.hasPermission(UserSamples.OBIWAN.self.withRoles(role), Permission.of(compare, entity)))
+        assertThat(RoleUtils.hasPermission(UserSamples.OBIWAN.self().withRoles(role), Permission.of(compare, entity)))
                 .isEqualTo(expected);
     }
 
     @Test
     void should_fail_upade_user_roles() {
-        assertThat(UserSamples.OBIWAN.self.withRoles("NOT_A_ROLE", Role.USER.name()).roles)
+        assertThat(UserSamples.OBIWAN.self().withRoles("NOT_A_ROLE", Role.USER.name()).roles)
                 .containsOnly(Role.USER);
     }
 
     @Test
     void should_get_system() {
-        assertThat(RoleUtils.getSystemUser().self.roles).containsOnly(Role.SYSTEM);
+        assertThat(RoleUtils.getSystemUser().self().roles).containsOnly(Role.SYSTEM);
     }
 
     @ParameterizedTest

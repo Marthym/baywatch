@@ -69,7 +69,7 @@ public class NewsServiceImpl implements NewsService {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(() -> new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
                 .map(user -> throwOnInvalidRequest(validRequest, user))
-                .map(user -> QueryContext.from(validRequest).withUserId(user.id))
+                .map(user -> QueryContext.from(validRequest).withUserId(user.id()))
                 .flatMap(this::forgeAggregateQueryContext)
                 .onErrorResume(UnauthenticatedUser.class, e ->
                         Mono.fromCallable(() -> throwOnInvalidRequest(validRequest, null))
@@ -83,7 +83,7 @@ public class NewsServiceImpl implements NewsService {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(() -> new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
                 .map(user -> throwOnInvalidRequest(validRequest, user))
-                .map(user -> QueryContext.all(validRequest.filter()).withUserId(user.id))
+                .map(user -> QueryContext.all(validRequest.filter()).withUserId(user.id()))
                 .flatMap(this::forgeAggregateQueryContext)
                 .flatMap(newsRepository::count)
                 .onErrorResume(UnauthenticatedUser.class, e -> Mono.just(pageRequest.pagination().size()));
@@ -91,7 +91,7 @@ public class NewsServiceImpl implements NewsService {
 
     public Mono<QueryContext> forgeAggregateQueryContext(QueryContext qCtx) {
         List<String> props = qCtx.filter.accept(new ListPropertiesCriteriaVisitor());
-        if (props.size() == 1 && ID.equals(props.get(0))) {
+        if (props.size() == 1 && ID.equals(props.getFirst())) {
             // Shortcut for get one News from id
             return Mono.just(qCtx);
         }
@@ -135,7 +135,7 @@ public class NewsServiceImpl implements NewsService {
                 ? QueryContext.all(qCtx.filter)
                 : QueryContext.all(qCtx.filter).withUserId(qCtx.userId);
         return feedRepository.list(feedQCtx)
-                .map(f -> f.id)
+                .map(Entity::id)
                 .collectList()
                 .map(feeds -> {
                     if (feedQCtx.isScoped()) {
@@ -158,7 +158,7 @@ public class NewsServiceImpl implements NewsService {
                 .pagination(Pagination.ALL)
                 .build();
         return stateRepository.list(query)
-                .map(state -> state.id)
+                .map(Entity::id)
                 .distinct().collectList();
     }
 
@@ -171,20 +171,20 @@ public class NewsServiceImpl implements NewsService {
     public Mono<Entity<State>> mark(String id, int flag) {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(() -> new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .flatMap(user -> stateRepository.flag(id, user.id, flag));
+                .flatMap(user -> stateRepository.flag(id, user.id(), flag));
     }
 
     @Override
     public Mono<Entity<State>> unmark(String id, int flag) {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(() -> new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .flatMap(user -> stateRepository.unflag(id, user.id, flag));
+                .flatMap(user -> stateRepository.unflag(id, user.id(), flag));
     }
 
     @Override
     public Mono<Integer> delete(Collection<String> toDelete) {
         return authFacade.getConnectedUser()
-                .filter(user -> RoleUtils.hasRole(user.self, Role.SYSTEM))
+                .filter(user -> RoleUtils.hasRole(user.self(), Role.SYSTEM))
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedOperation("Deleting news not permitted for user !")))
                 .flatMap(user -> newsRepository.delete(toDelete));
     }

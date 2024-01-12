@@ -48,7 +48,7 @@ public class UserMappingController {
         MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
         List<String> userIds = members.stream().map(m -> m.get("userId").toString()).toList();
         return userService.list(PageRequest.all(Criteria.property(ID).in(userIds))).collectList()
-                .map(users -> users.stream().collect(Collectors.toUnmodifiableMap(e -> e.id, Function.identity())))
+                .map(users -> users.stream().collect(Collectors.toUnmodifiableMap(Entity::id, Function.identity())))
                 .map(users -> members.stream().collect(Collectors.toUnmodifiableMap(
                         Function.identity(),
                         m -> {
@@ -56,7 +56,7 @@ public class UserMappingController {
                             if (teamMember == null) {
                                 return mapper.convertValue(Entity.identify(Entity.NO_ONE, User.ANONYMOUS), gqlType);
                             }
-                            teamMember = Entity.identify(teamMember.id, filterRoles(teamMember.self, m.get("_id").toString()));
+                            teamMember = Entity.identify(teamMember.id(), filterRoles(teamMember.self(), m.get("_id").toString()));
                             return mapper.convertValue(teamMember, gqlType);
                         }
                 )));

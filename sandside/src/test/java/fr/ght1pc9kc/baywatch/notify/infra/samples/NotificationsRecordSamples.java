@@ -24,12 +24,12 @@ public class NotificationsRecordSamples implements RelationalDataSet<Notificatio
             .title("The new light saber was arrived")
             .message("Hello your new light saber was arrived, you can go to get it !")
             .actions("VSC")
-            .target(FeedSamples.JEDI.id)
+            .target(FeedSamples.JEDI.id())
             .build();
 
     public static final NotificationsRecord DUMMY_NOTIFICATION_RECORD = NOTIFICATIONS.newRecord()
             .setNotiId("EV01HHA6PFESHHFK4YHT1T2HKHSQ")
-            .setNotiUserId(UserSamples.MWINDU.id)
+            .setNotiUserId(UserSamples.MWINDU.id())
             .setNotiEventType(EventType.USER_NOTIFICATION.name())
             .setNotiData("String")
             .setNotiCreatedAt(LocalDateTime.now());
@@ -40,7 +40,7 @@ public class NotificationsRecordSamples implements RelationalDataSet<Notificatio
         try {
             USER_NOTIFICATIONS_RECORD = NOTIFICATIONS.newRecord()
                     .setNotiId("EV01HHA6PFESHHFK4YHT1T2HKHSR")
-                    .setNotiUserId(UserSamples.OBIWAN.id)
+                    .setNotiUserId(UserSamples.OBIWAN.id())
                     .setNotiEventType(EventType.USER_NOTIFICATION.name())
                     .setNotiData(json.writeValueAsString(USER_NOTIFICATION))
                     .setNotiCreatedAt(LocalDateTime.now());

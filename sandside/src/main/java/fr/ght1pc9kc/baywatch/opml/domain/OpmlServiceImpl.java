@@ -64,19 +64,19 @@ public class OpmlServiceImpl implements OpmlService {
                             .then(Mono.empty());
                     return Flux.merge(db, feeds)
                             .buffer(100)
-                            .flatMap(f -> feedRepository.persist(f).map(e -> e.self).collectList())
-                            .flatMap(f -> feedRepository.persistUserRelation(f, owner.id));
+                            .flatMap(f -> feedRepository.persist(f).map(Entity::self).collectList())
+                            .flatMap(f -> feedRepository.persistUserRelation(f, owner.id()));
                 })).then();
     }
 
     private Mono<Void> writeOpml(OutputStream out, Entity<User> owner) {
         OpmlWriter opmlWriter = writerFactory.apply(out);
-        return feedRepository.list(QueryContext.empty().withUserId(owner.id))
-                .doFirst(() -> opmlWriter.startOpmlDocument(owner.self))
+        return feedRepository.list(QueryContext.empty().withUserId(owner.id()))
+                .doFirst(() -> opmlWriter.startOpmlDocument(owner.self()))
                 .doOnEach(signal -> {
                     Entity<WebFeed> feed = signal.get();
                     if (feed != null) {
-                        opmlWriter.writeOutline(feed.self);
+                        opmlWriter.writeOutline(feed.self());
                     }
                 })
                 .doOnComplete(opmlWriter::endOmplDocument)

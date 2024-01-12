@@ -26,9 +26,9 @@ public class PasswordServiceImpl implements PasswordService {
                 .flatMap(user -> localeFacade.getLocale().map(l -> Tuples.of(user, l)))
                 .map(context ->
                         passwordChecker.estimate(password, context.getT2(), List.of(
-                                context.getT1().self.name,
-                                context.getT1().self.login,
-                                context.getT1().self.mail))
+                                context.getT1().self().name,
+                                context.getT1().self().login,
+                                context.getT1().self().mail))
                 );
     }
 

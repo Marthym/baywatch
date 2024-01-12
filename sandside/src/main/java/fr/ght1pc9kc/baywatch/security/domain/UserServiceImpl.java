@@ -63,7 +63,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     @Override
     public Flux<Entity<User>> list(PageRequest pageRequest) {
         return authFacade.getConnectedUser()
-                .map(u -> QueryContext.from(pageRequest).withUserId(u.id))
+                .map(u -> QueryContext.from(pageRequest).withUserId(u.id()))
                 .flatMapMany(userRepository::list)
                 .flatMap(this::filterPublicData);
     }
@@ -71,7 +71,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     @Override
     public Mono<Integer> count(PageRequest pageRequest) {
         return authFacade.getConnectedUser()
-                .map(u -> QueryContext.all(pageRequest.filter()).withUserId(u.id))
+                .map(u -> QueryContext.all(pageRequest.filter()).withUserId(u.id()))
                 .flatMap(userRepository::count);
     }
 
@@ -79,18 +79,33 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     public Mono<Entity<User>> create(User user) {
         String userId = String.format("%s%s", ID_PREFIX, idGenerator.create());
         User withPassword = user.withPassword(passwordEncoder.encode(user.password));
-        Entity<User> entity = Entity.identify(userId, clock.instant(), withPassword);
-        return authorizeAllData()
-                .flatMap(u -> userRepository.persist(List.of(entity)).single())
+        Instant now = clock.instant();
+        return authFacade.getConnectedUser()
+                .<String>handle((u, sink) -> {
+                    if (hasRole(u.self(), Role.ADMIN)) {
+                        sink.next(u.id());
+                        return;
+                    }
+                    sink.error(new UnauthorizedOperation(UNAUTHORIZED_USER));
+                })
+                .switchIfEmpty(Mono.just(userId))
+
+                .map(currentUserId -> Entity.<User>builder()
+                        .id(userId)
+                        .createdAt(now)
+                        .createdBy(currentUserId)
+                        .self(withPassword)
+                        .build())
+                .flatMap(entity -> userRepository.persist(List.of(entity)).single())
                 .then(userRepository.persist(userId, user.roles.stream().map(Permission::toString).distinct().toList()))
                 .flatMap(this::notifyAdmins);
     }
 
     private Mono<Entity<User>> notifyAdmins(Entity<User> newUser) {
         return this.list(PageRequest.all(Criteria.property(ROLES).eq(Role.ADMIN.toString())))
-                .filter(not(admin -> admin.id.equals(newUser.createdBy)))
-                .map(admin -> notificationPort.send(admin.id, USER_NOTIFICATION,
-                        String.format("New user %s created by %s.", newUser.self.login, newUser.createdBy)))
+                .filter(not(admin -> admin.id().equals(newUser.createdBy())))
+                .map(admin -> notificationPort.send(admin.id(), USER_NOTIFICATION,
+                        String.format("New user %s created by %s.", newUser.self().login, newUser.createdBy())))
                 .then(Mono.just(newUser));
     }
 
@@ -110,13 +125,13 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
             throw new IllegalArgumentException("Password must be stronger !");
         }
         return authorizeSelfData(id)
-                .flatMap(u -> get(u.id))
+                .flatMap(u -> get(u.id()))
                 .handle((u, sink) -> {
-                    if (hasRole(u.self, Role.ADMIN)) {
+                    if (hasRole(u.self(), Role.ADMIN)) {
                         sink.next(u);
-                    } else if (id.equals(u.id)
+                    } else if (id.equals(u.id())
                             && Objects.nonNull(currentPassword)
-                            && passwordEncoder.matches(currentPassword, u.self.password)) {
+                            && passwordEncoder.matches(currentPassword, u.self().password)) {
                         sink.next(u);
                     } else {
                         sink.error(new UnauthorizedOperation(UNAUTHORIZED_USER));
@@ -137,7 +152,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                 .switchIfEmpty(Flux.error(new NoSuchElementException(String.format("Unable to find users %s :", ids))))
                 .collectList()
                 .flatMapMany(users -> Flux.fromIterable(users)
-                        .map(u -> u.id)
+                        .map(Entity::id)
                         .collectList()
                         .flatMap(userRepository::delete)
                         .thenMany(Flux.fromIterable(users)));
@@ -147,10 +162,10 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     public Mono<Entity<User>> grants(String grantedUserId, Collection<Permission> permissions) {
         return authFacade.getConnectedUser().flatMap(currentUser -> {
             var tobeVerified = new ArrayList<String>();
-            boolean selfGrant = currentUser.id.equals(grantedUserId);
+            boolean selfGrant = currentUser.id().equals(grantedUserId);
 
             for (Permission perm : permissions) {
-                if (!RoleUtils.hasPermission(currentUser.self, perm)) {
+                if (!RoleUtils.hasPermission(currentUser.self(), perm)) {
                     if (perm.entity().isPresent() && selfGrant) {
                         tobeVerified.add(perm.toString());
                     } else {
@@ -171,7 +186,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     @Override
     public Mono<Void> revokes(Permission permission, Collection<String> userIds) {
         return authFacade.getConnectedUser().flatMap(currentUser -> {
-            if ((userIds.size() == 1 && userIds.contains(currentUser.id)) || RoleUtils.hasRole(currentUser.self, Role.ADMIN)) {
+            if ((userIds.size() == 1 && userIds.contains(currentUser.id())) || RoleUtils.hasRole(currentUser.self(), Role.ADMIN)) {
                 return Mono.just(currentUser);
             } else {
                 return Mono.error(() -> new UnauthorizedOperation("Unauthorized revoke operation !"));
@@ -195,14 +210,14 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     private Mono<Entity<User>> filterPublicData(Entity<User> original) {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .filter(u -> (hasRole(u.self, Role.ADMIN)
-                        || (hasRole(u.self, Role.USER) && original.id.equals(u.id))))
+                .filter(u -> (hasRole(u.self(), Role.ADMIN)
+                        || (hasRole(u.self(), Role.USER) && original.id().equals(u.id()))))
                 .map(u -> original)
                 .switchIfEmpty(Mono.just(Entity.<User>builder()
-                        .id(original.id)
+                        .id(original.id())
                         .createdBy(Entity.NO_ONE)
                         .createdAt(Instant.EPOCH)
-                        .self(original.self.toBuilder()
+                        .self(original.self().toBuilder()
                                 .clearRoles()
                                 .password(null)
                                 .mail(null)
@@ -218,8 +233,8 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
                 .handle((u, sink) -> {
-                    if (hasRole(u.self, Role.ADMIN)
-                            || (hasRole(u.self, Role.USER) && ids.size() == 1 && ids.contains(u.id))) {
+                    if (hasRole(u.self(), Role.ADMIN)
+                            || (hasRole(u.self(), Role.USER) && ids.size() == 1 && ids.contains(u.id()))) {
                         sink.next(u);
                         return;
                     }
@@ -231,7 +246,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
                 .handle((u, sink) -> {
-                    if (hasRole(u.self, Role.ADMIN)) {
+                    if (hasRole(u.self(), Role.ADMIN)) {
                         sink.next(u);
                         return;
                     }

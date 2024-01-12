@@ -18,14 +18,14 @@ public class TeamsMembersRecordSamples implements RelationalDataSet<TeamsMembers
         return List.of(
                 TEAMS_MEMBERS.newRecord()
                         .setTemeTeamId(TeamsRecordSamples.JEDI_TEAM.getTeamId())
-                        .setTemeUserId(UserSamples.LUKE.id)
-                        .setTemeCreatedBy(UserSamples.LUKE.id)
+                        .setTemeUserId(UserSamples.LUKE.id())
+                        .setTemeCreatedBy(UserSamples.LUKE.id())
                         .setTemeCreatedAt(LocalDateTime.parse("2023-01-10T22:52:42"))
                         .setTemePendingFor(PendingFor.NONE.value()),
                 TEAMS_MEMBERS.newRecord()
                         .setTemeTeamId(TeamsRecordSamples.JEDI_TEAM.getTeamId())
-                        .setTemeUserId(UserSamples.OBIWAN.id)
-                        .setTemeCreatedBy(UserSamples.LUKE.id)
+                        .setTemeUserId(UserSamples.OBIWAN.id())
+                        .setTemeCreatedBy(UserSamples.LUKE.id())
                         .setTemeCreatedAt(LocalDateTime.parse("2023-01-12T22:52:42"))
                         .setTemePendingFor(PendingFor.NONE.value())
         );
