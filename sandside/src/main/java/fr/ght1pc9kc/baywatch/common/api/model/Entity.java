@@ -12,7 +12,7 @@ import java.time.Instant;
  * @param self The Persisted Entity
  * @param <T>  The type of the persisted object
  */
-@Builder
+@Builder(toBuilder = true)
 public record Entity<T>(
         @NonNull String id,
         @NonNull String createdBy,
