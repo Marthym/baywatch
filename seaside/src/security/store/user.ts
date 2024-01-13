@@ -9,7 +9,7 @@ import {
     LOGOUT,
     OPEN_CREATE_ACCOUNT,
     UPDATE,
-} from '@/store/user/UserConstants';
+} from '@/security/store/UserConstants';
 import { GetterTree } from 'vuex';
 
 export type UserState = {

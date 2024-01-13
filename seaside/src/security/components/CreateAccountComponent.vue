@@ -33,8 +33,8 @@ import { Component, Vue } from 'vue-facing-decorator';
 import CurtainModal from '@/common/components/CurtainModal.vue';
 import { User } from '@/security/model/User';
 import { Store, useStore } from 'vuex';
-import { UserState } from '@/store/user/user';
-import { CLOSE_CREATE_ACCOUNT_MUTATION } from '@/store/user/UserConstants';
+import { UserState } from '@/security/store/user';
+import { CLOSE_CREATE_ACCOUNT_MUTATION } from '@/security/store/UserConstants';
 
 const CLOSE_EVENT: string = 'close';
 

@@ -88,7 +88,7 @@ import { defineAsyncComponent } from 'vue';
 import { AlertResponse, AlertType } from '@/common/components/alertdialog/AlertDialog.types';
 import FeedActions from '@/configuration/components/feedslist/FeedActions.vue';
 import { Store, useStore } from 'vuex';
-import { UserState } from '@/store/user/user';
+import { UserState } from '@/security/store/user';
 import { NEWS_FILTER_FEED_MUTATION } from '@/common/model/store/NewsStore.type';
 import { Router, useRouter } from 'vue-router';
 

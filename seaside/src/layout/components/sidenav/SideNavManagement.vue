@@ -41,7 +41,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
 import { useStore } from 'vuex';
-import { UserState } from '@/store/user/user';
+import { UserState } from '@/security/store/user';
 import {
   AcademicCapIcon,
   AdjustmentsVerticalIcon,

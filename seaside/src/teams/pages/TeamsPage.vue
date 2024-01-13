@@ -52,7 +52,7 @@ import { AlertResponse, AlertType } from '@/common/components/alertdialog/AlertD
 import { ArrowLeftOnRectangleIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
 import { MemberPending } from '@/teams/model/MemberPending.enum';
 import { teamMemberAdd, teamMemberDelete } from '@/teams/services/TeamMembers.service';
-import { UserState } from '@/store/user/user';
+import { UserState } from '@/security/store/user';
 
 @Component({
   name: 'TeamsPage',

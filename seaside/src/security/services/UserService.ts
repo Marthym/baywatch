@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
-import { Page } from '@/services/model/Page';
+import { Page } from '@/common/model/Page';
 import { ConstantFilters } from '@/constants';
 import { User } from '@/security/model/User';
 import { send } from '@/common/services/GraphQLClient';

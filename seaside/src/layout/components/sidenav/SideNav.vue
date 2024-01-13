@@ -19,11 +19,11 @@ import {Component, Vue} from 'vue-facing-decorator';
 import SideNavHeader from "./SideNavHeader.vue";
 import SideNavManagement from './SideNavManagement.vue';
 
-import {LOGOUT_MUTATION} from "@/store/user/UserConstants";
+import {LOGOUT_MUTATION} from "@/security/store/UserConstants";
 import {SidenavState} from "@/store/sidenav/sidenav";
 import SideNavUserInfo from "@/layout/components/sidenav/SideNavUserInfo.vue";
 import SideNavFilters from "@/layout/components/sidenav/SideNavFilters.vue";
-import {UserState} from "@/store/user/user";
+import {UserState} from "@/security/store/user";
 import {useStore} from "vuex";
 import {switchMap} from "rxjs/operators";
 import {Router, useRouter} from "vue-router";

@@ -52,7 +52,7 @@ import {
   FILTER_MUTATION,
   INCREMENT_UNREAD_MUTATION,
 } from '@/techwatch/store/statistics/StatisticsConstants';
-import { UserState } from '@/store/user/user';
+import { UserState } from '@/security/store/user';
 import newsService, { newsMark } from '@/techwatch/services/NewsService';
 import {
   actionServiceRegisterFunction,

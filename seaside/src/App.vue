@@ -27,8 +27,8 @@ import { registerNotificationListener, unregisterNotificationListener } from '@/
 import notificationService from '@/services/notification/NotificationService';
 import { Store, useStore } from 'vuex';
 import { UPDATE_MUTATION as STATS_UPDATE_MUTATION } from '@/techwatch/store/statistics/StatisticsConstants';
-import { HAS_ROLE_USER_GETTER } from '@/store/user/UserConstants';
-import { UserState } from '@/store/user/user';
+import { HAS_ROLE_USER_GETTER } from '@/security/store/UserConstants';
+import { UserState } from '@/security/store/user';
 import { defineAsyncComponent } from 'vue';
 
 const CreateAccountComponent = defineAsyncComponent(() => import('@/security/components/CreateAccountComponent.vue'));
