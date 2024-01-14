@@ -1,5 +1,5 @@
 <template>
-  <div class="grid bg-base-200 bg-opacity-60 z-30 w-full h-full absolute top-0 left-0 overflow-hidden"
+  <div class="grid bg-base-200 bg-opacity-60 z-30 w-full h-full absolute top-0 right-0 overflow-hidden"
        @click="opened = false">
     <Transition
         enter-active-class="lg:duration-300 ease-in-out"

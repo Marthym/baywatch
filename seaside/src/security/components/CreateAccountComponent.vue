@@ -1,7 +1,7 @@
 <template>
   <curtain-modal @leave="close()" v-slot="curtainModal">
-    <h2 class="font-sans text-xl border-b border-accent/40 pb-2 w-full">Create new account</h2>
-    <div class="m-4">
+    <h2 class="font-sans text-xl border-b border-accent/40 pb-2">Create new account</h2>
+    <div class="m-4 max-w-lg">
       <label class="label">
         <span class="label-text">Login</span>
       </label>
@@ -27,7 +27,7 @@
       <label class="label -mt-6">
         <span class="label-text">Mail</span>
       </label>
-      <input v-model="account.mail" type="email" placeholder="mail address"
+      <input v-model="account.mail" type="email" placeholder="mail address" name="ukyilkil"
              class="input input-bordered w-full"
              :class="{'input-error': errors.has('mail')}" @change="onFieldChange('mail')">
       <label class="label -mt-1">
@@ -38,10 +38,18 @@
       <label class="label">
         <span class="label-text">Password</span>
       </label>
-      <input v-model="account.password" type="password" class="input input-bordered w-full"
-             :class="{'input-error': errors.has('password')}"
-             @change="onFieldChange('password')"
-             @blur="onBlurNewPassword">
+      <div class="join w-full">
+        <input v-model="account.password" :type="passwordVisible?'text':'password'"
+               class="input input-bordered join-item w-full"
+               :class="{'input-error': errors.has('password')}"
+               @change="onFieldChange('password')"
+               @blur="onBlurNewPassword">
+        <button class="btn btn-neutral input input-bordered border-l-0 join-item"
+                @click="passwordVisible = !passwordVisible">
+          <EyeIcon class="h-6 w-6 opacity-50"/>
+        </button>
+        <button class="btn join-item" @click.stop="onPasswordGenerate">Generate</button>
+      </div>
       <label class="label -mt-1">
         <span class="label-text-alt">&nbsp;</span>
         <span v-if="errors.has('password')" class="label-text-alt">{{
@@ -75,13 +83,14 @@ import { User } from '@/security/model/User';
 import { Store, useStore } from 'vuex';
 import { UserState } from '@/security/store/user';
 import { CLOSE_CREATE_ACCOUNT_MUTATION } from '@/security/store/UserConstants';
-import { passwordCheckStrength } from '@/security/services/PasswordService';
+import { passwordAnonymousCheckStrength, passwordGenerate } from '@/security/services/PasswordService';
+import { EyeIcon } from '@heroicons/vue/24/solid';
 
 const CLOSE_EVENT: string = 'close';
 
 @Component({
   emits: [CLOSE_EVENT],
-  components: { CurtainModal },
+  components: { CurtainModal, EyeIcon },
   setup() {
     return {
       userStore: useStore(),
@@ -94,9 +103,17 @@ export default class CreateAccountComponent extends Vue {
 
   private account: User = {} as User;
   private passwordConfirm: string = '';
+  private passwordVisible: boolean = false;
 
   private onFieldChange(field: string): void {
     this.errors.delete(field);
+  }
+
+  private onPasswordGenerate(): void {
+    passwordGenerate(20).subscribe({
+      next: passwords => this.account.password = passwords[Math.floor(Math.random() * 19)],
+      error: err => this.errors.set('password', err.message),
+    });
   }
 
   private onBlurNewPassword(): void {
@@ -104,7 +121,7 @@ export default class CreateAccountComponent extends Vue {
       this.errors.set('password', 'This password is not secure. An attacker will find it instant !');
       return;
     }
-    passwordCheckStrength(this.account.password).subscribe({
+    passwordAnonymousCheckStrength(this.account).subscribe({
       next: evaluation => {
         if (evaluation.isSecure) {
           this.errors.delete('password');
