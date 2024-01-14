@@ -7,6 +7,7 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRolesRecord;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.UpdatableUser;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.baywatch.security.infra.model.UserForm;
 import org.jooq.Record;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -29,6 +30,8 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.UsersRoles.USERS_ROLES;
 public interface UserMapper {
 
     UpdatableUser getUpdatableUser(Map<String, Object> userForm);
+
+    User getUser(UserForm userForm);
 
     @SuppressWarnings({"OptionalAssignedToNull", "java:S2789", "java:S3655"})
     default UsersRecord updatableUserToRecord(UpdatableUser user) {

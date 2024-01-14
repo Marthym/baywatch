@@ -7,6 +7,7 @@ import fr.ght1pc9kc.baywatch.notify.api.model.ServerEvent;
 import fr.ght1pc9kc.baywatch.notify.domain.ports.NotificationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.Disposable;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -110,6 +112,8 @@ class NotifyServiceImplTest {
 
         assertThat(actualObiwan).containsExactly(eventUser);
         assertThat(errorsObiwan).isEmpty();
+
+        Awaitility.await("Await until disposed").atMost(Duration.ofSeconds(2)).until(disposable::isDisposed);
         assertThat(disposable.isDisposed()).isTrue();
     }
 
