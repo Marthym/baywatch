@@ -37,7 +37,7 @@ public record Entity<T>(
      * @return An identified Object with ID
      */
     public static <T> Entity<T> identify(String id, Instant createdAt, T entity) {
-        return new Entity<T>(id, NO_ONE, createdAt, entity);
+        return new Entity<>(id, NO_ONE, createdAt, entity);
     }
 
     /**
