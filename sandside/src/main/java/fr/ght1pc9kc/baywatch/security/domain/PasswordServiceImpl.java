@@ -13,7 +13,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.LongStream;
+import java.util.stream.Stream;
+
+import static java.util.function.Predicate.not;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -33,8 +37,11 @@ public class PasswordServiceImpl implements PasswordService {
 
     @Override
     public Mono<PasswordEvaluation> checkPasswordStrength(User user) {
+        List<String> dictionary = Stream.of(user.name, user.login, user.mail)
+                .filter(not(Objects::isNull))
+                .toList();
         return localeFacade.getLocale()
-                .map(locale -> passwordChecker.estimate(user.password, locale, List.of(user.name, user.login, user.mail)));
+                .map(locale -> passwordChecker.estimate(user.password, locale, dictionary));
     }
 
     @Override
