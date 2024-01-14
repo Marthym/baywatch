@@ -39,10 +39,13 @@ public class PasswordServiceImpl implements PasswordService {
 
     @Override
     public Flux<String> generateSecurePassword(int number) {
+        if (number > 100 || number < 1) {
+            return Flux.error(() -> new IllegalArgumentException("Invalid number of passwords required !"));
+        }
         return Flux.<String>create(sink ->
                         sink.onRequest(n -> LongStream.range(0, number)
                                 .mapToObj(ignore -> passwordChecker.generate())
                                 .forEach(sink::next)))
-                .take(Integer.valueOf(number).longValue());
+                .take(number);
     }
 }

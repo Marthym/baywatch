@@ -72,4 +72,11 @@ class PasswordServiceImplTest {
                 .assertNext(actual -> Assertions.assertThat(actual).isNotBlank().hasSize(16))
                 .verifyComplete();
     }
+
+    @ParameterizedTest
+    @CsvSource({"-10", "1000"})
+    void should_fail_on_invalid_number_of_password(int number) {
+        StepVerifier.create(tested.generateSecurePassword(number))
+                .verifyError(IllegalArgumentException.class);
+    }
 }

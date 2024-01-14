@@ -12,7 +12,7 @@ import java.time.Instant;
  * @param self The Persisted Entity
  * @param <T>  The type of the persisted object
  */
-@Builder(toBuilder = true)
+@Builder
 public record Entity<T>(
         @NonNull String id,
         @NonNull String createdBy,
@@ -37,7 +37,7 @@ public record Entity<T>(
      * @return An identified Object with ID
      */
     public static <T> Entity<T> identify(String id, Instant createdAt, T entity) {
-        return new Entity<T>(id, NO_ONE, createdAt, entity);
+        return new Entity<>(id, NO_ONE, createdAt, entity);
     }
 
     /**
