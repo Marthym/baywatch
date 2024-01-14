@@ -38,26 +38,24 @@
       <label class="label">
         <span class="label-text">Password</span>
       </label>
-      <div class="join w-full">
-        <input v-model="account.password" :type="passwordVisible?'text':'password'"
-               class="input input-bordered join-item w-full"
-               :class="{'input-error': errors.has('password')}"
-               @change="onFieldChange('password')"
-               @blur="onBlurNewPassword">
-        <button class="btn btn-neutral input input-bordered border-l-0 join-item"
-                @click="passwordVisible = !passwordVisible">
-          <EyeIcon class="h-6 w-6 opacity-50"/>
-        </button>
-        <button class="btn join-item" @click.stop="onPasswordGenerate">Generate</button>
+      <div class="tooltip tooltip-error tooltip-bottom w-full" :data-tip="errors.get('password')"
+           :class="{'tooltip-open': errors.has('password')}">
+        <div class="join w-full">
+          <input v-model="account.password" :type="passwordVisible?'text':'password'"
+                 class="input input-bordered join-item w-full"
+                 :class="{'input-error': errors.has('password')}"
+                 @keyup="onFieldChange('password')"
+                 @blur="onBlurNewPassword">
+          <button class="btn btn-neutral input input-bordered border-l-0 join-item focus:outline-none"
+                  :class="{'input-error': errors.has('password')}"
+                  @click="passwordVisible = !passwordVisible">
+            <EyeIcon class="h-6 w-6 opacity-50"/>
+          </button>
+          <button class="btn join-item" @click.stop="onPasswordGenerate">Generate</button>
+        </div>
       </div>
-      <label class="label -mt-1">
-        <span class="label-text-alt">&nbsp;</span>
-        <span v-if="errors.has('password')" class="label-text-alt">{{
-            errors.get('password')
-          }}</span>
-      </label>
 
-      <label class="label -mt-6">
+      <label class="label">
         <span class="label-text">Password Confirmation</span>
       </label>
       <input v-model="passwordConfirm" type="password" class="input input-bordered w-full"
@@ -99,9 +97,9 @@ const CLOSE_EVENT: string = 'close';
 })
 export default class CreateAccountComponent extends Vue {
   private readonly userStore: Store<UserState>;
-  private errors: Map<string, string> = new Map<string, string>();
+  private errors: Map<string, string> = new Map<string, string>([]);
 
-  private account: User = {} as User;
+  private account: User = { roles: [] } as User;
   private passwordConfirm: string = '';
   private passwordVisible: boolean = false;
 
@@ -119,6 +117,10 @@ export default class CreateAccountComponent extends Vue {
   private onBlurNewPassword(): void {
     if (!this.account.password || this.account.password.length <= 3) {
       this.errors.set('password', 'This password is not secure. An attacker will find it instant !');
+      return;
+    }
+    if (!this.account.login) {
+      this.errors.set('password', 'Login field is required to check password strength');
       return;
     }
     passwordAnonymousCheckStrength(this.account).subscribe({
