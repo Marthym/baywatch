@@ -66,6 +66,7 @@ import { Feed } from '@/techwatch/model/Feed.type';
 import { EnvelopeIcon, EnvelopeOpenIcon, PaperClipIcon, ShareIcon } from '@heroicons/vue/24/outline';
 import { FireIcon } from '@heroicons/vue/20/solid';
 import { KeyboardController, listener, useKeyboardController } from '@/common/services/KeyboardController';
+import { ref } from 'vue';
 
 @Component({
   name: 'NewsList',
@@ -75,13 +76,14 @@ import { KeyboardController, listener, useKeyboardController } from '@/common/se
   },
   setup() {
     const store = useStore();
+    const newsList = ref(HTMLElement);
     return {
       store: store,
       userStore: store.state.user,
       newsStore: store.state.news,
       activateOnScroll: useScrollingActivation(),
       infiniteScroll: useInfiniteScroll(),
-      keyboardController: useKeyboardController(),
+      keyboardController: useKeyboardController(newsList.value.prototype),
     };
   },
 })
@@ -272,7 +274,6 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   }
 
   private markNewsRead(idx: number, mark: boolean) {
-    console.log('markNewsRead', idx);
     if (!this.isAuthenticated) {
       return;
     }

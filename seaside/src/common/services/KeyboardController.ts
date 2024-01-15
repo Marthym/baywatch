@@ -1,5 +1,4 @@
 type KeyboardListener = {
-    origin: EventTarget,
     key: string,
     consumer: (event: KeyboardEvent) => void,
 };
@@ -8,6 +7,7 @@ type OnKeydownCallback = (event: KeyboardEvent) => void;
 
 export type KeyboardController = {
     listeners: Map<string, KeyboardListener>,
+    root: HTMLElement,
     callback?: OnKeydownCallback,
     register: (...toRegister: KeyboardListener[]) => this
     start: () => void;
@@ -15,9 +15,10 @@ export type KeyboardController = {
     purge: () => void;
 };
 
-export function useKeyboardController(): KeyboardController {
+export function useKeyboardController(root: HTMLElement): KeyboardController {
     return {
         listeners: new Map(),
+        root: root,
         register: function (...toRegister: KeyboardListener[]) {
             toRegister.forEach(kbl => this.listeners.set(kbl.key, kbl));
             return this;
@@ -34,18 +35,18 @@ export function useKeyboardController(): KeyboardController {
     };
 }
 
-export function listener(key: string, consumer: (event: KeyboardEvent) => void, origin: EventTarget = window): KeyboardListener {
-    return { origin, key, consumer };
+export function listener(key: string, consumer: (event: KeyboardEvent) => void): KeyboardListener {
+    return { key, consumer };
 }
 
 function startController(controller: KeyboardController): void {
     controller.callback = (event: KeyboardEvent) => onKeyDownListener(controller.listeners, event);
-    window.addEventListener('keydown', controller.callback, false);
+    controller.root.addEventListener('keydown', controller.callback, false);
 }
 
 function stopController(controller: KeyboardController): void {
     if (controller.callback) {
-        window.removeEventListener('keydown', controller.callback, false);
+        controller.root.removeEventListener('keydown', controller.callback, false);
     }
 }
 

@@ -69,7 +69,7 @@
 
       <div class="text-right">
         <button class="btn btn-sm mx-1" @click.stop="curtainModal.close()">Cancel</button>
-        <button class="btn btn-sm btn-primary mx-1">Register</button>
+        <button class="btn btn-sm btn-primary mx-1" @click.stop="onRegisterClick">Register</button>
       </div>
     </div>
   </curtain-modal>
@@ -83,6 +83,9 @@ import { UserState } from '@/security/store/user';
 import { CLOSE_CREATE_ACCOUNT_MUTATION } from '@/security/store/UserConstants';
 import { passwordAnonymousCheckStrength, passwordGenerate } from '@/security/services/PasswordService';
 import { EyeIcon } from '@heroicons/vue/24/solid';
+import { userCreate } from '@/security/services/UserService';
+import notificationService from '@/services/notification/NotificationService';
+import { useKeyboardController } from '@/common/services/KeyboardController';
 
 const CLOSE_EVENT: string = 'close';
 
@@ -92,6 +95,7 @@ const CLOSE_EVENT: string = 'close';
   setup() {
     return {
       userStore: useStore(),
+      keyboardController: useKeyboardController(),
     };
   },
 })
@@ -145,6 +149,13 @@ export default class CreateAccountComponent extends Vue {
 
   private close(): void {
     this.userStore.commit(CLOSE_CREATE_ACCOUNT_MUTATION);
+  }
+
+  private onRegisterClick(): void {
+    userCreate(this.account).subscribe({
+      next: () => notificationService.pushSimpleOk('User account registered Successfully !'),
+      error: err => notificationService.pushSimpleError(err.message),
+    });
   }
 }
 </script>
