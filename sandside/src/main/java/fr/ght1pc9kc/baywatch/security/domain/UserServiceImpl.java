@@ -95,7 +95,8 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                         .createdBy(currentUserId)
                         .withId(userId))
                 .flatMap(entity -> userRepository.persist(List.of(entity)).single())
-                .then(userRepository.persist(userId, user.roles.stream().map(Permission::toString).distinct().toList()))
+                .then(grants(userId, user.roles))
+//                .then(userRepository.persist(userId, user.roles.stream().map(Permission::toString).distinct().toList()))
                 .flatMap(this::notifyAdmins);
     }
 

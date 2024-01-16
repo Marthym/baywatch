@@ -65,7 +65,7 @@ public class UserRepository implements UserPersistencePort {
                 qCtx.pagination, USER_PROPERTIES_MAPPING,
                 dsl.select(USERS.fields()).select(DSL.groupConcat(USERS_ROLES.USRO_ROLE).as(USERS_ROLES.USRO_ROLE.getName()))
                         .from(USERS)
-                        .join(USERS_ROLES).on(USERS_ROLES.USRO_USER_ID.eq(USERS.USER_ID))
+                        .leftJoin(USERS_ROLES).on(USERS_ROLES.USRO_USER_ID.eq(USERS.USER_ID))
                         .where(conditions)
                         .groupBy(USERS.fields()));
 

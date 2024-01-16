@@ -69,11 +69,15 @@ public interface UserMapper {
     UsersRecord entityUserToRecord(Entity<User> user);
 
     default Entity<User> recordToUserEntity(Record usersRecord) {
-        List<Permission> permissions = Arrays.stream(usersRecord.get(USERS_ROLES.USRO_ROLE).split(","))
-                .map(Permission::from)
-                .distinct()
-                .sorted(Permission.COMPARATOR)
-                .toList();
+        String roles = usersRecord.get(USERS_ROLES.USRO_ROLE);
+        List<Permission> permissions = (roles == null) ?
+                List.of() :
+                Arrays.stream(roles.split(","))
+                        .map(Permission::from)
+                        .distinct()
+                        .sorted(Permission.COMPARATOR)
+                        .toList();
+
 
         return Entity.identify(User.builder()
                         .login(usersRecord.get(USERS.USER_LOGIN))
