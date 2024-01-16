@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-5xl" ref="news-list">
+  <div class="max-w-5xl focus:outline-none" ref="newsList">
     <template v-for="(card, idx) in news" :key="card.data.id">
       <NewsCard :ref="card.data.id" :card="card"
                 @activate="activateNewsCard(idx)" @addFilter="onAddFilter" @clickTitle="markNewsRead(idx, true)">
@@ -67,6 +67,7 @@ import { EnvelopeIcon, EnvelopeOpenIcon, PaperClipIcon, ShareIcon } from '@heroi
 import { FireIcon } from '@heroicons/vue/20/solid';
 import { KeyboardController, listener, useKeyboardController } from '@/common/services/KeyboardController';
 import { ref } from 'vue';
+import { Ref, UnwrapRef } from '@vue/reactivity';
 
 @Component({
   name: 'NewsList',
@@ -76,14 +77,15 @@ import { ref } from 'vue';
   },
   setup() {
     const store = useStore();
-    const newsList = ref(HTMLElement);
+    const newsList: Ref<UnwrapRef<HTMLElement>> = ref(HTMLElement.prototype);
     return {
       store: store,
       userStore: store.state.user,
       newsStore: store.state.news,
       activateOnScroll: useScrollingActivation(),
       infiniteScroll: useInfiniteScroll(),
-      keyboardController: useKeyboardController(newsList.value.prototype),
+      keyboardController: useKeyboardController(newsList),
+      newsList,
     };
   },
 })
@@ -374,10 +376,14 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     actionServiceReload('news');
   }
 
+  beforeUnmount(): void {
+    this.keyboardController.purge();
+
+  }
+
   unmounted(): void {
     this.activateOnScroll.disconnect();
     this.infiniteScroll.disconnect();
-    this.keyboardController.purge();
     actionServiceUnregisterFunction();
   }
 

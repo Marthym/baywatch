@@ -1,3 +1,5 @@
+import { Ref, UnwrapRef } from '@vue/reactivity';
+
 type KeyboardListener = {
     key: string,
     consumer: (event: KeyboardEvent) => void,
@@ -7,7 +9,7 @@ type OnKeydownCallback = (event: KeyboardEvent) => void;
 
 export type KeyboardController = {
     listeners: Map<string, KeyboardListener>,
-    root: HTMLElement,
+    root: Ref<UnwrapRef<HTMLElement>>,
     callback?: OnKeydownCallback,
     register: (...toRegister: KeyboardListener[]) => this
     start: () => void;
@@ -15,7 +17,7 @@ export type KeyboardController = {
     purge: () => void;
 };
 
-export function useKeyboardController(root: HTMLElement): KeyboardController {
+export function useKeyboardController(root: Ref<UnwrapRef<HTMLElement>>): KeyboardController {
     return {
         listeners: new Map(),
         root: root,
@@ -41,12 +43,14 @@ export function listener(key: string, consumer: (event: KeyboardEvent) => void):
 
 function startController(controller: KeyboardController): void {
     controller.callback = (event: KeyboardEvent) => onKeyDownListener(controller.listeners, event);
-    controller.root.addEventListener('keydown', controller.callback, false);
+    controller.root.value.addEventListener('keydown', controller.callback, false);
+    controller.root.value.tabIndex = -1;
+    controller.root.value.focus();
 }
 
 function stopController(controller: KeyboardController): void {
     if (controller.callback) {
-        controller.root.removeEventListener('keydown', controller.callback, false);
+        controller.root.value.removeEventListener('keydown', controller.callback, false);
     }
 }
 
@@ -59,7 +63,8 @@ function purgeController(controller: KeyboardController): void {
 
 function onKeyDownListener(listeners: Map<string, KeyboardListener>, event: KeyboardEvent): void {
     const targetType: string = (event.target as HTMLInputElement).type?.toLowerCase() || 'accepted';
-    if (!listeners || event.altKey || ['text', 'password', 'textarea'].includes(targetType)) {
+    if (!listeners || event.altKey ||
+        (['text', 'password', 'textarea', 'email'].includes(targetType) && event.key !== 'Escape')) {
         return;
     }
     if (!event.altKey && listeners.has(event.key)) {

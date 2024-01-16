@@ -16,7 +16,7 @@
       <label class="label -mt-6">
         <span class="label-text">Username</span>
       </label>
-      <input v-model="account.name" type="text" placeholder="username"
+      <input v-model="account.name" type="text" placeholder="User Name"
              class="input input-bordered w-full"
              :class="{'input-error': errors.has('name')}" @change="onFieldChange('name')">
       <label class="label -mt-1">
@@ -27,7 +27,7 @@
       <label class="label -mt-6">
         <span class="label-text">Mail</span>
       </label>
-      <input v-model="account.mail" type="email" placeholder="mail address" name="ukyilkil"
+      <input v-model="account.mail" type="email" placeholder="okenobi@ght1pc9kc.fr"
              class="input input-bordered w-full"
              :class="{'input-error': errors.has('mail')}" @change="onFieldChange('mail')">
       <label class="label -mt-1">
@@ -85,7 +85,6 @@ import { passwordAnonymousCheckStrength, passwordGenerate } from '@/security/ser
 import { EyeIcon } from '@heroicons/vue/24/solid';
 import { userCreate } from '@/security/services/UserService';
 import notificationService from '@/services/notification/NotificationService';
-import { useKeyboardController } from '@/common/services/KeyboardController';
 
 const CLOSE_EVENT: string = 'close';
 
@@ -95,7 +94,6 @@ const CLOSE_EVENT: string = 'close';
   setup() {
     return {
       userStore: useStore(),
-      keyboardController: useKeyboardController(),
     };
   },
 })
