@@ -64,7 +64,7 @@
         <td>{{ vUser.data.name }}</td>
         <td>{{ vUser.data.mail }}</td>
         <td>{{ roleFromPermission(vUser.data.roles) }}</td>
-        <td>{{ dateToString(vUser.data._createdAt) }}</td>
+        <td>{{ vUser.data._createdAt }}</td>
         <td>
           <div class="join justify-end w-full">
             <button class="btn btn-sm btn-square btn-ghost join-item" @click.prevent="onUserEdit(vUser.data)">
@@ -174,13 +174,6 @@ export default class UserAdminTab extends Vue {
         map(users => users.map(user => ({ isSelected: false, data: user }))),
         tap(users => this.users = users),
     );
-  }
-
-  dateToString(date: string): string {
-    return new Date(date).toLocaleDateString(navigator.languages, {
-      timeZone: 'UTC',
-      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
-    });
   }
 
   private roleFromPermission(perm: string[]): string {

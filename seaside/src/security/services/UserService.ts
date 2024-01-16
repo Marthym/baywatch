@@ -30,11 +30,18 @@ export function userList(page = 0, query: URLSearchParams = new URLSearchParams(
         map(response => ({
                 currentPage: resolvedPage,
                 totalPage: Math.ceil(response.totalCount / Number(resolvedPerPage)),
-                data: response.entities,
+                data: response.entities.map(user => ({
+                    ...user,
+                    _createdAt: utcToZonedTime(user._createdAt),
+                })),
             }),
         ),
         take(1),
     );
+}
+
+function utcToZonedTime(utcDate: string): string {
+    return new Date(utcDate).toLocaleString();
 }
 
 const USER_CREATE_REQUEST = `#graphql
