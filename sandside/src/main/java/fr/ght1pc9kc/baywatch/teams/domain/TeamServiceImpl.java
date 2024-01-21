@@ -2,7 +2,6 @@ package fr.ght1pc9kc.baywatch.teams.domain;
 
 import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.EntityAssert;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
@@ -16,6 +15,7 @@ import fr.ght1pc9kc.baywatch.teams.domain.ports.TeamAuthFacade;
 import fr.ght1pc9kc.baywatch.teams.domain.ports.TeamMemberPersistencePort;
 import fr.ght1pc9kc.baywatch.teams.domain.ports.TeamPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.AccessLevel;
@@ -99,17 +99,14 @@ public class TeamServiceImpl implements TeamsService {
         Instant now = clock().instant();
         return authFacade.getConnectedUser().flatMap(manager -> {
             String id = String.format("%s%s", ID_PREFIX, idGenerator.create());
-            return teamPersistence.persist(Entity.<Team>builder()
-                            .id(id)
-                            .self(new Team(name, topic))
+            return teamPersistence.persist(Entity.identify(new Team(name, topic))
                             .createdAt(now)
                             .createdBy(manager.id())
-                            .build())
-                    .then(teamMemberPersistence.add(List.of(Entity.<TeamMember>builder().id(id)
-                            .self(new TeamMember(manager.id(), PendingFor.NONE))
+                            .withId(id))
+                    .then(teamMemberPersistence.add(List.of(Entity.identify(new TeamMember(manager.id(), PendingFor.NONE))
                             .createdBy(manager.id())
                             .createdAt(now)
-                            .build())))
+                            .withId(id))))
                     .then(authFacade.grantAuthorization(manager.id(), List.of(Permission.manager(id).toString())))
                     .thenReturn(id);
         }).flatMap(this::get);
@@ -122,12 +119,10 @@ public class TeamServiceImpl implements TeamsService {
                 .switchIfEmpty(Mono.error(() -> new TeamPermissionDenied(
                         "You must be manager of the team to update it ! Try refresh to update permissions.")))
                 .flatMap(manager ->
-                        teamPersistence.persist(Entity.<Team>builder()
-                                .id(id)
-                                .self(new Team(name, topic))
+                        teamPersistence.persist(Entity.identify(new Team(name, topic))
                                 .createdAt(clock().instant())
                                 .createdBy(manager.id())
-                                .build()))
+                                .withId(id)))
                 .then(teamPersistence.list(QueryContext.id(id)).next());
     }
 
@@ -149,11 +144,10 @@ public class TeamServiceImpl implements TeamsService {
                     }
                     PendingFor pending = hasPermission && !addHimself ? PendingFor.USER : PendingFor.MANAGER;
                     return Flux.fromStream(membersIds.stream()
-                            .map(mId -> Entity.<TeamMember>builder().id(id)
-                                    .self(new TeamMember(mId, pending))
+                            .map(mId -> Entity.identify(new TeamMember(mId, pending))
                                     .createdBy(user.id())
                                     .createdAt(now)
-                                    .build()));
+                                    .withId(id)));
                 }).collectList()
                 .flatMap(teamMemberPersistence::add)
                 .thenMany(teamMemberPersistence.list(QueryContext.all(Criteria.property(ID).eq(id))));

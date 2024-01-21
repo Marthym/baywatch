@@ -1,7 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.domain;
 
 import com.github.f4b6a3.ulid.UlidFactory;
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.AuthorizationService;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
@@ -16,6 +15,7 @@ import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.NotificationPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.AllArgsConstructor;
@@ -90,12 +90,10 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                 })
                 .switchIfEmpty(Mono.just(userId))
 
-                .map(currentUserId -> Entity.<User>builder()
-                        .id(userId)
+                .map(currentUserId -> Entity.identify(withPassword)
                         .createdAt(now)
                         .createdBy(currentUserId)
-                        .self(withPassword)
-                        .build())
+                        .withId(userId))
                 .flatMap(entity -> userRepository.persist(List.of(entity)).single())
                 .then(userRepository.persist(userId, user.roles.stream().map(Permission::toString).distinct().toList()))
                 .flatMap(this::notifyAdmins);
@@ -213,16 +211,14 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                 .filter(u -> (hasRole(u.self(), Role.ADMIN)
                         || (hasRole(u.self(), Role.USER) && original.id().equals(u.id()))))
                 .map(u -> original)
-                .switchIfEmpty(Mono.just(Entity.<User>builder()
-                        .id(original.id())
-                        .createdBy(Entity.NO_ONE)
-                        .createdAt(Instant.EPOCH)
-                        .self(original.self().toBuilder()
+                .switchIfEmpty(Mono.just(Entity.identify(original.self().toBuilder()
                                 .clearRoles()
                                 .password(null)
                                 .mail(null)
                                 .build())
-                        .build()));
+                        .createdBy(Entity.NO_ONE)
+                        .createdAt(Instant.EPOCH)
+                        .withId(original.id())));
     }
 
     private Mono<Entity<User>> authorizeSelfData(String id) {

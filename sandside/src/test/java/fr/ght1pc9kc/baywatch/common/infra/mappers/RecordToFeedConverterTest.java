@@ -1,9 +1,9 @@
 package fr.ght1pc9kc.baywatch.common.infra.mappers;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
+import fr.ght1pc9kc.entity.api.Entity;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.impl.DSL;

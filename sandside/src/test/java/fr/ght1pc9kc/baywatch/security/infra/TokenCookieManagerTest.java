@@ -1,10 +1,10 @@
 package fr.ght1pc9kc.baywatch.security.infra;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.infra.model.SecurityParams;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.testy.params.aggregators.StringVargsAggregator;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.api.NewsService;
@@ -11,6 +10,7 @@ import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.TeamServicePort;
 import fr.ght1pc9kc.baywatch.tests.samples.FeedSamples;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
@@ -55,7 +55,7 @@ class NewsServiceImplTest {
         mockAuthFacade = mock(AuthenticationFacade.class);
         StatePersistencePort mockStateRepository = mock(StatePersistencePort.class);
         when(mockStateRepository.list(any())).thenReturn(Flux.just(
-                Entity.identify(MAY_THE_FORCE.id(), OBIWAN.id(), MAY_THE_FORCE.getState())
+                Entity.identify(MAY_THE_FORCE.getState()).createdBy(OBIWAN.id()).withId(MAY_THE_FORCE.id())
         ));
         FeedPersistencePort mockFeedRepository = mock(FeedPersistencePort.class);
         when(mockFeedRepository.list(any())).thenReturn(Flux.fromIterable(FeedSamples.SAMPLES));

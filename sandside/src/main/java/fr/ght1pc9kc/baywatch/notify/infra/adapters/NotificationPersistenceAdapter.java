@@ -3,7 +3,6 @@ package fr.ght1pc9kc.baywatch.notify.infra.adapters;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapLikeType;
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NotificationsRecord;
@@ -13,6 +12,7 @@ import fr.ght1pc9kc.baywatch.notify.api.model.ReactiveEvent;
 import fr.ght1pc9kc.baywatch.notify.api.model.ServerEvent;
 import fr.ght1pc9kc.baywatch.notify.api.model.ServerEventVisitor;
 import fr.ght1pc9kc.baywatch.notify.domain.ports.NotificationPersistencePort;
+import fr.ght1pc9kc.entity.api.Entity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
@@ -35,7 +35,7 @@ public class NotificationPersistenceAdapter implements NotificationPersistencePo
     private final ObjectMapper jsonMapper;
 
     @Override
-    public Mono<ServerEvent> persist(Entity<ServerEvent> event) {
+    public Mono<ServerEvent> persist(Entity<? extends ServerEvent> event) {
         Mono<NotificationsRecord> notificationsRecord = event.self().accept(new ServerEventVisitor<>() {
             @Override
             public <T> Mono<NotificationsRecord> visit(BasicEvent<T> event) {

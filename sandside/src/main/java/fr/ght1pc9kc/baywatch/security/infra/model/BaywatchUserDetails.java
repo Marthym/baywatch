@@ -1,8 +1,8 @@
 package fr.ght1pc9kc.baywatch.security.infra.model;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.entity.api.Entity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;

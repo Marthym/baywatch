@@ -2,12 +2,12 @@ package fr.ght1pc9kc.baywatch.teams.infra.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.infra.model.Page;
 import fr.ght1pc9kc.baywatch.teams.api.TeamsService;
 import fr.ght1pc9kc.baywatch.teams.api.model.Team;
 import fr.ght1pc9kc.baywatch.teams.infra.model.SearchTeamsRequest;
 import fr.ght1pc9kc.baywatch.teams.infra.model.TeamForm;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;

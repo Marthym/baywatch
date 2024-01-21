@@ -3,7 +3,6 @@ package fr.ght1pc9kc.baywatch.notify.domain;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.f4b6a3.ulid.UlidCreator;
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyManager;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.notify.api.model.BasicEvent;
@@ -13,6 +12,7 @@ import fr.ght1pc9kc.baywatch.notify.api.model.ServerEvent;
 import fr.ght1pc9kc.baywatch.notify.domain.model.ByUserEventPublisherCacheEntry;
 import fr.ght1pc9kc.baywatch.notify.domain.ports.NotificationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
+import fr.ght1pc9kc.entity.api.Entity;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 import org.reactivestreams.Subscription;
@@ -116,11 +116,11 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
                 .map(ByUserEventPublisherCacheEntry::sink)
                 .ifPresentOrElse(
                         sk -> emit(sk, event),
-                        () -> notificationPersistence.persist(Entity.<ServerEvent>builder()
-                                .id(event.id())
+                        () -> notificationPersistence.persist(Entity.identify(event)
                                 .createdBy(userId)
                                 .createdAt(clock.instant())
-                                .self(event).build()).subscribe());
+                                .withId(event.id())
+                        ).subscribe());
         return event;
     }
 
@@ -131,11 +131,11 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
                 .map(ByUserEventPublisherCacheEntry::sink)
                 .ifPresentOrElse(
                         sk -> emit(sk, event),
-                        () -> notificationPersistence.persist(Entity.<ServerEvent>builder()
-                                .id(event.id())
+                        () -> notificationPersistence.persist(Entity.identify(event)
                                 .createdBy(userId)
                                 .createdAt(clock.instant())
-                                .self(event).build()).subscribe());
+                                .withId(event.id())
+                        ).subscribe());
         return event;
     }
 

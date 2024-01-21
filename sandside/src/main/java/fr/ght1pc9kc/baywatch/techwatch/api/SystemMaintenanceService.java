@@ -1,11 +1,11 @@
 package fr.ght1pc9kc.baywatch.techwatch.api;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

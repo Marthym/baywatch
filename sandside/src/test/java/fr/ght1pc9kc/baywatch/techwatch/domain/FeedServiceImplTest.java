@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
@@ -13,6 +12,7 @@ import fr.ght1pc9kc.baywatch.tests.samples.FeedSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
@@ -52,9 +52,9 @@ class FeedServiceImplTest {
         when(mockFeedRepository.get(any())).thenReturn(Mono.just(jediFeed));
         when(mockFeedRepository.list(any())).thenReturn(Flux.just(jediFeed));
         when(mockFeedRepository.persist(any())).thenAnswer(a ->
-                Flux.fromIterable(a.getArgument(0, List.class)).map(wf -> Entity.identify(((WebFeed) wf).reference(), wf)));
+                Flux.fromIterable(a.getArgument(0, List.class)).map(wf -> Entity.identify(wf).withId(((WebFeed) wf).reference())));
         when(mockFeedRepository.persistUserRelation(anyCollection(), anyString())).thenAnswer(a ->
-                Flux.fromIterable(a.getArgument(0, List.class)).map(wf -> Entity.identify(((WebFeed) wf).reference(), wf)));
+                Flux.fromIterable(a.getArgument(0, List.class)).map(wf -> Entity.identify(wf).withId(((WebFeed) wf).reference())));
         when(mockFeedRepository.count(any())).thenReturn(Mono.just(42));
 
         ScraperServicePort mockScraperService = mock(ScraperServicePort.class);
@@ -137,7 +137,7 @@ class FeedServiceImplTest {
         ArgumentCaptor<List<WebFeed>> captor = ArgumentCaptor.forClass(List.class);
 
         StepVerifier.create(tested.subscribe(List.of(jediFeed)))
-                .expectNext(Entity.identify(jediFeed.reference(), jediFeed))
+                .expectNext(Entity.identify(jediFeed).withId(jediFeed.reference()))
                 .verifyComplete();
 
         verify(mockFeedRepository, times(1)).persistUserRelation(captor.capture(),

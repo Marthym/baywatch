@@ -1,7 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.infra.controllers;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
@@ -14,6 +13,7 @@ import fr.ght1pc9kc.baywatch.security.infra.exceptions.NoSessionException;
 import fr.ght1pc9kc.baywatch.security.infra.model.AuthenticationRequest;
 import fr.ght1pc9kc.baywatch.security.infra.model.BaywatchUserDetails;
 import fr.ght1pc9kc.baywatch.security.infra.model.Session;
+import fr.ght1pc9kc.entity.api.Entity;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

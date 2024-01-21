@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.teams.domain;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.dsl.tables.Teams;
 import fr.ght1pc9kc.baywatch.dsl.tables.TeamsMembers;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.TeamsRecord;
@@ -18,6 +17,7 @@ import fr.ght1pc9kc.baywatch.teams.infra.samples.TeamsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRolesSamples;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;

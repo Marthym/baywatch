@@ -1,7 +1,6 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.techwatch.api.FeedService;
@@ -10,6 +9,7 @@ import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.ScraperServicePort;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.api.filter.CriteriaVisitor;
@@ -60,7 +60,9 @@ public class FeedServiceImpl implements FeedService {
                             String createdBy = Arrays.stream(re.createdBy().split(","))
                                     .filter(u -> qc.getT2().equals(u))
                                     .findAny().orElse(Entity.NO_ONE);
-                            return Entity.identify(re.id(), createdBy, re.self());
+                            return Entity.identify(re.self())
+                                    .createdBy(createdBy)
+                                    .withId(re.id());
                         }));
     }
 

@@ -2,7 +2,6 @@ package fr.ght1pc9kc.baywatch.security.infra.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.common.infra.model.CreateValidation;
 import fr.ght1pc9kc.baywatch.common.infra.model.Page;
@@ -14,6 +13,7 @@ import fr.ght1pc9kc.baywatch.security.infra.adapters.UserMapper;
 import fr.ght1pc9kc.baywatch.security.infra.exceptions.AlreadyExistsException;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserForm;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserSearchRequest;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
 import graphql.GraphQLError;

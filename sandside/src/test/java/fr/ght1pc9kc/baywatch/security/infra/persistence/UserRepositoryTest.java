@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.security.infra.persistence;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.Users;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
@@ -14,6 +13,7 @@ import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsUsersRecordSample;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRolesSamples;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;
 import fr.ght1pc9kc.testy.jooq.WithDslContext;

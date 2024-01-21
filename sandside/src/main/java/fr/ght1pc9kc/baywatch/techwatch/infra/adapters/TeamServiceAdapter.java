@@ -1,9 +1,9 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.teams.api.TeamsService;
 import fr.ght1pc9kc.baywatch.teams.domain.model.PendingFor;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.TeamServicePort;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.RequiredArgsConstructor;

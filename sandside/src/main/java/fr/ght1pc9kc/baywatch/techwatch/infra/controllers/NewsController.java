@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.controllers;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.common.infra.model.Page;
 import fr.ght1pc9kc.baywatch.techwatch.api.NewsService;
@@ -9,6 +8,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Popularity;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
 import io.micrometer.core.instrument.MeterRegistry;

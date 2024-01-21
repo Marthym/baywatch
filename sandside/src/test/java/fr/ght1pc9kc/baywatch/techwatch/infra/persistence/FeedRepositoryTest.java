@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
@@ -13,6 +12,7 @@ import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsUsersRecordSample;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRolesSamples;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;
 import fr.ght1pc9kc.testy.jooq.WithDslContext;
@@ -110,7 +110,7 @@ class FeedRepositoryTest {
                 .build();
 
         StepVerifier.create(tested.persist(Collections.singleton(expected)))
-                .assertNext(actual -> assertThat(actual).isEqualTo(Entity.identify(expected.reference(), expected)))
+                .assertNext(actual -> assertThat(actual).isEqualTo(Entity.identify(expected).withId(expected.reference())))
                 .verifyComplete();
 
         FeedsRecord actual = dsl.selectFrom(FEEDS).where(FEEDS.FEED_ID.eq(expected.reference())).fetchOne();
@@ -121,12 +121,12 @@ class FeedRepositoryTest {
     @Test
     void should_persist_feeds_to_user(DSLContext dsl) {
         Entity<WebFeed> expected = Entity.identify(
-                FeedRecordSamples.JEDI.getFeedId(),
                 Mappers.getMapper(BaywatchMapper.class).recordToFeed(FeedRecordSamples.JEDI)
                         .self().toBuilder()
                         .name(FeedRecordSamples.JEDI.getFeedName() + " of Obiwan")
                         .tags(Set.of("jedi", "saber"))
-                        .build());
+                        .build()
+        ).withId(FeedRecordSamples.JEDI.getFeedId());
 
 
         StepVerifier.create(tested.persistUserRelation(Collections.singleton(expected.self()), OKENOBI.getUserId()))
@@ -151,13 +151,13 @@ class FeedRepositoryTest {
     void should_update_feed(DSLContext dsl) {
         String feedOwnedOnlyByObywan = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("01"));
         Entity<WebFeed> expected = Entity.identify(
-                feedOwnedOnlyByObywan,
                 WebFeed.builder()
                         .reference(feedOwnedOnlyByObywan)
                         .location(URI.create("http://www.jedi.light/01"))
                         .name("Obiwan Kenobi")
                         .tags(Set.of("jedi", "light"))
-                        .build());
+                        .build()
+        ).withId(feedOwnedOnlyByObywan);
         Mono<Entity<WebFeed>> update = tested.update(expected.id(), OKENOBI.getUserId(), expected.self());
         StepVerifier.create(update)
                 .expectNext(expected)

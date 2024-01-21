@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.security.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRolesRecord;
@@ -8,6 +7,7 @@ import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.UpdatableUser;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserForm;
+import fr.ght1pc9kc.entity.api.Entity;
 import org.jooq.Record;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -75,14 +75,15 @@ public interface UserMapper {
                 .sorted(Permission.COMPARATOR)
                 .toList();
 
-        return Entity.identify(usersRecord.get(USERS.USER_ID), DateUtils.toInstant(usersRecord.get(USERS.USER_CREATED_AT)),
-                User.builder()
+        return Entity.identify(User.builder()
                         .login(usersRecord.get(USERS.USER_LOGIN))
                         .mail(usersRecord.get(USERS.USER_EMAIL))
                         .name(usersRecord.get(USERS.USER_NAME))
                         .password(usersRecord.get(USERS.USER_PASSWORD))
                         .roles(permissions)
-                        .build());
+                        .build())
+                .createdAt(DateUtils.toInstant(usersRecord.get(USERS.USER_CREATED_AT)))
+                .withId(usersRecord.get(USERS.USER_ID));
     }
 
     default LocalDateTime map(Instant value) {

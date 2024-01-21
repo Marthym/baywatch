@@ -2,7 +2,6 @@ package fr.ght1pc9kc.baywatch.scraper.infra;
 
 import com.samskivert.mustache.Mustache;
 import com.sun.net.httpserver.HttpServer;
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
@@ -23,6 +22,7 @@ import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.scraphead.core.HeadScrapers;
 import fr.ght1pc9kc.scraphead.netty.http.NettyScrapClient;
 import org.assertj.core.api.Assertions;

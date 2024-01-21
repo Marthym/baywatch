@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
@@ -17,6 +16,7 @@ import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.TeamServicePort;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.api.Pagination;

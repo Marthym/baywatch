@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.common.infra.mappers;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
@@ -10,6 +9,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
+import fr.ght1pc9kc.entity.api.Entity;
 import org.jooq.Record;
 import org.jooq.tools.StringUtils;
 import org.mapstruct.Mapper;
@@ -109,7 +109,9 @@ public interface BaywatchMapper {
                 .tags(tags)
                 .build();
 
-        return Entity.identify(webFeed.reference(), owner, webFeed);
+        return Entity.identify(webFeed)
+                .createdBy(owner)
+                .withId(webFeed.reference());
     }
 
     @Mapping(target = "feedId", source = "reference")
