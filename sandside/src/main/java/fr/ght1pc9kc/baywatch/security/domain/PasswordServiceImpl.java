@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.security.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.LocaleFacade;
 import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
+import fr.ght1pc9kc.baywatch.security.PasswordChecker;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.PasswordService;
 import fr.ght1pc9kc.baywatch.security.api.model.PasswordEvaluation;
@@ -21,7 +22,7 @@ import static java.util.function.Predicate.not;
 
 @Slf4j
 @RequiredArgsConstructor
-public class PasswordServiceImpl implements PasswordService {
+public class PasswordServiceImpl implements PasswordChecker {
 
     private final AuthenticationFacade authFacade;
     private final PasswordStrengthChecker passwordChecker;

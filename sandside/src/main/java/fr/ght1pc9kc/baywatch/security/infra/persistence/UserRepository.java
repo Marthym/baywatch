@@ -6,6 +6,7 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRolesRecord;
 import fr.ght1pc9kc.baywatch.security.api.model.UpdatableUser;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.baywatch.security.domain.exceptions.ConstraintViolationPersistenceException;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.security.infra.adapters.UserMapper;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
@@ -18,11 +19,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
 import org.jooq.Cursor;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.Query;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.Select;
+import org.jooq.conf.RenderQuotedNames;
+import org.jooq.exception.IntegrityConstraintViolationException;
 import org.jooq.impl.DSL;
+import org.springframework.core.NestedExceptionUtils;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -31,6 +36,7 @@ import reactor.core.scheduler.Scheduler;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
@@ -106,6 +112,16 @@ public class UserRepository implements UserPersistencePort {
                 .flatMapMany(insertedCount -> {
                     log.debug("{} user(s) inserted successfully.", Arrays.stream(insertedCount).sum());
                     return Flux.fromIterable(toPersist);
+                }).onErrorMap(IntegrityConstraintViolationException.class, e -> {
+                    Throwable rootCause = Optional.ofNullable(NestedExceptionUtils.getRootCause(e))
+                            .orElse(e);
+                    DSLContext dslContext = DSL.using(dsl.dialect(), dsl.settings().withRenderQuotedNames(RenderQuotedNames.NEVER));
+                    for (Map.Entry<String, Field<?>> prop : USER_PROPERTIES_MAPPING.entrySet()) {
+                        if (rootCause.getMessage().contains("failed: " + dslContext.render(prop.getValue()))) {
+                            return new ConstraintViolationPersistenceException(prop.getKey(), e);
+                        }
+                    }
+                    return new ConstraintViolationPersistenceException("unknown", e);
                 });
     }
 

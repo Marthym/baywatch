@@ -3,12 +3,14 @@ package fr.ght1pc9kc.baywatch.security.domain;
 import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.AuthorizationService;
+import fr.ght1pc9kc.baywatch.security.api.PasswordService;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.security.api.model.UpdatableUser;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.baywatch.security.domain.exceptions.ConstraintViolationPersistenceException;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
@@ -20,7 +22,6 @@ import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -50,7 +51,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     private final AuthorizationPersistencePort authorizationRepository;
     private final NotificationPort notificationPort;
     private final AuthenticationFacade authFacade;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordService passwordService;
     private final Clock clock;
     private final UlidFactory idGenerator;
 
@@ -78,7 +79,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     @Override
     public Mono<Entity<User>> create(User user) {
         String userId = String.format("%s%s", ID_PREFIX, idGenerator.create());
-        User withPassword = user.withPassword(passwordEncoder.encode(user.password));
+        User withPassword = user.withPassword(passwordService.encode(user.password));
         Instant now = clock.instant();
         return authFacade.getConnectedUser()
                 .<String>handle((u, sink) -> {
@@ -95,9 +96,10 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                         .createdBy(currentUserId)
                         .withId(userId))
                 .flatMap(entity -> userRepository.persist(List.of(entity)).single())
-                .then(grants(userId, user.roles))
-//                .then(userRepository.persist(userId, user.roles.stream().map(Permission::toString).distinct().toList()))
-                .flatMap(this::notifyAdmins);
+                .flatMap(ignore -> grants(userId, user.roles))
+                .flatMap(this::notifyAdmins)
+                .onErrorMap(ConstraintViolationPersistenceException.class, e ->
+                        new IllegalArgumentException(String.format("Unable to create User, %s unavailable !", e.getPropertyField()), e));
     }
 
     private Mono<Entity<User>> notifyAdmins(Entity<User> newUser) {
@@ -130,7 +132,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                         sink.next(u);
                     } else if (id.equals(u.id())
                             && Objects.nonNull(currentPassword)
-                            && passwordEncoder.matches(currentPassword, u.self().password)) {
+                            && passwordService.matches(currentPassword, u.self().password)) {
                         sink.next(u);
                     } else {
                         sink.error(new UnauthorizedOperation(UNAUTHORIZED_USER));
@@ -138,7 +140,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                 }).flatMap(u -> {
 
                     UpdatableUser checkedUser = user.toBuilder()
-                            .password(Objects.nonNull(user.password()) ? passwordEncoder.encode(user.password()) : null)
+                            .password(Objects.nonNull(user.password()) ? passwordService.encode(user.password()) : null)
                             .build();
                     return userRepository.update(id, checkedUser);
                 });
