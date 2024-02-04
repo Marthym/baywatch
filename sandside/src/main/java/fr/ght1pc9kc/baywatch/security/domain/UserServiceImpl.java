@@ -79,27 +79,33 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     @Override
     public Mono<Entity<User>> create(User user) {
         String userId = String.format("%s%s", ID_PREFIX, idGenerator.create());
-        User withPassword = user.withPassword(passwordService.encode(user.password));
         Instant now = clock.instant();
-        return authFacade.getConnectedUser()
-                .<String>handle((u, sink) -> {
-                    if (hasRole(u.self(), Role.ADMIN)) {
-                        sink.next(u.id());
-                        return;
-                    }
-                    sink.error(new UnauthorizedOperation(UNAUTHORIZED_USER));
-                })
-                .switchIfEmpty(Mono.just(userId))
+        return passwordService.checkPasswordStrength(user)
+                .flatMap(eval -> (eval.isSecure())
+                        ? Mono.just(user.withPassword(passwordService.encode(user.password)))
+                        : Mono.error(new IllegalArgumentException(eval.message())))
 
-                .map(currentUserId -> Entity.identify(withPassword)
-                        .createdAt(now)
-                        .createdBy(currentUserId)
-                        .withId(userId))
+                .flatMap(withPassword -> authFacade.getConnectedUser()
+                        .<String>handle((u, sink) -> {
+                            if (hasRole(u.self(), Role.ADMIN)) {
+                                sink.next(u.id());
+                                return;
+                            }
+                            sink.error(new UnauthorizedOperation(UNAUTHORIZED_USER));
+                        })
+                        .switchIfEmpty(Mono.just(userId))
+
+                        .map(currentUserId -> Entity.identify(withPassword)
+                                .createdAt(now)
+                                .createdBy(currentUserId)
+                                .withId(userId)))
+
                 .flatMap(entity -> userRepository.persist(List.of(entity)).single())
                 .flatMap(ignore -> grants(userId, user.roles))
-                .flatMap(this::notifyAdmins)
                 .onErrorMap(ConstraintViolationPersistenceException.class, e ->
-                        new IllegalArgumentException(String.format("Unable to create User, %s unavailable !", e.getPropertyField()), e));
+                        new IllegalArgumentException(String.format("Unable to create User, %s unavailable !", e.getPropertyField()), e))
+
+                .flatMap(this::notifyAdmins);
     }
 
     private Mono<Entity<User>> notifyAdmins(Entity<User> newUser) {
