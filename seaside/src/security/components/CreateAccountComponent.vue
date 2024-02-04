@@ -7,7 +7,8 @@
       </label>
       <input v-model="account.login" type="text" placeholder="login"
              class="input input-bordered w-full"
-             :class="{'input-error': errors.has('login')}" @change="onFieldChange('login')">
+             :class="{'input-error': errors.has('login')}"
+             @change="onFieldChange('login')">
       <label class="label -mt-1">
         <span class="label-text-alt">&nbsp;</span>
         <span v-if="errors.has('login')" class="label-text-alt">{{ errors.get('login') }}</span>
@@ -38,18 +39,19 @@
       <label class="label">
         <span class="label-text">Password</span>
       </label>
-      <div class="tooltip tooltip-error tooltip-bottom w-full" :data-tip="errors.get('password')"
-           :class="{'tooltip-open': errors.has('password')}">
+      <div class="tooltip-error tooltip-bottom w-full" :data-tip="errors.get('password')"
+           :class="{'tooltip tooltip-open': errors.has('password')}">
         <div class="join w-full">
           <input v-model="account.password" :type="passwordVisible?'text':'password'"
                  class="input input-bordered join-item w-full"
                  :class="{'input-error': errors.has('password')}"
                  @keyup="onFieldChange('password')"
-                 @blur="onBlurNewPassword">
+                 @blur.stop="onBlurNewPassword">
           <button class="btn btn-neutral input input-bordered border-l-0 join-item focus:outline-none"
                   :class="{'input-error': errors.has('password')}"
                   @click="passwordVisible = !passwordVisible">
-            <EyeIcon class="h-6 w-6 opacity-50"/>
+            <EyeIcon v-if="!passwordVisible" class="h-6 w-6 opacity-50"/>
+            <EyeSlashIcon v-else class="h-6 w-6 opacity-50"/>
           </button>
           <button class="btn join-item" @click.stop="onPasswordGenerate">Generate</button>
         </div>
@@ -82,15 +84,16 @@ import { Store, useStore } from 'vuex';
 import { UserState } from '@/security/store/user';
 import { CLOSE_CREATE_ACCOUNT_MUTATION } from '@/security/store/UserConstants';
 import { passwordAnonymousCheckStrength, passwordGenerate } from '@/security/services/PasswordService';
-import { EyeIcon } from '@heroicons/vue/24/solid';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/solid';
 import { userCreate } from '@/security/services/UserService';
 import notificationService from '@/services/notification/NotificationService';
+import { MAIL_PATTERN } from '@/common/services/RegexPattern';
 
 const CLOSE_EVENT: string = 'close';
 
 @Component({
   emits: [CLOSE_EVENT],
-  components: { CurtainModal, EyeIcon },
+  components: { CurtainModal, EyeIcon, EyeSlashIcon },
   setup() {
     return {
       userStore: useStore(),
@@ -111,13 +114,18 @@ export default class CreateAccountComponent extends Vue {
 
   private onPasswordGenerate(): void {
     passwordGenerate(20).subscribe({
-      next: passwords => this.account.password = passwords[Math.floor(Math.random() * 19)],
+      next: passwords => {
+        this.errors.delete('password');
+        this.account.password = passwords[Math.floor(Math.random() * 19)];
+      },
       error: err => this.errors.set('password', err.message),
     });
   }
 
   private onBlurNewPassword(): void {
-    if (!this.account.password || this.account.password.length <= 3) {
+    if (!this.account.password || this.account.password.length === 0) {
+      return;
+    } else if (!this.account.password || this.account.password.length <= 3) {
       this.errors.set('password', 'This password is not secure. An attacker will find it instant !');
       return;
     }
@@ -150,6 +158,23 @@ export default class CreateAccountComponent extends Vue {
   }
 
   private onRegisterClick(): void {
+    if (!this.account.login || this.account.login.length < 3) {
+      this.errors.set('login', 'Invalid login !');
+    }
+    if (!this.account.mail || this.account.mail.length < 3) {
+      this.errors.set('mail', 'Invalid mail address !');
+    } else if (!MAIL_PATTERN.test(this.account.mail)) {
+      this.errors.set('mail', 'Mail address must be syntactically correct !');
+    }
+    if (!this.account.password) {
+      this.errors.set('password', 'Password is mandatory !');
+    } else if (this.account.password !== this.passwordConfirm) {
+      this.errors.set('passwordConfirm', 'Password confirmation doesn\'t match !');
+    }
+    if (this.errors.size !== 0) {
+      return;
+    }
+
     userCreate(this.account).subscribe({
       next: () => notificationService.pushSimpleOk('User account registered Successfully !'),
       error: err => notificationService.pushSimpleError(err.message),
