@@ -13,6 +13,7 @@ import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.ConstraintViolationPersistenceException;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
+import fr.ght1pc9kc.baywatch.security.domain.exceptions.UserCreateException;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.NotificationPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
@@ -103,7 +104,9 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                 .flatMap(entity -> userRepository.persist(List.of(entity)).single())
                 .flatMap(ignore -> grants(userId, user.roles))
                 .onErrorMap(ConstraintViolationPersistenceException.class, e ->
-                        new IllegalArgumentException(String.format("Unable to create User, %s unavailable !", e.getPropertyField()), e))
+                        new UserCreateException(
+                                String.format("Unable to create User, %s unavailable !", e.getPropertyField()),
+                                List.of(e.getPropertyField()), e))
 
                 .flatMap(this::notifyAdmins);
     }
