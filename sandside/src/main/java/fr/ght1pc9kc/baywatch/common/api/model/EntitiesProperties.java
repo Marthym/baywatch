@@ -7,6 +7,7 @@ public final class EntitiesProperties {
 
     public static final String COUNT = "count";
     public static final String CREATED_AT = "createdAt";
+    public static final String CREATED_BY = "createdBy";
     public static final String DESCRIPTION = "description";
     public static final String FEED_ID = "feedId";
     public static final String ID = "id";

@@ -3,9 +3,10 @@ package fr.ght1pc9kc.baywatch.security.domain;
 import com.github.f4b6a3.ulid.Ulid;
 import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
-import fr.ght1pc9kc.baywatch.notify.api.model.BasicEvent;
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.security.api.PasswordService;
+import fr.ght1pc9kc.baywatch.security.api.model.PasswordEvaluation;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.UpdatableUser;
@@ -23,7 +24,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -41,6 +41,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -58,7 +59,6 @@ class UserServiceImplTest {
     private UserServiceImpl tested;
 
     @BeforeEach
-    @SuppressWarnings("deprecation")
     void setUp() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
         doAnswer(answer -> Stream.of(UserSamples.LUKE, UserSamples.YODA, UserSamples.OBIWAN)
@@ -73,11 +73,14 @@ class UserServiceImplTest {
         when(mockUserRepository.count(any())).thenReturn(Mono.just(3));
         when(mockAuthorizationRepository.count(any())).thenReturn(Mono.just(0));
         when(mockNotificationPort.send(anyString(), any(EventType.class), any()))
-                .thenReturn(new BasicEvent<>(Ulid.fast().toString(), EventType.USER_NOTIFICATION, "New jedi in the force"));
+                .thenReturn(Ulid.fast().toString());
 
+        PasswordService mockPasswordService = mock(PasswordService.class);
+        doAnswer(a -> a.getArgument(0)).when(mockPasswordService).encode(anyString());
+        doReturn(Mono.just(new PasswordEvaluation(true, 65d, "ok")))
+                .when(mockPasswordService).checkPasswordStrength(any(User.class));
         tested = new UserServiceImpl(mockUserRepository, mockAuthorizationRepository, mockNotificationPort,
-                mockAuthFacade, NoOpPasswordEncoder.getInstance(),
-                Clock.fixed(CURRENT, ZoneOffset.UTC), mockUlidFactory);
+                mockAuthFacade, mockPasswordService, Clock.fixed(CURRENT, ZoneOffset.UTC), mockUlidFactory);
     }
 
     @Test

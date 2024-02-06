@@ -60,6 +60,7 @@ public interface UserMapper {
 
     @Mapping(source = "id", target = "userId")
     @Mapping(source = "createdAt", target = "userCreatedAt")
+    @Mapping(source = "createdBy", target = "userCreatedBy")
     @Mapping(source = "self.login", target = "userLogin")
     @Mapping(source = "self.name", target = "userName")
     @Mapping(source = "self.mail", target = "userEmail")
@@ -87,6 +88,7 @@ public interface UserMapper {
                         .roles(permissions)
                         .build())
                 .createdAt(DateUtils.toInstant(usersRecord.get(USERS.USER_CREATED_AT)))
+                .createdBy(usersRecord.get(USERS.USER_CREATED_BY))
                 .withId(usersRecord.get(USERS.USER_ID));
     }
 

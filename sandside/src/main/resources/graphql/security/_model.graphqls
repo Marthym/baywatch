@@ -1,6 +1,7 @@
 type User {
     _id: ID
     _createdAt: String
+    _createdBy: String
     login: String
     name: String
     mail: String

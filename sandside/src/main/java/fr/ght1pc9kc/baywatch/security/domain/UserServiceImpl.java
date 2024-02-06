@@ -112,7 +112,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     }
 
     private Mono<Entity<User>> notifyAdmins(Entity<User> newUser) {
-        return this.list(PageRequest.all(Criteria.property(ROLES).eq(Role.ADMIN.toString())))
+        return userRepository.list(QueryContext.all(Criteria.property(ROLES).eq(Role.ADMIN.toString())))
                 .filter(not(admin -> admin.id().equals(newUser.createdBy())))
                 .map(admin -> notificationPort.send(admin.id(), USER_NOTIFICATION,
                         String.format("New user %s created by %s.", newUser.self().login, newUser.createdBy())))
@@ -170,27 +170,31 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
 
     @Override
     public Mono<Entity<User>> grants(String grantedUserId, Collection<Permission> permissions) {
-        return authFacade.getConnectedUser().flatMap(currentUser -> {
-            var tobeVerified = new ArrayList<String>();
-            boolean selfGrant = currentUser.id().equals(grantedUserId);
+        return authFacade.getConnectedUser()
+                .flatMap(currentUser -> {
+                    var tobeVerified = new ArrayList<String>();
+                    boolean selfGrant = currentUser.id().equals(grantedUserId);
 
-            for (Permission perm : permissions) {
-                if (!RoleUtils.hasPermission(currentUser.self(), perm)) {
-                    if (perm.entity().isPresent() && selfGrant) {
-                        tobeVerified.add(perm.toString());
-                    } else {
-                        return Mono.error(() -> new UnauthorizedOperation("Unauthorized grant operation !"));
+                    for (Permission perm : permissions) {
+                        if (!RoleUtils.hasPermission(currentUser.self(), perm)) {
+                            if (perm.entity().isPresent() && selfGrant) {
+                                tobeVerified.add(perm.toString());
+                            } else {
+                                return Mono.error(() -> new UnauthorizedOperation("Unauthorized grant operation !"));
+                            }
+                        }
                     }
-                }
-            }
 
-            return authorizationRepository.count(tobeVerified).flatMap(count ->
-                    (count > 0)
-                            ? Mono.error(() -> new UnauthorizedOperation("Unauthorized grant operation !"))
-                            : Mono.just(currentUser));
+                    return authorizationRepository.count(tobeVerified).flatMap(count ->
+                            (count > 0)
+                                    ? Mono.error(() -> new UnauthorizedOperation("Unauthorized grant operation !"))
+                                    : Mono.just(currentUser));
 
-        }).flatMap(currentUser -> userRepository.persist(grantedUserId,
-                permissions.stream().map(Permission::toString).distinct().toList()));
+                }).flatMap(currentUser -> userRepository.persist(
+                        grantedUserId, permissions.stream().map(Permission::toString).distinct().toList()))
+
+                // Do not grant if not loginIn
+                .switchIfEmpty(userRepository.get(grantedUserId));
     }
 
     @Override
