@@ -59,4 +59,8 @@ export default class CurtainModal extends Vue {
     this.keyboardController.purge();
   }
 }
+
+export interface CurtainModalSlot {
+  close(): void
+}
 </script>

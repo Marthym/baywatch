@@ -71,14 +71,14 @@
 
       <div class="text-right">
         <button class="btn btn-sm mx-1" @click.stop="curtainModal.close()">Cancel</button>
-        <button class="btn btn-sm btn-primary mx-1" @click.stop="onRegisterClick">Register</button>
+        <button class="btn btn-sm btn-primary mx-1" @click.stop="onRegisterClick(curtainModal)">Register</button>
       </div>
     </div>
   </curtain-modal>
 </template>
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
-import CurtainModal from '@/common/components/CurtainModal.vue';
+import CurtainModal, { CurtainModalSlot } from '@/common/components/CurtainModal.vue';
 import { User } from '@/security/model/User';
 import { Store, useStore } from 'vuex';
 import { UserState } from '@/security/store/user';
@@ -157,7 +157,7 @@ export default class CreateAccountComponent extends Vue {
     this.userStore.commit(CLOSE_CREATE_ACCOUNT_MUTATION);
   }
 
-  private onRegisterClick(): void {
+  private onRegisterClick(curtainModal: CurtainModalSlot): void {
     if (!this.account.login || this.account.login.length < 3) {
       this.errors.set('login', 'Invalid login !');
     }
@@ -176,8 +176,23 @@ export default class CreateAccountComponent extends Vue {
     }
 
     userCreate(this.account).subscribe({
-      next: () => notificationService.pushSimpleOk('User account registered Successfully !'),
-      error: err => notificationService.pushSimpleError(err.message),
+      next: () => {
+        curtainModal.close();
+        notificationService.pushSimpleOk('User account registered Successfully !');
+      },
+      error: err => {
+        console.debug(err);
+        console.debug(err.properties);
+        if (err.properties) {
+          err.properties.forEach(p => {
+            console.debug(p);
+            if (['mail', 'password', 'login', 'passwordConfirm'].includes(p)) {
+              this.errors.set(p, err.message);
+            }
+          });
+        }
+        notificationService.pushSimpleError(err.message);
+      },
     });
   }
 }

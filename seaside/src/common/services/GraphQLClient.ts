@@ -14,6 +14,7 @@ import {
 } from "@/common/model/GraphqlResponse.type";
 import {handleStatusCodeErrors} from "@/common/services/common";
 import {ForbiddenError} from "@/common/errors/ForbiddenError";
+import { ValidationError } from '@/common/errors/ValidationError';
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL + import.meta.env.VITE_GQL_ENDPOINT;
 
@@ -54,7 +55,7 @@ function handleValidationErrors<T>(data: GraphqlResponse<T>): GraphqlResponse<T>
     if (data.errors) {
         const errIdx = data.errors.findIndex(e => e.extensions.classification === VALIDATION_ERROR);
         if (errIdx !== -1) {
-            throw new UnknownFetchError(data.errors[errIdx].message);
+            throw new ValidationError(data.errors[errIdx].message, data.errors[errIdx].extensions.properties);
         }
     }
     return data;

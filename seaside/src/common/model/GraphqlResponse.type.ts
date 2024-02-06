@@ -14,13 +14,14 @@ export type GqlErrorClassification =
 export type GraphqlErrors = {
     message: string;            // Required for all errors
     locations?: {
-        line: number,
+        line: number
         column: number
     }[];
     path?: string[],
-    extension: {
+    extensions: {
         classification: GqlErrorClassification
-    }[],
+        properties?: string[]
+    },
     [propName: string]: any;    // 7.2.2 says 'GraphQL servers may provide additional entries to error'
 }[]
 
