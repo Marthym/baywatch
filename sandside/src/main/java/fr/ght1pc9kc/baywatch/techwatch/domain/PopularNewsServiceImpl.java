@@ -6,6 +6,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.Popularity;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.TeamServicePort;
 import fr.ght1pc9kc.baywatch.techwatch.infra.persistence.StateRepository;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.Pagination;
 import fr.ght1pc9kc.juery.api.pagination.Direction;
@@ -31,7 +32,7 @@ public class PopularNewsServiceImpl implements PopularNewsService {
     @Override
     public Flux<Popularity> get(Collection<String> ids) {
         return authFacade.getConnectedUser()
-                .flatMapMany(user -> teamServicePort.getTeamMates(user.id))
+                .flatMapMany(user -> teamServicePort.getTeamMates(user.id()))
                 .collectList().map(teamMates -> QueryContext.builder()
                         .filter(Criteria.property(NEWS_ID).in(ids)
                                 .and(Criteria.property(USER_ID).in(teamMates))
@@ -39,10 +40,10 @@ public class PopularNewsServiceImpl implements PopularNewsService {
                         .pagination(Pagination.of(-1, -1, Sort.of(Direction.ASC, NEWS_ID)))
                         .build())
                 .flatMapMany(stateRepository::list)
-                .bufferUntilChanged(s -> s.id)
+                .bufferUntilChanged(Entity::id)
                 .map(states -> {
-                    Set<String> fans = states.stream().map(s -> s.createdBy).collect(Collectors.toUnmodifiableSet());
-                    return new Popularity(states.get(0).id, fans.size(), fans);
+                    Set<String> fans = states.stream().map(Entity::createdBy).collect(Collectors.toUnmodifiableSet());
+                    return new Popularity(states.getFirst().id(), fans.size(), fans);
                 });
     }
 }

@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.security.infra.controllers;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.common.infra.model.CreateValidation;
 import fr.ght1pc9kc.baywatch.common.infra.model.Page;
@@ -11,6 +10,7 @@ import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.infra.config.SecurityMapper;
 import fr.ght1pc9kc.baywatch.security.infra.exceptions.AlreadyExistsException;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserForm;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
 import lombok.RequiredArgsConstructor;

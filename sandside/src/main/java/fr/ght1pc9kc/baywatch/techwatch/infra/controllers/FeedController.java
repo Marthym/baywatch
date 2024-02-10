@@ -1,7 +1,6 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.common.infra.model.Page;
@@ -10,6 +9,7 @@ import fr.ght1pc9kc.baywatch.common.infra.model.ResourcePatch;
 import fr.ght1pc9kc.baywatch.techwatch.api.FeedService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedForm;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
 import jakarta.validation.Valid;
@@ -94,7 +94,7 @@ public class FeedController {
                     try {
                         FeedForm toPersist = mapper.readerFor(FeedForm.class).readValue(resource.value(), FeedForm.class);
                         Mono<URI> persisted = subscribe(Mono.just(toPersist))
-                                .map(re -> URI.create(FEED_BASE.getPath() + "/" + Objects.requireNonNull(re.getBody()).id));
+                                .map(re -> URI.create(FEED_BASE.getPath() + "/" + Objects.requireNonNull(re.getBody()).id()));
                         operations.add(persisted);
                     } catch (IOException e) {
                         return Flux.error(new IllegalArgumentException("Malformed PATCH (add) request !", e));
@@ -105,7 +105,7 @@ public class FeedController {
                         String id = FEED_BASE.relativize(resource.path()).toString();
                         FeedForm toPersist = mapper.readerFor(FeedForm.class).readValue(resource.value(), FeedForm.class);
                         Mono<URI> persisted = update(id, Mono.just(toPersist))
-                                .map(re -> URI.create(FEED_BASE.getPath() + "/" + re.id));
+                                .map(re -> URI.create(FEED_BASE.getPath() + "/" + re.id()));
                         operations.add(persisted);
                     } catch (IOException e) {
                         return Flux.error(new IllegalArgumentException("Malformed PATCH (replace) request !", e));
@@ -152,7 +152,7 @@ public class FeedController {
                             .build();
                 })
                 .flatMap(feed -> feedService.addAndSubscribe(Collections.singleton(feed)).next())
-                .map(feed -> ResponseEntity.created(URI.create("/api/feeds/" + feed.id)).body(feed))
+                .map(feed -> ResponseEntity.created(URI.create("/api/feeds/" + feed.id())).body(feed))
                 .onErrorMap(WebExchangeBindException.class, e -> {
                     String message = e.getFieldErrors().stream().map(err ->
                             err.getField() + " " + err.getDefaultMessage()).collect(Collectors.joining("\n"));

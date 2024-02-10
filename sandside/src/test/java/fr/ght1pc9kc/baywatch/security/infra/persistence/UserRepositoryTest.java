@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.security.infra.persistence;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.Users;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
@@ -14,6 +13,7 @@ import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsUsersRecordSample;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRolesSamples;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;
 import fr.ght1pc9kc.testy.jooq.WithDslContext;
@@ -73,13 +73,13 @@ class UserRepositoryTest {
 
         StepVerifier.create(tested.get(UsersRecordSamples.OKENOBI.getUserId()))
                 .assertNext(actual -> Assertions.assertAll(
-                        () -> assertThat(actual.id).isEqualTo(UserSamples.OBIWAN.id),
-                        () -> assertThat(actual.createdAt).isEqualTo(Instant.parse("1970-01-01T00:00:00Z")),
-                        () -> assertThat(actual.self.name).isEqualTo("Obiwan Kenobi"),
-                        () -> assertThat(actual.self.login).isEqualTo("okenobi"),
-                        () -> assertThat(actual.self.mail).isEqualTo("obiwan.kenobi@jedi.com"),
-                        () -> assertThat(actual.self.password).isEqualTo(UserSamples.OBIWAN.self.password),
-                        () -> assertThat(actual.self.roles).containsOnly(Role.MANAGER)
+                        () -> assertThat(actual.id()).isEqualTo(UserSamples.OBIWAN.id()),
+                        () -> assertThat(actual.createdAt()).isEqualTo(Instant.parse("1970-01-01T00:00:00Z")),
+                        () -> assertThat(actual.self().name).isEqualTo("Obiwan Kenobi"),
+                        () -> assertThat(actual.self().login).isEqualTo("okenobi"),
+                        () -> assertThat(actual.self().mail).isEqualTo("obiwan.kenobi@jedi.com"),
+                        () -> assertThat(actual.self().password).isEqualTo(UserSamples.OBIWAN.self().password),
+                        () -> assertThat(actual.self().roles).containsOnly(Role.MANAGER)
                 )).verifyComplete();
     }
 
@@ -89,13 +89,13 @@ class UserRepositoryTest {
 
         StepVerifier.create(tested.get(UsersRecordSamples.LSKYWALKER.getUserId()))
                 .assertNext(actual -> Assertions.assertAll(
-                        () -> assertThat(actual.id).isEqualTo(UserSamples.LUKE.id),
-                        () -> assertThat(actual.createdAt).isEqualTo(Instant.parse("1970-01-01T00:00:00Z")),
-                        () -> assertThat(actual.self.name).isEqualTo("Luke Skywalker"),
-                        () -> assertThat(actual.self.login).isEqualTo("lskywalker"),
-                        () -> assertThat(actual.self.mail).isEqualTo("luke.skywalker@jedi.com"),
-                        () -> assertThat(actual.self.password).isEqualTo(UserSamples.LUKE.self.password),
-                        () -> assertThat(actual.self.roles).containsOnly(Role.USER, Permission.manager("TM01GP696RFPTY32WD79CVB0KDTF"))
+                        () -> assertThat(actual.id()).isEqualTo(UserSamples.LUKE.id()),
+                        () -> assertThat(actual.createdAt()).isEqualTo(Instant.parse("1970-01-01T00:00:00Z")),
+                        () -> assertThat(actual.self().name).isEqualTo("Luke Skywalker"),
+                        () -> assertThat(actual.self().login).isEqualTo("lskywalker"),
+                        () -> assertThat(actual.self().mail).isEqualTo("luke.skywalker@jedi.com"),
+                        () -> assertThat(actual.self().password).isEqualTo(UserSamples.LUKE.self().password),
+                        () -> assertThat(actual.self().roles).containsOnly(Role.USER, Permission.manager("TM01GP696RFPTY32WD79CVB0KDTF"))
                 )).verifyComplete();
     }
 
@@ -113,7 +113,7 @@ class UserRepositoryTest {
         dbTracker.skipNextSampleLoad();
 
         StepVerifier.create(tested.list(QueryContext.all(Criteria.property("name").eq("Obiwan Kenobi"))))
-                .expectNextMatches(actual -> UserSamples.OBIWAN.id.equals(actual.id))
+                .expectNextMatches(actual -> UserSamples.OBIWAN.id().equals(actual.id()))
                 .verifyComplete();
     }
 
@@ -190,8 +190,8 @@ class UserRepositoryTest {
                 .containsOnly("MANAGER:TM01GP696RFPTY32WD79CVB0KDTF", "USER");
 
         StepVerifier.create(tested.persist(UsersRecordSamples.LSKYWALKER.getUserId(), List.of("MANAGER:42"))
-                        .map(e -> e.self))
-                .expectNext(UserSamples.LUKE.self.withRoles("MANAGER:TM01GP696RFPTY32WD79CVB0KDTF", "USER", "MANAGER:42"))
+                        .map(Entity::self))
+                .expectNext(UserSamples.LUKE.self().withRoles("MANAGER:TM01GP696RFPTY32WD79CVB0KDTF", "USER", "MANAGER:42"))
                 .verifyComplete();
 
         assertThat(

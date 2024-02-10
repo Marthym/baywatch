@@ -15,7 +15,7 @@
     </a>
     <button v-if="actions.includes('l')" class="btn btn-sm btn-warning"
             :disabled="selectedElements.length <= 0" @click.stop.prevent="$emit('leaveSelected', selectedElements)">
-      <ArrowRightOnRectangleIcon class="h-6 w-6"/>
+      <ArrowRightEndOnRectangleIcon class="h-6 w-6"/>
       Leave
     </button>
     <button v-if="actions.includes('d') && isGlobalEditable" class="btn btn-sm btn-error mb-2 mr-2 md:m-0"
@@ -68,7 +68,7 @@
           </button>
           <button v-if="actions.includes('l')" class="btn btn-sm btn-square btn-ghost"
                   @click.stop.prevent="$emit('leave', idx)">
-            <ArrowRightOnRectangleIcon class="h-6 w-6"/>
+            <ArrowRightEndOnRectangleIcon class="h-6 w-6"/>
           </button>
           <button v-if="actions.includes('d') && vElement.isEditable" class="btn btn-sm btn-square btn-ghost"
                   @click.stop.prevent="$emit('delete', idx)">
@@ -100,7 +100,7 @@
 import { Component, Prop, Vue } from 'vue-facing-decorator';
 import {
   ArrowDownTrayIcon,
-  ArrowRightOnRectangleIcon,
+  ArrowRightEndOnRectangleIcon,
   ArrowUpTrayIcon,
   EyeIcon,
   PencilIcon,
@@ -117,7 +117,7 @@ import { Observable } from 'rxjs';
 @Component({
   components: {
     ArrowDownTrayIcon,
-    ArrowRightOnRectangleIcon,
+    ArrowRightEndOnRectangleIcon,
     ArrowUpTrayIcon,
     EyeIcon,
     PencilIcon,

@@ -43,7 +43,10 @@ docker run --rm --name baywatch -d \
 ```
 
 Baywatch will automatically create the SQLite database in `BAYWATCH_HOME` and need be able to
-write in `/tmp`
+write in `/tmp`.
+
+The administration and actuator passwords was displayed in the console log during the first application launch. Use the 
+`admin` password to login into **Baywatch** and change the password according to your preferences.
 
 ### Configure
 
@@ -66,6 +69,7 @@ Baywatch offers many configuration parameters, almost all of which are not manda
 | BAYWATCH_SCRAPER_ENABLE        | Start the feeds scraping at start up                    | X        | true          |
 | BAYWATCH_SCRAPER_FREQUENCY     | The frequency of the scraping process                   | X        | 1h            |
 | BAYWATCH_SCRAPER_TIMEOUT       | The timeout duration for scraping news or feed          | X        | 2s            |
+| BAYWATCH_SCRAPER_REDDIT_IMAGE  | The URL of image to display on reddit news              | X        | reddit std    |
 | BAYWATCH_SERVER_PORT           | Change the server port                                  | X        | 8080          |
 | BAYWATCH_TOKEN_VALIDITY        | The time the JWToken is valid                           | X        | 1h            |
 

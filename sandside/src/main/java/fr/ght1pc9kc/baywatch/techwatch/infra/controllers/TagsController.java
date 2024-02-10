@@ -25,7 +25,7 @@ public class TagsController {
     @GetMapping
     public Mono<List<String>> list() {
         return feedService.list(PageRequest.all())
-                .flatMap(f -> Flux.fromIterable(f.self.tags()))
+                .flatMap(f -> Flux.fromIterable(f.self().tags()))
                 .distinct()
                 .sort()
                 .collectList()

@@ -1,9 +1,9 @@
 package fr.ght1pc9kc.baywatch.security.api;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.UpdatableUser;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import org.jetbrains.annotations.Nullable;
 import reactor.core.publisher.Flux;
@@ -26,7 +26,9 @@ public interface UserService {
     Mono<Integer> count(PageRequest pageRequest);
 
     /**
-     * Create new {@link User}
+     * <p>Create new {@link User}</p>
+     * <p>Only {@link Role#ADMIN} and {@link User#ANONYMOUS} users can create new user. Regular Users have no permission
+     * for that.</p>
      *
      * @param user The user data to create
      * @return The new {@link User} {@link Entity} created. With ID and Created Date.

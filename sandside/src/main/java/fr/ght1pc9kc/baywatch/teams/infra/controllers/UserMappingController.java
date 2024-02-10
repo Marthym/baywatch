@@ -2,10 +2,10 @@ package fr.ght1pc9kc.baywatch.teams.infra.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.RequiredArgsConstructor;
@@ -48,15 +48,15 @@ public class UserMappingController {
         MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
         List<String> userIds = members.stream().map(m -> m.get("userId").toString()).toList();
         return userService.list(PageRequest.all(Criteria.property(ID).in(userIds))).collectList()
-                .map(users -> users.stream().collect(Collectors.toUnmodifiableMap(e -> e.id, Function.identity())))
+                .map(users -> users.stream().collect(Collectors.toUnmodifiableMap(Entity::id, Function.identity())))
                 .map(users -> members.stream().collect(Collectors.toUnmodifiableMap(
                         Function.identity(),
                         m -> {
                             Entity<User> teamMember = users.get(m.getOrDefault("userId", "").toString());
                             if (teamMember == null) {
-                                return mapper.convertValue(Entity.identify(Entity.NO_ONE, User.ANONYMOUS), gqlType);
+                                return mapper.convertValue(Entity.identify(User.ANONYMOUS).withId(Entity.NO_ONE), gqlType);
                             }
-                            teamMember = Entity.identify(teamMember.id, filterRoles(teamMember.self, m.get("_id").toString()));
+                            teamMember = Entity.identify(filterRoles(teamMember.self(), m.get("_id").toString())).withId(teamMember.id());
                             return mapper.convertValue(teamMember, gqlType);
                         }
                 )));

@@ -9,13 +9,13 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.SecurityException;
 import fr.ght1pc9kc.baywatch.security.domain.ports.JwtTokenProvider;
+import fr.ght1pc9kc.entity.api.Entity;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.ParseException;
@@ -54,7 +54,7 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
     @Override
     public BaywatchAuthentication createToken(Entity<User> user, boolean remember, Collection<String> authorities) {
         List<String> auth = new ArrayList<>(authorities);
-        auth.addAll(user.self.roles.stream().map(RoleUtils::toSpringAuthority).toList());
+        auth.addAll(user.self().roles.stream().map(RoleUtils::toSpringAuthority).toList());
         String auths = String.join(",", auth);
 
         try {
@@ -62,14 +62,14 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
 
             Instant now = clock.instant();
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                    .subject(user.id)
+                    .subject(user.id())
                     .issuer(ISSUER)
                     .issueTime(Date.from(now))
                     .expirationTime(Date.from(now.plus(validity)))
-                    .claim(LOGIN_KEY, user.self.login)
-                    .claim(NAME_KEY, user.self.name)
-                    .claim(MAIL_KEY, user.self.mail)
-                    .claim(CREATED_AT_KEY, Date.from(user.createdAt))
+                    .claim(LOGIN_KEY, user.self().login)
+                    .claim(NAME_KEY, user.self().name)
+                    .claim(MAIL_KEY, user.self().mail)
+                    .claim(CREATED_AT_KEY, Date.from(user.createdAt()))
                     .claim(REMEMBER_ME_KEY, remember)
                     .claim(AUTHORITIES_KEY, auths)
                     .build();

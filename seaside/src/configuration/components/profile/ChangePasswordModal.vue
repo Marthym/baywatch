@@ -88,7 +88,7 @@ export default class ChangePasswordModal extends Vue {
 
   private onBlurNewPassword(): void {
     if (!this.newPassword || this.newPassword.length <= 3) {
-      this.errors.new = `This password is not secure. An attacker will find it instant}`;
+      this.errors.new = `This password is not secure. An attacker will find it instant !`;
       return;
     }
     passwordCheckStrength(this.newPassword).subscribe({

@@ -43,6 +43,7 @@ import java.time.LocalTime;
 import java.time.Period;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -129,13 +130,13 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
 
     private Flux<News> wgetFeedNews(ScrapedFeed feed, Period conservation, Sinks.Many<ScrapingException> errors) {
         String feedHost = feed.link().getHost();
-        FeedScraperPlugin hostPlugin = plugins.get(feedHost);
-        URI feedUrl = (hostPlugin != null) ? hostPlugin.uriModifier(feed.link()) : feed.link();
+        URI feedUrl = Optional.ofNullable(plugins.get(feedHost))
+                .map(hp -> hp.uriModifier(feed.link())).orElse(feed.link());
 
         if (!SUPPORTED_SCHEMES.contains(feedUrl.getScheme())) {
             errors.tryEmitNext(new FeedScrapingException(AtomFeed.of(feed.id(), feed.link()),
-                            new IllegalArgumentException("Unsupported scheme for " + feedUrl + " !")));
-                    log.warn("Unsupported scheme for {} !", feedUrl);
+                    new IllegalArgumentException("Unsupported scheme for " + feedUrl + " !")));
+            log.warn("Unsupported scheme for {} !", feedUrl);
             return Flux.empty();
         }
 

@@ -1,12 +1,12 @@
 import {ConstantFilters} from "@/constants";
 import {Observable, of} from "rxjs";
-import {Page} from "@/services/model/Page";
+import {Page} from "@/common/model/Page";
 import {send} from "@/common/services/GraphQLClient";
 import {map, take, tap} from "rxjs/operators";
 import {Team} from "@/teams/model/Team.type";
 import {TeamsSearchResponse} from "@/teams/model/TeamsSearchResponse";
 import store from '@/store';
-import {USER_ADD_ROLE_MUTATION} from "@/store/user/UserConstants";
+import {USER_ADD_ROLE_MUTATION} from "@/security/store/UserConstants";
 
 const DEFAULT_PER_PAGE: number = 20;
 const DEFAULT_QUERY: string = `?${ConstantFilters.PER_PAGE}=${DEFAULT_PER_PAGE}&_s=name`;

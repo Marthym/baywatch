@@ -1,12 +1,13 @@
 package fr.ght1pc9kc.baywatch.security.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRolesRecord;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.UpdatableUser;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.baywatch.security.infra.model.UserForm;
+import fr.ght1pc9kc.entity.api.Entity;
 import org.jooq.Record;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -29,6 +30,8 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.UsersRoles.USERS_ROLES;
 public interface UserMapper {
 
     UpdatableUser getUpdatableUser(Map<String, Object> userForm);
+
+    User getUser(UserForm userForm);
 
     @SuppressWarnings({"OptionalAssignedToNull", "java:S2789", "java:S3655"})
     default UsersRecord updatableUserToRecord(UpdatableUser user) {
@@ -57,6 +60,7 @@ public interface UserMapper {
 
     @Mapping(source = "id", target = "userId")
     @Mapping(source = "createdAt", target = "userCreatedAt")
+    @Mapping(source = "createdBy", target = "userCreatedBy")
     @Mapping(source = "self.login", target = "userLogin")
     @Mapping(source = "self.name", target = "userName")
     @Mapping(source = "self.mail", target = "userEmail")
@@ -66,20 +70,26 @@ public interface UserMapper {
     UsersRecord entityUserToRecord(Entity<User> user);
 
     default Entity<User> recordToUserEntity(Record usersRecord) {
-        List<Permission> permissions = Arrays.stream(usersRecord.get(USERS_ROLES.USRO_ROLE).split(","))
-                .map(Permission::from)
-                .distinct()
-                .sorted(Permission.COMPARATOR)
-                .toList();
+        String roles = usersRecord.get(USERS_ROLES.USRO_ROLE);
+        List<Permission> permissions = (roles == null) ?
+                List.of() :
+                Arrays.stream(roles.split(","))
+                        .map(Permission::from)
+                        .distinct()
+                        .sorted(Permission.COMPARATOR)
+                        .toList();
 
-        return Entity.identify(usersRecord.get(USERS.USER_ID), DateUtils.toInstant(usersRecord.get(USERS.USER_CREATED_AT)),
-                User.builder()
+
+        return Entity.identify(User.builder()
                         .login(usersRecord.get(USERS.USER_LOGIN))
                         .mail(usersRecord.get(USERS.USER_EMAIL))
                         .name(usersRecord.get(USERS.USER_NAME))
                         .password(usersRecord.get(USERS.USER_PASSWORD))
                         .roles(permissions)
-                        .build());
+                        .build())
+                .createdAt(DateUtils.toInstant(usersRecord.get(USERS.USER_CREATED_AT)))
+                .createdBy(usersRecord.get(USERS.USER_CREATED_BY))
+                .withId(usersRecord.get(USERS.USER_ID));
     }
 
     default LocalDateTime map(Instant value) {

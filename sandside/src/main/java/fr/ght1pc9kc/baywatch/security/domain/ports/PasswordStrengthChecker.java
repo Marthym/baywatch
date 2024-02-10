@@ -12,4 +12,6 @@ public interface PasswordStrengthChecker {
     default PasswordEvaluation estimate(String password, Locale locale) {
         return estimate(password, locale, Collections.emptyList());
     }
+
+    String generate();
 }

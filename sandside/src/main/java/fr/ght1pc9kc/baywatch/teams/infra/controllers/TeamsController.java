@@ -2,12 +2,12 @@ package fr.ght1pc9kc.baywatch.teams.infra.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.infra.model.Page;
 import fr.ght1pc9kc.baywatch.teams.api.TeamsService;
 import fr.ght1pc9kc.baywatch.teams.api.model.Team;
 import fr.ght1pc9kc.baywatch.teams.infra.model.SearchTeamsRequest;
 import fr.ght1pc9kc.baywatch.teams.infra.model.TeamForm;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
@@ -68,7 +68,7 @@ public class TeamsController {
         MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
         return teamsService.list(PageRequest.all(Criteria.property(ID).in(teamIds)))
                 .collectList()
-                .flatMapMany(teams -> teamsService.delete(teams.stream().map(e -> e.id).toList())
+                .flatMapMany(teams -> teamsService.delete(teams.stream().map(Entity::id).toList())
                         .thenMany(Flux.fromIterable(teams)))
                 .map(e -> mapper.convertValue(e, gqlType));
     }
@@ -83,7 +83,7 @@ public class TeamsController {
     @SchemaMapping(typeName = "SearchTeamsResponse")
     public Mono<Integer> totalCount(Page<Entity<Team>> searchNewsResponse) {
         return Mono.justOrEmpty(searchNewsResponse.getHeaders().get("X-Total-Count"))
-                .map(h -> h.get(0))
+                .map(List::getFirst)
                 .map(Integer::parseInt)
                 .switchIfEmpty(Mono.just(0));
     }

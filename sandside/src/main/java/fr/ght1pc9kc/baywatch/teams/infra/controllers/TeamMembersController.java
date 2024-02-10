@@ -2,11 +2,11 @@ package fr.ght1pc9kc.baywatch.teams.infra.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.teams.api.TeamsService;
 import fr.ght1pc9kc.baywatch.teams.api.model.TeamMember;
 import fr.ght1pc9kc.baywatch.teams.domain.ports.TeamAuthFacade;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.RequiredArgsConstructor;
@@ -70,14 +70,14 @@ public class TeamMembersController {
         MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
 
         return authFacade.getConnectedUser()
-                .flatMapMany(userEntity -> teamsService.members(PageRequest.all(Criteria.property(USER_ID).eq(userEntity.id))))
-                .collectMap(e -> e.id, Function.identity())
+                .flatMapMany(userEntity -> teamsService.members(PageRequest.all(Criteria.property(USER_ID).eq(userEntity.id()))))
+                .collectMap(Entity::id, Function.identity())
                 .map(currentUsers -> teams.stream().map(t -> {
                     String teamId = Optional.ofNullable(t.get("_id")).map(Object::toString).orElse("");
                     Entity<TeamMember> meForTeam = currentUsers.get(teamId);
                     Map<String, Object> asMap;
                     if (isNull(meForTeam)) {
-                        asMap = mapper.convertValue(Entity.identify(Entity.NO_ONE, User.ANONYMOUS), gqlType);
+                        asMap = mapper.convertValue(Entity.identify(User.ANONYMOUS).withId(Entity.NO_ONE), gqlType);
                     } else {
                         asMap = mapper.convertValue(meForTeam, gqlType);
                     }

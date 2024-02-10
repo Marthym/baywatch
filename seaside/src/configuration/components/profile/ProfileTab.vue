@@ -45,10 +45,10 @@
 import { Component, Vue } from 'vue-facing-decorator';
 import { Store, useStore } from 'vuex';
 import { MD5 } from 'md5-js-tools';
-import { UserState } from '@/store/user/user';
+import { UserState } from '@/security/store/user';
 import ChangePasswordModal from '@/configuration/components/profile/ChangePasswordModal.vue';
 import { userUpdate } from '@/security/services/UserService';
-import { UPDATE_MUTATION as USER_UPDATE_MUTATION } from '@/store/user/UserConstants';
+import { UPDATE_MUTATION as USER_UPDATE_MUTATION } from '@/security/store/UserConstants';
 import notificationService from '@/services/notification/NotificationService';
 import { User } from '@/security/model/User';
 

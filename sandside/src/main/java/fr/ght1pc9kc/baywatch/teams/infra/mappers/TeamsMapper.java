@@ -1,11 +1,11 @@
 package fr.ght1pc9kc.baywatch.teams.infra.mappers;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.TeamsMembersRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.TeamsRecord;
 import fr.ght1pc9kc.baywatch.teams.api.model.Team;
 import fr.ght1pc9kc.baywatch.teams.api.model.TeamMember;
+import fr.ght1pc9kc.entity.api.Entity;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -26,7 +26,7 @@ public interface TeamsMapper {
     Entity<Team> getTeamEntity(TeamsRecord teamsRecord);
 
     @InheritInverseConfiguration
-    @Mapping(target = "teamCreatedAt", expression = "java( DateUtils.toLocalDateTime(team.createdAt) )")
+    @Mapping(target = "teamCreatedAt", expression = "java( DateUtils.toLocalDateTime(team.createdAt()) )")
     TeamsRecord getTeamRecord(Entity<Team> team);
 
     @Mapping(source = "temeTeamId", target = "id")
@@ -37,8 +37,8 @@ public interface TeamsMapper {
     Entity<TeamMember> getMemberEntity(TeamsMembersRecord teamsMembersRecord);
 
     @InheritInverseConfiguration
-    @Mapping(target = "temePendingFor", expression = "java( request.self.pending().value() )")
-    @Mapping(target = "temeCreatedAt", expression = "java( DateUtils.toLocalDateTime(request.createdAt) )")
+    @Mapping(target = "temePendingFor", expression = "java( request.self().pending().value() )")
+    @Mapping(target = "temeCreatedAt", expression = "java( DateUtils.toLocalDateTime(request.createdAt()) )")
     TeamsMembersRecord getTeamsMemberRecord(Entity<TeamMember> request);
 
     default Instant fromLocalDateTime(LocalDateTime date) {

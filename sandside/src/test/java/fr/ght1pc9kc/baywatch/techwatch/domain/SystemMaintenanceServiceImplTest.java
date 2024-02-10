@@ -1,7 +1,6 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
@@ -12,6 +11,7 @@ import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import org.assertj.core.api.Assertions;
@@ -84,7 +84,7 @@ class SystemMaintenanceServiceImplTest {
 
         {
             StepVerifier.create(tested.feedList())
-                    .expectNextMatches(r -> r.id.equals(FeedRecordSamples.JEDI.getFeedId()))
+                    .expectNextMatches(r -> r.id().equals(FeedRecordSamples.JEDI.getFeedId()))
                     .verifyComplete();
 
             verify(mockFeedRepository, times(1)).list(captor.capture());
@@ -94,7 +94,7 @@ class SystemMaintenanceServiceImplTest {
         {
             clearInvocations(mockFeedRepository);
             StepVerifier.create(tested.feedList(PageRequest.one(Criteria.property("name").eq("jedi"))))
-                    .expectNextMatches(r -> r.id.equals(FeedRecordSamples.JEDI.getFeedId()))
+                    .expectNextMatches(r -> r.id().equals(FeedRecordSamples.JEDI.getFeedId()))
                     .verifyComplete();
 
             verify(mockFeedRepository, times(1)).list(captor.capture());
@@ -123,7 +123,7 @@ class SystemMaintenanceServiceImplTest {
     @Test
     void should_list_news_for_authenticated_user() {
         Criteria filter = Criteria.or(
-                Criteria.property(FEED_ID).in(JEDI.id, SITH.id),
+                Criteria.property(FEED_ID).in(JEDI.id(), SITH.id()),
                 Criteria.property(NEWS_ID).in(MAY_THE_FORCE.id())
         );
         StepVerifier.create(tested.newsList(PageRequest.all(filter)))

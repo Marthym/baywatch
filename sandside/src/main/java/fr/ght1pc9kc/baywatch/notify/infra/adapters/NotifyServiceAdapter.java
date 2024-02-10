@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.notify.infra;
+package fr.ght1pc9kc.baywatch.notify.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterGroup;
@@ -7,6 +7,7 @@ import fr.ght1pc9kc.baywatch.common.api.model.HeroIcons;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyManager;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.notify.domain.NotifyServiceImpl;
+import fr.ght1pc9kc.baywatch.notify.domain.ports.NotificationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -16,14 +17,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.Clock;
+
 @Slf4j
 @Service
 public class NotifyServiceAdapter implements NotifyService, NotifyManager, CounterProvider {
     @Delegate
     private final NotifyServiceImpl delegate;
 
-    public NotifyServiceAdapter(AuthenticationFacade authFacade, MeterRegistry registry) {
-        this.delegate = new NotifyServiceImpl(authFacade);
+    public NotifyServiceAdapter(
+            AuthenticationFacade authFacade, NotificationPersistencePort notificationPersistence, MeterRegistry registry) {
+        this.delegate = new NotifyServiceImpl(authFacade, notificationPersistence, Clock.systemUTC());
 
         Gauge.builder("bw.session_count", delegate::countCacheEntries)
                 .baseUnit("gauge")

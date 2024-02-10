@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperApplicationProperties;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
@@ -8,6 +7,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
+import fr.ght1pc9kc.entity.api.Entity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
@@ -67,6 +67,6 @@ class PurgeNewsActionTest {
 
     private Flux<Entity<State>> testDataForPersistenceListState() {
         NewsRecord staredRecord = NewsRecordSamples.SAMPLE.records().get(2);
-        return Flux.just(Entity.identify(staredRecord.getNewsId(), State.of(Flags.SHARED)));
+        return Flux.just(Entity.identify(State.of(Flags.SHARED)).withId(staredRecord.getNewsId()));
     }
 }

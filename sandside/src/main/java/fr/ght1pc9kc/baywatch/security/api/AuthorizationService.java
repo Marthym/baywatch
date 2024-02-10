@@ -1,9 +1,9 @@
 package fr.ght1pc9kc.baywatch.security.api;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.entity.api.Entity;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

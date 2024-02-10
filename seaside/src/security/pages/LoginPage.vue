@@ -34,7 +34,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
 import { useStore } from 'vuex';
-import { UPDATE_MUTATION } from '@/store/user/UserConstants';
+import { UPDATE_MUTATION } from '@/security/store/UserConstants';
 
 import authenticationService from '@/security/services/AuthenticationService';
 import notificationService from '@/services/notification/NotificationService';

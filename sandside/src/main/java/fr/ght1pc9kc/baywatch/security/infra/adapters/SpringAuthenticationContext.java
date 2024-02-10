@@ -1,8 +1,9 @@
 package fr.ght1pc9kc.baywatch.security.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
+import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.entity.api.Entity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -31,7 +32,9 @@ public class SpringAuthenticationContext implements AuthenticationFacade {
     @Override
     public Context withAuthentication(Entity<User> user) {
         Authentication authentication = new PreAuthenticatedAuthenticationToken(user, null,
-                AuthorityUtils.createAuthorityList(user.self.roles.toArray(String[]::new)));
+                AuthorityUtils.createAuthorityList(user.self().roles.stream()
+                        .map(Permission::toString)
+                        .toArray(String[]::new)));
         return ReactiveSecurityContextHolder.withAuthentication(authentication);
     }
 }

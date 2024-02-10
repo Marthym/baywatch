@@ -10,7 +10,9 @@ import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.model.ReactiveEvent;
 import fr.ght1pc9kc.baywatch.notify.api.model.ServerEvent;
 import fr.ght1pc9kc.baywatch.notify.domain.model.ByUserEventPublisherCacheEntry;
+import fr.ght1pc9kc.baywatch.notify.domain.ports.NotificationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
+import fr.ght1pc9kc.entity.api.Entity;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 import org.reactivestreams.Subscription;
@@ -20,6 +22,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.core.publisher.Sinks.EmitResult;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
@@ -27,19 +30,28 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class NotifyServiceImpl implements NotifyService, NotifyManager {
+    private static final String PREFIX = "EV";
+
     private final AuthenticationFacade authFacade;
+    private final NotificationPersistencePort notificationPersistence;
 
     private final Sinks.Many<ServerEvent> multicast;
     private final Cache<String, ByUserEventPublisherCacheEntry> cache;
+    private final Clock clock;
 
-    public NotifyServiceImpl(AuthenticationFacade authenticationFacade) {
+    public NotifyServiceImpl(
+            AuthenticationFacade authenticationFacade, NotificationPersistencePort notificationPersistence,
+            Clock clock) {
+        this.notificationPersistence = notificationPersistence;
         this.authFacade = authenticationFacade;
         this.multicast = Sinks.many().multicast().directBestEffort();
+        this.clock = clock;
         this.cache = Caffeine.newBuilder()
                 .expireAfterAccess(Duration.ofMinutes(30))
                 .maximumSize(1000)
-                .<String, ByUserEventPublisherCacheEntry>evictionListener((key, value, cause) -> {
+                .<String, ByUserEventPublisherCacheEntry>removalListener((key, value, cause) -> {
                     if (value != null) {
+                        log.atTrace().addArgument(key).log("Remove {} from the cache");
                         value.sink().tryEmitComplete();
                         Subscription subscription = value.subscription().getAndSet(null);
                         if (subscription != null) {
@@ -56,14 +68,21 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
             return Flux.error(() -> new IllegalStateException("Publisher was closed !"));
         }
         return authFacade.getConnectedUser().flatMapMany(u ->
-                Objects.requireNonNull(cache.get(u.id, id -> {
-                    Sinks.Many<ServerEvent> sink = Sinks.many().multicast().directBestEffort();
+                Objects.requireNonNull(cache.get(u.id(), id -> {
+                    Sinks.Many<ServerEvent> sink = Sinks.many().multicast().onBackpressureBuffer();
                     AtomicReference<Subscription> subscription = new AtomicReference<>();
-                    Flux<ServerEvent> multicastFlux = this.multicast.asFlux().doOnSubscribe(subscription::set);
-                    Flux<ServerEvent> eventPublisher = Flux.merge(sink.asFlux(), multicastFlux)
+                    Flux<ServerEvent> multicastFlux = this.multicast.asFlux()
+                            .doOnSubscribe(subscription::set);
+                    log.atDebug().addArgument(u.id())
+                            .log("Subscribe notification for {}");
+                    Flux<ServerEvent> eventPublisher = Flux.merge(
+                                    notificationPersistence.consume(u.id()),
+                                    sink.asFlux(),
+                                    multicastFlux
+                            )
                             .takeWhile(e -> cache.asMap().containsKey(id))
                             .map(e -> {
-                                log.debug("Event: {}", e);
+                                log.atDebug().addArgument(u.id()).addArgument(e).log("{} receive Event: {}");
                                 return e;
                             }).cache(0);
                     return new ByUserEventPublisherCacheEntry(subscription, sink, eventPublisher);
@@ -73,10 +92,10 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
     @Override
     public Mono<Boolean> unsubscribe() {
         return authFacade.getConnectedUser()
-                .filter(u -> cache.asMap().containsKey(u.id))
+                .filter(u -> cache.asMap().containsKey(u.id()))
                 .map(u -> {
-                    log.debug("Dispose SSE Subscription for {}", u.self.login);
-                    cache.invalidate(u.id);
+                    log.atDebug().addArgument(u.id()).log("Dispose SSE Subscription for {}");
+                    cache.invalidate(u.id());
                     return true;
                 });
     }
@@ -86,36 +105,50 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         this.multicast.tryEmitComplete();
         this.cache.invalidateAll();
         this.cache.cleanUp();
+        log.atWarn().addArgument(this.multicast.currentSubscriberCount())
+                .log("Close multicast notifications channel ({} indisposed subscription(s))!");
     }
 
     @Override
     public <T> BasicEvent<T> send(String userId, EventType type, T data) {
-        BasicEvent<T> event = new BasicEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
+        BasicEvent<T> event = new BasicEvent<>(PREFIX + UlidCreator.getMonotonicUlid().toString(), type, data);
         Optional.ofNullable(cache.getIfPresent(userId))
                 .map(ByUserEventPublisherCacheEntry::sink)
-                .ifPresent(sk -> emit(sk, event));
+                .ifPresentOrElse(
+                        sk -> emit(sk, event),
+                        () -> notificationPersistence.persist(Entity.identify(event)
+                                .createdBy(userId)
+                                .createdAt(clock.instant())
+                                .withId(event.id())
+                        ).subscribe());
         return event;
     }
 
     @Override
     public <T> ReactiveEvent<T> send(String userId, EventType type, Mono<T> data) {
-        ReactiveEvent<T> event = new ReactiveEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
+        ReactiveEvent<T> event = new ReactiveEvent<>(PREFIX + UlidCreator.getMonotonicUlid().toString(), type, data);
         Optional.ofNullable(cache.getIfPresent(userId))
                 .map(ByUserEventPublisherCacheEntry::sink)
-                .ifPresent(sk -> emit(sk, event));
+                .ifPresentOrElse(
+                        sk -> emit(sk, event),
+                        () -> notificationPersistence.persist(Entity.identify(event)
+                                .createdBy(userId)
+                                .createdAt(clock.instant())
+                                .withId(event.id())
+                        ).subscribe());
         return event;
     }
 
     @Override
     public <T> BasicEvent<T> broadcast(EventType type, T data) {
-        BasicEvent<T> event = new BasicEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
+        BasicEvent<T> event = new BasicEvent<>(PREFIX + UlidCreator.getMonotonicUlid().toString(), type, data);
         emit(this.multicast, event);
         return event;
     }
 
     @Override
     public <T> ReactiveEvent<T> broadcast(EventType type, Mono<T> data) {
-        ReactiveEvent<T> event = new ReactiveEvent<>(UlidCreator.getMonotonicUlid().toString(), type, data);
+        ReactiveEvent<T> event = new ReactiveEvent<>(PREFIX + UlidCreator.getMonotonicUlid().toString(), type, data);
         emit(this.multicast, event);
         return event;
     }
@@ -126,15 +159,15 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
 
     private void emit(@Nullable Sinks.Many<ServerEvent> sink, ServerEvent event) {
         if (sink == null) {
-            log.debug("No subscriber listening the SSE entry point.");
+            log.atDebug().log("No subscriber listening the SSE entry point.");
             return;
         }
         EmitResult result = sink.tryEmitNext(event);
         if (result.isFailure()) {
             if (result == EmitResult.FAIL_ZERO_SUBSCRIBER) {
-                log.debug("No subscriber listening the SSE entry point.");
+                log.atDebug().log("No subscriber listening the SSE entry point.");
             } else {
-                log.warn("{} on emit notification", result);
+                log.atWarn().addArgument(result).log("{} on emit notification");
             }
         }
     }

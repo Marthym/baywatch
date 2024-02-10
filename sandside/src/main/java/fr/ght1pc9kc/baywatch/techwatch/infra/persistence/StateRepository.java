@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
@@ -8,6 +7,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import lombok.RequiredArgsConstructor;
@@ -60,7 +60,9 @@ public class StateRepository implements StatePersistencePort {
                         }
                     });
                 }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
-                .map(r -> Entity.identify(r.getNursNewsId(), r.getNursUserId(), State.of(r.getNursState())));
+                .map(r -> Entity.identify(State.of(r.getNursState()))
+                        .createdBy(r.getNursUserId())
+                        .withId(r.getNursNewsId()));
     }
 
     @Override

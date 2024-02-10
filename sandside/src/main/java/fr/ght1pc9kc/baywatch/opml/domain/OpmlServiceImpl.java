@@ -1,7 +1,6 @@
 package fr.ght1pc9kc.baywatch.opml.domain;
 
 import com.machinezoo.noexception.Exceptions;
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.opml.api.OpmlService;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
@@ -9,6 +8,7 @@ import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.infra.persistence.FeedRepository;
+import fr.ght1pc9kc.entity.api.Entity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -64,19 +64,19 @@ public class OpmlServiceImpl implements OpmlService {
                             .then(Mono.empty());
                     return Flux.merge(db, feeds)
                             .buffer(100)
-                            .flatMap(f -> feedRepository.persist(f).map(e -> e.self).collectList())
-                            .flatMap(f -> feedRepository.persistUserRelation(f, owner.id));
+                            .flatMap(f -> feedRepository.persist(f).map(Entity::self).collectList())
+                            .flatMap(f -> feedRepository.persistUserRelation(f, owner.id()));
                 })).then();
     }
 
     private Mono<Void> writeOpml(OutputStream out, Entity<User> owner) {
         OpmlWriter opmlWriter = writerFactory.apply(out);
-        return feedRepository.list(QueryContext.empty().withUserId(owner.id))
-                .doFirst(() -> opmlWriter.startOpmlDocument(owner.self))
+        return feedRepository.list(QueryContext.empty().withUserId(owner.id()))
+                .doFirst(() -> opmlWriter.startOpmlDocument(owner.self()))
                 .doOnEach(signal -> {
                     Entity<WebFeed> feed = signal.get();
                     if (feed != null) {
-                        opmlWriter.writeOutline(feed.self);
+                        opmlWriter.writeOutline(feed.self());
                     }
                 })
                 .doOnComplete(opmlWriter::endOmplDocument)

@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.teams.domain;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.dsl.tables.Teams;
 import fr.ght1pc9kc.baywatch.dsl.tables.TeamsMembers;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.TeamsRecord;
@@ -18,6 +17,7 @@ import fr.ght1pc9kc.baywatch.teams.infra.samples.TeamsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRolesSamples;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;
@@ -85,7 +85,7 @@ class TeamServiceImplTest {
         when(mockAuthFacade.grantAuthorization(any(), anyCollection())).thenReturn(Mono.empty().then());
         when(mockAuthFacade.revokeAuthorization(any(), anyCollection())).thenReturn(Mono.empty().then());
         when(mockAuthFacade.removeAuthorizations(anyCollection())).thenReturn(Mono.empty().then());
-        when(mockAuthFacade.listManagers(anyString())).thenReturn(Flux.just(UserSamples.MWINDU.id));
+        when(mockAuthFacade.listManagers(anyString())).thenReturn(Flux.just(UserSamples.MWINDU.id()));
 
         Scheduler immediate = Schedulers.immediate();
         TeamsMapper mapper = Mappers.getMapper(TeamsMapper.class);
@@ -100,7 +100,7 @@ class TeamServiceImplTest {
         dbTracker.skipNextSampleLoad();
 
         StepVerifier.create(tested.get("TM01GP696RFPTY32WD79CVB0KDTF"))
-                .assertNext(next -> Assertions.assertThat(next.id).isEqualTo("TM01GP696RFPTY32WD79CVB0KDTF"))
+                .assertNext(next -> Assertions.assertThat(next.id()).isEqualTo("TM01GP696RFPTY32WD79CVB0KDTF"))
                 .verifyComplete();
     }
 
@@ -110,7 +110,7 @@ class TeamServiceImplTest {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
 
         StepVerifier.create(tested.list(PageRequest.all()))
-                .assertNext(next -> Assertions.assertThat(next.id).isEqualTo("TM01GP696RFPTY32WD79CVB0KDTF"))
+                .assertNext(next -> Assertions.assertThat(next.id()).isEqualTo("TM01GP696RFPTY32WD79CVB0KDTF"))
                 .verifyComplete();
     }
 
@@ -129,10 +129,10 @@ class TeamServiceImplTest {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
         StepVerifier.create(tested.create("Jedi council team", "May the Force be with you"))
                 .assertNext(actual -> assertAll(
-                        () -> Assertions.assertThat(actual.id).isNotBlank(),
-                        () -> Assertions.assertThat(actual.createdBy).isEqualTo(UserSamples.OBIWAN.id),
-                        () -> Assertions.assertThat(actual.self.name()).isEqualTo("Jedi council team"),
-                        () -> verify(mockAuthFacade).grantAuthorization(UserSamples.OBIWAN.id, List.of("MANAGER:" + actual.id))
+                        () -> Assertions.assertThat(actual.id()).isNotBlank(),
+                        () -> Assertions.assertThat(actual.createdBy()).isEqualTo(UserSamples.OBIWAN.id()),
+                        () -> Assertions.assertThat(actual.self().name()).isEqualTo("Jedi council team"),
+                        () -> verify(mockAuthFacade).grantAuthorization(UserSamples.OBIWAN.id(), List.of("MANAGER:" + actual.id()))
                 )).verifyComplete();
     }
 
@@ -143,9 +143,9 @@ class TeamServiceImplTest {
 
         StepVerifier.create(tested.update(JEDI_TEAM.getTeamId(), "Luke Skywalker Team", "The new topic for Skywalker"))
                 .assertNext(actual -> assertAll(
-                        () -> Assertions.assertThat(actual.id).isEqualTo(JEDI_TEAM.getTeamId()),
-                        () -> Assertions.assertThat(actual.self.name()).isEqualTo("Luke Skywalker Team"),
-                        () -> Assertions.assertThat(actual.self.topic()).isEqualTo("The new topic for Skywalker")
+                        () -> Assertions.assertThat(actual.id()).isEqualTo(JEDI_TEAM.getTeamId()),
+                        () -> Assertions.assertThat(actual.self().name()).isEqualTo("Luke Skywalker Team"),
+                        () -> Assertions.assertThat(actual.self().topic()).isEqualTo("The new topic for Skywalker")
                 )).verifyComplete();
 
         TeamsRecord actual = dsl.selectFrom(Teams.TEAMS).where(Teams.TEAMS.TEAM_ID.eq(JEDI_TEAM.getTeamId()))
@@ -160,8 +160,8 @@ class TeamServiceImplTest {
 
     static Stream<Arguments> allowedTeamModificationUsers() {
         return Stream.of(
-                arguments(named(UserSamples.LUKE.self.name, UserSamples.LUKE)),
-                arguments(named(UserSamples.YODA.self.name, UserSamples.YODA))
+                arguments(named(UserSamples.LUKE.self().name, UserSamples.LUKE)),
+                arguments(named(UserSamples.YODA.self().name, UserSamples.YODA))
         );
     }
 
@@ -175,10 +175,10 @@ class TeamServiceImplTest {
 
     @Test
     void should_list_team_members() {
-        StepVerifier.create(tested.members(PageRequest.all(Criteria.property(ID).eq(JEDI_TEAM.getTeamId()))).map(e -> e.self.userId()).collectList())
+        StepVerifier.create(tested.members(PageRequest.all(Criteria.property(ID).eq(JEDI_TEAM.getTeamId()))).map(e -> e.self().userId()).collectList())
                 .assertNext(actual -> Assertions.assertThat(actual).containsOnly(
-                        UserSamples.LUKE.id,
-                        UserSamples.OBIWAN.id
+                        UserSamples.LUKE.id(),
+                        UserSamples.OBIWAN.id()
                 )).verifyComplete();
     }
 
@@ -187,22 +187,22 @@ class TeamServiceImplTest {
     void should_add_member(Entity<User> user, PendingFor expectedPendingFor) {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(user));
 
-        StepVerifier.create(tested.addMembers(JEDI_TEAM.getTeamId(), List.of(UserSamples.DSIDIOUS.id)).collectList())
+        StepVerifier.create(tested.addMembers(JEDI_TEAM.getTeamId(), List.of(UserSamples.DSIDIOUS.id())).collectList())
                 .assertNext(actual -> assertAll(
                         () -> Assertions.assertThat(actual).isNotNull().isNotEmpty(),
-                        () -> Assertions.assertThat(actual).extracting(e -> e.self.userId()).containsOnly(
-                                UserSamples.DSIDIOUS.id, UserSamples.LUKE.id, UserSamples.OBIWAN.id),
+                        () -> Assertions.assertThat(actual).extracting(e -> e.self().userId()).containsOnly(
+                                UserSamples.DSIDIOUS.id(), UserSamples.LUKE.id(), UserSamples.OBIWAN.id()),
                         () -> Assertions.assertThat(requireNonNull(actual).stream()
-                                        .filter(e -> e.self.userId().equals(UserSamples.DSIDIOUS.id))
+                                        .filter(e -> e.self().userId().equals(UserSamples.DSIDIOUS.id()))
                                         .findFirst()).isPresent()
-                                .map(e -> e.self.pending()).contains(expectedPendingFor)
+                                .map(e -> e.self().pending()).contains(expectedPendingFor)
                 )).verifyComplete();
     }
 
     static Stream<Arguments> addMembersProfiles() {
         return Stream.of(
-                arguments(named(UserSamples.DSIDIOUS.self.name, UserSamples.DSIDIOUS), PendingFor.MANAGER),
-                arguments(named(UserSamples.LUKE.self.name, UserSamples.LUKE), PendingFor.USER)
+                arguments(named(UserSamples.DSIDIOUS.self().name, UserSamples.DSIDIOUS), PendingFor.MANAGER),
+                arguments(named(UserSamples.LUKE.self().name, UserSamples.LUKE), PendingFor.USER)
         );
     }
 
@@ -211,11 +211,11 @@ class TeamServiceImplTest {
     void should_remove_member_as(Entity<User> user) {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(user));
 
-        StepVerifier.create(tested.removeMembers(JEDI_TEAM.getTeamId(), List.of(UserSamples.OBIWAN.id)).collectList())
+        StepVerifier.create(tested.removeMembers(JEDI_TEAM.getTeamId(), List.of(UserSamples.OBIWAN.id())).collectList())
                 .assertNext(actual -> assertAll(
                         () -> Assertions.assertThat(actual).isNotNull().isNotEmpty(),
-                        () -> Assertions.assertThat(actual).extracting(e -> e.self.userId())
-                                .containsOnly(UserSamples.LUKE.id)
+                        () -> Assertions.assertThat(actual).extracting(e -> e.self().userId())
+                                .containsOnly(UserSamples.LUKE.id())
                 )).verifyComplete();
     }
 
@@ -231,7 +231,7 @@ class TeamServiceImplTest {
     void should_fail_to_remove_member_as_unauthorized_user() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.DSIDIOUS));
 
-        StepVerifier.create(tested.removeMembers(JEDI_TEAM.getTeamId(), List.of(UserSamples.OBIWAN.id)).collectList())
+        StepVerifier.create(tested.removeMembers(JEDI_TEAM.getTeamId(), List.of(UserSamples.OBIWAN.id())).collectList())
                 .verifyError(TeamPermissionDenied.class);
     }
 

@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
@@ -10,6 +9,7 @@ import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsUsersRecordSample;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRolesSamples;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;
 import fr.ght1pc9kc.testy.jooq.WithDslContext;
@@ -72,9 +72,9 @@ class StateRepositoryTest {
         ).collectList().block();
 
         assertThat(actuals).containsOnly(
-                Entity.identify(id21, OKENOBI.getUserId(), State.of(Flags.NONE)),
-                Entity.identify(id22, LSKYWALKER.getUserId(), State.of(Flags.READ)),
-                Entity.identify(id23, OKENOBI.getUserId(), State.of(Flags.SHARED))
+                Entity.identify(State.of(Flags.NONE)).createdBy(OKENOBI.getUserId()).withId(id21),
+                Entity.identify(State.of(Flags.READ)).createdBy(LSKYWALKER.getUserId()).withId(id22),
+                Entity.identify(State.of(Flags.SHARED)).createdBy(OKENOBI.getUserId()).withId(id23)
         );
     }
 

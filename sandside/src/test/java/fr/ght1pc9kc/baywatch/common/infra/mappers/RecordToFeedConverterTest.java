@@ -1,9 +1,9 @@
 package fr.ght1pc9kc.baywatch.common.infra.mappers;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
+import fr.ght1pc9kc.entity.api.Entity;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
@@ -51,11 +51,11 @@ class RecordToFeedConverterTest {
         Entity<WebFeed> actual = tested.recordToFeed(record);
 
         Assertions.assertAll(
-                () -> assertThat(actual.id).isEqualTo(TEST_SHA3),
-                () -> assertThat(actual.self.reference()).isEqualTo(TEST_SHA3),
-                () -> assertThat(actual.self.name()).isEqualTo("Blog ght1pc9kc"),
-                () -> assertThat(actual.self.location()).isEqualTo(TEST_URL),
-                () -> assertThat(actual.self.tags()).isEqualTo(Set.of("jedi", "light"))
+                () -> assertThat(actual.id()).isEqualTo(TEST_SHA3),
+                () -> assertThat(actual.self().reference()).isEqualTo(TEST_SHA3),
+                () -> assertThat(actual.self().name()).isEqualTo("Blog ght1pc9kc"),
+                () -> assertThat(actual.self().location()).isEqualTo(TEST_URL),
+                () -> assertThat(actual.self().tags()).isEqualTo(Set.of("jedi", "light"))
         );
     }
 }

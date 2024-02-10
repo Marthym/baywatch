@@ -1,8 +1,8 @@
 package fr.ght1pc9kc.baywatch.teams.domain.ports;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.entity.api.Entity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -60,10 +60,11 @@ public interface TeamAuthFacade {
     Flux<String> listManagers(String teamId);
 
     static Context withSystemAuthentication(String userIdImpersonation) {
-        Entity<User> principal = Entity.identify(userIdImpersonation, User.builder()
-                .name("Team Domain")
-                .login(Entity.NO_ONE)
-                .roles(List.of(Role.SYSTEM)).build());
+        Entity<User> principal = Entity.identify(User.builder()
+                        .name("Team Domain")
+                        .login(Entity.NO_ONE)
+                        .roles(List.of(Role.SYSTEM)).build())
+                .withId(userIdImpersonation);
         Authentication authentication = new PreAuthenticatedAuthenticationToken(principal, null,
                 AuthorityUtils.createAuthorityList(Role.SYSTEM.name()));
         return ReactiveSecurityContextHolder.withAuthentication(authentication);

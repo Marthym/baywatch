@@ -1,19 +1,19 @@
 <template>
   <div class="overflow-x-auto mt-4">
-    <div class="md:btn-group mb-2">
-      <button class="btn btn-sm mb-2 mr-2 md:m-0" @click.prevent="onUserAdd()">
+    <div class="md:join mb-2">
+      <button class="btn btn-sm mb-2 mr-2 join-item md:m-0" @click.prevent="onUserAdd()">
         <PlusCircleIcon class="w-6 h-6 md:mr-2"/>
         <span>Ajouter</span>
       </button>
-      <button class="btn btn-sm btn-ghost mb-2 mr-2 md:m-0" @click="">
+      <button class="btn btn-sm btn-ghost mb-2 mr-2 join-item md:m-0" @click="">
         <ArrowDownTrayIcon class="w-6 h-6 mr-2"/>
         Importer
       </button>
-      <a class="btn btn-sm btn-ghost mb-2 mr-2 md:m-0">
+      <a class="btn btn-sm btn-ghost mb-2 mr-2 join-item md:m-0">
         <ArrowUpTrayIcon class="w-6 h-6 mr-2"/>
         Exporter
       </a>
-      <button class="btn btn-sm btn-error mb-2 mr-2 md:m-0" :disabled="!checkState" @click="onUserBulkDelete()">
+      <button class="btn btn-sm btn-error mb-2 mr-2 join-item md:m-0" :disabled="!checkState" @click="onUserBulkDelete()">
         <TrashIcon class="w-6 h-6"/>
         Supprimer
       </button>
@@ -64,13 +64,13 @@
         <td>{{ vUser.data.name }}</td>
         <td>{{ vUser.data.mail }}</td>
         <td>{{ roleFromPermission(vUser.data.roles) }}</td>
-        <td>{{ dateToString(vUser.data._createdAt) }}</td>
+        <td>{{ vUser.data._createdAt }}</td>
         <td>
-          <div class="btn-group justify-end w-full">
-            <button class="btn btn-sm btn-square btn-ghost" @click.prevent="onUserEdit(vUser.data)">
+          <div class="join justify-end w-full">
+            <button class="btn btn-sm btn-square btn-ghost join-item" @click.prevent="onUserEdit(vUser.data)">
               <PencilIcon class="h-6 w-6"/>
             </button>
-            <button class="btn btn-sm btn-square btn-ghost" @click.prevent="onUserDelete(vUser.data)">
+            <button class="btn btn-sm btn-square btn-ghost join-item" @click.prevent="onUserDelete(vUser.data)">
               <TrashIcon class="h-6 w-6"/>
             </button>
           </div>
@@ -174,13 +174,6 @@ export default class UserAdminTab extends Vue {
         map(users => users.map(user => ({ isSelected: false, data: user }))),
         tap(users => this.users = users),
     );
-  }
-
-  dateToString(date: string): string {
-    return new Date(date).toLocaleDateString(navigator.languages, {
-      timeZone: 'UTC',
-      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
-    });
   }
 
   private roleFromPermission(perm: string[]): string {

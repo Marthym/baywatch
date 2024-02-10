@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.api.model;
 
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
+import fr.ght1pc9kc.entity.api.Entity;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,10 +16,11 @@ import java.util.stream.Collectors;
 public final class RoleUtils {
 
     private static final String SPRING_ROLE_PREFIX = "ROLE_";
-    private static final Entity<User> SYSTEM = Entity.identify(Role.SYSTEM.name(), User.builder()
-            .name(Role.SYSTEM.name())
-            .login(Role.SYSTEM.name().toLowerCase())
-            .roles(List.of(Role.SYSTEM)).build());
+    private static final Entity<User> SYSTEM = Entity.identify(User.builder()
+                    .name(Role.SYSTEM.name())
+                    .login(Role.SYSTEM.name().toLowerCase())
+                    .roles(List.of(Role.SYSTEM)).build())
+            .withId(Role.SYSTEM.name());
 
     public static Entity<User> getSystemUser() {
         return SYSTEM;
@@ -67,7 +68,7 @@ public final class RoleUtils {
     }
 
     /**
-     * returns the set of {@link Entity#id} for which the {@link User} has the given {@link Role}
+     * returns the set of {@link Entity#id()} for which the {@link User} has the given {@link Role}
      *
      * @param user The user to inspect
      * @param role The checked role

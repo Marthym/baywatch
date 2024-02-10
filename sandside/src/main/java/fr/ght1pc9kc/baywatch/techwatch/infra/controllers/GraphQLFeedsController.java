@@ -3,7 +3,6 @@ package fr.ght1pc9kc.baywatch.techwatch.infra.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
-import fr.ght1pc9kc.baywatch.common.api.model.Entity;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.common.infra.model.Page;
 import fr.ght1pc9kc.baywatch.techwatch.api.FeedService;
@@ -12,6 +11,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Popularity;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.graphql.SearchFeedsRequest;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
 import lombok.RequiredArgsConstructor;
@@ -72,7 +72,7 @@ public class GraphQLFeedsController {
     @SchemaMapping(typeName = "SearchFeedsResponse")
     public Mono<Integer> totalCount(Page<Entity<WebFeed>> searchFeedsResponse) {
         return Mono.justOrEmpty(searchFeedsResponse.getHeaders().get("X-Total-Count"))
-                .map(h -> h.get(0))
+                .map(List::getFirst)
                 .map(Integer::parseInt)
                 .switchIfEmpty(Mono.just(0));
     }
@@ -86,7 +86,7 @@ public class GraphQLFeedsController {
         List<String> feedsIds = news.stream().flatMap(n -> n.getFeeds().stream()).distinct().toList();
         PageRequest pageRequest = qsParser.parse(Map.of(EntitiesProperties.ID, feedsIds));
         return feedService.list(pageRequest).collectList()
-                .map(feeds -> feeds.stream().collect(Collectors.toUnmodifiableMap(e -> e.id, Function.identity())))
+                .map(feeds -> feeds.stream().collect(Collectors.toUnmodifiableMap(Entity::id, Function.identity())))
                 .map(feeds -> news.stream()
                         .collect(Collectors.toUnmodifiableMap(Function.identity(), n -> n.getFeeds().stream()
                                 .filter(feeds::containsKey)
@@ -110,7 +110,7 @@ public class GraphQLFeedsController {
     public Mono<Entity<WebFeed>> subscribe(@Argument String id, @Argument String name, @Argument Collection<String> tags) {
         Set<String> tagsSet = Optional.ofNullable(tags).map(Set::copyOf).orElse(Set.of());
         return feedService.get(id)
-                .map(f -> f.self.toBuilder().name(name).tags(tagsSet).build())
+                .map(f -> f.self().toBuilder().name(name).tags(tagsSet).build())
                 .flatMapMany(f -> feedService.subscribe(Collections.singleton(f)))
                 .next();
     }
