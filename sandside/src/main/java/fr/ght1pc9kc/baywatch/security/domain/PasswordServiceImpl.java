@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.security.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.LocaleFacade;
 import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
+import fr.ght1pc9kc.baywatch.security.PasswordChecker;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.PasswordService;
 import fr.ght1pc9kc.baywatch.security.api.model.PasswordEvaluation;
@@ -13,11 +14,15 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.LongStream;
+import java.util.stream.Stream;
+
+import static java.util.function.Predicate.not;
 
 @Slf4j
 @RequiredArgsConstructor
-public class PasswordServiceImpl implements PasswordService {
+public class PasswordServiceImpl implements PasswordChecker {
 
     private final AuthenticationFacade authFacade;
     private final PasswordStrengthChecker passwordChecker;
@@ -33,8 +38,11 @@ public class PasswordServiceImpl implements PasswordService {
 
     @Override
     public Mono<PasswordEvaluation> checkPasswordStrength(User user) {
+        List<String> dictionary = Stream.of(user.name, user.login, user.mail)
+                .filter(not(Objects::isNull))
+                .toList();
         return localeFacade.getLocale()
-                .map(locale -> passwordChecker.estimate(user.password, locale, List.of(user.name, user.login, user.mail)));
+                .map(locale -> passwordChecker.estimate(user.password, locale, dictionary));
     }
 
     @Override

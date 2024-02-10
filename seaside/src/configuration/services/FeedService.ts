@@ -1,7 +1,7 @@
 import { map, switchMap, take } from 'rxjs/operators';
 import { HttpStatusError } from '@/common/errors/HttpStatusError';
 import { Feed } from '@/configuration/model/Feed.type';
-import { Page } from '@/services/model/Page';
+import { Page } from '@/common/model/Page';
 import { from, Observable, of, throwError } from 'rxjs';
 import rest from '@/common/services/RestWrapper';
 import { OpPatch } from 'json-patch';

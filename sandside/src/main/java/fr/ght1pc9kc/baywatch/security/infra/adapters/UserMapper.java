@@ -60,6 +60,7 @@ public interface UserMapper {
 
     @Mapping(source = "id", target = "userId")
     @Mapping(source = "createdAt", target = "userCreatedAt")
+    @Mapping(source = "createdBy", target = "userCreatedBy")
     @Mapping(source = "self.login", target = "userLogin")
     @Mapping(source = "self.name", target = "userName")
     @Mapping(source = "self.mail", target = "userEmail")
@@ -69,11 +70,15 @@ public interface UserMapper {
     UsersRecord entityUserToRecord(Entity<User> user);
 
     default Entity<User> recordToUserEntity(Record usersRecord) {
-        List<Permission> permissions = Arrays.stream(usersRecord.get(USERS_ROLES.USRO_ROLE).split(","))
-                .map(Permission::from)
-                .distinct()
-                .sorted(Permission.COMPARATOR)
-                .toList();
+        String roles = usersRecord.get(USERS_ROLES.USRO_ROLE);
+        List<Permission> permissions = (roles == null) ?
+                List.of() :
+                Arrays.stream(roles.split(","))
+                        .map(Permission::from)
+                        .distinct()
+                        .sorted(Permission.COMPARATOR)
+                        .toList();
+
 
         return Entity.identify(User.builder()
                         .login(usersRecord.get(USERS.USER_LOGIN))
@@ -83,6 +88,7 @@ public interface UserMapper {
                         .roles(permissions)
                         .build())
                 .createdAt(DateUtils.toInstant(usersRecord.get(USERS.USER_CREATED_AT)))
+                .createdBy(usersRecord.get(USERS.USER_CREATED_BY))
                 .withId(usersRecord.get(USERS.USER_ID));
     }
 

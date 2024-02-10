@@ -1,6 +1,6 @@
 <template>
-  <div class="grid bg-base-200 bg-opacity-60 z-30 w-full h-full absolute top-0 left-0 overflow-hidden"
-       @click="opened = false">
+  <div class="grid bg-base-200 bg-opacity-60 z-30 w-full h-full absolute top-0 right-0 overflow-hidden"
+       @click="opened = false" ref="root">
     <Transition
         enter-active-class="lg:duration-300 ease-in-out"
         enter-from-class="lg:transform lg:translate-x-full"
@@ -20,6 +20,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
 import { KeyboardController, listener, useKeyboardController } from '@/common/services/KeyboardController';
+import { ref } from 'vue';
 
 const LEAVE_EVENT: string = 'leave';
 
@@ -27,8 +28,10 @@ const LEAVE_EVENT: string = 'leave';
   name: 'CurtainModal',
   emits: [LEAVE_EVENT],
   setup() {
+    const root = ref(HTMLElement.prototype);
     return {
-      keyboardController: useKeyboardController(),
+      root,
+      keyboardController: useKeyboardController(root),
     };
   },
 })
@@ -52,8 +55,12 @@ export default class CurtainModal extends Vue {
     this.$emit(LEAVE_EVENT);
   }
 
-  unmounted(): void {
+  beforeUnmount(): void {
     this.keyboardController.purge();
   }
+}
+
+export interface CurtainModalSlot {
+  close(): void
 }
 </script>

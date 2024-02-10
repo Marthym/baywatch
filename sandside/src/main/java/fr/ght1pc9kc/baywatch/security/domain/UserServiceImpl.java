@@ -3,14 +3,17 @@ package fr.ght1pc9kc.baywatch.security.domain;
 import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.AuthorizationService;
+import fr.ght1pc9kc.baywatch.security.api.PasswordService;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.security.api.model.UpdatableUser;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.baywatch.security.domain.exceptions.ConstraintViolationPersistenceException;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
+import fr.ght1pc9kc.baywatch.security.domain.exceptions.UserCreateException;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.NotificationPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
@@ -20,7 +23,6 @@ import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -50,7 +52,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     private final AuthorizationPersistencePort authorizationRepository;
     private final NotificationPort notificationPort;
     private final AuthenticationFacade authFacade;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordService passwordService;
     private final Clock clock;
     private final UlidFactory idGenerator;
 
@@ -78,29 +80,39 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     @Override
     public Mono<Entity<User>> create(User user) {
         String userId = String.format("%s%s", ID_PREFIX, idGenerator.create());
-        User withPassword = user.withPassword(passwordEncoder.encode(user.password));
         Instant now = clock.instant();
-        return authFacade.getConnectedUser()
-                .<String>handle((u, sink) -> {
-                    if (hasRole(u.self(), Role.ADMIN)) {
-                        sink.next(u.id());
-                        return;
-                    }
-                    sink.error(new UnauthorizedOperation(UNAUTHORIZED_USER));
-                })
-                .switchIfEmpty(Mono.just(userId))
+        return passwordService.checkPasswordStrength(user)
+                .flatMap(eval -> (eval.isSecure())
+                        ? Mono.just(user.withPassword(passwordService.encode(user.password)))
+                        : Mono.error(new IllegalArgumentException(eval.message())))
 
-                .map(currentUserId -> Entity.identify(withPassword)
-                        .createdAt(now)
-                        .createdBy(currentUserId)
-                        .withId(userId))
+                .flatMap(withPassword -> authFacade.getConnectedUser()
+                        .<String>handle((u, sink) -> {
+                            if (hasRole(u.self(), Role.ADMIN)) {
+                                sink.next(u.id());
+                                return;
+                            }
+                            sink.error(new UnauthorizedOperation(UNAUTHORIZED_USER));
+                        })
+                        .switchIfEmpty(Mono.just(userId))
+
+                        .map(currentUserId -> Entity.identify(withPassword)
+                                .createdAt(now)
+                                .createdBy(currentUserId)
+                                .withId(userId)))
+
                 .flatMap(entity -> userRepository.persist(List.of(entity)).single())
-                .then(userRepository.persist(userId, user.roles.stream().map(Permission::toString).distinct().toList()))
+                .flatMap(ignore -> grants(userId, user.roles))
+                .onErrorMap(ConstraintViolationPersistenceException.class, e ->
+                        new UserCreateException(
+                                String.format("Unable to create User, %s unavailable !", e.getPropertyField()),
+                                List.of(e.getPropertyField()), e))
+
                 .flatMap(this::notifyAdmins);
     }
 
     private Mono<Entity<User>> notifyAdmins(Entity<User> newUser) {
-        return this.list(PageRequest.all(Criteria.property(ROLES).eq(Role.ADMIN.toString())))
+        return userRepository.list(QueryContext.all(Criteria.property(ROLES).eq(Role.ADMIN.toString())))
                 .filter(not(admin -> admin.id().equals(newUser.createdBy())))
                 .map(admin -> notificationPort.send(admin.id(), USER_NOTIFICATION,
                         String.format("New user %s created by %s.", newUser.self().login, newUser.createdBy())))
@@ -129,7 +141,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                         sink.next(u);
                     } else if (id.equals(u.id())
                             && Objects.nonNull(currentPassword)
-                            && passwordEncoder.matches(currentPassword, u.self().password)) {
+                            && passwordService.matches(currentPassword, u.self().password)) {
                         sink.next(u);
                     } else {
                         sink.error(new UnauthorizedOperation(UNAUTHORIZED_USER));
@@ -137,7 +149,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                 }).flatMap(u -> {
 
                     UpdatableUser checkedUser = user.toBuilder()
-                            .password(Objects.nonNull(user.password()) ? passwordEncoder.encode(user.password()) : null)
+                            .password(Objects.nonNull(user.password()) ? passwordService.encode(user.password()) : null)
                             .build();
                     return userRepository.update(id, checkedUser);
                 });
@@ -158,27 +170,31 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
 
     @Override
     public Mono<Entity<User>> grants(String grantedUserId, Collection<Permission> permissions) {
-        return authFacade.getConnectedUser().flatMap(currentUser -> {
-            var tobeVerified = new ArrayList<String>();
-            boolean selfGrant = currentUser.id().equals(grantedUserId);
+        return authFacade.getConnectedUser()
+                .flatMap(currentUser -> {
+                    var tobeVerified = new ArrayList<String>();
+                    boolean selfGrant = currentUser.id().equals(grantedUserId);
 
-            for (Permission perm : permissions) {
-                if (!RoleUtils.hasPermission(currentUser.self(), perm)) {
-                    if (perm.entity().isPresent() && selfGrant) {
-                        tobeVerified.add(perm.toString());
-                    } else {
-                        return Mono.error(() -> new UnauthorizedOperation("Unauthorized grant operation !"));
+                    for (Permission perm : permissions) {
+                        if (!RoleUtils.hasPermission(currentUser.self(), perm)) {
+                            if (perm.entity().isPresent() && selfGrant) {
+                                tobeVerified.add(perm.toString());
+                            } else {
+                                return Mono.error(() -> new UnauthorizedOperation("Unauthorized grant operation !"));
+                            }
+                        }
                     }
-                }
-            }
 
-            return authorizationRepository.count(tobeVerified).flatMap(count ->
-                    (count > 0)
-                            ? Mono.error(() -> new UnauthorizedOperation("Unauthorized grant operation !"))
-                            : Mono.just(currentUser));
+                    return authorizationRepository.count(tobeVerified).flatMap(count ->
+                            (count > 0)
+                                    ? Mono.error(() -> new UnauthorizedOperation("Unauthorized grant operation !"))
+                                    : Mono.just(currentUser));
 
-        }).flatMap(currentUser -> userRepository.persist(grantedUserId,
-                permissions.stream().map(Permission::toString).distinct().toList()));
+                }).flatMap(currentUser -> userRepository.persist(
+                        grantedUserId, permissions.stream().map(Permission::toString).distinct().toList()))
+
+                // Do not grant if not loginIn
+                .switchIfEmpty(userRepository.get(grantedUserId));
     }
 
     @Override

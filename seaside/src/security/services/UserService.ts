@@ -1,15 +1,15 @@
 import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
-import { Page } from '@/services/model/Page';
+import { Page } from '@/common/model/Page';
 import { ConstantFilters } from '@/constants';
 import { User } from '@/security/model/User';
 import { send } from '@/common/services/GraphQLClient';
-import { UserSearchResponse } from '@/security/model/UserSearchResponse';
+import { UserListAdminResponse } from '@/security/model/UserListAdminResponse';
 
 const DEFAULT_PER_PAGE: number = 20;
 const DEFAULT_QUERY: string = `?${ConstantFilters.PER_PAGE}=${DEFAULT_PER_PAGE}&_s=login`;
 
-const USER_SEARCH_REQUEST = `#graphql
+const LOAD_USER_ADMIN_LIST_REQUEST = `#graphql
 query LoadUsersAdminList ($_p: Int = 0, $_pp: Int = ${DEFAULT_PER_PAGE}, $_s: String = "login") {
     userSearch(_p: $_p, _pp: $_pp, _s: $_s) {
         totalCount
@@ -25,16 +25,23 @@ export function userList(page = 0, query: URLSearchParams = new URLSearchParams(
     if (resolvedPerPage) {
         resolvedPerPage = String(DEFAULT_PER_PAGE);
     }
-    return send<UserSearchResponse>(USER_SEARCH_REQUEST).pipe(
+    return send<UserListAdminResponse>(LOAD_USER_ADMIN_LIST_REQUEST).pipe(
         map(data => data.data.userSearch),
         map(response => ({
                 currentPage: resolvedPage,
                 totalPage: Math.ceil(response.totalCount / Number(resolvedPerPage)),
-                data: response.entities,
+                data: response.entities.map(user => ({
+                    ...user,
+                    _createdAt: utcToZonedTime(user._createdAt),
+                })),
             }),
         ),
         take(1),
     );
+}
+
+function utcToZonedTime(utcDate: string): string {
+    return new Date(utcDate).toLocaleString();
 }
 
 const USER_CREATE_REQUEST = `#graphql

@@ -23,7 +23,7 @@
       <template #lineActions="e">
         <stla v-if="this.teams[e.idx].data._me.pending === MemberPending.USER"
               class="animate-pulse text-accent"
-              :icon="ArrowLeftOnRectangleIcon" @click.stop="onJoinTeam(e.idx)"/>
+              :icon="ArrowLeftEndOnRectangleIcon" @click.stop="onJoinTeam(e.idx)"/>
       </template>
     </SmartTable>
   </div>
@@ -49,10 +49,10 @@ import { Store, useStore } from 'vuex';
 import { NotificationCode } from '@/services/notification/NotificationCode.enum';
 import { Severity } from '@/services/notification/Severity.enum';
 import { AlertResponse, AlertType } from '@/common/components/alertdialog/AlertDialog.types';
-import { ArrowLeftOnRectangleIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
+import { ArrowLeftEndOnRectangleIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
 import { MemberPending } from '@/teams/model/MemberPending.enum';
 import { teamMemberAdd, teamMemberDelete } from '@/teams/services/TeamMembers.service';
-import { UserState } from '@/store/user/user';
+import { UserState } from '@/security/store/user';
 
 @Component({
   name: 'TeamsPage',
@@ -62,7 +62,7 @@ import { UserState } from '@/store/user/user';
     },
   },
   components: {
-    ArrowLeftOnRectangleIcon,
+    ArrowLeftEndOnRectangleIcon,
     InformationCircleIcon,
     TeamEditor,
     std,
@@ -84,7 +84,7 @@ export default class TeamsPage extends Vue {
 
   private store: Store<UserState>;
 
-  private ArrowLeftOnRectangleIcon = ArrowLeftOnRectangleIcon;
+  private ArrowLeftEndOnRectangleIcon = ArrowLeftEndOnRectangleIcon;
 
   /**
    * @see mounted

@@ -21,9 +21,9 @@
 import {Component, Vue} from 'vue-facing-decorator';
 import {MD5} from 'md5-js-tools';
 import {useStore} from "vuex";
-import {UserState} from "@/store/user/user";
+import {UserState} from "@/security/store/user";
 import {IdentificationIcon, TrophyIcon, UsersIcon} from "@heroicons/vue/20/solid";
-import {HAS_ROLE_ADMIN_GETTER, HAS_ROLE_MANAGER_GETTER} from "@/store/user/UserConstants";
+import {HAS_ROLE_ADMIN_GETTER, HAS_ROLE_MANAGER_GETTER} from "@/security/store/UserConstants";
 
 @Component({
     name: 'SideNavUserInfo',

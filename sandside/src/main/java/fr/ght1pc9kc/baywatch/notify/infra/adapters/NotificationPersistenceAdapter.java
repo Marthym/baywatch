@@ -51,7 +51,7 @@ public class NotificationPersistenceAdapter implements NotificationPersistencePo
         });
         return notificationsRecord.map(r ->
                         r.setNotiCreatedAt(DateUtils.toLocalDateTime(event.createdAt()))
-                                .setNotiEventType(event.self().type().getName())
+                                .setNotiEventType(event.self().type().name())
                                 .setNotiId(event.id())
                                 .setNotiUserId(event.createdBy()))
                 .flatMap(r ->

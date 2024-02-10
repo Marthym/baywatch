@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-5xl" ref="news-list">
+  <div class="max-w-5xl focus:outline-none" ref="newsList">
     <template v-for="(card, idx) in news" :key="card.data.id">
       <NewsCard :ref="card.data.id" :card="card"
                 @activate="activateNewsCard(idx)" @addFilter="onAddFilter" @clickTitle="markNewsRead(idx, true)">
@@ -52,7 +52,7 @@ import {
   FILTER_MUTATION,
   INCREMENT_UNREAD_MUTATION,
 } from '@/techwatch/store/statistics/StatisticsConstants';
-import { UserState } from '@/store/user/user';
+import { UserState } from '@/security/store/user';
 import newsService, { newsMark } from '@/techwatch/services/NewsService';
 import {
   actionServiceRegisterFunction,
@@ -66,6 +66,8 @@ import { Feed } from '@/techwatch/model/Feed.type';
 import { EnvelopeIcon, EnvelopeOpenIcon, PaperClipIcon, ShareIcon } from '@heroicons/vue/24/outline';
 import { FireIcon } from '@heroicons/vue/20/solid';
 import { KeyboardController, listener, useKeyboardController } from '@/common/services/KeyboardController';
+import { ref } from 'vue';
+import { Ref, UnwrapRef } from '@vue/reactivity';
 
 @Component({
   name: 'NewsList',
@@ -75,13 +77,15 @@ import { KeyboardController, listener, useKeyboardController } from '@/common/se
   },
   setup() {
     const store = useStore();
+    const newsList: Ref<UnwrapRef<HTMLElement>> = ref(HTMLElement.prototype);
     return {
       store: store,
       userStore: store.state.user,
       newsStore: store.state.news,
       activateOnScroll: useScrollingActivation(),
       infiniteScroll: useInfiniteScroll(),
-      keyboardController: useKeyboardController(),
+      keyboardController: useKeyboardController(newsList),
+      newsList,
     };
   },
 })
@@ -272,7 +276,6 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   }
 
   private markNewsRead(idx: number, mark: boolean) {
-    console.log('markNewsRead', idx);
     if (!this.isAuthenticated) {
       return;
     }
@@ -373,10 +376,14 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     actionServiceReload('news');
   }
 
+  beforeUnmount(): void {
+    this.keyboardController.purge();
+
+  }
+
   unmounted(): void {
     this.activateOnScroll.disconnect();
     this.infiniteScroll.disconnect();
-    this.keyboardController.purge();
     actionServiceUnregisterFunction();
   }
 

@@ -1,8 +1,8 @@
 package fr.ght1pc9kc.baywatch.security.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.LocaleFacade;
+import fr.ght1pc9kc.baywatch.security.PasswordChecker;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.security.api.PasswordService;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.infra.adapters.PasswordCheckerNbvcxz;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 
 class PasswordServiceImplTest {
 
-    private PasswordService tested;
+    private PasswordChecker tested;
 
     @BeforeEach
     void setUp() {

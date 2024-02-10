@@ -16,17 +16,14 @@ import fr.ght1pc9kc.baywatch.security.infra.model.UserSearchRequest;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
-import graphql.GraphQLError;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.Arguments;
-import org.springframework.graphql.data.method.annotation.GraphQlExceptionHandler;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
-import org.springframework.graphql.execution.ErrorType;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -39,7 +36,6 @@ import reactor.core.publisher.Mono;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -67,7 +63,7 @@ public class UserGqlController {
     }
 
     @MutationMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAnonymous()")
     public Mono<Map<String, Object>> userCreate(@Validated({CreateValidation.class}) @Argument("user") UserForm user) {
         MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
 
@@ -92,22 +88,6 @@ public class UserGqlController {
         return Mono.fromCallable(() -> userMapper.getUpdatableUser(toUpdate))
                 .flatMap(user -> userService.update(id, user, currentPassword))
                 .map(e -> mapper.convertValue(e, gqlType));
-    }
-
-    @GraphQlExceptionHandler
-    public Mono<GraphQLError> handle(NoSuchElementException ex) {
-        return Mono.just(GraphQLError.newError()
-                .errorType(ErrorType.NOT_FOUND)
-                .message(ex.getLocalizedMessage())
-                .build());
-    }
-
-    @GraphQlExceptionHandler
-    public Mono<GraphQLError> handle(IllegalArgumentException ex) {
-        return Mono.just(GraphQLError.newError()
-                .errorType(ErrorType.BAD_REQUEST)
-                .message(ex.getLocalizedMessage())
-                .build());
     }
 
     @MutationMapping
@@ -140,7 +120,7 @@ public class UserGqlController {
     @SchemaMapping(typeName = "SearchUsersResponse")
     public Mono<Integer> totalCount(Page<Entity<User>> searchNewsResponse) {
         return Mono.justOrEmpty(searchNewsResponse.getHeaders().get("X-Total-Count"))
-                .map(h -> h.get(0))
+                .map(List::getFirst)
                 .map(Integer::parseInt)
                 .switchIfEmpty(Mono.just(0));
     }
