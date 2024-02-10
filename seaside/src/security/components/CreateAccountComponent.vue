@@ -116,7 +116,9 @@ export default class CreateAccountComponent extends Vue {
     passwordGenerate(20).subscribe({
       next: passwords => {
         this.errors.delete('password');
-        this.account.password = passwords[Math.floor(Math.random() * 19)];
+        let randomValue = new Uint32Array(1);
+        crypto.getRandomValues(randomValue);
+        this.account.password = passwords[randomValue[0] % 19];
       },
       error: err => this.errors.set('password', err.message),
     });
