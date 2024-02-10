@@ -77,6 +77,7 @@ class UserServiceImplTest {
 
         PasswordService mockPasswordService = mock(PasswordService.class);
         doAnswer(a -> a.getArgument(0)).when(mockPasswordService).encode(anyString());
+        doAnswer(a -> a.getArgument(0).equals(a.getArgument(1))).when(mockPasswordService).matches(anyString(), anyString());
         doReturn(Mono.just(new PasswordEvaluation(true, 65d, "ok")))
                 .when(mockPasswordService).checkPasswordStrength(any(User.class));
         tested = new UserServiceImpl(mockUserRepository, mockAuthorizationRepository, mockNotificationPort,
@@ -110,6 +111,7 @@ class UserServiceImplTest {
     @SuppressWarnings("unchecked")
     void should_create_user_without_authentication() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.empty());
+        doReturn(Mono.just(UserSamples.OBIWAN)).when(mockUserRepository).get(anyString());
 
         StepVerifier.create(tested.create(UserSamples.OBIWAN.self()))
                 .expectNextCount(1)
