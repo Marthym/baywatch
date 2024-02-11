@@ -95,7 +95,7 @@ export default class ProfileTab extends Vue {
     if (this.user._id
         && changePasswordEvent.new
         && changePasswordEvent.new.length > 3) {
-      userUpdate(this.user._id, changePasswordEvent.old, { password: changePasswordEvent.new })
+      userUpdate(this.user._id, { password: changePasswordEvent.new }, changePasswordEvent.old)
           .subscribe({
             next: updated => this.store.commit(USER_UPDATE_MUTATION, updated),
             error: () => notificationService.pushSimpleError('Unable to update user !'),
@@ -106,7 +106,7 @@ export default class ProfileTab extends Vue {
 
   private onClickSaveProfile(): void {
     if (this.user._id && this.user.password) {
-      userUpdate(this.user._id, this.user.password, this.user).subscribe({
+      userUpdate(this.user._id, this.user, this.user.password).subscribe({
         next: updated => {
           this.store.commit(USER_UPDATE_MUTATION, updated);
           notificationService.pushSimpleOk('Profile updated successfully !');
