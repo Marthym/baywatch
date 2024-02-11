@@ -218,7 +218,11 @@ export default class UserAdminTab extends Vue {
 
   private updateActiveUser(): void {
     const idx = this.users.findIndex(uv => uv.data._id === this.activeUser._id);
-    userUpdate(this.activeUser).subscribe({
+    if (!this.activeUser._id) {
+      console.error('Active user has no ID !');
+      return;
+    }
+    userUpdate(this.activeUser._id, this.activeUser).subscribe({
       next: user => {
         this.users.splice(idx, 1, { isSelected: false, data: user });
         notificationService.pushSimpleOk(`User ${user.login} updated successfully !`);

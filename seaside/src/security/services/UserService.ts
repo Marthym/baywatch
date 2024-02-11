@@ -75,7 +75,7 @@ mutation UpdateNewUser($id:ID , $currentPassword: String, $user:UserForm){
     }
 }`;
 
-export function userUpdate(id: string, currentPassword: string, user: Partial<User>): Observable<User> {
+export function userUpdate(id: string, user: Partial<User>, currentPassword: string | null = null): Observable<User> {
     const { _id, _createdAt, ...toUpdate } = user;
     const variables = { id: id, currentPassword: currentPassword, user: { ...toUpdate } };
     return send<{ userUpdate: User }>(USER_UPGRADE_REQUEST, variables).pipe(
