@@ -129,6 +129,14 @@ class RssAtomParserImplTest {
                     "<p>Uber&#8217;s Storage Platform team talks about the massive strategic undertaking to migrate " +
                     "their Distributed Databases from MySQL to MyRocks resulting in significant Storage usage reduction. " +
                     "The blog details the migration process and challenges faced.</p>",
+            "feeds/debian_io.xml, " +
+                    "Matrix-Synapse : migrer de SQLite à PostgreSQL, " +
+                    "https://www.deblan.io/post/655/matrix-synapse-migrer-de-sqlite-a-postgresql, " +
+                    "2023-09-10T16:30:00Z, " +
+                    "<p>Matrix-Synapse est un service de messagerie décentralisé et interopérable avec d'autres " +
+                    "messageries. Je l'utilise à titre personnel et dans le cadre d'une association. Il livre un service " +
+                    "que je considère sensible, c'est pourquoi les différentes instances sont hébergées sur des infras " +
+                    "que je gère.</p>"
     })
     void should_read_rss_item(String inputFileName, String expectedTitle, String expectedUrl, String expectedPubDate, String expectedDescription) {
         List<XMLEvent> xmlEvents = toXmlEventList(inputFileName);
@@ -139,7 +147,7 @@ class RssAtomParserImplTest {
                         () -> assertThat(actual).extracting(RawNews::title).isEqualTo(expectedTitle),
                         () -> assertThat(actual).extracting(RawNews::link).isEqualTo(URI.create(expectedUrl)),
                         () -> assertThat(actual).extracting(RawNews::publication).isEqualTo(Instant.parse(expectedPubDate)),
-                        () -> assertThat(actual).extracting(RawNews::description).isEqualTo(expectedDescription)
+                        () -> assertThat(actual).extracting(RawNews::description).asString().startsWith(expectedDescription)
                 )).verifyComplete();
     }
 

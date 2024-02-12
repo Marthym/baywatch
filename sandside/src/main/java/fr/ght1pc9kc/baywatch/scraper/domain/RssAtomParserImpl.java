@@ -50,8 +50,11 @@ public final class RssAtomParserImpl implements RssAtomParser {
     private static final String UPDATED = "updated";
 
     private static final QName HREF = new QName("href");
+    private static final QName TYPE = new QName("type");
     private static final QName REL = new QName("rel");
     private static final String SELF = "self";
+
+    private static final String MIME_TEXT_HTML = "text/html";
 
     private static final DateTimeFormatter NON_STANDARD_DATETIME = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
             .withZone(ZoneOffset.UTC);
@@ -162,7 +165,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
         RawNews rawNews = bldr.build();
         if (rawNews.link().getScheme() == null
                 || !ALLOWED_PROTOCOL.contains(rawNews.link().getScheme())) {
-            log.warn("Illegal URL detected : {} in feed :{}", rawNews.link(), feed.id().substring(0, 10));
+            log.warn("Illegal URL detected : {} in feed : {}", rawNews.link(), feed.id().substring(0, 10));
             return Mono.empty();
         }
 
@@ -208,6 +211,14 @@ public final class RssAtomParserImpl implements RssAtomParser {
             return null;
         }
         StartElement startElement = events.get(idx).asStartElement();
+        String linkType = Optional.ofNullable(startElement.getAttributeByName(TYPE))
+                .map(Attribute::getValue)
+                .orElse(MIME_TEXT_HTML);
+        if (!MIME_TEXT_HTML.equals(linkType)) {
+            log.atTrace().addArgument(linkType).addArgument(feed.shortId())
+                    .log("Ignore link type {} for feed {}");
+            return bldr;
+        }
         String href = Optional.ofNullable(startElement.getAttributeByName(HREF))
                 .map(Attribute::getValue)
                 .orElseGet(Exceptions.wrap().supplier(() -> readElementText(events, idx)));

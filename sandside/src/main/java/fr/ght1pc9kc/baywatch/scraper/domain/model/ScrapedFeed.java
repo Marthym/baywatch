@@ -6,4 +6,7 @@ public record ScrapedFeed(
         String id,
         URI link
 ) {
+    public String shortId() {
+        return id.substring(0, 10);
+    }
 }
