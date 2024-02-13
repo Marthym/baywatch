@@ -1,4 +1,4 @@
-import { EMPTY, Observable, of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { map, switchMap, take } from 'rxjs/operators';
 import { HttpStatusError } from '@/common/errors/HttpStatusError';
 import { News } from '@/techwatch/model/News.type';
@@ -13,6 +13,19 @@ import { send } from '@/common/services/GraphQLClient';
 
 export function newsMark(id: string, mark: Mark): Observable<NewsState> {
     return rest.put(`/news/${id}/mark/${mark}`).pipe(
+        switchMap(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new HttpStatusError(response.status, `Error while mark news ${id} as ${mark}.`);
+            }
+        }),
+        take(1),
+    );
+}
+
+export function newsUnMark(id: string, mark: Mark): Observable<NewsState> {
+    return rest.put(`/news/${id}/unmark/${mark}`).pipe(
         switchMap(response => {
             if (response.ok) {
                 return response.json();
@@ -91,19 +104,6 @@ export class NewsService {
         } else {
             throw new SandSideError(response.errors[0].extension[0].classification, 'Error while getting news.');
         }
-    }
-
-    unmark(id: string, mark: Mark): Observable<NewsState> {
-        return rest.put(`/news/${id}/unmark/${mark}`).pipe(
-            switchMap(response => {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    return EMPTY;
-                }
-            }),
-            take(1),
-        );
     }
 }
 

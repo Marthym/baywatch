@@ -46,7 +46,7 @@ import {
   XCircleIcon,
   XMarkIcon,
 } from '@heroicons/vue/24/outline';
-import { newsMark } from '@/techwatch/services/NewsService';
+import { newsMark, newsUnMark } from '@/techwatch/services/NewsService';
 import { Mark } from '@/techwatch/model/Mark.enum';
 import { actionServiceReload } from '@/common/services/ReloadActionService';
 import { NotificationCode } from '@/services/notification/NotificationCode.enum';
@@ -119,18 +119,41 @@ export default class NotificationArea extends Vue implements NotificationListene
 
   onClipAction(n: NotificationView) {
     if (n.raw.target) {
-      newsMark(n.raw.target, Mark.KEEP).subscribe({
-        next: () => n.doneActions += 'C',
-        error: () => console.error('Unable to clip target ' + n.raw.target),
+      const newsClipAction = (n.doneActions?.indexOf('C') >= 0) ? newsUnMark : newsMark;
+
+      if (!n.doneActions) {
+        n.doneActions = '';
+      }
+
+      newsClipAction(n.raw.target, Mark.KEEP).subscribe({
+        next: status => {
+          if (status.keep) {
+            n.doneActions = `${n.doneActions}C`;
+          } else if (n.doneActions) {
+            n.doneActions = n.doneActions.replaceAll('C', '');
+          }
+        },
+        error: () => console.error('Unable to (un)clip target ' + n.raw.target),
       });
     }
   }
 
   onShareAction(n: NotificationView) {
     if (n.raw.target) {
-      newsMark(n.raw.target, Mark.SHARED).subscribe({
-        next: () => n.doneActions += 'S',
-        error: () => console.error('Unable to share target ' + n.raw.target),
+      const newsShareAction = (n.doneActions?.indexOf('S') >= 0) ? newsUnMark : newsMark;
+
+      if (!n.doneActions) {
+        n.doneActions = '';
+      }
+      newsShareAction(n.raw.target, Mark.SHARED).subscribe({
+        next: status => {
+          if (status.shared) {
+            n.doneActions = `${n.doneActions}S`;
+          } else if (n.doneActions) {
+            n.doneActions = n.doneActions.replaceAll('S', '');
+          }
+        },
+        error: () => console.error('Unable to (un)share target ' + n.raw.target),
       });
     }
   }
