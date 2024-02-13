@@ -53,7 +53,7 @@ import {
   INCREMENT_UNREAD_MUTATION,
 } from '@/techwatch/store/statistics/StatisticsConstants';
 import { UserState } from '@/security/store/user';
-import newsService, { newsMark } from '@/techwatch/services/NewsService';
+import newsService, { newsMark, newsUnMark } from '@/techwatch/services/NewsService';
 import {
   actionServiceRegisterFunction,
   actionServiceReload,
@@ -290,7 +290,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     iif(() => mark,
         newsMark(target.data.id, Mark.READ).pipe(
             tap(() => this.store.commit(DECREMENT_UNREAD_MUTATION))),
-        newsService.unmark(target.data.id, Mark.READ).pipe(
+        newsUnMark(target.data.id, Mark.READ).pipe(
             tap(() => this.store.commit(INCREMENT_UNREAD_MUTATION))),
     ).subscribe(state => {
       this.news[idx].data.state.read = state.read;
@@ -307,7 +307,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     }
     const markObs = (!target.data.state.shared)
         ? newsMark(target.data.id, Mark.SHARED)
-        : newsService.unmark(target.data.id, Mark.SHARED);
+        : newsUnMark(target.data.id, Mark.SHARED);
 
     markObs.subscribe(state => {
       if (!this.news[idx].data.popularity) {
@@ -332,7 +332,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     }
     const markObs = (!target.data.state.keep)
         ? newsMark(target.data.id, Mark.KEEP)
-        : newsService.unmark(target.data.id, Mark.KEEP);
+        : newsUnMark(target.data.id, Mark.KEEP);
 
     markObs.subscribe(state => {
       this.news[idx].data.state.keep = state.keep;

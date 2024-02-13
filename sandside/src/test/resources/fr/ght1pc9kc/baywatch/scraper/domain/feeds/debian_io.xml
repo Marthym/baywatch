@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+    <channel>
+        <title>Blog - Simon Vieille</title>
+        <link>https://www.deblan.io/</link>
+        <description>DevOp animé par la culture du libre et du hacking</description>
+        <language>fr</language>
+        <item>
+            <title>
+                <![CDATA[Murph v1.23 et Custom Menu v3.11]]>
+            </title>
+            <link href="https://www.deblan.io/post/658/murph-v1-23-custom-menu-v3-11" type="text/html">https://www.deblan.io/post/658/murph-v1-23-custom-menu-v3-11</link>
+            <link href="gemini://deblan.io/posts/658.gmi" type="text/gemini" />
+            <description>
+                <![CDATA[<p>Je n'ai pas écrit d'articles depuis quelques temps car mes semaines sont très chargées. Pour autant, je travaille sur de nombreux projets qui me donnent des idées de prochains articles.</p><p>Le 1er novembre dernier a été publiée <a href="https://gitnet.fr/murph/murph-core/releases/tag/v1.23.0">la version v1.23</a> de Murph. Murph est un<strong>framework open-source pour construire des CMS</strong>. Il est développé à l'aide de<strong>Symfony</strong> et permet de gérer des sites web avec<strong>plusieurs noms de domaines et en plusieurs langues</strong>. Il est aussi très efficace pour développer des outils d'administration et des applications métiers. C'est par ce prisme que j'ai beaucoup exploité Murph ces derniers mois, ce qui m'a permis de le mettre à l'épreuve. Je l'ai donc agrémenter de nouvelles fonctionnalités et de correctifs.</p><p><a href="https://doc.murph-project.org/"><img src="/uploads/content/658/screenshot_20231106.png" alt="Documentation Murph" /></a></p><p>Quant à <a href="https://deblan.gitnet.page/side_menu_doc/">Custom Menu</a>, la version<a href="https://gitnet.fr/deblan/side_menu/releases/tag/v3.11.0">v3.11.0</a> a été publiée de 5 novembre. Elle apporte une nouvelle fonctionnalité de recherche des applications dans les différents menus. Celle permet de filtrer les applications et permettre de les accéder plus rapidement. J'y pensais depuis quelques temps et c'est un besoin qui m'a été rémonté, c'est donc maintenant disponible !</p><p><img src="/uploads/content/658/screenshot_20231106_1.png" alt="Custom Menu" /></p><p><strong>Murph</strong> et<strong>Custom Menu</strong> sont des projets qui me tiennent vraiment à cœur et je suis heureux de les voir être utilisés par d'autres personnes que moi 😁</p>
+]]>
+            </description>
+            <guid isPermaLink="false">658</guid>
+            <pubDate>Mon, 06 Nov 2023 11:30:00 +0100</pubDate>
+            <category>
+                <![CDATA[Développement]]>
+            </category>
+            <category>
+                <![CDATA[Logiciel libre]]>
+            </category>
+            <category>
+                <![CDATA[Projets personnels]]>
+            </category>
+        </item>
+        <item>
+            <title>
+                <![CDATA[Matrix-Synapse : migrer de SQLite à PostgreSQL]]>
+            </title>
+            <link href="https://www.deblan.io/post/655/matrix-synapse-migrer-de-sqlite-a-postgresql" type="text/html">https://www.deblan.io/post/655/matrix-synapse-migrer-de-sqlite-a-postgresql</link>
+            <link href="gemini://deblan.io/posts/655.gmi" type="text/gemini" />
+            <description>
+                <![CDATA[<p>Matrix-Synapse est un service de messagerie décentralisé et interopérable avec d'autres messageries. Je l'utilise à titre personnel et dans le cadre d'une association. Il livre un service que je considère sensible, c'est pourquoi les différentes instances sont hébergées sur des infras que je gère.</p><p>La configuration par défaut stocke les données de la messagerie dans une base de données SQLite. Cela a bien fonctionné pendant quelques années mais la base de données devient très rapidement obèse (plusieurs Go) et SQLite n'est plus adapté. C'est d'ailleurs recommandé d'utiliser PostgreSQL, naturellement plus adapté compte tenu de la grande quantité de données.</p><p>Voici la démarche pour basculer vers PostgreSQL depuis une base SQLite. J'évolue sur des machines sous Debian et j'ai installé Matrix-Synapse via <a href="https://matrix-org.github.io/synapse/latest/setup/installation.html">les packages livrés par matrix.org</a>.</p><p>Quelques recomandations avant d'opérer la migration :</p><ul><li>Avoir l'espace disque nécessaire pour accueillir une copie de la base de données SQLite</li><li>Avoir l'espace disque nécessaire pour héberger les données dans PostgreSQL</li><li>Communiquer auprès de vos utilisateur·rice·s car la procédure prendra des heures et le service sera inaccessible</li></ul><p>La première étape est de stopper le service et de faire une copie de la base de données. Je vous invite, si vous le pouvez, à duppliquer la copie de la base sur une autre machine.</p><pre><code class="window language-bash">$ sudo systemctl stop matrix-synapse.service
+$ sudo cp -v /var/lib/matrix-synapse/homeserver.db{,.bk}
+</code></pre><p>Ensuite, il faut installer PostgreSQL. Je reprend la procédure de la <a href="https://www.postgresql.org/download/linux/debian/">documentation officielle</a>.</p><pre><code class="window language-bash">$ sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" &gt; /etc/apt/sources.list.d/pgdg.list'
+$ wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+$ sudo apt-get update
+$ sudo apt-get -y install postgresql
+$ passwd postgres # Changement du mot de passe de l'utilisateur "postgres"
+</code></pre><p>Éditer le fichier <code>/etc/postgresql/15/main/pg_hba.conf</code> puis opérer ces modifications :</p><pre><code class="window language-diff">-local   all             postgres                                peer
++local   all             all                                     peer
+-host    all             all             127.0.0.1/32            scram-sha-256
++host    all             all             127.0.0.1/32            md5
+-host    all             all             ::1/128                 scram-sha-256
++host    all             all             ::1/128                 md5
+</code></pre><p>On relance ensuite PostgreSQL :</p><pre><code class="window language-bash">$ sudo systemctl start postgresql.service
+</code></pre><p>C'est maintenant le moment de créer une base et un compte nommés <code>matrix</code>.</p><pre><code class="window language-bash">$ su - postgres
+$ createuser --pwprompt matrix # Conserver le mot de passe que vous allez saisir pour plus tard
+$ createdb -e -E UNICODE --template=template0  --locale=C -O matrix matrix
+$ psql -d matrix
+synapse=# GRANT ALL ON SCHEMA public TO matrix;
+</code></pre><p>Avant de lancer le script de migration, il faut duppliquer temporairement le contenu de <code>/etc/matrix-synapse/conf.d/server_name.yaml</code> dans<code>/etc/matrix-synapse/homeserver.yaml</code>. Éditer le fichier<code>/etc/matrix-synapse/homeserver.yaml</code> pour changer la configuration de la base de données :</p><pre><code class="window language-yaml">database:
+  name: psycopg2
+  args:
+    host: 127.0.0.1
+    port: 5432
+    user: matrix
+    password: "$3cr€t" # Indiquer le mot de passe saisi lors de la création d'utilisateur
+    database: matrix
+    cp_min: 5
+    cp_max: 10
+</code></pre><p>Vous pouvez maintenant lancer la migration. Cela prendre un temps plus ou moins important selon le nombre d'enregistrements. Une base de données de 10Go a été migrée en 3 heures. Je vous invite à lancer la commande dans une session <code>tmux</code> ou<code>screen</code>.</p><pre><code class="window language-bash">$ sudo apt-get install tmux
+$ tmux
+$ synapse_port_db --curses \
+    --sqlite-database /var/lib/matrix-synapse/homeserver.db \
+    --postgres-config /etc/matrix-synapse/homeserver.yaml
+</code></pre><p>Une fois la migration terminée, vous pourrez supprimer le contenu duppliqué de <code>/etc/matrix-synapse/conf.d/server_name.yaml</code> et relancer le service.</p><pre><code class="window language-bash">$ sudo systemctl start matrix-synapse.service
+</code></pre><p>Dans le cas où il y aurait un problème, vous pouvez analyser les logs de Matrix-Synapse dans <code>/var/log/matrix-synapse/homeserver.log</code>. De mon coté, j'ai du faire une ou deux requêtes pour corriger des compteurs et tout était documenté dans ces logs.</p><p>Je pense avoir donné toutes les indications pour que cela se passe bien. N'hésitez pas à laisser un commentaire si vous rencontrez un problème.</p>
+]]>
+            </description>
+            <guid isPermaLink="false">655</guid>
+            <pubDate>Sun, 10 Sep 2023 18:30:00 +0200</pubDate>
+            <category>
+                <![CDATA[Informatique]]>
+            </category>
+        </item>
+    </channel>
+</rss>
