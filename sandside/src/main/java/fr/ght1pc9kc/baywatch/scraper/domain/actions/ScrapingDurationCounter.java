@@ -57,7 +57,11 @@ public class ScrapingDurationCounter implements CounterProvider, ScrapingEventHa
     }
 
     private static String getCurrentDuration(Duration lastDuration) {
-        return String.format("%02ds %02dms", lastDuration.toSecondsPart(), lastDuration.toMillisPart());
+        return String.format("%02d:%02d:%02d.%02d",
+                lastDuration.toHoursPart(),
+                lastDuration.toMinutesPart(),
+                lastDuration.toSecondsPart(),
+                lastDuration.toMillisPart());
     }
 
     @Override

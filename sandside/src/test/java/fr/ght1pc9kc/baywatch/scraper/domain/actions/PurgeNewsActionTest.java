@@ -1,17 +1,13 @@
 package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
-import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperApplicationProperties;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
-import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
-import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
-import fr.ght1pc9kc.entity.api.Entity;
+import fr.ght1pc9kc.baywatch.tests.samples.NewsSamples;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -20,7 +16,6 @@ import java.time.Period;
 import java.time.ZoneOffset;
 import java.util.List;
 
-import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -38,35 +33,29 @@ class PurgeNewsActionTest {
                 new ScraperApplicationProperties.DnsProperties(Duration.ofSeconds(10))
         );
         newsPersistenceMock = mock(NewsPersistencePort.class);
-        StatePersistencePort statePersistenceMock = mock(StatePersistencePort.class);
-        tested = new PurgeNewsHandler(newsPersistenceMock, statePersistenceMock, scraperProperties)
+        tested = new PurgeNewsHandler(newsPersistenceMock, scraperProperties)
                 .clock(Clock.fixed(Instant.parse("2020-12-18T22:42:42Z"), ZoneOffset.UTC));
 
         when(newsPersistenceMock.listId(any())).thenReturn(testDataForPersistenceList());
-        when(statePersistenceMock.list(any())).thenReturn(testDataForPersistenceListState());
         when(newsPersistenceMock.delete(any())).thenReturn(Mono.just(4));
     }
 
     @Test
     void should_purge_news() {
-        tested.before().block();
+        StepVerifier.create(tested.before()).verifyComplete();
+
         verify(newsPersistenceMock).delete(List.of(
-                "22f530b91e1dac4854cd3273b1ca45784e08a00fac25ca01792c6989db152fc0",
-                "1fff2b3142d5d27677567a0da6811c09a428e7636f169d77006dede02ee6cec0",
-                "900cf7d10afd3c1584d6d3122743a86c0315fde7d8acbe3a585a2cb7c301807c",
-                "8a1161a7d2fc70fd5e865d3394eddfc0dbad40a792973f9dad50ff62afdb088b"
+                "de2648a666d829d4ee66ffa1a0bc141c7f888ed89d319dc212f83d4f380271f1",
+                "bd32550e3963aed4aa6fead627ddc694e31a91d0e7b85cfa68e1c5fd7a4a9277",
+                "3fbe6f22297571d2a4b1f35c8c08fe3b2aaa17c155b4c3b2fc842b3d188f55e9"
         ));
     }
 
     private Flux<String> testDataForPersistenceList() {
-        return Flux.fromStream(
-                NewsRecordSamples.SAMPLE.records().subList(0, 5).stream()
-                        .map(r -> r.get(NEWS.NEWS_ID))
+        return Flux.just(
+                NewsSamples.A_NEW_HOPE.id(),
+                NewsSamples.ORDER_66.id(),
+                NewsSamples.MAY_THE_FORCE.id()
         );
-    }
-
-    private Flux<Entity<State>> testDataForPersistenceListState() {
-        NewsRecord staredRecord = NewsRecordSamples.SAMPLE.records().get(2);
-        return Flux.just(Entity.identify(State.of(Flags.SHARED)).withId(staredRecord.getNewsId()));
     }
 }

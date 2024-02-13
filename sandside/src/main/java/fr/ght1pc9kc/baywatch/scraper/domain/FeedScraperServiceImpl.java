@@ -140,7 +140,8 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
             return Flux.empty();
         }
 
-        log.debug("Start scraping feed {} ...", feedHost);
+        log.atTrace().addArgument(feedHost)
+                .log("Start scraping feed {} ...");
 
         final Instant maxAge = LocalDate.now(clock)
                 .minus(conservation)
@@ -173,7 +174,7 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                 .skipUntil(feedParser.firstItemEvent())
                 .bufferUntil(feedParser.itemEndEvent())
                 .flatMap(entry -> feedParser.readEntryEvents(entry, feed))
-                .takeWhile(news -> news.publication().isAfter(maxAge))
+                .filter(news -> news.publication().isAfter(maxAge))
                 .map(raw -> News.builder()
                         .raw(raw)
                         .feeds(Set.of(feed.id()))
@@ -185,7 +186,8 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                     return Flux.empty();
                 })
                 .doFinally(s -> {
-                    log.debug("Finish reading feed {}", feedHost);
+                    log.atDebug().addArgument(feed.link())
+                            .log("Finish reading feed {}");
                     errors.tryEmitComplete();
                 });
     }
