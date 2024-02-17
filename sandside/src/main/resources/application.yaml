@@ -8,7 +8,8 @@ spring:
     username: baywatch
     password: hasselhoff
     hikari:
-      data-source-properties.foreign_keys=true: true
+      data-source-properties:
+        foreign_keys: true
 
 #      maximum-pool-size: 1
   flyway:
