@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
+import fr.ght1pc9kc.baywatch.common.infra.adapters.PerformanceJooqListener;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
@@ -12,7 +13,6 @@ import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.Condition;
 import org.jooq.Cursor;
@@ -42,15 +42,20 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 
 @Slf4j
 @Repository
-@AllArgsConstructor
 @SuppressWarnings("BlockingMethodInNonBlockingContext")
 public class FeedRepository implements FeedPersistencePort {
     private static final JooqConditionVisitor JOOQ_CONDITION_VISITOR =
             new JooqConditionVisitor(FEEDS_PROPERTIES_MAPPING::get);
 
-    private final @DatabaseQualifier Scheduler databaseScheduler;
+    private final Scheduler databaseScheduler;
     private final DSLContext dsl;
     private final BaywatchMapper baywatchMapper;
+
+    public FeedRepository(@DatabaseQualifier Scheduler databaseScheduler, DSLContext dsl, BaywatchMapper baywatchMapper) {
+        this.databaseScheduler = databaseScheduler;
+        this.dsl = DSL.using(dsl.configuration().deriveAppending(PerformanceJooqListener.provider()));
+        this.baywatchMapper = baywatchMapper;
+    }
 
     @Override
     public Mono<Entity<WebFeed>> get(QueryContext qCtx) {
