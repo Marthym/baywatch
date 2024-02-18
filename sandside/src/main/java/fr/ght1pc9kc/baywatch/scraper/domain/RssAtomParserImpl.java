@@ -119,6 +119,9 @@ public final class RssAtomParserImpl implements RssAtomParser {
             } else if (nextEvent.isEndElement()) {
                 deepLevel--;
             }
+            if (this.firstItemEvent().test(nextEvent)) {
+                break;
+            }
         }
 
         return new AtomFeed(id, title, description, author, link, updated);

@@ -15,6 +15,7 @@ import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.ScrapingException;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.ScraperMaintenancePort;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
+import fr.ght1pc9kc.entity.api.Entity;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,6 @@ import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Scheduler;
 
 import javax.xml.stream.XMLEventFactory;
-import javax.xml.stream.events.XMLEvent;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -43,7 +43,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Period;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -94,11 +93,12 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                     .cache();
 
             Sinks.Many<ScrapingException> errors = Sinks.many().unicast().onBackpressureBuffer();
+            Sinks.Many<Entity<AtomFeed>> updatedFeeds = Sinks.many().unicast().onBackpressureBuffer();
 
             return Flux.concat(scrapingHandlers.stream().map(ScrapingEventHandler::before).toList())
                     .thenMany(maintenancePersistencePort.feedList())
                     .parallel(MAX_PARALLEL_SCRAPERS).runOn(scraperScheduler)
-                    .concatMap(feed -> wgetFeedNews(feed, maxRetention, errors))
+                    .concatMap(feed -> wgetFeedNews(feed, maxRetention, errors, updatedFeeds))
                     .sequential()
 
                     .filterWhen(n -> alreadyHave.map(l -> !l.contains(n.id())))
@@ -113,9 +113,17 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
 
                     .reduce(Integer::sum)
                     .onErrorMap(t -> new ScrapingException("Fatal error when scraping !", t))
-                    .doOnTerminate(errors::tryEmitComplete)
+                    .doOnTerminate(() -> {
+                        errors.tryEmitComplete();
+                        updatedFeeds.tryEmitComplete();
+                    })
 
                     .switchIfEmpty(Mono.just(0))
+
+                    .flatMap(count -> updatedFeeds.asFlux()
+                            .flatMap(af -> scrapEnrichmentService.applyFeedsFilters(af.self())
+                                    .flatMap(a -> maintenancePersistencePort.feedUpdate(af.id(), a))).then(Mono.just(count)))
+
                     .flatMap(count -> errors.asFlux().collectList().map(
                             collectedErrors -> new ScrapResult(count, collectedErrors)))
                     .flatMap(result -> Flux.concat(scrapingHandlers.stream().map(h -> h.after(result)).toList())
@@ -131,7 +139,8 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
         scraperScheduler.dispose();
     }
 
-    private Flux<News> wgetFeedNews(ScrapedFeed feed, Period conservation, Sinks.Many<ScrapingException> errors) {
+    private Flux<News> wgetFeedNews(ScrapedFeed feed, Period conservation,
+                                    Sinks.Many<ScrapingException> errors, Sinks.Many<Entity<AtomFeed>> updatedFeeds) {
         String feedHost = feed.link().getHost();
         URI feedUrl = Optional.ofNullable(plugins.get(feedHost))
                 .map(hp -> hp.uriModifier(feed.link())).orElse(feed.link());
@@ -175,7 +184,15 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                 .doFirst(() -> log.trace("Receiving event from {}...", feedHost))
 
                 .bufferUntil(feedParser.itemEndEvent())
-                .switchOnFirst((first, others) -> this.checkLastPublicationAndUpdateFeed(feed, first, others))
+                .switchOnFirst((first, others) -> {
+                    AtomFeed atomFeed = feedParser.readFeedProperties(first.get());
+                    if (atomFeed.updated() != null && !atomFeed.updated().isAfter(feed.updated())) {
+                        return others.take(0).thenMany(Flux.empty());
+                    } else {
+                        updatedFeeds.tryEmitNext(Entity.identify(atomFeed).withId(feed.id()));
+                        return others;
+                    }
+                })
 
                 .flatMap(entry -> feedParser.readEntryEvents(entry, feed))
                 .filter(news -> news.publication().isAfter(maxAge))
@@ -189,32 +206,8 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                     errors.tryEmitNext(new FeedScrapingException(AtomFeed.of(feed.id(), feed.link()), e));
                     return Flux.empty();
                 })
-                .doFinally(s -> {
-                    log.atDebug().addArgument(feed.link())
-                            .log("Finish reading feed {}");
-                    errors.tryEmitComplete();
-                });
-    }
-
-    /**
-     * <p>Read the feed properties, extract updated feed information.</p>
-     * <p>Compare the last publication date and if necessary update the feed and publish the rest of the flux</p>
-     * <p>If the feed is not updated since the last read, cancel the flux</p>
-     *
-     * @param feed   The current feed information
-     * @param first  The feed properties and first entry as {@link XMLEvent}
-     * @param others The complete feed (with first entry) as {@link XMLEvent}
-     * @return all the {@link XMLEvent} if the feed is updated, {@link Flux::empty} if the flux is not updated from the last scrap
-     */
-    private Flux<List<XMLEvent>> checkLastPublicationAndUpdateFeed(
-            ScrapedFeed feed, Signal<? extends List<XMLEvent>> first, Flux<List<XMLEvent>> others) {
-        AtomFeed atomFeed = feedParser.readFeedProperties(first.get());
-        if (atomFeed.updated() != null && !atomFeed.updated().isAfter(feed.updated())) {
-            return others.take(0);
-        } else {
-            return maintenancePersistencePort.feedUpdate(feed.id(), atomFeed)
-                    .thenMany(others);
-        }
+                .doFinally(s -> log.atDebug().addArgument(feed.link())
+                        .log("Finish reading feed {}"));
     }
 
     private Flux<DataBuffer> cleanupStreamStart(Signal<? extends DataBuffer> signal, Flux<DataBuffer> source) {
