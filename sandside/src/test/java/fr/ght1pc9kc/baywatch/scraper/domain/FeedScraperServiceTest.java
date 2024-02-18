@@ -9,7 +9,7 @@ import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapResult;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.FeedScrapingException;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.NewsScrapingException;
-import fr.ght1pc9kc.baywatch.scraper.domain.ports.NewsMaintenancePort;
+import fr.ght1pc9kc.baywatch.scraper.domain.ports.ScraperMaintenancePort;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import org.assertj.core.api.Assertions;
@@ -64,7 +64,7 @@ class FeedScraperServiceTest {
 
     private FeedScraperServiceImpl tested;
     private RssAtomParser rssAtomParserMock;
-    private NewsMaintenancePort newsMaintenanceMock;
+    private ScraperMaintenancePort newsMaintenanceMock;
     private ExchangeFunction mockExchangeFunction;
 
     @Test
@@ -203,7 +203,7 @@ class FeedScraperServiceTest {
 
     @BeforeEach
     void setUp() {
-        newsMaintenanceMock = mock(NewsMaintenancePort.class);
+        newsMaintenanceMock = mock(ScraperMaintenancePort.class);
         when(newsMaintenanceMock.listAllNewsId()).thenReturn(Flux.<String>empty()
                 .delayElements(Duration.ofMillis(200)));  // Delay avoid Awaitility start polling after the and of scraping
         when(newsMaintenanceMock.newsLoad(anyCollection())).thenReturn(Mono.just(1));

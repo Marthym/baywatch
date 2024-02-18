@@ -22,8 +22,18 @@ public interface FeedPersistencePort {
     Mono<Integer> count(QueryContext qCtx);
 
     /**
-     * Allow user to update {@link WebFeed} name or tags.
-     * URL was immutable. The Feed was shared and the URL give the ID so the URL was not updatabel.
+     * <p>Update {@link WebFeed} name, tags or updated date.</p>
+     * <p>URL was immutable. The Feed was shared and the URL give the ID so the URL was not updatable.</p>
+     *
+     * @param id       The ID of the {@link WebFeed} to update
+     * @param toUpdate The {@link WebFeed} to persist
+     * @return The new updated {@link WebFeed}
+     */
+    Mono<Entity<WebFeed>> update(String id, WebFeed toUpdate);
+
+    /**
+     * <p>Allow user to update {@link WebFeed} name or tags.</p>
+     * <p>URL was immutable. The Feed was shared and the URL give the ID so the URL was not updatable.</p>
      *
      * @param id       The ID of the {@link WebFeed} to update
      * @param userId   The user id used to update

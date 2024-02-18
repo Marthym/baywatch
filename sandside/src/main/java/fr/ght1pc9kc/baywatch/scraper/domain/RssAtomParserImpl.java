@@ -4,6 +4,7 @@ import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.Publishable;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import lombok.extern.slf4j.Slf4j;
@@ -82,6 +83,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
         String description = null;
         String author = null;
         URI link = null;
+        Instant updated = null;
 
         int deepLevel = -1;
 
@@ -108,6 +110,8 @@ public final class RssAtomParserImpl implements RssAtomParser {
                     case EMAIL -> author = Optional.ofNullable(author)
                             .map(a -> a + " <" + readElementText(events, idx) + ">")
                             .orElse("<" + readElementText(events, idx) + ">");
+                    case UPDATED -> updated = onUpdated(pubDate -> pubDate, events, i);
+                    case PUB_DATE -> updated = onPublicationDate(pubDate -> pubDate, events, i);
                     default -> {/* ignore */}
                 }
                 deepLevel++;
@@ -117,7 +121,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
             }
         }
 
-        return new AtomFeed(id, title, description, author, link);
+        return new AtomFeed(id, title, description, author, link, updated);
     }
 
     private static URI onFeedLink(URI old, int deepLevel, List<XMLEvent> events, int idx) {
@@ -229,9 +233,9 @@ public final class RssAtomParserImpl implements RssAtomParser {
         return bldr.id(Hasher.identify(link)).link(link);
     }
 
-    private RawNews.RawNewsBuilder onUpdated(RawNews.RawNewsBuilder bldr,
-                                             List<XMLEvent> events, int idx) {
-        RawNews.RawNewsBuilder result = null;
+    private <T> T onUpdated(Publishable<T> bldr,
+                            List<XMLEvent> events, int idx) {
+        T result = null;
         if (bldr != null) {
             String updated = readElementText(events, idx);
             Instant updatedAt = DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(updated, Instant::from);
@@ -240,9 +244,9 @@ public final class RssAtomParserImpl implements RssAtomParser {
         return result;
     }
 
-    private RawNews.RawNewsBuilder onPublicationDate(RawNews.RawNewsBuilder bldr,
-                                                     List<XMLEvent> events, int idx) {
-        RawNews.RawNewsBuilder result = null;
+    private <T> T onPublicationDate(Publishable<T> bldr,
+                                    List<XMLEvent> events, int idx) {
+        T result = null;
         if (bldr != null) {
             String pubDate = readElementText(events, idx);
             Instant datetime = Exceptions.silence().get(() -> DateTimeFormatter.RFC_1123_DATE_TIME.parse(pubDate, Instant::from))

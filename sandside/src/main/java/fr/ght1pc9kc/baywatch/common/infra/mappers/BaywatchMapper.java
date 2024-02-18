@@ -101,12 +101,18 @@ public interface BaywatchMapper {
         String owner = (r.indexOf(FEEDS_USERS.FEUS_USER_ID) >= 0 && r.get(FEEDS_USERS.FEUS_USER_ID) != null)
                 ? r.get(FEEDS_USERS.FEUS_USER_ID) : Entity.NO_ONE;
 
+        Instant lastPublication = (r.indexOf(FEEDS.FEED_LAST_WATCH) >= 0 && r.get(FEEDS.FEED_LAST_WATCH) != null)
+                ? DateUtils.toInstant(r.get(FEEDS.FEED_LAST_WATCH, LocalDateTime.class)) : Instant.EPOCH;
+
+        assert lastPublication != null : "Last publication date cannot be null !";
+
         WebFeed webFeed = WebFeed.builder()
                 .reference(r.get(FEEDS.FEED_ID))
                 .location(URI.create(r.get(FEEDS.FEED_URL)))
                 .name(name)
                 .description(r.get(FEEDS.FEED_DESCRIPTION))
                 .tags(tags)
+                .updated(lastPublication)
                 .build();
 
         return Entity.identify(webFeed)

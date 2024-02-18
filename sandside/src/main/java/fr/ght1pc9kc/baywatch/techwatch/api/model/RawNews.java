@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.techwatch.api.model;
 
+import fr.ght1pc9kc.baywatch.scraper.domain.model.Publishable;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.With;
@@ -20,4 +21,6 @@ public record RawNews(
         Instant publication,
         @NonNull URI link
 ) {
+    public static class RawNewsBuilder implements Publishable<RawNewsBuilder> {
+    }
 }

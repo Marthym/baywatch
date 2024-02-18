@@ -11,7 +11,7 @@ import fr.ght1pc9kc.baywatch.scraper.domain.ScrapEnrichmentServiceImpl;
 import fr.ght1pc9kc.baywatch.scraper.domain.filters.OpenGraphFilter;
 import fr.ght1pc9kc.baywatch.scraper.domain.filters.SanitizerFilter;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
-import fr.ght1pc9kc.baywatch.scraper.domain.ports.NewsMaintenancePort;
+import fr.ght1pc9kc.baywatch.scraper.domain.ports.ScraperMaintenancePort;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperApplicationProperties;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperConfiguration;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.WebClientConfiguration;
@@ -74,7 +74,7 @@ class FeedScraperIntegrationTest {
     private static HttpServer server;
 
     private ScraperTaskScheduler tested;
-    private final NewsMaintenancePort mockMaintenancePort = mock(NewsMaintenancePort.class);
+    private final ScraperMaintenancePort mockMaintenancePort = mock(ScraperMaintenancePort.class);
 
     @BeforeAll
     static void beforeAll() throws IOException {

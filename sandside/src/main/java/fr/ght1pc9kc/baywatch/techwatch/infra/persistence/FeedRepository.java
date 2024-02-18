@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
+import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.common.infra.adapters.PerformanceJooqListener;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
@@ -86,6 +87,26 @@ public class FeedRepository implements FeedPersistencePort {
         Select<Record> select = buildSelectQuery(qCtx);
         return Mono.fromCallable(() -> dsl.fetchCount(select))
                 .subscribeOn(databaseScheduler);
+    }
+
+    @Override
+    public Mono<Entity<WebFeed>> update(String id, WebFeed toUpdate) {
+        return Mono.fromCallable(() -> dsl.update(FEEDS)
+                        .set(FEEDS.FEED_NAME, toUpdate.name())
+                        .set(FEEDS.FEED_DESCRIPTION, toUpdate.description())
+                        .set(FEEDS.FEED_LAST_WATCH, DateUtils.toLocalDateTime(toUpdate.updated()))
+                        .set(FEEDS.FEED_NAME, toUpdate.name())
+                        .where(FEEDS.FEED_ID.eq(id))
+                        .returning())
+                .subscribeOn(databaseScheduler)
+                .flatMap(result -> {
+                    FeedsRecord feedsRecord = result.fetchOne();
+                    if (feedsRecord != null) {
+                        return Mono.just(baywatchMapper.recordToFeed(feedsRecord));
+                    } else {
+                        return get(QueryContext.id(id));
+                    }
+                });
     }
 
     @Override

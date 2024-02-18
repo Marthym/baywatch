@@ -31,6 +31,15 @@ public interface SystemMaintenanceService {
     Mono<Integer> feedDelete(Collection<String> toDelete);
 
     /**
+     * <p>Update raw information af a feed as SYSTEM</p>
+     *
+     * @param id        The ID of the feed to update
+     * @param toPersist The updated information
+     * @return The updated {@link WebFeed}
+     */
+    Mono<Entity<WebFeed>> feedUpdate(String id, WebFeed toPersist);
+
+    /**
      * List {@link News} for connected user or {@link News} for anonymous.
      * For Anonymous, {@link State} is always
      * {@link State#NONE}
