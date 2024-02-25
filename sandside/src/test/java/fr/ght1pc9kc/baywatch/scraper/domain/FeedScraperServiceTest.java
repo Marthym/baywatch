@@ -5,6 +5,7 @@ import fr.ght1pc9kc.baywatch.common.domain.Try;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomEntry;
+import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapResult;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.FeedScrapingException;
@@ -48,6 +49,8 @@ import java.util.regex.Pattern;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -64,7 +67,7 @@ class FeedScraperServiceTest {
 
     private FeedScraperServiceImpl tested;
     private RssAtomParser rssAtomParserMock;
-    private ScraperMaintenancePort newsMaintenanceMock;
+    private ScraperMaintenancePort maintenancePersistencePort;
     private ExchangeFunction mockExchangeFunction;
 
     @Test
@@ -77,7 +80,7 @@ class FeedScraperServiceTest {
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/spring-blog.xml")));
 
         verify(rssAtomParserMock, times(2)).readEntryEvents(any(), any(ScrapedFeed.class));
-        verify(newsMaintenanceMock,
+        verify(maintenancePersistencePort,
                 times(1).description("Expect only one call because of the buffer to 100")
         ).newsLoad(anyCollection());
         verify(mockScrapEnrichmentService, times(2)).applyNewsFilters(any());
@@ -88,8 +91,8 @@ class FeedScraperServiceTest {
         URI sNumeriquesUrl = URI.create("https://www.jedi.com/feeds/malformed_rss_feed.xml");
         String sNumeriquesSha3 = Hasher.identify(sNumeriquesUrl);
 
-        when(newsMaintenanceMock.feedList()).thenReturn(Flux.just(
-                new ScrapedFeed(sNumeriquesSha3, sNumeriquesUrl)
+        when(maintenancePersistencePort.feedList()).thenReturn(Flux.just(
+                new ScrapedFeed(sNumeriquesSha3, sNumeriquesUrl, Instant.EPOCH, null)
         ));
         StepVerifier.create(tested.scrap(SCRAPER_RETENTION_PERIOD))
                 .expectNext(new ScrapResult(1, List.of()))
@@ -98,10 +101,27 @@ class FeedScraperServiceTest {
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/malformed_rss_feed.xml")));
 
         verify(rssAtomParserMock, times(1)).readEntryEvents(any(), any(ScrapedFeed.class));
-        verify(newsMaintenanceMock,
+        verify(maintenancePersistencePort,
                 times(1).description("Expect only one call because of the buffer to 100")
         ).newsLoad(anyCollection());
         verify(mockScrapEnrichmentService, times(1)).applyNewsFilters(any());
+    }
+
+    @Test
+    void should_ignore_unmodified_feeds() {
+        URI springUri = URI.create("https://www.jedi.com/feeds/spring-blog.xml");
+        String springSha3 = Hasher.identify(springUri);
+        when(maintenancePersistencePort.feedList()).thenReturn(Flux.just(
+                // The test sample WebFeed are updated at EPOCH + 1d
+                new ScrapedFeed(springSha3, springUri, Instant.EPOCH.plus(Duration.ofDays(2)), null)
+        ));
+        StepVerifier.create(tested.scrap(SCRAPER_RETENTION_PERIOD))
+                .expectNext(new ScrapResult(0, List.of()))
+                .verifyComplete();
+
+        verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/spring-blog.xml")));
+
+        verify(rssAtomParserMock, never()).readEntryEvents(any(), any(ScrapedFeed.class));
     }
 
     @Test
@@ -111,9 +131,9 @@ class FeedScraperServiceTest {
         String darthVaderSha3 = Hasher.identify(darthVaderUri);
         String springSha3 = Hasher.identify(springUri);
 
-        when(newsMaintenanceMock.feedList()).thenReturn(Flux.just(
-                new ScrapedFeed(darthVaderSha3, darthVaderUri),
-                new ScrapedFeed(springSha3, springUri)
+        when(maintenancePersistencePort.feedList()).thenReturn(Flux.just(
+                new ScrapedFeed(darthVaderSha3, darthVaderUri, Instant.EPOCH, null),
+                new ScrapedFeed(springSha3, springUri, Instant.EPOCH, null)
         ));
 
         StepVerifier.create(tested.scrap(SCRAPER_RETENTION_PERIOD))
@@ -129,7 +149,7 @@ class FeedScraperServiceTest {
         verify(mockExchangeFunction).exchange(ArgumentMatchers.argThat(cr -> cr.url().getPath().equals("/feeds/spring-blog.xml")));
 
         verify(rssAtomParserMock, times(1)).readEntryEvents(any(), any(ScrapedFeed.class));
-        verify(newsMaintenanceMock,
+        verify(maintenancePersistencePort,
                 times(1).description("Expect only one call because of the buffer of 100")
         ).newsLoad(anyCollection());
     }
@@ -159,16 +179,16 @@ class FeedScraperServiceTest {
                                 .extracting("cause").isInstanceOf(IllegalArgumentException.class)
                 )).verifyComplete();
 
-        verify(newsMaintenanceMock,
+        verify(maintenancePersistencePort,
                 never().description("Expect no invocation because no valid enrichment")
         ).newsLoad(anyCollection());
     }
 
     @Test
     void should_fail_on_persistence() {
-        when(newsMaintenanceMock.newsLoad(anyCollection())).thenReturn(Mono.error(new RuntimeException("Persistence failure simulation"))
+        when(maintenancePersistencePort.newsLoad(anyCollection())).thenReturn(Mono.error(new RuntimeException("Persistence failure simulation"))
                 .then(Mono.just(1)));
-        when(newsMaintenanceMock.listAllNewsId()).thenReturn(Flux.empty());
+        when(maintenancePersistencePort.listAllNewsId()).thenReturn(Flux.empty());
 
         StepVerifier.create(tested.scrap(SCRAPER_RETENTION_PERIOD))
                 .expectErrorSatisfies(t -> Assertions.assertThat(t)
@@ -183,8 +203,8 @@ class FeedScraperServiceTest {
 
     @Test
     void should_fail_on_unsupported_scheme() {
-        when(newsMaintenanceMock.feedList()).thenAnswer((Answer<Flux<ScrapedFeed>>) invocationOnMock -> Flux.just(
-                new ScrapedFeed("0", URI.create("file://localhost/.env"))
+        when(maintenancePersistencePort.feedList()).thenAnswer((Answer<Flux<ScrapedFeed>>) invocationOnMock -> Flux.just(
+                new ScrapedFeed("0", URI.create("file://localhost/.env"), Instant.parse("2024-02-25T17:15:42Z"), null)
         ).delayElements(Duration.ofMillis(100)));  // Delay avoid Awaitility start polling after the end of scraping
 
         StepVerifier.create(tested.scrap(SCRAPER_RETENTION_PERIOD))
@@ -198,15 +218,15 @@ class FeedScraperServiceTest {
 
         verify(mockExchangeFunction, never()).exchange(any());
         verify(rssAtomParserMock, never()).readEntryEvents(any(), any());
-        verify(newsMaintenanceMock, never()).newsLoad(anyCollection());
+        verify(maintenancePersistencePort, never()).newsLoad(anyCollection());
     }
 
     @BeforeEach
     void setUp() {
-        newsMaintenanceMock = mock(ScraperMaintenancePort.class);
-        when(newsMaintenanceMock.listAllNewsId()).thenReturn(Flux.<String>empty()
+        maintenancePersistencePort = mock(ScraperMaintenancePort.class);
+        when(maintenancePersistencePort.listAllNewsId()).thenReturn(Flux.<String>empty()
                 .delayElements(Duration.ofMillis(200)));  // Delay avoid Awaitility start polling after the and of scraping
-        when(newsMaintenanceMock.newsLoad(anyCollection())).thenReturn(Mono.just(1));
+        when(maintenancePersistencePort.newsLoad(anyCollection())).thenReturn(Mono.just(1));
 
         mockExchangeFunction = spy(new MockExchangeFunction());
         WebClient mockWebClient = WebClient.builder().exchangeFunction(mockExchangeFunction).build();
@@ -225,6 +245,15 @@ class FeedScraperServiceTest {
             @Override
             public Predicate<XMLEvent> itemEndEvent() {
                 return e -> false;
+            }
+
+            @Override
+            public AtomFeed readFeedProperties(List<XMLEvent> events) {
+                return AtomFeed.builder()
+                        .id("https://spring.io/blog.atom")
+                        .title("Spring")
+                        .updated(Instant.EPOCH.plus(Duration.ofDays(1)))
+                        .build();
             }
 
             @Override
@@ -248,15 +277,18 @@ class FeedScraperServiceTest {
             }
         });
 
-        when(newsMaintenanceMock.feedList()).thenAnswer((Answer<Flux<ScrapedFeed>>) invocationOnMock -> Flux.just(
-                new ScrapedFeed(jdhSha3, jdhUri),
-                new ScrapedFeed(springSha3, springUri)
+        when(maintenancePersistencePort.feedList()).thenAnswer((Answer<Flux<ScrapedFeed>>) invocationOnMock -> Flux.just(
+                new ScrapedFeed(jdhSha3, jdhUri, Instant.EPOCH, null),
+                new ScrapedFeed(springSha3, springUri, Instant.EPOCH, null)
         ));
+        doAnswer(a -> Mono.just(a.getArgument(0))).when(maintenancePersistencePort).feedUpdate(anyString(), any(AtomFeed.class));
 
         when(mockScrapEnrichmentService.applyNewsFilters(any(News.class)))
                 .thenAnswer(((Answer<Mono<Try<News>>>) answer -> Mono.just(Try.of(answer.getArgument(0, News.class)))));
 
-        tested = new FeedScraperServiceImpl(Schedulers.immediate(), newsMaintenanceMock, mockWebClient, rssAtomParserMock,
+        doAnswer(a -> Mono.just(a.getArgument(0))).when(mockScrapEnrichmentService).applyFeedsFilters(any(AtomFeed.class));
+
+        tested = new FeedScraperServiceImpl(Schedulers.immediate(), maintenancePersistencePort, mockWebClient, rssAtomParserMock,
                 Collections.emptyList(), Map.of(), mockScrapEnrichmentService);
         tested.setClock(Clock.fixed(Instant.parse("2022-04-30T12:35:41Z"), ZoneOffset.UTC));
     }

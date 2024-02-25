@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.common.infra.mappers;
 
+import fr.ght1pc9kc.baywatch.common.api.DefaultMeta;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
@@ -99,7 +100,7 @@ public interface BaywatchMapper {
                 ? r.get(FEEDS_USERS.FEUS_FEED_NAME) : r.get(FEEDS.FEED_NAME);
 
         String owner = (r.indexOf(FEEDS_USERS.FEUS_USER_ID) >= 0 && r.get(FEEDS_USERS.FEUS_USER_ID) != null)
-                ? r.get(FEEDS_USERS.FEUS_USER_ID) : Entity.NO_ONE;
+                ? r.get(FEEDS_USERS.FEUS_USER_ID) : null;
 
         Instant lastPublication = (r.indexOf(FEEDS.FEED_LAST_WATCH) >= 0 && r.get(FEEDS.FEED_LAST_WATCH) != null)
                 ? DateUtils.toInstant(r.get(FEEDS.FEED_LAST_WATCH, LocalDateTime.class)) : Instant.EPOCH;
@@ -116,7 +117,7 @@ public interface BaywatchMapper {
                 .build();
 
         return Entity.identify(webFeed)
-                .createdBy(owner)
+                .meta(DefaultMeta.createdBy, owner)
                 .withId(webFeed.reference());
     }
 

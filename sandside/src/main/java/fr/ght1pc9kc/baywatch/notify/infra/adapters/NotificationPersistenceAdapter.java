@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.notify.infra.adapters;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapLikeType;
 import com.machinezoo.noexception.Exceptions;
+import fr.ght1pc9kc.baywatch.common.api.DefaultMeta;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NotificationsRecord;
@@ -21,6 +22,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 
@@ -50,10 +52,11 @@ public class NotificationPersistenceAdapter implements NotificationPersistencePo
             }
         });
         return notificationsRecord.map(r ->
-                        r.setNotiCreatedAt(DateUtils.toLocalDateTime(event.createdAt()))
+                        r.setNotiCreatedAt(DateUtils.toLocalDateTime(
+                                        event.meta(DefaultMeta.createdAt, Instant.class).orElse(Instant.EPOCH)))
                                 .setNotiEventType(event.self().type().name())
                                 .setNotiId(event.id())
-                                .setNotiUserId(event.createdBy()))
+                                .setNotiUserId(event.meta(DefaultMeta.createdBy).orElse(DefaultMeta.NO_ONE)))
                 .flatMap(r ->
                         Mono.fromCompletionStage(dsl.insertInto(NOTIFICATIONS).set(r).executeAsync())
                                 .subscribeOn(databaseScheduler))

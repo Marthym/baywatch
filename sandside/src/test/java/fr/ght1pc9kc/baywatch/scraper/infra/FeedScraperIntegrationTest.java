@@ -56,6 +56,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.Period;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -177,7 +178,8 @@ class FeedScraperIntegrationTest {
     void should_scrap_feeds(String feed, String expected) {
         URI BASE_URI = URI.create(String.format("http://%s:%d/", server.getAddress().getHostName(), server.getAddress().getPort()));
         when(mockMaintenancePort.feedList()).thenReturn(
-                Flux.just(new ScrapedFeed("1", BASE_URI.resolve(feed)))
+                Flux.just(new ScrapedFeed("1", BASE_URI.resolve(feed),
+                        Instant.parse("2024-02-21T17:11:42Z"), null))
         );
         ArgumentCaptor<Collection<News>> loadCaptor = ArgumentCaptor.forClass(Collection.class);
         when(mockMaintenancePort.newsLoad(loadCaptor.capture()))

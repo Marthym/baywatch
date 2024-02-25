@@ -30,9 +30,7 @@ public interface RssAtomParser {
      * @param events The {@link XMLEvent} composing a feed entity
      * @return The {@link RawNews} representing the feed entry
      */
-    default AtomFeed readFeedProperties(List<XMLEvent> events) {
-        throw new IllegalStateException("Not implemented !");
-    }
+    AtomFeed readFeedProperties(List<XMLEvent> events);
 
     /**
      * Parsing a homogenous list of tags composing an item ou entry

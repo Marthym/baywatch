@@ -28,6 +28,7 @@ import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -107,6 +108,7 @@ class FeedRepositoryTest {
                 .location(uri)
                 .name("Obiwan Kenobi")
                 .tags(Set.of())
+                .updated(Instant.EPOCH)
                 .build();
 
         StepVerifier.create(tested.persist(Collections.singleton(expected)))
@@ -156,11 +158,12 @@ class FeedRepositoryTest {
                         .location(URI.create("http://www.jedi.light/01"))
                         .name("Obiwan Kenobi")
                         .tags(Set.of("jedi", "light"))
+                        .updated(Instant.parse("2020-12-11T15:12:42Z"))
                         .build()
         ).withId(feedOwnedOnlyByObywan);
         Mono<Entity<WebFeed>> update = tested.update(expected.id(), OKENOBI.getUserId(), expected.self());
         StepVerifier.create(update)
-                .expectNext(expected)
+                .assertNext(actual -> assertThat(actual).isEqualTo(expected))
                 .verifyComplete();
 
         {

@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
+import fr.ght1pc9kc.baywatch.common.api.DefaultMeta;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
@@ -61,7 +62,7 @@ public class StateRepository implements StatePersistencePort {
                     });
                 }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
                 .map(r -> Entity.identify(State.of(r.getNursState()))
-                        .createdBy(r.getNursUserId())
+                        .meta(DefaultMeta.createdBy, r.getNursUserId())
                         .withId(r.getNursNewsId()));
     }
 

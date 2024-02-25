@@ -11,7 +11,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
-import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -27,7 +26,7 @@ class AuthenticationServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        Entity<User> user = new Entity<>("42", Entity.NO_ONE, Instant.EPOCH, User.builder().login("okenobi").role(Role.USER).build());
+        Entity<User> user = Entity.identify(User.builder().login("okenobi").role(Role.USER).build()).withId("42");
         tokenProviderMock = spy(new JwtTokenProvider() {
             @Override
             public BaywatchAuthentication createToken(Entity<User> userId, boolean rememberMe, Collection<String> authorities) {

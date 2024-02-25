@@ -43,6 +43,7 @@ import reactor.test.StepVerifier;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdBy;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.teams.infra.samples.TeamsRecordSamples.JEDI_TEAM;
 import static java.util.Objects.requireNonNull;
@@ -130,7 +131,7 @@ class TeamServiceImplTest {
         StepVerifier.create(tested.create("Jedi council team", "May the Force be with you"))
                 .assertNext(actual -> assertAll(
                         () -> Assertions.assertThat(actual.id()).isNotBlank(),
-                        () -> Assertions.assertThat(actual.createdBy()).isEqualTo(UserSamples.OBIWAN.id()),
+                        () -> Assertions.assertThat(actual.meta(createdBy)).isPresent().contains(UserSamples.OBIWAN.id()),
                         () -> Assertions.assertThat(actual.self().name()).isEqualTo("Jedi council team"),
                         () -> verify(mockAuthFacade).grantAuthorization(UserSamples.OBIWAN.id(), List.of("MANAGER:" + actual.id()))
                 )).verifyComplete();

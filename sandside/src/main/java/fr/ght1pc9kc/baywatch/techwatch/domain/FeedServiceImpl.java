@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
+import fr.ght1pc9kc.baywatch.common.api.DefaultMeta;
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
@@ -23,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.NO_ONE;
 import static fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException.AUTHENTICATION_NOT_FOUND;
 
 @RequiredArgsConstructor
@@ -54,14 +56,14 @@ public class FeedServiceImpl implements FeedService {
                     }
                     return Tuples.of(QueryContext.from(pageRequest).withUserId(u.id()), u.id());
                 })
-                .switchIfEmpty(Mono.just(Tuples.of(QueryContext.from(pageRequest), Entity.NO_ONE)))
+                .switchIfEmpty(Mono.just(Tuples.of(QueryContext.from(pageRequest), NO_ONE)))
                 .flatMapMany(qc -> feedRepository.list(qc.getT1())
                         .map(re -> {
-                            String createdBy = Arrays.stream(re.createdBy().split(","))
+                            String createdBy = Arrays.stream(re.meta(DefaultMeta.createdBy).orElse(NO_ONE).split(","))
                                     .filter(u -> qc.getT2().equals(u))
-                                    .findAny().orElse(Entity.NO_ONE);
+                                    .findAny().orElse(NO_ONE);
                             return Entity.identify(re.self())
-                                    .createdBy(createdBy)
+                                    .meta(DefaultMeta.createdBy, createdBy)
                                     .withId(re.id());
                         }));
     }

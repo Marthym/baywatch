@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.teams.infra.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
+import fr.ght1pc9kc.baywatch.common.api.DefaultMeta;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
@@ -54,7 +55,7 @@ public class UserMappingController {
                         m -> {
                             Entity<User> teamMember = users.get(m.getOrDefault("userId", "").toString());
                             if (teamMember == null) {
-                                return mapper.convertValue(Entity.identify(User.ANONYMOUS).withId(Entity.NO_ONE), gqlType);
+                                return mapper.convertValue(Entity.identify(User.ANONYMOUS).withId(DefaultMeta.NO_ONE), gqlType);
                             }
                             teamMember = Entity.identify(filterRoles(teamMember.self(), m.get("_id").toString())).withId(teamMember.id());
                             return mapper.convertValue(teamMember, gqlType);

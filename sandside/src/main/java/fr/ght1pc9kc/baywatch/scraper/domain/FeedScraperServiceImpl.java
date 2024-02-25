@@ -185,6 +185,9 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
 
                 .bufferUntil(feedParser.itemEndEvent())
                 .switchOnFirst((first, others) -> {
+                    if (!first.hasValue()) {
+                        return others.take(0).thenMany(Flux.empty());
+                    }
                     AtomFeed atomFeed = feedParser.readFeedProperties(first.get());
                     if (atomFeed.updated() != null && !atomFeed.updated().isAfter(feed.updated())) {
                         return others.take(0).thenMany(Flux.empty());

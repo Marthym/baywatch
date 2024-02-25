@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.teams.domain.ports;
 
+import fr.ght1pc9kc.baywatch.common.api.DefaultMeta;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.entity.api.Entity;
@@ -62,7 +63,7 @@ public interface TeamAuthFacade {
     static Context withSystemAuthentication(String userIdImpersonation) {
         Entity<User> principal = Entity.identify(User.builder()
                         .name("Team Domain")
-                        .login(Entity.NO_ONE)
+                        .login(DefaultMeta.NO_ONE)
                         .roles(List.of(Role.SYSTEM)).build())
                 .withId(userIdImpersonation);
         Authentication authentication = new PreAuthenticatedAuthenticationToken(principal, null,

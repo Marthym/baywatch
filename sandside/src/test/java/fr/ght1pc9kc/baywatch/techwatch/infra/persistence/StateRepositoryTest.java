@@ -25,6 +25,7 @@ import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdBy;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 import static fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples.LSKYWALKER;
 import static fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples.OKENOBI;
@@ -72,9 +73,9 @@ class StateRepositoryTest {
         ).collectList().block();
 
         assertThat(actuals).containsOnly(
-                Entity.identify(State.of(Flags.NONE)).createdBy(OKENOBI.getUserId()).withId(id21),
-                Entity.identify(State.of(Flags.READ)).createdBy(LSKYWALKER.getUserId()).withId(id22),
-                Entity.identify(State.of(Flags.SHARED)).createdBy(OKENOBI.getUserId()).withId(id23)
+                Entity.identify(State.of(Flags.NONE)).meta(createdBy, OKENOBI.getUserId()).withId(id21),
+                Entity.identify(State.of(Flags.READ)).meta(createdBy, LSKYWALKER.getUserId()).withId(id22),
+                Entity.identify(State.of(Flags.SHARED)).meta(createdBy, OKENOBI.getUserId()).withId(id23)
         );
     }
 
