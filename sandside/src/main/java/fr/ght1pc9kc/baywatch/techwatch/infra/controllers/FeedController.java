@@ -36,6 +36,7 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -133,6 +134,7 @@ public class FeedController {
                             .location(feedLocation)
                             .tags(Set.of(ff.tags()))
                             .name(ff.name())
+                            .updated(Instant.EPOCH)
                             .build());
                 })
                 .flatMap(feedService::update)
@@ -149,6 +151,7 @@ public class FeedController {
                             .location(uri)
                             .tags(tags)
                             .name(form.name())
+                            .updated(Instant.EPOCH)
                             .build();
                 })
                 .flatMap(feed -> feedService.addAndSubscribe(Collections.singleton(feed)).next())
@@ -176,6 +179,7 @@ public class FeedController {
                             .location(uri)
                             .name(Optional.ofNullable(form.name()).orElseGet(uri::getHost))
                             .tags(Set.of(form.tags()))
+                            .updated(Instant.EPOCH)
                             .build();
                 }).collectList()
                 .flatMapMany(feedService::addAndSubscribe);

@@ -9,16 +9,19 @@ import org.mapstruct.Mapping;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.time.Instant;
 import java.util.HexFormat;
 import java.util.Set;
 
-@Mapper(componentModel = "spring", imports = {URI.class, Set.class, Hasher.class, ByteBuffer.class, HexFormat.class})
+@Mapper(componentModel = "spring",
+        imports = {URI.class, Set.class, Hasher.class, ByteBuffer.class, HexFormat.class, Instant.class})
 public interface TechwatchMapper {
     @Mapping(target = "reference",
             expression = "java(Hasher.identify(atomFeed.link()))")
     @Mapping(source = "title", target = "name")
     @Mapping(source = "link", target = "location")
     @Mapping(target = "tags", expression = "java(Set.of())")
+    @Mapping(source = "updated", target = "updated", defaultExpression = "java(Instant.now())")
     WebFeed getFeedFromAtom(AtomFeed atomFeed);
 
     @Mapping(target = "signingKey",
