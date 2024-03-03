@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
+import fr.ght1pc9kc.baywatch.common.api.model.FeedMeta;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
@@ -19,6 +20,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
+import java.util.Map;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.FEED_ID;
 
@@ -59,6 +61,14 @@ public class SystemMaintenanceServiceImpl implements SystemMaintenanceService {
                 .filter(user -> RoleUtils.hasRole(user.self(), Role.SYSTEM))
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(EXCEPTION_MESSAGE)))
                 .flatMap(q -> feedRepository.update(id, toPersist));
+    }
+
+    @Override
+    public Mono<Entity<WebFeed>> feedUpdateMetas(String id, Map<FeedMeta, Object> metas) {
+        return authFacade.getConnectedUser()
+                .filter(user -> RoleUtils.hasRole(user.self(), Role.SYSTEM))
+                .switchIfEmpty(Mono.error(() -> new UnauthorizedException(EXCEPTION_MESSAGE)))
+                .flatMap(q -> feedRepository.updateMetas(id, metas));
     }
 
     @Override

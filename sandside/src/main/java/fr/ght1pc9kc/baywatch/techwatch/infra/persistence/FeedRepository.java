@@ -1,5 +1,7 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
+import fr.ght1pc9kc.baywatch.common.api.model.FeedMeta;
+import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.common.infra.adapters.PerformanceJooqListener;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
@@ -23,14 +25,17 @@ import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.Select;
 import org.jooq.SelectQuery;
+import org.jooq.UpdateQuery;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -99,6 +104,30 @@ public class FeedRepository implements FeedPersistencePort {
                 .subscribeOn(databaseScheduler)
                 .flatMap(result -> {
                     FeedsRecord feedsRecord = result.fetchOne();
+                    if (feedsRecord != null) {
+                        return Mono.just(baywatchMapper.recordToFeed(feedsRecord));
+                    } else {
+                        return get(QueryContext.id(id));
+                    }
+                });
+    }
+
+    public Mono<Entity<WebFeed>> updateMetas(String id, Map<FeedMeta, Object> metas) {
+        return Mono.fromCallable(() -> {
+                    UpdateQuery<FeedsRecord> updateQuery = dsl.updateQuery(FEEDS);
+                    updateQuery.addConditions(FEEDS.FEED_ID.eq(id));
+                    updateQuery.setReturning();
+                    if (metas.containsKey(FeedMeta.updated)) {
+                        updateQuery.addValue(FEEDS.FEED_LAST_WATCH, DateUtils.toLocalDateTime((Instant) metas.get(FeedMeta.updated)));
+                    }
+                    if (metas.containsKey(FeedMeta.ETag)) {
+                        updateQuery.addValue(FEEDS.FEED_LAST_ETAG, (String) metas.get(FeedMeta.ETag));
+                    }
+                    updateQuery.execute();
+                    return updateQuery.getReturnedRecord();
+                })
+                .subscribeOn(databaseScheduler)
+                .flatMap(feedsRecord -> {
                     if (feedsRecord != null) {
                         return Mono.just(baywatchMapper.recordToFeed(feedsRecord));
                     } else {

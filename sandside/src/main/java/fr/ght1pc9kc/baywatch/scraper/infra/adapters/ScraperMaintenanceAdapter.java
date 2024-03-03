@@ -1,11 +1,14 @@
 package fr.ght1pc9kc.baywatch.scraper.infra.adapters;
 
+import fr.ght1pc9kc.baywatch.common.api.model.FeedMeta;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.ScraperMaintenancePort;
 import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
+import fr.ght1pc9kc.entity.api.Entity;
+import fr.ght1pc9kc.entity.api.impl.ExtendedEntity;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,6 +18,7 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -57,6 +61,22 @@ public class ScraperMaintenanceAdapter implements ScraperMaintenancePort {
                         .title(f.self().name())
                         .link(f.self().location())
                         .description(f.self().description())
+                        .updated(f.meta(updated, Instant.class).orElse(Instant.now()))
                         .build());
+    }
+
+    @Override
+    public Mono<AtomFeed> feedUpdateMetas(Entity<AtomFeed> toUpdate) {
+        if (toUpdate instanceof ExtendedEntity<AtomFeed, ?> extAtomFeed) {
+            return systemMaintenanceService.feedUpdateMetas(extAtomFeed.id(), (Map<FeedMeta, Object>) extAtomFeed.metas())
+                    .map(f -> AtomFeed.builder()
+                            .id(f.self().reference())
+                            .title(f.self().name())
+                            .link(f.self().location())
+                            .description(f.self().description())
+                            .updated(f.meta(updated, Instant.class).orElse(Instant.now()))
+                            .build());
+        }
+        return Mono.just(toUpdate.self());
     }
 }

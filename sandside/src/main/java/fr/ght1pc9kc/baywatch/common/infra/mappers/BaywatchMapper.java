@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.ETag;
 import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.createdBy;
 import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.updated;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
@@ -106,6 +107,9 @@ public interface BaywatchMapper {
         Instant lastPublication = (r.indexOf(FEEDS.FEED_LAST_WATCH) >= 0 && r.get(FEEDS.FEED_LAST_WATCH) != null)
                 ? DateUtils.toInstant(r.get(FEEDS.FEED_LAST_WATCH, LocalDateTime.class)) : Instant.EPOCH;
 
+        String lastETag = (r.indexOf(FEEDS.FEED_LAST_ETAG) >= 0 && r.get(FEEDS.FEED_LAST_ETAG) != null)
+                ? r.get(FEEDS.FEED_LAST_ETAG) : null;
+
         assert lastPublication != null : "Last publication date cannot be null !";
 
         WebFeed webFeed = WebFeed.builder()
@@ -119,6 +123,7 @@ public interface BaywatchMapper {
         return Entity.identify(webFeed)
                 .meta(createdBy, owner)
                 .meta(updated, lastPublication)
+                .meta(ETag, lastETag)
                 .withId(webFeed.reference());
     }
 

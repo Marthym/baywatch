@@ -43,10 +43,14 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Period;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.ETag;
+import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.updated;
 
 @Slf4j
 public final class FeedScraperServiceImpl implements FeedScraperService {
@@ -122,7 +126,8 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
 
                     .flatMap(count -> updatedFeeds.asFlux()
                             .flatMap(af -> scrapEnrichmentService.applyFeedsFilters(af.self())
-                                    .flatMap(a -> maintenancePersistencePort.feedUpdate(af.id(), a))).then(Mono.just(count)))
+                                    .flatMap(a -> maintenancePersistencePort.feedUpdateMetas(af)))
+                            .then(Mono.just(count)))
 
                     .flatMap(count -> errors.asFlux().collectList().map(
                             collectedErrors -> new ScrapResult(count, collectedErrors)))
@@ -166,13 +171,21 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                 .accept(MediaType.APPLICATION_RSS_XML)
                 .acceptCharset(StandardCharsets.UTF_8)
                 .exchangeToFlux(response -> {
-                    if (!response.statusCode().is2xxSuccessful()) {
+                    if (!response.statusCode().is2xxSuccessful() && response.statusCode().value() != 304) {
                         errors.tryEmitNext(new FeedScrapingException(
                                 AtomFeed.of(feed.id(), feed.link()),
                                 new IllegalArgumentException("Bad response status " + response.statusCode())
                         ));
                         return Flux.empty();
                     }
+
+                    List<String> httpETags = response.headers().header("ETag");
+                    if (!httpETags.isEmpty()) {
+                        updatedFeeds.tryEmitNext(Entity.identify(AtomFeed.of(feed.id(), feedUrl))
+                                .meta(ETag, httpETags.getFirst())
+                                .withId(feed.id()));
+                    }
+
                     return this.xmlEventDecoder.decode(
                                     response.bodyToFlux(DataBuffer.class).switchOnFirst(this::cleanupStreamStart),
                                     ResolvableType.NONE, null, null)
@@ -192,7 +205,9 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                     if (atomFeed.updated() != null && !atomFeed.updated().isAfter(feed.updated())) {
                         return others.take(0).thenMany(Flux.empty());
                     } else {
-                        updatedFeeds.tryEmitNext(Entity.identify(atomFeed).withId(feed.id()));
+                        updatedFeeds.tryEmitNext(Entity.identify(atomFeed)
+                                .meta(updated, atomFeed.updated())
+                                .withId(feed.id()));
                         return others;
                     }
                 })
