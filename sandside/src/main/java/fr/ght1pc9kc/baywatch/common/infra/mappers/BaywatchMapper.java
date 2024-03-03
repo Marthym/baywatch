@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.common.infra.mappers;
 
-import fr.ght1pc9kc.baywatch.common.api.DefaultMeta;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
@@ -26,6 +25,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.createdBy;
+import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.updated;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
@@ -113,11 +114,11 @@ public interface BaywatchMapper {
                 .name(name)
                 .description(r.get(FEEDS.FEED_DESCRIPTION))
                 .tags(tags)
-                .updated(lastPublication)
                 .build();
 
         return Entity.identify(webFeed)
-                .meta(DefaultMeta.createdBy, owner)
+                .meta(createdBy, owner)
+                .meta(updated, lastPublication)
                 .withId(webFeed.reference());
     }
 

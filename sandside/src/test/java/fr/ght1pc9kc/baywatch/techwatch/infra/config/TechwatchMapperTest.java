@@ -25,7 +25,6 @@ class TechwatchMapperTest {
                 .name("Jedi Channel")
                 .description("May the force be with you")
                 .location(URI.create("https://jedi.com/feed/"))
-                .updated(Instant.parse("2024-02-25T17:11:42Z"))
                 .build());
     }
 }

@@ -16,6 +16,7 @@ import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
@@ -122,7 +123,10 @@ class FeedServiceImplTest {
         ArgumentCaptor<List<WebFeed>> captor = ArgumentCaptor.forClass(List.class);
 
         StepVerifier.create(tested.add(List.of(FeedSamples.JEDI.self())))
-                .expectNext(FeedSamples.JEDI)
+                .assertNext(actual -> SoftAssertions.assertSoftly(softly -> {
+                    softly.assertThat(actual.self()).isEqualTo(FeedSamples.JEDI.self());
+                    softly.assertThat(actual.id()).isNotBlank().isEqualTo(actual.self().reference());
+                }))
                 .verifyComplete();
 
         verify(mockFeedRepository, times(1)).persist(captor.capture());

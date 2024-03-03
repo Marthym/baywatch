@@ -133,7 +133,6 @@ public class FeedServiceImpl implements FeedService {
                             .name(oldf.name())
                             .location(oldf.location())
                             .tags(oldf.tags())
-                            .updated(newf.updated())
                             .build();
                 }).collectList();
     }

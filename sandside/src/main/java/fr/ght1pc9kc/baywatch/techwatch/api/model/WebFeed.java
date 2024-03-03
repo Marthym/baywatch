@@ -6,7 +6,6 @@ import lombok.With;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.net.URI;
-import java.time.Instant;
 import java.util.Set;
 
 /**
@@ -17,7 +16,6 @@ import java.util.Set;
  * @param description The Description of the flux
  * @param location    The location where the flux is available
  * @param tags        The tags for the flux
- * @param updated     The last feed content modification date
  */
 @Builder(toBuilder = true)
 public record WebFeed(
@@ -25,7 +23,6 @@ public record WebFeed(
         @With String name,
         @With String description,
         @NonNull URI location,
-        @NonNull @Unmodifiable Set<String> tags,
-        @NonNull Instant updated
+        @NonNull @Unmodifiable Set<String> tags
 ) {
 }

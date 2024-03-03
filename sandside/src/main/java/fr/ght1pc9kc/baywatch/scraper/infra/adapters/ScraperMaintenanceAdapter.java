@@ -18,6 +18,9 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
+import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.ETag;
+import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.updated;
+
 @Component
 @RequiredArgsConstructor
 public class ScraperMaintenanceAdapter implements ScraperMaintenancePort {
@@ -31,7 +34,8 @@ public class ScraperMaintenanceAdapter implements ScraperMaintenancePort {
     @Override
     public Flux<ScrapedFeed> feedList() {
         return systemMaintenanceService.feedList(PageRequest.all())
-                .map(f -> new ScrapedFeed(f.id(), f.self().location(), f.self().updated(), null));
+                .map(f -> new ScrapedFeed(f.id(), f.self().location(),
+                        f.meta(updated, Instant.class).orElse(Instant.EPOCH), f.meta(ETag).orElse(null)));
     }
 
     @Override
@@ -47,14 +51,12 @@ public class ScraperMaintenanceAdapter implements ScraperMaintenancePort {
                         .location(Optional.ofNullable(updatedFeed.link()).orElse(URI.create("#")))
                         .description(updatedFeed.description())
                         .tags(Set.of())
-                        .updated(Optional.ofNullable(updatedFeed.updated()).orElse(Instant.now()))
                         .build()).flatMap(wf -> systemMaintenanceService.feedUpdate(id, wf))
                 .map(f -> AtomFeed.builder()
                         .id(f.self().reference())
                         .title(f.self().name())
                         .link(f.self().location())
                         .description(f.self().description())
-                        .updated(f.self().updated())
                         .build());
     }
 }

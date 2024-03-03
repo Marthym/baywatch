@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
-import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.common.infra.adapters.PerformanceJooqListener;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
@@ -94,7 +93,6 @@ public class FeedRepository implements FeedPersistencePort {
         return Mono.fromCallable(() -> dsl.update(FEEDS)
                         .set(FEEDS.FEED_NAME, toUpdate.name())
                         .set(FEEDS.FEED_DESCRIPTION, toUpdate.description())
-                        .set(FEEDS.FEED_LAST_WATCH, DateUtils.toLocalDateTime(toUpdate.updated()))
                         .set(FEEDS.FEED_NAME, toUpdate.name())
                         .where(FEEDS.FEED_ID.eq(id))
                         .returning())

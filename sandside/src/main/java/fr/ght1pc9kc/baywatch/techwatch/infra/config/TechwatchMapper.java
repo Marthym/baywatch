@@ -21,7 +21,6 @@ public interface TechwatchMapper {
     @Mapping(source = "title", target = "name")
     @Mapping(source = "link", target = "location")
     @Mapping(target = "tags", expression = "java(Set.of())")
-    @Mapping(source = "updated", target = "updated", defaultExpression = "java(Instant.now())")
     WebFeed getFeedFromAtom(AtomFeed atomFeed);
 
     @Mapping(target = "signingKey",
