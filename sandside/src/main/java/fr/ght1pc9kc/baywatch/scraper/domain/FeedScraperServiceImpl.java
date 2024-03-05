@@ -1,5 +1,7 @@
 package fr.ght1pc9kc.baywatch.scraper.domain;
 
+import fr.ght1pc9kc.baywatch.common.api.HttpHeaders;
+import fr.ght1pc9kc.baywatch.common.api.HttpStatusCodes;
 import fr.ght1pc9kc.baywatch.common.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.common.domain.Try;
@@ -170,16 +172,27 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                 .accept(MediaType.APPLICATION_ATOM_XML)
                 .accept(MediaType.APPLICATION_RSS_XML)
                 .acceptCharset(StandardCharsets.UTF_8)
+                .headers(httpHeaders -> {
+                    if (feed.eTag() != null) {
+                        httpHeaders.add(HttpHeaders.IF_NONE_MATCH, feed.eTag());
+                    }
+                })
                 .exchangeToFlux(response -> {
-                    if (!response.statusCode().is2xxSuccessful() && response.statusCode().value() != 304) {
+                    if (!response.statusCode().is2xxSuccessful() && response.statusCode().value() != HttpStatusCodes.NOT_MODIFIED) {
                         errors.tryEmitNext(new FeedScrapingException(
                                 AtomFeed.of(feed.id(), feed.link()),
                                 new IllegalArgumentException("Bad response status " + response.statusCode())
                         ));
-                        return Flux.empty();
+                        return response.releaseBody()
+                                .thenMany(Flux.empty());
+
+                    } else if (response.statusCode().value() == HttpStatusCodes.NOT_MODIFIED) {
+                        log.atDebug().addArgument(feedUrl).log("NOT_MODIFIED -> {}");
+                        return response.releaseBody()
+                                .thenMany(Flux.empty());
                     }
 
-                    List<String> httpETags = response.headers().header("ETag");
+                    List<String> httpETags = response.headers().header(HttpHeaders.ETAG);
                     if (!httpETags.isEmpty()) {
                         updatedFeeds.tryEmitNext(Entity.identify(AtomFeed.of(feed.id(), feedUrl))
                                 .meta(ETag, httpETags.getFirst())
