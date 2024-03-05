@@ -126,9 +126,7 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
 
                     .switchIfEmpty(Mono.just(0))
 
-                    .flatMap(count -> updatedFeeds.asFlux()
-                            .flatMap(af -> scrapEnrichmentService.applyFeedsFilters(af.self())
-                                    .flatMap(a -> maintenancePersistencePort.feedUpdateMetas(af)))
+                    .flatMap(count -> this.updateFeeds(updatedFeeds.asFlux())
                             .then(Mono.just(count)))
 
                     .flatMap(count -> errors.asFlux().collectList().map(
@@ -139,6 +137,16 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
         } catch (Exception e) {
             return Mono.error(() -> new ScrapingException("Fatal error when scraping !", e));
         }
+    }
+
+    private Mono<Void> updateFeeds(Flux<Entity<AtomFeed>> toBeUpdated) {
+        return toBeUpdated.groupBy(Entity::id)
+                .flatMap(g -> g.reduce(AtomFeedReducer::reduce))
+                .flatMap(original -> scrapEnrichmentService.applyFeedsFilters(original.self())
+                        .map(filtered -> AtomFeedReducer.reduce(original, Entity.identify(filtered).withId(original.id()))))
+                .buffer(100)
+                .flatMap(maintenancePersistencePort::feedsUpdate)
+                .then();
     }
 
     @Override

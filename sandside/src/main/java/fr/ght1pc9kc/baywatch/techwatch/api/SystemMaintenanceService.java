@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.techwatch.api;
 
-import fr.ght1pc9kc.baywatch.common.api.model.FeedMeta;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
@@ -12,7 +11,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
-import java.util.Map;
 
 public interface SystemMaintenanceService {
     /**
@@ -32,16 +30,7 @@ public interface SystemMaintenanceService {
 
     Mono<Integer> feedDelete(Collection<String> toDelete);
 
-    /**
-     * <p>Update raw information af a feed as SYSTEM</p>
-     *
-     * @param id        The ID of the feed to update
-     * @param toPersist The updated information
-     * @return The updated {@link WebFeed}
-     */
-    Mono<Entity<WebFeed>> feedUpdate(String id, WebFeed toPersist);
-
-    Mono<Entity<WebFeed>> feedUpdateMetas(String id, Map<FeedMeta, Object> metas);
+    Mono<Void> feedsUpdate(Collection<Entity<WebFeed>> toUpdate);
 
     /**
      * List {@link News} for connected user or {@link News} for anonymous.

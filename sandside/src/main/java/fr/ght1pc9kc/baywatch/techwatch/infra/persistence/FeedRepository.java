@@ -25,7 +25,6 @@ import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.Select;
 import org.jooq.SelectQuery;
-import org.jooq.UpdateQuery;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -35,7 +34,6 @@ import reactor.core.scheduler.Scheduler;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -112,28 +110,37 @@ public class FeedRepository implements FeedPersistencePort {
                 });
     }
 
-    public Mono<Entity<WebFeed>> updateMetas(String id, Map<FeedMeta, Object> metas) {
-        return Mono.fromCallable(() -> {
-                    UpdateQuery<FeedsRecord> updateQuery = dsl.updateQuery(FEEDS);
-                    updateQuery.addConditions(FEEDS.FEED_ID.eq(id));
-                    updateQuery.setReturning();
-                    if (metas.containsKey(FeedMeta.updated)) {
-                        updateQuery.addValue(FEEDS.FEED_LAST_WATCH, DateUtils.toLocalDateTime((Instant) metas.get(FeedMeta.updated)));
-                    }
-                    if (metas.containsKey(FeedMeta.ETag)) {
-                        updateQuery.addValue(FEEDS.FEED_LAST_ETAG, (String) metas.get(FeedMeta.ETag));
-                    }
-                    updateQuery.execute();
-                    return updateQuery.getReturnedRecord();
-                })
+    @Override
+    public Flux<Entity<WebFeed>> update(Collection<Entity<WebFeed>> toUpdate) {
+        List<FeedsRecord> records = toUpdate.stream()
+                .map(ewf -> {
+                    FeedsRecord feedsRecord = baywatchMapper.feedToFeedsRecord(ewf.self());
+                    ewf.meta(FeedMeta.ETag).ifPresent(feedsRecord::setFeedLastEtag);
+                    ewf.meta(FeedMeta.updated, Instant.class)
+                            .map(DateUtils::toLocalDateTime)
+                            .ifPresent(feedsRecord::setFeedLastWatch);
+                    return feedsRecord;
+                }).toList();
+
+        return Mono.fromCallable(() ->
+                        dsl.loadInto(FEEDS)
+                                .batchAll()
+                                .onDuplicateKeyUpdate()
+                                .onErrorIgnore()
+                                .loadRecords(records)
+                                .fieldsCorresponding()
+                                .execute())
                 .subscribeOn(databaseScheduler)
-                .flatMap(feedsRecord -> {
-                    if (feedsRecord != null) {
-                        return Mono.just(baywatchMapper.recordToFeed(feedsRecord));
-                    } else {
-                        return get(QueryContext.id(id));
-                    }
-                });
+
+                .map(loader -> {
+                    log.debug("Update {} Feeds with {} error(s) and {} ignored",
+                            loader.stored(), loader.errors().size(), loader.ignored());
+                    return loader;
+                })
+
+                .thenMany(Flux.fromIterable(toUpdate))
+                .map(Entity::id)
+                .flatMap(refs -> this.list(QueryContext.all(Criteria.property(ID).in(refs))));
     }
 
     @Override

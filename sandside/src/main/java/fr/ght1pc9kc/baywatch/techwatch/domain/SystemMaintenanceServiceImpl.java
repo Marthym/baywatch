@@ -56,19 +56,12 @@ public class SystemMaintenanceServiceImpl implements SystemMaintenanceService {
     }
 
     @Override
-    public Mono<Entity<WebFeed>> feedUpdate(String id, WebFeed toPersist) {
+    public Mono<Void> feedsUpdate(Collection<Entity<WebFeed>> toUpdate) {
         return authFacade.getConnectedUser()
                 .filter(user -> RoleUtils.hasRole(user.self(), Role.SYSTEM))
                 .switchIfEmpty(Mono.error(() -> new UnauthorizedException(EXCEPTION_MESSAGE)))
-                .flatMap(q -> feedRepository.update(id, toPersist));
-    }
-
-    @Override
-    public Mono<Entity<WebFeed>> feedUpdateMetas(String id, Map<FeedMeta, Object> metas) {
-        return authFacade.getConnectedUser()
-                .filter(user -> RoleUtils.hasRole(user.self(), Role.SYSTEM))
-                .switchIfEmpty(Mono.error(() -> new UnauthorizedException(EXCEPTION_MESSAGE)))
-                .flatMap(q -> feedRepository.updateMetas(id, metas));
+                .flatMapMany(q -> feedRepository.update(toUpdate))
+                .then();
     }
 
     @Override
