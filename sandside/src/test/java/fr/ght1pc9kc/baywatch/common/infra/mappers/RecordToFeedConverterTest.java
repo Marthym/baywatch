@@ -52,7 +52,6 @@ class RecordToFeedConverterTest {
 
         Assertions.assertAll(
                 () -> assertThat(actual.id()).isEqualTo(TEST_SHA3),
-                () -> assertThat(actual.self().reference()).isEqualTo(TEST_SHA3),
                 () -> assertThat(actual.self().name()).isEqualTo("Blog ght1pc9kc"),
                 () -> assertThat(actual.self().location()).isEqualTo(TEST_URL),
                 () -> assertThat(actual.self().tags()).isEqualTo(Set.of("jedi", "light"))

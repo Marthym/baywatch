@@ -49,7 +49,6 @@ import java.util.regex.Pattern;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -281,7 +280,7 @@ class FeedScraperServiceTest {
                 new ScrapedFeed(jdhSha3, jdhUri, Instant.EPOCH, null),
                 new ScrapedFeed(springSha3, springUri, Instant.EPOCH, null)
         ));
-        doAnswer(a -> Mono.just(a.getArgument(0))).when(maintenancePersistencePort).feedUpdate(anyString(), any(AtomFeed.class));
+        doAnswer(a -> Mono.just(a.getArgument(0))).when(maintenancePersistencePort).feedsUpdate(anyCollection());
 
         when(mockScrapEnrichmentService.applyNewsFilters(any(News.class)))
                 .thenAnswer(((Answer<Mono<Try<News>>>) answer -> Mono.just(Try.of(answer.getArgument(0, News.class)))));

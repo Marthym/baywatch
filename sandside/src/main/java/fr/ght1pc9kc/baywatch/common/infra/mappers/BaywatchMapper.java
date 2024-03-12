@@ -113,10 +113,9 @@ public interface BaywatchMapper {
         assert lastPublication != null : "Last publication date cannot be null !";
 
         WebFeed webFeed = WebFeed.builder()
-                .reference(r.get(FEEDS.FEED_ID))
-                .location(URI.create(r.get(FEEDS.FEED_URL)))
                 .name(name)
                 .description(r.get(FEEDS.FEED_DESCRIPTION))
+                .location(URI.create(r.get(FEEDS.FEED_URL)))
                 .tags(tags)
                 .build();
 
@@ -124,20 +123,38 @@ public interface BaywatchMapper {
                 .meta(createdBy, owner)
                 .meta(updated, lastPublication)
                 .meta(ETag, lastETag)
-                .withId(webFeed.reference());
+                .withId(r.get(FEEDS.FEED_ID));
     }
 
-    @Mapping(target = "feedId", source = "reference")
-    @Mapping(target = "feedUrl", source = "location")
-    @Mapping(target = "feedName", source = "name")
-    @Mapping(target = "feedDescription", source = "description")
-    FeedsRecord feedToFeedsRecord(WebFeed feed);
+    default FeedsRecord feedToFeedsRecord(Entity<WebFeed> feed) {
+        FeedsRecord feedsRecord = FEEDS.newRecord();
+        feedsRecord.setFeedId(feed.id());
+        feed.meta(updated, Instant.class).map(DateUtils::toLocalDateTime)
+                .ifPresent(feedsRecord::setFeedLastWatch);
+        feed.meta(ETag).ifPresent(feedsRecord::setFeedLastEtag);
+        if (feed.self().name() != null) {
+            feedsRecord.setFeedName(feed.self().name());
+        }
+        if (feed.self().description() != null) {
+            feedsRecord.setFeedDescription(feed.self().description());
+        }
+        feedsRecord.setFeedUrl(feed.self().location().toString());
 
-    @Mapping(target = "feusFeedId", source = "reference")
-    @Mapping(target = "feusFeedName", source = "name")
-    @Mapping(target = "feusTags",
-            expression = "java( (feed.tags() != null && !feed.tags().isEmpty())?String.join(\",\", feed.tags()):null )")
-    FeedsUsersRecord feedToFeedsUsersRecord(WebFeed feed);
+        return feedsRecord;
+    }
+
+    default FeedsUsersRecord feedToFeedsUsersRecord(Entity<WebFeed> feed) {
+        FeedsUsersRecord feedsUsersRecord = FEEDS_USERS.newRecord();
+        feedsUsersRecord.setFeusFeedId(feed.id());
+        feed.meta(createdBy).ifPresent(feedsUsersRecord::setFeusUserId);
+        if (feed.self().name() != null) {
+            feedsUsersRecord.setFeusFeedName(feed.self().name());
+        }
+        if (!feed.self().tags().isEmpty()) {
+            feedsUsersRecord.setFeusTags(String.join(",", feed.self().tags()));
+        }
+        return feedsUsersRecord;
+    }
 
     @SuppressWarnings("unused")
     default Instant fromLocalDateTime(LocalDateTime date) {

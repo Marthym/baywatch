@@ -96,7 +96,6 @@ public final class RssAtomParserImpl implements RssAtomParser {
 
                 switch (startElement.getName().getLocalPart()) {
                     case CHANNEL, FEED -> deepLevel = -1;
-                    case ID -> id = readElementText(events, idx);
                     case TITLE -> title = readElementText(events, idx);
                     case DESCRIPTION, SUBTITLE -> {
                         String tmpDescr = readElementText(events, idx);
@@ -124,7 +123,8 @@ public final class RssAtomParserImpl implements RssAtomParser {
             }
         }
 
-        return new AtomFeed(id, title, description, author, link, updated);
+        return new AtomFeed(Optional.ofNullable(link).map(Hasher::identify).orElse(null),
+                title, description, author, link, updated);
     }
 
     private static URI onFeedLink(URI old, int deepLevel, List<XMLEvent> events, int idx) {

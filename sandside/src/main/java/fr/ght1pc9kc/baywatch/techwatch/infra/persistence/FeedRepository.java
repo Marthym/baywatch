@@ -1,7 +1,5 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
-import fr.ght1pc9kc.baywatch.common.api.model.FeedMeta;
-import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.common.infra.adapters.PerformanceJooqListener;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
@@ -31,13 +29,13 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
-import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
+import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.createdBy;
 import static fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers.FEEDS_PROPERTIES_MAPPING;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
@@ -113,14 +111,7 @@ public class FeedRepository implements FeedPersistencePort {
     @Override
     public Flux<Entity<WebFeed>> update(Collection<Entity<WebFeed>> toUpdate) {
         List<FeedsRecord> records = toUpdate.stream()
-                .map(ewf -> {
-                    FeedsRecord feedsRecord = baywatchMapper.feedToFeedsRecord(ewf.self());
-                    ewf.meta(FeedMeta.ETag).ifPresent(feedsRecord::setFeedLastEtag);
-                    ewf.meta(FeedMeta.updated, Instant.class)
-                            .map(DateUtils::toLocalDateTime)
-                            .ifPresent(feedsRecord::setFeedLastWatch);
-                    return feedsRecord;
-                }).toList();
+                .map(baywatchMapper::feedToFeedsRecord).toList();
 
         return Mono.fromCallable(() ->
                         dsl.loadInto(FEEDS)
@@ -145,15 +136,17 @@ public class FeedRepository implements FeedPersistencePort {
 
     @Override
     public Mono<Entity<WebFeed>> update(String id, String userId, WebFeed toUpdate) {
-        FeedsUsersRecord feedsUsersRecord = baywatchMapper.feedToFeedsUsersRecord(toUpdate);
-        feedsUsersRecord.setFeusUserId(userId);
+        Entity<WebFeed> webFeedEntity = Entity.identify(toUpdate)
+                .meta(createdBy, userId)
+                .withId(id);
+        FeedsUsersRecord feedsUsersRecord = baywatchMapper.feedToFeedsUsersRecord(webFeedEntity);
         return Mono.fromCallable(() -> dsl.executeUpdate(feedsUsersRecord))
                 .subscribeOn(databaseScheduler)
                 .flatMap(i -> get(QueryContext.id(id).withUserId(userId)));
     }
 
     @Override
-    public Flux<Entity<WebFeed>> persist(Collection<WebFeed> toPersist) {
+    public Flux<Entity<WebFeed>> persist(Collection<Entity<WebFeed>> toPersist) {
         List<FeedsRecord> records = toPersist.stream()
                 .map(baywatchMapper::feedToFeedsRecord)
                 .toList();
@@ -175,12 +168,12 @@ public class FeedRepository implements FeedPersistencePort {
                 })
 
                 .thenMany(Flux.fromIterable(toPersist))
-                .map(WebFeed::reference)
+                .map(Entity::id)
                 .flatMap(refs -> this.list(QueryContext.all(Criteria.property(ID).in(refs))));
     }
 
     @Override
-    public Flux<Entity<WebFeed>> persistUserRelation(Collection<WebFeed> feeds, String userId) {
+    public Flux<Entity<WebFeed>> persistUserRelation(Collection<Entity<WebFeed>> feeds, String userId) {
         List<FeedsUsersRecord> feedsUsersRecords = feeds.stream()
                 .map(baywatchMapper::feedToFeedsUsersRecord)
                 .filter(Objects::nonNull)
@@ -197,7 +190,7 @@ public class FeedRepository implements FeedPersistencePort {
                                 .execute())
                 .subscribeOn(databaseScheduler)
                 .thenMany(Flux.fromIterable(feeds))
-                .map(WebFeed::reference)
+                .map(Entity::id)
                 .flatMap(refs -> this.list(QueryContext.builder()
                         .userId(userId)
                         .filter(Criteria.property(ID).in(refs))

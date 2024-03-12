@@ -106,7 +106,6 @@ class FeedRepositoryTest {
         URI uri = URI.create("https://obiwan.kenobi.jedi/.rss");
         String reference = Hasher.identify(uri);
         Entity<WebFeed> expected = Entity.identify(WebFeed.builder()
-                        .reference(reference)
                         .location(uri)
                         .name("Obiwan Kenobi")
                         .tags(Set.of())
@@ -114,11 +113,11 @@ class FeedRepositoryTest {
                 .meta(updated, Instant.EPOCH)
                 .withId(reference);
 
-        StepVerifier.create(tested.persist(Collections.singleton(expected.self())))
+        StepVerifier.create(tested.persist(Collections.singleton(expected)))
                 .assertNext(actual -> assertThat(actual).isEqualTo(expected))
                 .verifyComplete();
 
-        FeedsRecord actual = dsl.selectFrom(FEEDS).where(FEEDS.FEED_ID.eq(expected.self().reference())).fetchOne();
+        FeedsRecord actual = dsl.selectFrom(FEEDS).where(FEEDS.FEED_ID.eq(expected.id())).fetchOne();
         assertThat(actual).isNotNull();
         assertThat(actual.getFeedName()).isEqualTo(expected.self().name());
     }
@@ -135,7 +134,7 @@ class FeedRepositoryTest {
                 .withId(FeedRecordSamples.JEDI.getFeedId());
 
 
-        StepVerifier.create(tested.persistUserRelation(Collections.singleton(expected.self()), OKENOBI.getUserId()))
+        StepVerifier.create(tested.persistUserRelation(Collections.singleton(expected), OKENOBI.getUserId()))
                 .assertNext(actual -> assertThat(actual).isEqualTo(expected))
                 .verifyComplete();
 
@@ -158,7 +157,6 @@ class FeedRepositoryTest {
         String feedOwnedOnlyByObywan = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("01"));
         Entity<WebFeed> expected = Entity.identify(
                         WebFeed.builder()
-                                .reference(feedOwnedOnlyByObywan)
                                 .location(URI.create("http://www.jedi.light/01"))
                                 .name("Obiwan Kenobi")
                                 .tags(Set.of("jedi", "light"))

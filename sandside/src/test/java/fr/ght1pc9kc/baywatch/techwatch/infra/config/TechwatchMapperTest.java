@@ -21,7 +21,6 @@ class TechwatchMapperTest {
         ).isEqualTo(WebFeed.builder()
                 .name("Jedi Channel")
                 .tags(Set.of())
-                .reference("1d55e5018b8c189cd73be7d3177410edfb98831b172153f1a985b47f3d666ffd")
                 .name("Jedi Channel")
                 .description("May the force be with you")
                 .location(URI.create("https://jedi.com/feed/"))
