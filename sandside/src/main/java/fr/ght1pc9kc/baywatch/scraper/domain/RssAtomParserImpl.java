@@ -7,8 +7,11 @@ import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.Publishable;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
+import lombok.AccessLevel;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.VisibleForTesting;
 import reactor.core.publisher.Mono;
 
 import javax.xml.namespace.QName;
@@ -19,10 +22,13 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import java.io.StringWriter;
 import java.net.URI;
+import java.text.ParsePosition;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -42,6 +48,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
     private static final String FEED = "feed";
     private static final String ID = "id";
     private static final String ITEM = "item";
+    private static final String LAST_BUILD_DATE = "lastBuildDate";
     private static final String LINK = "link";
     private static final String MANAGING_EDITOR = "managingEditor";
     private static final String NAME = "name";
@@ -59,6 +66,12 @@ public final class RssAtomParserImpl implements RssAtomParser {
 
     private static final DateTimeFormatter NON_STANDARD_DATETIME = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
             .withZone(ZoneOffset.UTC);
+    private static final DateTimeFormatter UBER_DATETIME = DateTimeFormatter.ofPattern("EEE MMM dd yyyy HH:mm:ss zzzXXXX")
+            .withZone(ZoneOffset.UTC).withLocale(Locale.US);
+    private static final ParsePosition PARSE_POSITION = new ParsePosition(0);
+
+    @Setter(value = AccessLevel.PACKAGE, onMethod = @__({@VisibleForTesting}))
+    private Clock clock = Clock.systemUTC();
 
     @Override
     public Predicate<XMLEvent> firstItemEvent() {
@@ -78,7 +91,6 @@ public final class RssAtomParserImpl implements RssAtomParser {
 
     @Override
     public AtomFeed readFeedProperties(List<XMLEvent> events) {
-        String id = null;
         String title = null;
         String description = null;
         String author = null;
@@ -110,7 +122,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
                             .map(a -> a + " <" + readElementText(events, idx) + ">")
                             .orElse("<" + readElementText(events, idx) + ">");
                     case UPDATED -> updated = onUpdated(pubDate -> pubDate, events, i);
-                    case PUB_DATE -> updated = onPublicationDate(pubDate -> pubDate, events, i);
+                    case PUB_DATE, LAST_BUILD_DATE -> updated = onPublicationDate(pubDate -> pubDate, events, i);
                     default -> {/* ignore */}
                 }
                 deepLevel++;
@@ -123,6 +135,9 @@ public final class RssAtomParserImpl implements RssAtomParser {
             }
         }
 
+        if (updated == null) {
+            updated = clock.instant();
+        }
         return new AtomFeed(Optional.ofNullable(link).map(Hasher::identify).orElse(null),
                 title, description, author, link, updated);
     }
@@ -252,10 +267,18 @@ public final class RssAtomParserImpl implements RssAtomParser {
         T result = null;
         if (bldr != null) {
             String pubDate = readElementText(events, idx);
-            Instant datetime = Exceptions.silence().get(() -> DateTimeFormatter.RFC_1123_DATE_TIME.parse(pubDate, Instant::from))
-                    .orElseGet(Exceptions.silence().supplier(() -> DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(pubDate, Instant::from))
-                            .orElseGet(() -> NON_STANDARD_DATETIME.parse(pubDate, Instant::from)));
-            result = bldr.publication(datetime);
+            try {
+
+                Instant datetime = Exceptions.silence().get(() -> DateTimeFormatter.RFC_1123_DATE_TIME.parse(pubDate, Instant::from))
+                        .orElseGet(Exceptions.silence().supplier(() -> DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(pubDate, Instant::from))
+                                .orElseGet(Exceptions.silence().supplier(() -> Instant.from(UBER_DATETIME.parse(pubDate, PARSE_POSITION)))
+                                        .orElseGet(() -> NON_STANDARD_DATETIME.parse(pubDate, Instant::from))));
+                result = bldr.publication(datetime);
+            } catch (Exception e) {
+                log.atDebug().addArgument(pubDate)
+                        .addArgument(e.getLocalizedMessage())
+                        .log("Unable to parse \"{}\" : {}");
+            }
         }
         return result;
     }

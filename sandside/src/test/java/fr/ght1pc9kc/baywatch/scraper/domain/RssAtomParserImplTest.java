@@ -79,34 +79,34 @@ class RssAtomParserImplTest {
     @ParameterizedTest(name = "{0}")
     @CsvSource(delimiter = '|', value = {
             "feeds/journal_du_hacker.xml | bb03e8fce1f61cc798715c01aa3a5483804d309d34c2d1c71307df1ca955a360 | " +
-                    "Journal du hacker | | | https://www.journalduhacker.net/",
+                    "Journal du hacker | | | https://www.journalduhacker.net/ | ",
             "feeds/reddit-java.xml | c4b6c33021f80a6c3bb581ed2649188fe9e2cd35012cbe515c9edd78cbc1ab5f | " +
                     "liens vedettes : java |" +
                     "News, Technical discussions, research papers and assorted things of interest related to the Java " +
                     "programming language NO programming help, NO learning Java related questions, NO installing " +
                     "or downloading Java questions, NO JVM languages - Exclusively Java!" +
-                    "| | https://www.reddit.com/r/java/top/.rss",
+                    "| | https://www.reddit.com/r/java/top/.rss | 2020-11-30T18:32:35Z",
             "feeds/reddit-prog.xml | 16195e35f712d366b1309be2715a3a2feadaae0968348f0a52b1afefef6930c7 | " +
                     "liens vedettes : programming | Computer Programming | " +
-                    "| https://www.reddit.com/r/programming/top/.rss",
+                    "| https://www.reddit.com/r/programming/top/.rss | 2020-12-02T18:23:51Z",
             "feeds/sebosss.xml | 4e1014585a204514ed15ba563e3ea568ab6037df94d4ab26e02a1304eb65323f | " +
                     "Le blog de Seboss666 | Les divagations d'un pseudo-geek curieux " +
                     "| Sebosss <blog@seboss66.info>" +
-                    "| https://blog.seboss666.info/feed/",
+                    "| https://blog.seboss666.info/feed/ | 2020-11-18T17:00:47Z",
             "feeds/spring-blog.xml | 1f552d1f31fcf8ff59bc05a035e4f22733cbed8b4aba61d008d93d37e8326cd4 | " +
-                    "Spring | | | https://spring.io/blog.atom",
+                    "Spring | | | https://spring.io/blog.atom | 2020-11-26T14:08:50Z",
             "feeds/lemonde.xml | 3055bdc996f9992943ee12460f4985f3b4f95a5edd7cb68d8c70b76e5ec78a47 | " +
                     "Le Monde.fr - Actualités et Infos en France et dans le monde | " +
                     "Le Monde.fr - 1er site d’information. Les articles du journal et toute l’actualité en continu : " +
                     "International, France, Société, Economie, Culture, Environnement, Blogs ... | " +
-                    "| https://www.lemonde.fr/rss/une.xml",
+                    "| https://www.lemonde.fr/rss/une.xml | 2021-05-20T05:15:08Z",
             "feeds/feed_uber.xml | faa64d2482693a08f7fafa8b3d15873450a53c4f8899edce5b6841fa1cb4d88f | " +
                     "Engineering &#8211; Uber Blog | " +
                     "Check out the official blog from Uber to get the latest news, announcements, and things to do in US.\" /><meta name=\"robots\" content=\"index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1\" /><link rel=\"canonical\" href=\"https://www.uber.com/blog/\" /><meta property=\"og:locale\" content=\"en_US\" /><meta property=\"og:type\" content=\"article\" /><meta property=\"og:title\" content=\"US Archives\" /><meta property=\"og:description\" content=\"Check out the official blog from Uber to get the latest news, announcements, and things to do in your community.\" /><meta property=\"og:url\" content=\"https://www.uber.com/blog/\" /><meta property=\"og:site_name\" content=\"Uber Blog\" /><meta property=\"og:image\" content=\"https://blog.uber-cdn.com/cdn-cgi/image/width=500,height=300,quality=80,onerror=redirect,format=auto/wp-content/uploads/2018/09/uber_blog_seo.png\" /><meta property=\"og:image:width\" content=\"500\" /><meta property=\"og:image:height\" content=\"300\" /><meta property=\"og:image:type\" content=\"image/png\" /><meta name=\"twitter:card\" content=\"summary_large_image\" /><meta property=\"fb:pages\" content=\"120945717945722" +
-                    "| | https://www.uber.com/",
+                    "| | https://www.uber.com/ | 2022-09-04T09:30:20Z",
     })
     void should_read_feed_headers(String resource, String expectedId, String expectedTitle, String expectedDescr,
-                                  String expectedAuthor, URI expectedLink) {
+                                  String expectedAuthor, URI expectedLink, Instant updated) {
         Mono<AtomFeed> actualMono = Flux.fromIterable(toXmlEventList(resource))
                 .bufferUntil(tested.firstItemEvent())
                 .next()
@@ -118,7 +118,8 @@ class RssAtomParserImplTest {
                         () -> assertThat(actual).extracting(AtomFeed::title).as("Title").isEqualTo(expectedTitle),
                         () -> assertThat(actual).extracting(AtomFeed::description).as("Description").isEqualTo(expectedDescr),
                         () -> assertThat(actual).extracting(AtomFeed::author).as("Author").isEqualTo(expectedAuthor),
-                        () -> assertThat(actual).extracting(AtomFeed::link).as("Link").isEqualTo(expectedLink)
+                        () -> assertThat(actual).extracting(AtomFeed::link).as("Link").isEqualTo(expectedLink),
+                        () -> assertThat(actual).extracting(AtomFeed::updated).as("Updated").isEqualTo(updated)
                 )).verifyComplete();
     }
 

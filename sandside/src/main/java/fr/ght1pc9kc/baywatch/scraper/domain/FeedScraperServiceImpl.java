@@ -222,7 +222,10 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                     if (!first.hasValue()) {
                         return others.take(0).thenMany(Flux.empty());
                     }
-                    AtomFeed atomFeed = feedParser.readFeedProperties(first.get());
+                    AtomFeed atomFeed = feedParser.readFeedProperties(first.get()).toBuilder()
+                            .id(feed.id())
+                            .link(feedUrl)
+                            .build();
                     if (atomFeed.updated() != null && !atomFeed.updated().isAfter(feed.updated())) {
                         return others.take(0).thenMany(Flux.empty());
                     } else {
