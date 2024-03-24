@@ -68,7 +68,6 @@ public final class RssAtomParserImpl implements RssAtomParser {
             .withZone(ZoneOffset.UTC);
     private static final DateTimeFormatter UBER_DATETIME = DateTimeFormatter.ofPattern("EEE MMM dd yyyy HH:mm:ss zzzXXXX")
             .withZone(ZoneOffset.UTC).withLocale(Locale.US);
-    private static final ParsePosition PARSE_POSITION = new ParsePosition(0);
 
     @Setter(value = AccessLevel.PACKAGE, onMethod = @__({@VisibleForTesting}))
     private Clock clock = Clock.systemUTC();
@@ -271,7 +270,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
 
                 Instant datetime = Exceptions.silence().get(() -> DateTimeFormatter.RFC_1123_DATE_TIME.parse(pubDate, Instant::from))
                         .orElseGet(Exceptions.silence().supplier(() -> DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(pubDate, Instant::from))
-                                .orElseGet(Exceptions.silence().supplier(() -> Instant.from(UBER_DATETIME.parse(pubDate, PARSE_POSITION)))
+                                .orElseGet(Exceptions.silence().supplier(() -> Instant.from(UBER_DATETIME.parse(pubDate, new ParsePosition(0))))
                                         .orElseGet(() -> NON_STANDARD_DATETIME.parse(pubDate, Instant::from))));
                 result = bldr.publication(datetime);
             } catch (Exception e) {

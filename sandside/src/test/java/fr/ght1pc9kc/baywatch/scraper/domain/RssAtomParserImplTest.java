@@ -21,7 +21,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +36,7 @@ class RssAtomParserImplTest {
     @BeforeEach
     void setUp() {
         tested = new RssAtomParserImpl();
+        tested.setClock(Clock.fixed(Instant.parse("2024-03-24T21:17:22Z"), ZoneOffset.UTC));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -79,7 +82,7 @@ class RssAtomParserImplTest {
     @ParameterizedTest(name = "{0}")
     @CsvSource(delimiter = '|', value = {
             "feeds/journal_du_hacker.xml | bb03e8fce1f61cc798715c01aa3a5483804d309d34c2d1c71307df1ca955a360 | " +
-                    "Journal du hacker | | | https://www.journalduhacker.net/ | ",
+                    "Journal du hacker | | | https://www.journalduhacker.net/ | 2024-03-24T21:17:22Z",
             "feeds/reddit-java.xml | c4b6c33021f80a6c3bb581ed2649188fe9e2cd35012cbe515c9edd78cbc1ab5f | " +
                     "liens vedettes : java |" +
                     "News, Technical discussions, research papers and assorted things of interest related to the Java " +
