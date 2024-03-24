@@ -22,8 +22,20 @@ public interface FeedPersistencePort {
     Mono<Integer> count(QueryContext qCtx);
 
     /**
-     * Allow user to update {@link WebFeed} name or tags.
-     * URL was immutable. The Feed was shared and the URL give the ID so the URL was not updatabel.
+     * <p>Update {@link WebFeed} name, tags or updated date.</p>
+     * <p>URL was immutable. The Feed was shared and the URL give the ID so the URL was not updatable.</p>
+     *
+     * @param id       The ID of the {@link WebFeed} to update
+     * @param toUpdate The {@link WebFeed} to persist
+     * @return The new updated {@link WebFeed}
+     */
+    Mono<Entity<WebFeed>> update(String id, WebFeed toUpdate);
+
+    Flux<Entity<WebFeed>> update(Collection<Entity<WebFeed>> toUpdate);
+
+    /**
+     * <p>Allow user to update {@link WebFeed} name or tags.</p>
+     * <p>URL was immutable. The Feed was shared and the URL give the ID so the URL was not updatable.</p>
      *
      * @param id       The ID of the {@link WebFeed} to update
      * @param userId   The user id used to update
@@ -38,7 +50,7 @@ public interface FeedPersistencePort {
      * @param toPersist the list of Feed to persist
      * @return The persisted Feed
      */
-    Flux<Entity<WebFeed>> persist(Collection<WebFeed> toPersist);
+    Flux<Entity<WebFeed>> persist(Collection<Entity<WebFeed>> toPersist);
 
     /**
      * <p>Link a {@link WebFeed} to a {@link fr.ght1pc9kc.baywatch.security.api.model.User} by add lines into
@@ -49,7 +61,7 @@ public interface FeedPersistencePort {
      * @param userId   The user ID
      * @return The list of Feeds IDs linked to the User
      */
-    Flux<Entity<WebFeed>> persistUserRelation(Collection<WebFeed> feedsIds, String userId);
+    Flux<Entity<WebFeed>> persistUserRelation(Collection<Entity<WebFeed>> feedsIds, String userId);
 
     /**
      * Delete {@link WebFeed} from {@code FEEDS_USERS} and {@code FEEDS}, depending on the filter in {@link QueryContext}.

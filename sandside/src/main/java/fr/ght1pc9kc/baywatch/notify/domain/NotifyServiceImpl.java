@@ -28,6 +28,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdAt;
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdBy;
+
 @Slf4j
 public class NotifyServiceImpl implements NotifyService, NotifyManager {
     private static final String PREFIX = "EV";
@@ -117,8 +120,8 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
                 .ifPresentOrElse(
                         sk -> emit(sk, event),
                         () -> notificationPersistence.persist(Entity.identify(event)
-                                .createdBy(userId)
-                                .createdAt(clock.instant())
+                                .meta(createdBy, userId)
+                                .meta(createdAt, clock.instant())
                                 .withId(event.id())
                         ).subscribe());
         return event;
@@ -132,8 +135,8 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
                 .ifPresentOrElse(
                         sk -> emit(sk, event),
                         () -> notificationPersistence.persist(Entity.identify(event)
-                                .createdBy(userId)
-                                .createdAt(clock.instant())
+                                .meta(createdBy, userId)
+                                .meta(createdAt, clock.instant())
                                 .withId(event.id())
                         ).subscribe());
         return event;

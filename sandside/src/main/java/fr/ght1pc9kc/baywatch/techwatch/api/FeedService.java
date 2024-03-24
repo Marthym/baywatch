@@ -49,7 +49,7 @@ public interface FeedService {
      * @param toPersist the Feed of the subscription to update
      * @return The new Feed of the subscription
      */
-    Mono<Entity<WebFeed>> update(WebFeed toPersist);
+    Mono<Entity<WebFeed>> update(Entity<WebFeed> toPersist);
 
     /**
      * Add a {@link WebFeed} to the available Feed list in database
@@ -57,7 +57,7 @@ public interface FeedService {
      * @param toAdd The list of {@link WebFeed} to add
      * @return The list of  {@link WebFeed} added
      */
-    Flux<Entity<WebFeed>> add(Collection<WebFeed> toAdd);
+    Flux<Entity<WebFeed>> add(Collection<Entity<WebFeed>> toAdd);
 
     /**
      * Subscribe to a {@link WebFeed} present in database
@@ -65,9 +65,9 @@ public interface FeedService {
      * @param feeds The list of feed IDs the current user want to subscribe
      * @return The {@link WebFeed} the user have effectively subscribed
      */
-    Flux<Entity<WebFeed>> subscribe(Collection<WebFeed> feeds);
+    Flux<Entity<WebFeed>> subscribe(Collection<Entity<WebFeed>> feeds);
 
-    Flux<Entity<WebFeed>> addAndSubscribe(Collection<WebFeed> feeds);
+    Flux<Entity<WebFeed>> addAndSubscribe(Collection<Entity<WebFeed>> feeds);
 
     Mono<Integer> delete(Collection<String> toDelete);
 }

@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
+import fr.ght1pc9kc.baywatch.common.api.DefaultMeta;
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
@@ -23,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.NO_ONE;
 import static fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException.AUTHENTICATION_NOT_FOUND;
 
 @RequiredArgsConstructor
@@ -54,14 +56,14 @@ public class FeedServiceImpl implements FeedService {
                     }
                     return Tuples.of(QueryContext.from(pageRequest).withUserId(u.id()), u.id());
                 })
-                .switchIfEmpty(Mono.just(Tuples.of(QueryContext.from(pageRequest), Entity.NO_ONE)))
+                .switchIfEmpty(Mono.just(Tuples.of(QueryContext.from(pageRequest), NO_ONE)))
                 .flatMapMany(qc -> feedRepository.list(qc.getT1())
                         .map(re -> {
-                            String createdBy = Arrays.stream(re.createdBy().split(","))
+                            String createdBy = Arrays.stream(re.meta(DefaultMeta.createdBy).orElse(NO_ONE).split(","))
                                     .filter(u -> qc.getT2().equals(u))
-                                    .findAny().orElse(Entity.NO_ONE);
+                                    .findAny().orElse(NO_ONE);
                             return Entity.identify(re.self())
-                                    .createdBy(createdBy)
+                                    .meta(DefaultMeta.createdBy, createdBy)
                                     .withId(re.id());
                         }));
     }
@@ -80,22 +82,22 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public Mono<Entity<WebFeed>> update(WebFeed toPersist) {
+    public Mono<Entity<WebFeed>> update(Entity<WebFeed> toPersist) {
         if (toPersist == null
-                || toPersist.location().getScheme() == null
-                || !ALLOWED_PROTOCOL.contains(toPersist.location().getScheme().toLowerCase())) {
+                || toPersist.self().location().getScheme() == null
+                || !ALLOWED_PROTOCOL.contains(toPersist.self().location().getScheme().toLowerCase())) {
             return Mono.error(() -> new IllegalArgumentException("Illegal URL for Feed !"));
         }
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .flatMap(u -> feedRepository.update(toPersist.reference(), u.id(), toPersist));
+                .flatMap(u -> feedRepository.update(toPersist.id(), u.id(), toPersist.self()));
     }
 
     @Override
-    public Flux<Entity<WebFeed>> add(Collection<WebFeed> toAdd) {
+    public Flux<Entity<WebFeed>> add(Collection<Entity<WebFeed>> toAdd) {
         if (toAdd.stream().anyMatch(f -> (f == null
-                || f.location().getScheme() == null
-                || !ALLOWED_PROTOCOL.contains(f.location().getScheme().toLowerCase())))) {
+                || f.self().location().getScheme() == null
+                || !ALLOWED_PROTOCOL.contains(f.self().location().getScheme().toLowerCase())))) {
             return Flux.error(() -> new IllegalArgumentException("Illegal URL for Feed !"));
         }
         return authFacade.getConnectedUser()
@@ -105,7 +107,7 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public Flux<Entity<WebFeed>> subscribe(Collection<WebFeed> feeds) {
+    public Flux<Entity<WebFeed>> subscribe(Collection<Entity<WebFeed>> feeds) {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
                 .map(u -> Tuples.of(feeds, u.id()))
@@ -113,25 +115,21 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public Flux<Entity<WebFeed>> addAndSubscribe(Collection<WebFeed> feeds) {
+    public Flux<Entity<WebFeed>> addAndSubscribe(Collection<Entity<WebFeed>> feeds) {
         return add(feeds).thenMany(subscribe(feeds));
     }
 
-    private Mono<? extends Collection<WebFeed>> completeFeedData(Collection<WebFeed> feeds) {
+    private Mono<? extends Collection<Entity<WebFeed>>> completeFeedData(Collection<Entity<WebFeed>> feeds) {
         return Flux.fromIterable(feeds)
                 .parallel(4)
-                .flatMap(f -> scraperService.fetchFeedData(f.location()).map(a -> Tuples.of(f, a)))
+                .flatMap(f -> scraperService.fetchFeedData(f.self().location()).map(a -> Tuples.of(f, a)))
                 .sequential()
                 .map(t -> {
-                    WebFeed oldf = t.getT1();
+                    Entity<WebFeed> oldf = t.getT1();
                     WebFeed newf = t.getT2();
-                    return WebFeed.builder()
-                            .reference(oldf.reference())
+                    return oldf.convert(e -> e.toBuilder()
                             .description(newf.description())
-                            .name(oldf.name())
-                            .location(oldf.location())
-                            .tags(oldf.tags())
-                            .build();
+                            .build());
                 }).collectList();
     }
 

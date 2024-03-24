@@ -110,7 +110,7 @@ public class GraphQLFeedsController {
     public Mono<Entity<WebFeed>> subscribe(@Argument String id, @Argument String name, @Argument Collection<String> tags) {
         Set<String> tagsSet = Optional.ofNullable(tags).map(Set::copyOf).orElse(Set.of());
         return feedService.get(id)
-                .map(f -> f.self().toBuilder().name(name).tags(tagsSet).build())
+                .map(feed -> feed.convert(e -> e.toBuilder().name(name).tags(tagsSet).build()))
                 .flatMapMany(f -> feedService.subscribe(Collections.singleton(f)))
                 .next();
     }

@@ -17,7 +17,6 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -61,7 +60,7 @@ class TokenCookieManagerTest {
     })
     void should_build_token_cookie(String scheme, boolean rememberMe, String expected) {
         BaywatchAuthentication mockAuth = new BaywatchAuthentication(
-                new Entity<>(Hasher.sha3(User.ANONYMOUS.mail), Entity.NO_ONE, Instant.EPOCH, User.ANONYMOUS),
+                Entity.identify(User.ANONYMOUS).withId(Hasher.sha3(User.ANONYMOUS.mail)),
                 "FAKE_TOKEN", rememberMe, Collections.emptyList());
         ResponseCookie actual = tested.buildTokenCookie(scheme, mockAuth);
         Assertions.assertThat(actual.toString()).containsPattern(expected);

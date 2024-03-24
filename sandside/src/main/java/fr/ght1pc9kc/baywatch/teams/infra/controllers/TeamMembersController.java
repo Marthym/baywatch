@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.teams.infra.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
+import fr.ght1pc9kc.baywatch.common.api.DefaultMeta;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.teams.api.TeamsService;
 import fr.ght1pc9kc.baywatch.teams.api.model.TeamMember;
@@ -77,7 +78,7 @@ public class TeamMembersController {
                     Entity<TeamMember> meForTeam = currentUsers.get(teamId);
                     Map<String, Object> asMap;
                     if (isNull(meForTeam)) {
-                        asMap = mapper.convertValue(Entity.identify(User.ANONYMOUS).withId(Entity.NO_ONE), gqlType);
+                        asMap = mapper.convertValue(Entity.identify(User.ANONYMOUS).withId(DefaultMeta.NO_ONE), gqlType);
                     } else {
                         asMap = mapper.convertValue(meForTeam, gqlType);
                     }

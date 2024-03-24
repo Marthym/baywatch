@@ -6,7 +6,7 @@ import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
 import fr.ght1pc9kc.baywatch.scraper.domain.FeedScraperServiceImpl;
-import fr.ght1pc9kc.baywatch.scraper.domain.ports.NewsMaintenancePort;
+import fr.ght1pc9kc.baywatch.scraper.domain.ports.ScraperMaintenancePort;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperQualifier;
 import lombok.experimental.Delegate;
 import org.springframework.context.annotation.DependsOn;
@@ -25,7 +25,7 @@ public class FeedScraperServiceAdapter implements FeedScraperService {
     @Delegate
     private final FeedScraperService delegate;
 
-    public FeedScraperServiceAdapter(NewsMaintenancePort newsMaintenancePort,
+    public FeedScraperServiceAdapter(ScraperMaintenancePort scraperMaintenancePort,
                                      @ScraperQualifier Scheduler scraperScheduler,
                                      RssAtomParser rssAtomParser,
                                      Collection<ScrapingEventHandler> scrappingHandlers,
@@ -36,7 +36,7 @@ public class FeedScraperServiceAdapter implements FeedScraperService {
         Map<String, FeedScraperPlugin> plugins = scrapperPlugins.stream()
                 .collect(Collectors.toUnmodifiableMap(FeedScraperPlugin::pluginForDomain, Function.identity()));
         this.delegate = new FeedScraperServiceImpl(
-                scraperScheduler, newsMaintenancePort, webClient,
+                scraperScheduler, scraperMaintenancePort, webClient,
                 rssAtomParser, scrappingHandlers, plugins, scrapEnrichmentService);
     }
 }

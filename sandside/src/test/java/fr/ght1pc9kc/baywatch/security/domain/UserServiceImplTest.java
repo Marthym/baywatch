@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdAt;
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -123,8 +125,9 @@ class UserServiceImplTest {
         Entity<User> actual = actuals.getValue().getFirst();
         assertAll(
                 () -> Assertions.assertThat(actual.id()).isNotBlank(),
-                () -> Assertions.assertThat(actual.createdBy()).isEqualTo(actual.id()),
-                () -> Assertions.assertThat(actual.createdAt()).isEqualTo(CURRENT),
+                () -> Assertions.assertThat(actual.meta(createdBy)).isPresent().contains(actual.id()),
+                () -> Assertions.assertThat(actual.meta(createdAt, Instant.class))
+                        .isPresent().contains(CURRENT),
                 () -> Assertions.assertThat(actual.self()).isEqualTo(UserSamples.OBIWAN.self())
         );
     }
@@ -153,8 +156,8 @@ class UserServiceImplTest {
         Entity<User> actual = users.getValue().getFirst();
         assertAll(
                 () -> Assertions.assertThat(actual.id()).isNotBlank(),
-                () -> Assertions.assertThat(actual.createdBy()).isEqualTo(UserSamples.YODA.id()),
-                () -> Assertions.assertThat(actual.createdAt()).isEqualTo(CURRENT),
+                () -> Assertions.assertThat(actual.meta(createdBy)).isPresent().contains(UserSamples.YODA.id()),
+                () -> Assertions.assertThat(actual.meta(createdAt, Instant.class)).isPresent().contains(CURRENT),
                 () -> Assertions.assertThat(actual.self()).isEqualTo(UserSamples.OBIWAN.self())
         );
     }

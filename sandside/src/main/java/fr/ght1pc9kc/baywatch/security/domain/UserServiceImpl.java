@@ -35,6 +35,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.NO_ONE;
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdAt;
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdBy;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ROLES;
 import static fr.ght1pc9kc.baywatch.notify.api.model.EventType.USER_NOTIFICATION;
@@ -97,8 +100,8 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                         .switchIfEmpty(Mono.just(userId))
 
                         .map(currentUserId -> Entity.identify(withPassword)
-                                .createdAt(now)
-                                .createdBy(currentUserId)
+                                .meta(createdAt, now)
+                                .meta(createdBy, currentUserId)
                                 .withId(userId)))
 
                 .flatMap(entity -> userRepository.persist(List.of(entity)).single())
@@ -113,9 +116,9 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
 
     private Mono<Entity<User>> notifyAdmins(Entity<User> newUser) {
         return userRepository.list(QueryContext.all(Criteria.property(ROLES).eq(Role.ADMIN.toString())))
-                .filter(not(admin -> admin.id().equals(newUser.createdBy())))
+                .filter(not(admin -> admin.id().equals(newUser.meta(createdBy).orElse(NO_ONE))))
                 .map(admin -> notificationPort.send(admin.id(), USER_NOTIFICATION,
-                        String.format("New user %s created by %s.", newUser.self().login, newUser.createdBy())))
+                        String.format("New user %s created by %s.", newUser.self().login, newUser.meta(createdBy).orElse(NO_ONE))))
                 .then(Mono.just(newUser));
     }
 
@@ -232,8 +235,6 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                                 .password(null)
                                 .mail(null)
                                 .build())
-                        .createdBy(Entity.NO_ONE)
-                        .createdAt(Instant.EPOCH)
                         .withId(original.id())));
     }
 

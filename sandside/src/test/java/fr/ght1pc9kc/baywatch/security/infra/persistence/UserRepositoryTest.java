@@ -32,6 +32,7 @@ import reactor.test.StepVerifier;
 import java.time.Instant;
 import java.util.List;
 
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdAt;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 import static fr.ght1pc9kc.baywatch.dsl.tables.UsersRoles.USERS_ROLES;
@@ -74,7 +75,7 @@ class UserRepositoryTest {
         StepVerifier.create(tested.get(UsersRecordSamples.OKENOBI.getUserId()))
                 .assertNext(actual -> Assertions.assertAll(
                         () -> assertThat(actual.id()).isEqualTo(UserSamples.OBIWAN.id()),
-                        () -> assertThat(actual.createdAt()).isEqualTo(Instant.parse("1970-01-01T00:00:00Z")),
+                        () -> assertThat(actual.meta(createdAt, Instant.class)).isPresent().contains(Instant.parse("1970-01-01T00:00:00Z")),
                         () -> assertThat(actual.self().name).isEqualTo("Obiwan Kenobi"),
                         () -> assertThat(actual.self().login).isEqualTo("okenobi"),
                         () -> assertThat(actual.self().mail).isEqualTo("obiwan.kenobi@jedi.com"),
@@ -90,7 +91,7 @@ class UserRepositoryTest {
         StepVerifier.create(tested.get(UsersRecordSamples.LSKYWALKER.getUserId()))
                 .assertNext(actual -> Assertions.assertAll(
                         () -> assertThat(actual.id()).isEqualTo(UserSamples.LUKE.id()),
-                        () -> assertThat(actual.createdAt()).isEqualTo(Instant.parse("1970-01-01T00:00:00Z")),
+                        () -> assertThat(actual.meta(createdAt, Instant.class)).isPresent().contains(Instant.parse("1970-01-01T00:00:00Z")),
                         () -> assertThat(actual.self().name).isEqualTo("Luke Skywalker"),
                         () -> assertThat(actual.self().login).isEqualTo("lskywalker"),
                         () -> assertThat(actual.self().mail).isEqualTo("luke.skywalker@jedi.com"),
@@ -124,13 +125,16 @@ class UserRepositoryTest {
             assertThat(actual).containsExactly(2, 3);
         }
 
-        Entity<User> dvader = new Entity<>("US01GRQ15FNVC3XB8F1DD61J7WCC", Entity.NO_ONE, Instant.EPOCH,
-                User.builder()
+        Entity<User> dvader = Entity.identify(User.builder()
                         .login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur")
                         .role(Role.USER)
-                        .role(Permission.manager("TM01GP696RFPTY32WD79CVB0KDTF")).build());
-        Entity<User> dsidious = new Entity<>("US01GRQ15G42PH15Q4RTKGN8KBT4", Entity.NO_ONE, Instant.EPOCH,
-                User.builder().login("dsidious").name("Darth Sidious").mail("darth.sidious@sith.fr").password("obscur").role(Role.MANAGER).build());
+                        .role(Permission.manager("TM01GP696RFPTY32WD79CVB0KDTF")).build())
+                .withId("US01GRQ15FNVC3XB8F1DD61J7WCC");
+
+        Entity<User> dsidious = Entity.identify(User.builder()
+                        .login("dsidious").name("Darth Sidious").mail("darth.sidious@sith.fr").password("obscur")
+                        .role(Role.MANAGER).build())
+                .withId("US01GRQ15G42PH15Q4RTKGN8KBT4");
 
         StepVerifier.create(
                         tested.persist(List.of(dvader, dsidious)))
@@ -152,8 +156,11 @@ class UserRepositoryTest {
             assertThat(actual).isEqualTo(2);
         }
 
-        Entity<User> dvader = new Entity<>((Hasher.sha3("darth.vader@sith.fr")), Entity.NO_ONE, Instant.EPOCH,
-                User.builder().login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur").role(Role.USER).build());
+        Entity<User> dvader = Entity.identify(User.builder()
+                        .login("dvader").name("Darth Vader").mail("darth.vader@sith.fr").password("obscur")
+                        .role(Role.USER).build())
+                .withId(Hasher.sha3("darth.vader@sith.fr"));
+
         StepVerifier.create(
                         tested.persist(List.of(dvader, UserSamples.LUKE, UserSamples.OBIWAN, UserSamples.YODA)))
                 .verifyError(DataAccessException.class);
