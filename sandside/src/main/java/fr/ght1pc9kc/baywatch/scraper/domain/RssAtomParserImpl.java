@@ -46,7 +46,6 @@ public final class RssAtomParserImpl implements RssAtomParser {
     private static final String EMAIL = "email";
     private static final String ENTRY = "entry";
     private static final String FEED = "feed";
-    private static final String ID = "id";
     private static final String ITEM = "item";
     private static final String LAST_BUILD_DATE = "lastBuildDate";
     private static final String LINK = "link";
