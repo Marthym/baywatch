@@ -14,6 +14,7 @@ import java.util.Optional;
 
 @Slf4j
 public class PerformanceJooqListener implements ExecuteListener {
+    private static final long SLOW_QUERY_THRESHOLD = 400;
     private transient StopWatch watch;
 
     @Override
@@ -26,14 +27,22 @@ public class PerformanceJooqListener implements ExecuteListener {
     public void executeEnd(ExecuteContext ctx) {
         ExecuteListener.super.executeEnd(ctx);
         Duration elapsed = Duration.ofNanos(watch.split());
-        if (elapsed.toMillis() > 400) {
+        if (elapsed.toMillis() > SLOW_QUERY_THRESHOLD) {
             log.atWarn()
-                    .addArgument(elapsed)
+                    .addArgument(elapsed.toMillis())
                     .addArgument(() -> Optional.ofNullable(ctx.query())
                             .map(q -> q.getSQL(ParamType.INLINED))
                             .orElse("UNKNOWN"))
                     .addMarker(BaywatchLogsMakers.PERFORMANCE)
-                    .log("jOOQ Meta executed a slow query in {} \n\n {}");
+                    .log("Slow query executed in {}ms : {}");
+        } else if (log.isTraceEnabled()) {
+            log.atTrace()
+                    .addArgument(elapsed.toMillis())
+                    .addArgument(() -> Optional.ofNullable(ctx.query())
+                            .map(q -> q.getSQL(ParamType.INLINED))
+                            .orElse("UNKNOWN"))
+                    .addMarker(BaywatchLogsMakers.PERFORMANCE)
+                    .log("Query executed in {}ms : {}");
         }
     }
 
