@@ -54,8 +54,8 @@ public class OpmlServiceImpl implements OpmlService {
                 .flatMapMany(Exceptions.wrap().function(owner -> {
                     PipedOutputStream pos = new PipedOutputStream();
                     PipedInputStream pis = new PipedInputStream(pos);
-                    Flux<WebFeed> feeds = readOpml(pis);
-                    Mono<WebFeed> db = DataBufferUtils.write(data, pos)
+                    Flux<Entity<WebFeed>> feeds = readOpml(pis);
+                    Mono<Entity<WebFeed>> db = DataBufferUtils.write(data, pos)
                             .map(DataBufferUtils::release)
                             .doOnTerminate(Exceptions.wrap().runnable(() -> {
                                 pos.flush();
@@ -64,7 +64,7 @@ public class OpmlServiceImpl implements OpmlService {
                             .then(Mono.empty());
                     return Flux.merge(db, feeds)
                             .buffer(100)
-                            .flatMap(f -> feedRepository.persist(f).map(Entity::self).collectList())
+                            .flatMap(f -> feedRepository.persist(f).collectList())
                             .flatMap(f -> feedRepository.persistUserRelation(f, owner.id()));
                 })).then();
     }
@@ -88,7 +88,7 @@ public class OpmlServiceImpl implements OpmlService {
                 }).then();
     }
 
-    private Flux<WebFeed> readOpml(InputStream is) {
+    private Flux<Entity<WebFeed>> readOpml(InputStream is) {
         return Flux.create(sink ->
                 readerFactory.create(sink::next, sink::complete, sink::error).read(is));
     }

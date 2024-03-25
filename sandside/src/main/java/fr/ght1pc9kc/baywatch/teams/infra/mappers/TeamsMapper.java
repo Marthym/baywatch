@@ -1,47 +1,62 @@
 package fr.ght1pc9kc.baywatch.teams.infra.mappers;
 
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
+import fr.ght1pc9kc.baywatch.dsl.tables.Teams;
+import fr.ght1pc9kc.baywatch.dsl.tables.TeamsMembers;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.TeamsMembersRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.TeamsRecord;
 import fr.ght1pc9kc.baywatch.teams.api.model.Team;
 import fr.ght1pc9kc.baywatch.teams.api.model.TeamMember;
+import fr.ght1pc9kc.baywatch.teams.domain.model.PendingFor;
 import fr.ght1pc9kc.entity.api.Entity;
-import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Optional;
+
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.NO_ONE;
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdAt;
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdBy;
 
 @Mapper(componentModel = "spring",
-        imports = {DateUtils.class},
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TeamsMapper {
-    @Mapping(source = "teamId", target = "id")
-    @Mapping(source = "teamCreatedAt", target = "createdAt")
-    @Mapping(source = "teamCreatedBy", target = "createdBy")
-    @Mapping(source = "teamName", target = "self.name")
-    @Mapping(source = "teamTopic", target = "self.topic")
-    Entity<Team> getTeamEntity(TeamsRecord teamsRecord);
+    default Entity<Team> getTeamEntity(TeamsRecord teamsRecord) {
+        return Entity.identify(new Team(teamsRecord.getTeamName(), teamsRecord.getTeamTopic()))
+                .meta(createdAt, Optional.ofNullable(teamsRecord.getTeamCreatedAt())
+                        .map(DateUtils::toInstant).orElse(null))
+                .meta(createdBy, teamsRecord.getTeamCreatedBy())
+                .withId(teamsRecord.getTeamId());
+    }
 
-    @InheritInverseConfiguration
-    @Mapping(target = "teamCreatedAt", expression = "java( DateUtils.toLocalDateTime(team.createdAt()) )")
-    TeamsRecord getTeamRecord(Entity<Team> team);
+    default TeamsRecord getTeamRecord(Entity<Team> team) {
+        return Teams.TEAMS.newRecord()
+                .setTeamId(team.id())
+                .setTeamCreatedAt(team.meta(createdAt, Instant.class)
+                        .map(DateUtils::toLocalDateTime).orElse(LocalDateTime.MIN))
+                .setTeamCreatedBy(team.meta(createdBy).orElse(NO_ONE))
+                .setTeamName(team.self().name())
+                .setTeamTopic(team.self().topic());
+    }
 
-    @Mapping(source = "temeTeamId", target = "id")
-    @Mapping(source = "temeCreatedAt", target = "createdAt")
-    @Mapping(source = "temeCreatedBy", target = "createdBy")
-    @Mapping(source = "temeUserId", target = "self.userId")
-    @Mapping(target = "self.pending", expression = "java( PendingFor.from(teamsMembersRecord.getTemePendingFor()) )")
-    Entity<TeamMember> getMemberEntity(TeamsMembersRecord teamsMembersRecord);
+    default Entity<TeamMember> getMemberEntity(TeamsMembersRecord teamsMembersRecord) {
+        return Entity.identify(new TeamMember(
+                        teamsMembersRecord.getTemeUserId(), PendingFor.from(teamsMembersRecord.getTemePendingFor())))
+                .meta(createdAt, Optional.ofNullable(teamsMembersRecord.getTemeCreatedAt())
+                        .map(DateUtils::toInstant).orElse(null))
+                .meta(createdBy, teamsMembersRecord.getTemeCreatedBy())
+                .withId(teamsMembersRecord.getTemeTeamId());
+    }
 
-    @InheritInverseConfiguration
-    @Mapping(target = "temePendingFor", expression = "java( request.self().pending().value() )")
-    @Mapping(target = "temeCreatedAt", expression = "java( DateUtils.toLocalDateTime(request.createdAt()) )")
-    TeamsMembersRecord getTeamsMemberRecord(Entity<TeamMember> request);
-
-    default Instant fromLocalDateTime(LocalDateTime date) {
-        return DateUtils.toInstant(date);
+    default TeamsMembersRecord getTeamsMemberRecord(Entity<TeamMember> request) {
+        return TeamsMembers.TEAMS_MEMBERS.newRecord()
+                .setTemeTeamId(request.id())
+                .setTemeCreatedAt(request.meta(createdAt, Instant.class)
+                        .map(DateUtils::toLocalDateTime).orElse(LocalDateTime.MIN))
+                .setTemeCreatedBy(request.meta(createdBy).orElse(NO_ONE))
+                .setTemePendingFor(request.self().pending().value())
+                .setTemeUserId(request.self().userId());
     }
 }

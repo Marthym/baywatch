@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
+import fr.ght1pc9kc.baywatch.common.api.DefaultMeta;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.api.PopularNewsService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Popularity;
@@ -42,7 +43,9 @@ public class PopularNewsServiceImpl implements PopularNewsService {
                 .flatMapMany(stateRepository::list)
                 .bufferUntilChanged(Entity::id)
                 .map(states -> {
-                    Set<String> fans = states.stream().map(Entity::createdBy).collect(Collectors.toUnmodifiableSet());
+                    Set<String> fans = states.stream()
+                            .map(s -> s.meta(DefaultMeta.createdBy).orElse(DefaultMeta.NO_ONE))
+                            .collect(Collectors.toUnmodifiableSet());
                     return new Popularity(states.getFirst().id(), fans.size(), fans);
                 });
     }

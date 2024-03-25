@@ -9,6 +9,7 @@ import fr.ght1pc9kc.baywatch.security.domain.exceptions.SecurityException;
 import fr.ght1pc9kc.baywatch.security.domain.ports.JwtTokenProvider;
 import fr.ght1pc9kc.entity.api.Entity;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -37,8 +38,7 @@ class JwtBaywatchAuthenticationProviderImplTest {
 
     @Test
     void should_create_token() throws IOException {
-        Entity<User> user = new Entity<>("42", Entity.NO_ONE, Instant.EPOCH, User.builder().login("okenobi")
-                .role(Role.USER).build());
+        Entity<User> user = Entity.identify(User.builder().login("okenobi").role(Role.USER).build()).withId("42");
         String actual = tested.createToken(user, false, Collections.emptyList()).token();
 
         Assertions.assertThat(actual).isNotBlank();
@@ -55,8 +55,11 @@ class JwtBaywatchAuthenticationProviderImplTest {
         BaywatchAuthentication actual = tested.getAuthentication(GOOD_TOKEN);
 
         Assertions.assertThat(actual.token()).isEqualTo(GOOD_TOKEN);
-        Assertions.assertThat(actual.user()).isEqualTo(
-                new Entity<>("42", Entity.NO_ONE, Instant.EPOCH, User.builder().login("okenobi").role(Role.USER).build()));
+        SoftAssertions.assertSoftly(soft -> {
+            Assertions.assertThat(actual.user().self()).isEqualTo(
+                    User.builder().login("okenobi").role(Role.USER).build());
+            Assertions.assertThat(actual.user().id()).isEqualTo("42");
+        });
     }
 
     @Test

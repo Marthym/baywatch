@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.infra.adapters;
 
+import fr.ght1pc9kc.baywatch.common.api.DefaultMeta;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRolesRecord;
@@ -11,8 +12,6 @@ import fr.ght1pc9kc.entity.api.Entity;
 import org.jooq.Record;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.NullValueCheckStrategy;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
 import java.time.Instant;
@@ -22,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdAt;
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdBy;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Users.USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.UsersRoles.USERS_ROLES;
 
@@ -58,16 +59,20 @@ public interface UserMapper {
     @Mapping(expression = "java( role.toString() )", target = "usroRole")
     UsersRolesRecord permissionToRecord(Permission role);
 
-    @Mapping(source = "id", target = "userId")
-    @Mapping(source = "createdAt", target = "userCreatedAt")
-    @Mapping(source = "createdBy", target = "userCreatedBy")
-    @Mapping(source = "self.login", target = "userLogin")
-    @Mapping(source = "self.name", target = "userName")
-    @Mapping(source = "self.mail", target = "userEmail")
-    @Mapping(source = "self.password", target = "userPassword",
-            nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
-            nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    UsersRecord entityUserToRecord(Entity<User> user);
+    default UsersRecord entityUserToRecord(Entity<User> user) {
+        UsersRecord usersRecord = USERS.newRecord()
+                .setUserId(user.id())
+                .setUserCreatedAt(user.meta(createdAt, Instant.class)
+                        .map(DateUtils::toLocalDateTime).orElse(LocalDateTime.MIN))
+                .setUserCreatedBy(user.meta(createdBy).orElse("_"))
+                .setUserLogin(user.self().login)
+                .setUserName(user.self().name)
+                .setUserEmail(user.self().mail);
+        if (user.self().password != null) {
+            usersRecord.setUserPassword(user.self().password);
+        }
+        return usersRecord;
+    }
 
     default Entity<User> recordToUserEntity(Record usersRecord) {
         String roles = usersRecord.get(USERS_ROLES.USRO_ROLE);
@@ -87,8 +92,8 @@ public interface UserMapper {
                         .password(usersRecord.get(USERS.USER_PASSWORD))
                         .roles(permissions)
                         .build())
-                .createdAt(DateUtils.toInstant(usersRecord.get(USERS.USER_CREATED_AT)))
-                .createdBy(usersRecord.get(USERS.USER_CREATED_BY))
+                .meta(createdAt, DateUtils.toInstant(usersRecord.get(USERS.USER_CREATED_AT)))
+                .meta(DefaultMeta.createdBy, usersRecord.get(USERS.USER_CREATED_BY))
                 .withId(usersRecord.get(USERS.USER_ID));
     }
 

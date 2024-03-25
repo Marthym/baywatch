@@ -22,6 +22,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdBy;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.FEED_ID;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.NEWS_ID;
 import static fr.ght1pc9kc.baywatch.tests.samples.FeedSamples.JEDI;
@@ -55,7 +56,7 @@ class NewsServiceImplTest {
         mockAuthFacade = mock(AuthenticationFacade.class);
         StatePersistencePort mockStateRepository = mock(StatePersistencePort.class);
         when(mockStateRepository.list(any())).thenReturn(Flux.just(
-                Entity.identify(MAY_THE_FORCE.getState()).createdBy(OBIWAN.id()).withId(MAY_THE_FORCE.id())
+                Entity.identify(MAY_THE_FORCE.getState()).meta(createdBy, OBIWAN.id()).withId(MAY_THE_FORCE.id())
         ));
         FeedPersistencePort mockFeedRepository = mock(FeedPersistencePort.class);
         when(mockFeedRepository.list(any())).thenReturn(Flux.fromIterable(FeedSamples.SAMPLES));
@@ -123,7 +124,7 @@ class NewsServiceImplTest {
         verify(mockNewsPersistence, times(1)).list(captor.capture());
         Assertions.assertThat(captor.getValue().filter).isEqualTo(
                 Criteria.or( // FEED_ID in the 2 FEEDS ids plus the ID of the connected user
-                        Criteria.property(FEED_ID).in(JEDI.id(), SITH.id(), LUKE.id()),
+                        Criteria.property(FEED_ID).in(SITH.id(), JEDI.id(), LUKE.id()),
                         Criteria.property(NEWS_ID).in(MAY_THE_FORCE.id())
                 )
         );
@@ -147,7 +148,7 @@ class NewsServiceImplTest {
         verify(mockNewsPersistence, times(1)).count(captor.capture());
         Assertions.assertThat(captor.getValue().filter).isEqualTo(
                 Criteria.or(// FEED_ID in the 2 FEEDS ids plus the ID of the connected user
-                        Criteria.property(FEED_ID).in(JEDI.id(), SITH.id(), LUKE.id()),
+                        Criteria.property(FEED_ID).in(SITH.id(), JEDI.id(), LUKE.id()),
                         Criteria.property(NEWS_ID).in(MAY_THE_FORCE.id())
                 )
         );
@@ -174,7 +175,7 @@ class NewsServiceImplTest {
         verify(mockNewsPersistence, times(1)).list(captor.capture());
         Assertions.assertThat(captor.getValue().filter).isEqualTo(
                 Criteria.or( // FEED_ID in the 2 FEEDS ids plus the ID of the connected user
-                        Criteria.property(FEED_ID).in(JEDI.id(), SITH.id(), LUKE.id()),
+                        Criteria.property(FEED_ID).in(SITH.id(), JEDI.id(), LUKE.id()),
                         Criteria.property(NEWS_ID).in(MAY_THE_FORCE.id())
                 )
         );

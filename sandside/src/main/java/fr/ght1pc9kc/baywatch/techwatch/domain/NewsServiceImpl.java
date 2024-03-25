@@ -104,7 +104,11 @@ public class NewsServiceImpl implements NewsService {
                     Mono<List<String>> feeds = getFeedFor(qCtx, props);
 
                     return Mono.zip(states, feeds).map(contexts -> {
-                        Criteria filters = Criteria.property(FEED_ID).in(contexts.getT2());
+                        List<String> feedsIds = contexts.getT2().stream()
+                                .sorted()
+                                .distinct()
+                                .toList();
+                        Criteria filters = Criteria.property(FEED_ID).in(feedsIds);
                         if (!contexts.getT1().isEmpty()) {
                             filters = Criteria.or(filters, Criteria.property(NEWS_ID).in(contexts.getT1()));
                         }
@@ -121,7 +125,7 @@ public class NewsServiceImpl implements NewsService {
     }
 
     /**
-     * <p>Return the list of {@link WebFeed#reference()} corresponding to the {@link QueryContext}.</p>
+     * <p>Return the list of {@link WebFeed} IDs corresponding to the {@link QueryContext}.</p>
      * <p>The User ID was concat to the list because User ID was the ID of the Feed containing orphan News</p>
      * <p>{@link Pagination} was removed from {@link QueryContext} because it must only impact the main query, Feed
      * query must not be impacted by the offset</p>

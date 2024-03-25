@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
+import fr.ght1pc9kc.baywatch.common.api.model.FeedMeta;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
@@ -19,6 +20,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
+import java.util.Map;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.FEED_ID;
 
@@ -51,6 +53,15 @@ public class SystemMaintenanceServiceImpl implements SystemMaintenanceService {
                 .map(u -> QueryContext.all(Criteria.property(FEED_ID).in(toDelete)))
                 .flatMap(feedRepository::delete)
                 .map(FeedDeletedResult::purged);
+    }
+
+    @Override
+    public Mono<Void> feedsUpdate(Collection<Entity<WebFeed>> toUpdate) {
+        return authFacade.getConnectedUser()
+                .filter(user -> RoleUtils.hasRole(user.self(), Role.SYSTEM))
+                .switchIfEmpty(Mono.error(() -> new UnauthorizedException(EXCEPTION_MESSAGE)))
+                .flatMapMany(q -> feedRepository.update(toUpdate))
+                .then();
     }
 
     @Override

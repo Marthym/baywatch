@@ -30,6 +30,8 @@ public interface SystemMaintenanceService {
 
     Mono<Integer> feedDelete(Collection<String> toDelete);
 
+    Mono<Void> feedsUpdate(Collection<Entity<WebFeed>> toUpdate);
+
     /**
      * List {@link News} for connected user or {@link News} for anonymous.
      * For Anonymous, {@link State} is always

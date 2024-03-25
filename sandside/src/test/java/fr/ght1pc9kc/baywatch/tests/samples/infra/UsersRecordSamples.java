@@ -5,16 +5,20 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.testy.jooq.model.RelationalDataSet;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+
+import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdAt;
 
 public class UsersRecordSamples implements RelationalDataSet<UsersRecord> {
     public static final UsersRecordSamples SAMPLE = new UsersRecordSamples();
 
     public static final UsersRecord OKENOBI = Users.USERS.newRecord()
             .setUserId(UserSamples.OBIWAN.id())
-            .setUserCreatedAt(UserSamples.OBIWAN.createdAt().atOffset(ZoneOffset.UTC).toLocalDateTime())
+            .setUserCreatedAt(UserSamples.OBIWAN.meta(createdAt, Instant.class)
+                    .map(i -> i.atOffset(ZoneOffset.UTC).toLocalDateTime()).orElseThrow())
             .setUserLogin(UserSamples.OBIWAN.self().login)
             .setUserName(UserSamples.OBIWAN.self().name)
             .setUserPassword(UserSamples.OBIWAN.self().password)
@@ -22,7 +26,8 @@ public class UsersRecordSamples implements RelationalDataSet<UsersRecord> {
 
     public static final UsersRecord LSKYWALKER = Users.USERS.newRecord()
             .setUserId(UserSamples.LUKE.id())
-            .setUserCreatedAt(UserSamples.LUKE.createdAt().atOffset(ZoneOffset.UTC).toLocalDateTime())
+            .setUserCreatedAt(UserSamples.LUKE.meta(createdAt, Instant.class)
+                    .map(i -> i.atOffset(ZoneOffset.UTC).toLocalDateTime()).orElseThrow())
             .setUserLogin(UserSamples.LUKE.self().login)
             .setUserName(UserSamples.LUKE.self().name)
             .setUserPassword(UserSamples.LUKE.self().password)

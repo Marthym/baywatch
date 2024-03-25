@@ -11,7 +11,7 @@ import fr.ght1pc9kc.baywatch.scraper.domain.ScrapEnrichmentServiceImpl;
 import fr.ght1pc9kc.baywatch.scraper.domain.filters.OpenGraphFilter;
 import fr.ght1pc9kc.baywatch.scraper.domain.filters.SanitizerFilter;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
-import fr.ght1pc9kc.baywatch.scraper.domain.ports.NewsMaintenancePort;
+import fr.ght1pc9kc.baywatch.scraper.domain.ports.ScraperMaintenancePort;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperApplicationProperties;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperConfiguration;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.WebClientConfiguration;
@@ -56,6 +56,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.Period;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -74,7 +75,7 @@ class FeedScraperIntegrationTest {
     private static HttpServer server;
 
     private ScraperTaskScheduler tested;
-    private final NewsMaintenancePort mockMaintenancePort = mock(NewsMaintenancePort.class);
+    private final ScraperMaintenancePort mockMaintenancePort = mock(ScraperMaintenancePort.class);
 
     @BeforeAll
     static void beforeAll() throws IOException {
@@ -177,7 +178,8 @@ class FeedScraperIntegrationTest {
     void should_scrap_feeds(String feed, String expected) {
         URI BASE_URI = URI.create(String.format("http://%s:%d/", server.getAddress().getHostName(), server.getAddress().getPort()));
         when(mockMaintenancePort.feedList()).thenReturn(
-                Flux.just(new ScrapedFeed("1", BASE_URI.resolve(feed)))
+                Flux.just(new ScrapedFeed("1", BASE_URI.resolve(feed),
+                        Instant.parse("2024-02-21T17:11:42Z"), null))
         );
         ArgumentCaptor<Collection<News>> loadCaptor = ArgumentCaptor.forClass(Collection.class);
         when(mockMaintenancePort.newsLoad(loadCaptor.capture()))
