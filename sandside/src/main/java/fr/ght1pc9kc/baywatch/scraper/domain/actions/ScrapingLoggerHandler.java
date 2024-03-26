@@ -1,13 +1,14 @@
 package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
-import fr.ght1pc9kc.baywatch.common.api.ScrapingEventHandler;
+import fr.ght1pc9kc.baywatch.scraper.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapResult;
+import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingEventType;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.FeedScrapingException;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.NewsScrapingException;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
-import java.util.Set;
+import java.util.EnumSet;
 
 @Slf4j
 public class ScrapingLoggerHandler implements ScrapingEventHandler {
@@ -32,7 +33,7 @@ public class ScrapingLoggerHandler implements ScrapingEventHandler {
     }
 
     @Override
-    public Set<String> eventTypes() {
-        return Set.of("FEED_SCRAPING");
+    public EnumSet<ScrapingEventType> eventTypes() {
+        return EnumSet.of(ScrapingEventType.FEED_SCRAPING);
     }
 }

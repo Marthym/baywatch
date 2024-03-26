@@ -1,0 +1,8 @@
+create table FEED_ERRORS
+(
+    FEER_FEED_ID     VARCHAR(64) not null primary key,
+    FEER_SINCE       DATETIME,
+    FEER_LAST_TIME   DATETIME,
+    FEED_LAST_STATUS INTEGER(3),
+    FEED_LAST_LABEL  TEXT
+);

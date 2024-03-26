@@ -1,9 +1,10 @@
-package fr.ght1pc9kc.baywatch.common.api;
+package fr.ght1pc9kc.baywatch.scraper.api;
 
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapResult;
+import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingEventType;
 import reactor.core.publisher.Mono;
 
-import java.util.Set;
+import java.util.EnumSet;
 
 /**
  * The Scrapping Handlers allow inserting action before and after some type of events
@@ -44,5 +45,5 @@ public interface ScrapingEventHandler {
      *
      * @return A set of event types
      */
-    Set<String> eventTypes();
+    EnumSet<ScrapingEventType> eventTypes();
 }

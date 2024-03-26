@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
-import fr.ght1pc9kc.baywatch.common.api.ScrapingEventHandler;
+import fr.ght1pc9kc.baywatch.scraper.api.ScrapingEventHandler;
+import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingEventType;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperApplicationProperties;
 import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
@@ -13,7 +14,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.EnumSet;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.PUBLICATION;
 
@@ -42,7 +43,7 @@ public class PurgeNewsHandler implements ScrapingEventHandler {
     }
 
     @Override
-    public Set<String> eventTypes() {
-        return Set.of("FEED_SCRAPING");
+    public EnumSet<ScrapingEventType> eventTypes() {
+        return EnumSet.of(ScrapingEventType.FEED_SCRAPING);
     }
 }
