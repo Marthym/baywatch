@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingEventType;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperApplicationProperties;
-import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.juery.api.Criteria;
 import lombok.RequiredArgsConstructor;

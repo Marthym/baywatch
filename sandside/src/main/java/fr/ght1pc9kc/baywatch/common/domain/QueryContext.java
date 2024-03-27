@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.techwatch.domain.model;
+package fr.ght1pc9kc.baywatch.common.domain;
 
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;

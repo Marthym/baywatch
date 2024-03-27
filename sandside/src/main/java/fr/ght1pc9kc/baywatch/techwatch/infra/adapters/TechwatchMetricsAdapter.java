@@ -2,7 +2,7 @@ package fr.ght1pc9kc.baywatch.techwatch.infra.adapters;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.infra.persistence.FeedRepository;
 import fr.ght1pc9kc.baywatch.techwatch.infra.persistence.NewsRepository;
 import io.micrometer.core.instrument.Gauge;
