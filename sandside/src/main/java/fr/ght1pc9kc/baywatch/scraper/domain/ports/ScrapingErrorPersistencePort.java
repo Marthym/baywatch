@@ -13,5 +13,5 @@ public interface ScrapingErrorPersistencePort {
 
     Flux<Entity<ScrapingError>> list(QueryContext query);
 
-    Mono<Void> purge(QueryContext query);
+    Mono<Void> delete(QueryContext query);
 }

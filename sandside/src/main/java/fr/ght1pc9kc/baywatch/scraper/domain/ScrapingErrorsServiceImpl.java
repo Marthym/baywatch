@@ -37,6 +37,6 @@ public class ScrapingErrorsServiceImpl implements ScrapingErrorsService {
     @Override
     public Mono<Void> purge(Collection<String> notInFeedsIds) {
         QueryContext query = QueryContext.all(Criteria.not(Criteria.property(ID).in(notInFeedsIds)));
-        return persistencePort.purge(query);
+        return persistencePort.delete(query);
     }
 }
