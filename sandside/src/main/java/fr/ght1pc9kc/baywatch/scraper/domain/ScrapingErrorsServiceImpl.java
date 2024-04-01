@@ -37,6 +37,9 @@ public class ScrapingErrorsServiceImpl implements ScrapingErrorsService {
     @Override
     public Mono<Void> purge(Collection<String> notInFeedsIds) {
         QueryContext query = QueryContext.all(Criteria.not(Criteria.property(ID).in(notInFeedsIds)));
-        return persistencePort.delete(query);
+        return authentFacade.getConnectedUser()
+                .filter(authentFacade::hasSystemRole)
+                .switchIfEmpty(Mono.error(() -> new IllegalAccessException("Persis scraping error not permitted !")))
+                .flatMap(u -> persistencePort.delete(query));
     }
 }

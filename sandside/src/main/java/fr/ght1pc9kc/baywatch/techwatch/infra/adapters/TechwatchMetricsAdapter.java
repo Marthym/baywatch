@@ -1,8 +1,7 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.adapters;
 
-import com.google.common.util.concurrent.AtomicDouble;
-import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
+import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.infra.persistence.FeedRepository;
 import fr.ght1pc9kc.baywatch.techwatch.infra.persistence.NewsRepository;
 import io.micrometer.core.instrument.Gauge;
@@ -13,6 +12,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 @RequiredArgsConstructor
@@ -21,8 +21,8 @@ public class TechwatchMetricsAdapter {
     private final NewsRepository newsRepository;
     private final FeedRepository feedRepository;
 
-    private final AtomicDouble newsCount = new AtomicDouble();
-    private final AtomicDouble feedsCount = new AtomicDouble();
+    private final AtomicInteger newsCount = new AtomicInteger();
+    private final AtomicInteger feedsCount = new AtomicInteger();
 
     @PostConstruct
     public void postConstruct() {
@@ -35,13 +35,13 @@ public class TechwatchMetricsAdapter {
                 .cache(Duration.ofMinutes(10));
 
         Gauge.builder("bw.news.count", () -> {
-                    newsCountEvent.subscribe(count -> newsCount.set(count.doubleValue()));
+                    newsCountEvent.subscribe(newsCount::set);
                     return newsCount.get();
                 }).description("Total number of News")
                 .register(registry);
 
         Gauge.builder("bw.feeds.count", () -> {
-                    feedsCountEvent.subscribe(count -> feedsCount.set(count.doubleValue()));
+                    feedsCountEvent.subscribe(feedsCount::set);
                     return feedsCount.get();
                 }).description("Total number of Feeds")
                 .register(registry);

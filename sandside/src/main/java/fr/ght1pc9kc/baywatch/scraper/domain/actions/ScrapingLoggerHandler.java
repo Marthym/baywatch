@@ -17,12 +17,12 @@ public class ScrapingLoggerHandler implements ScrapingEventHandler {
         return Mono.just(result).map(r -> {
             log.info("Scraping finished, {} news inserted, {} error(s).", result.inserted(), result.errors().size());
             result.errors().forEach(se -> {
-                if (se instanceof FeedScrapingException fse) {
-                    log.warn("{} => {}: {}", fse.getEntity().link(), fse.getClass(), fse.getLocalizedMessage());
-                } else if (se instanceof NewsScrapingException nse) {
-                    log.warn("{} => {}: {}", nse.getEntity().link(), nse.getClass(), nse.getLocalizedMessage());
-                } else {
-                    log.warn("UNKNOWN => {}: {}", se.getClass(), se.getLocalizedMessage());
+                switch (se) {
+                    case FeedScrapingException fse ->
+                            log.warn("{} => {}: {}", fse.getEntity().link(), fse.getClass(), fse.getLocalizedMessage());
+                    case NewsScrapingException nse ->
+                            log.warn("{} => {}: {}", nse.getEntity().link(), nse.getClass(), nse.getLocalizedMessage());
+                    default -> log.warn("UNKNOWN => {}: {}", se.getClass(), se.getLocalizedMessage());
                 }
                 if (log.isDebugEnabled()) {
                     log.debug("STACKTRACE", se);

@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.tests.samples.infra;
 
-import com.google.common.base.Joiner;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
@@ -56,7 +55,7 @@ public class FeedRecordSamples implements RelationalDataSet<FeedsRecord> {
                 feedsUsersRecords.add(FEEDS_USERS.newRecord()
                         .setFeusFeedId(fr.getFeedId())
                         .setFeusUserId(UsersRecordSamples.OKENOBI.getUserId())
-                        .setFeusTags(Joiner.on(',').join(tags.subList(idx - 1, idx + 1))));
+                        .setFeusTags(String.join(",", tags.subList(idx - 1, idx + 1))));
 
                 if (idx++ < 3) {
                     feedsUsersRecords.add(FEEDS_USERS.newRecord()
