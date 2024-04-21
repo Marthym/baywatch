@@ -1,12 +1,12 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
 import fr.ght1pc9kc.baywatch.common.api.DefaultMeta;
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsUserStateRecord;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
-import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -45,9 +45,9 @@ public class StateRepository implements StatePersistencePort {
     @Override
     public Flux<Entity<State>> list(QueryContext queryContext) {
         var query = dsl.selectQuery(NEWS_USER_STATE);
-        query.addConditions(queryContext.getFilter().accept(STATE_CONDITION_VISITOR));
+        query.addConditions(queryContext.filter().accept(STATE_CONDITION_VISITOR));
         if (queryContext.isScoped()) {
-            query.addConditions(NEWS_USER_STATE.NURS_USER_ID.eq(queryContext.getUserId()));
+            query.addConditions(NEWS_USER_STATE.NURS_USER_ID.eq(queryContext.userId()));
         }
         return Flux.<NewsUserStateRecord>create(sink -> {
                     Cursor<NewsUserStateRecord> cursor = query.fetchLazy();

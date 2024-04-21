@@ -1,11 +1,11 @@
 package fr.ght1pc9kc.baywatch.teams.infra.adapters;
 
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.TeamsRecord;
 import fr.ght1pc9kc.baywatch.teams.api.model.Team;
 import fr.ght1pc9kc.baywatch.teams.domain.ports.TeamPersistencePort;
 import fr.ght1pc9kc.baywatch.teams.infra.mappers.TeamsMapper;
-import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
@@ -39,9 +39,9 @@ public class TeamPersistenceAdapter implements TeamPersistencePort {
     @Override
     @SuppressWarnings("resource")
     public Flux<Entity<Team>> list(QueryContext qCtx) {
-        Condition conditions = qCtx.filter.accept(JOOQ_CONDITION_VISITOR);
+        Condition conditions = qCtx.filter().accept(JOOQ_CONDITION_VISITOR);
         Select<TeamsRecord> select = JooqPagination.apply(
-                qCtx.pagination, TEAMS_PROPERTIES_MAPPING,
+                qCtx.pagination(), TEAMS_PROPERTIES_MAPPING,
                 dsl.selectFrom(TEAMS)
                         .where(conditions));
 
@@ -61,7 +61,7 @@ public class TeamPersistenceAdapter implements TeamPersistencePort {
 
     @Override
     public Mono<Integer> count(QueryContext qCtx) {
-        Condition conditions = qCtx.filter.accept(JOOQ_CONDITION_VISITOR);
+        Condition conditions = qCtx.filter().accept(JOOQ_CONDITION_VISITOR);
         return Mono.fromCallable(() -> dsl.fetchCount(dsl.selectFrom(TEAMS).where(conditions)))
                 .subscribeOn(databaseScheduler);
     }

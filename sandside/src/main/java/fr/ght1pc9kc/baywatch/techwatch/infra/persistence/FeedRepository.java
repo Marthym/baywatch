@@ -1,12 +1,12 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.common.infra.adapters.PerformanceJooqListener;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
-import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.entity.api.Entity;
@@ -199,7 +199,7 @@ public class FeedRepository implements FeedPersistencePort {
 
     @Override
     public Mono<FeedDeletedResult> delete(QueryContext qCtx) {
-        Condition feedsUsersConditions = qCtx.filter.accept(FeedConditionsVisitors.feedUserIdVisitor());
+        Condition feedsUsersConditions = qCtx.filter().accept(FeedConditionsVisitors.feedUserIdVisitor());
         final Optional<Query> deleteUserLinkQuery;
         if (DSL.noCondition().equals(feedsUsersConditions)) {
             deleteUserLinkQuery = Optional.empty();
@@ -207,12 +207,12 @@ public class FeedRepository implements FeedPersistencePort {
             var query = dsl.deleteQuery(FEEDS_USERS);
             query.addConditions(feedsUsersConditions);
             if (qCtx.isScoped()) {
-                query.addConditions(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId));
+                query.addConditions(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId()));
             }
             deleteUserLinkQuery = Optional.of(query);
         }
 
-        Condition newsFeedConditions = qCtx.filter.accept(FeedConditionsVisitors.newsFeedIdVisitor());
+        Condition newsFeedConditions = qCtx.filter().accept(FeedConditionsVisitors.newsFeedIdVisitor());
         final Optional<Query> deleteNewsFeedQuery;
         if (DSL.noCondition().equals(newsFeedConditions)) {
             deleteNewsFeedQuery = Optional.empty();
@@ -222,7 +222,7 @@ public class FeedRepository implements FeedPersistencePort {
                             dsl.select(FEEDS_USERS.FEUS_FEED_ID).from(FEEDS_USERS).where(feedsUsersConditions))));
         }
 
-        Condition feedsConditions = qCtx.filter.accept(FeedConditionsVisitors.feedIdVisitor());
+        Condition feedsConditions = qCtx.filter().accept(FeedConditionsVisitors.feedIdVisitor());
         final Optional<Query> deleteFeedQuery;
         if (DSL.noCondition().equals(feedsConditions)) {
             deleteFeedQuery = Optional.empty();
@@ -243,7 +243,7 @@ public class FeedRepository implements FeedPersistencePort {
     }
 
     private Select<Record> buildSelectQuery(QueryContext qCtx) {
-        Condition conditions = qCtx.filter.accept(JOOQ_CONDITION_VISITOR);
+        Condition conditions = qCtx.filter().accept(JOOQ_CONDITION_VISITOR);
         SelectQuery<Record> select = dsl.selectQuery();
         select.addSelect(FEEDS.fields());
         select.addFrom(FEEDS);
@@ -252,16 +252,16 @@ public class FeedRepository implements FeedPersistencePort {
         if (qCtx.isScoped()) {
             select.addSelect(FEEDS_USERS.FEUS_TAGS, FEEDS_USERS.FEUS_FEED_NAME);
             select.addJoin(FEEDS_USERS, JoinType.JOIN,
-                    FEEDS.FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID).and(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId)));
+                    FEEDS.FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID).and(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId())));
         } else {
             select.addSelect(DSL.groupConcat(FEEDS_USERS.FEUS_USER_ID).as(FEEDS_USERS.FEUS_USER_ID));
             select.addJoin(FEEDS_USERS, JoinType.LEFT_OUTER_JOIN,
                     FEEDS.FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID));
             select.addGroupBy(FEEDS.fields());
-            Condition havings = qCtx.filter.accept(FeedConditionsVisitors.feedUserHavingVisitor());
+            Condition havings = qCtx.filter().accept(FeedConditionsVisitors.feedUserHavingVisitor());
             select.addHaving(havings);
         }
 
-        return JooqPagination.apply(qCtx.pagination, FEEDS_PROPERTIES_MAPPING, select);
+        return JooqPagination.apply(qCtx.pagination(), FEEDS_PROPERTIES_MAPPING, select);
     }
 }

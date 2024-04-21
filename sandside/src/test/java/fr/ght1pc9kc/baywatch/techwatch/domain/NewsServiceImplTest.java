@@ -122,7 +122,7 @@ class NewsServiceImplTest {
         Assertions.assertThat(userIdCaptor.getValue()).isEqualTo(LUKE.id());
 
         verify(mockNewsPersistence, times(1)).list(captor.capture());
-        Assertions.assertThat(captor.getValue().filter).isEqualTo(
+        Assertions.assertThat(captor.getValue().filter()).isEqualTo(
                 Criteria.or( // FEED_ID in the 2 FEEDS ids plus the ID of the connected user
                         Criteria.property(FEED_ID).in(SITH.id(), JEDI.id(), LUKE.id()),
                         Criteria.property(NEWS_ID).in(MAY_THE_FORCE.id())
@@ -146,7 +146,7 @@ class NewsServiceImplTest {
         Assertions.assertThat(userIdCaptor.getValue()).isEqualTo(LUKE.id());
 
         verify(mockNewsPersistence, times(1)).count(captor.capture());
-        Assertions.assertThat(captor.getValue().filter).isEqualTo(
+        Assertions.assertThat(captor.getValue().filter()).isEqualTo(
                 Criteria.or(// FEED_ID in the 2 FEEDS ids plus the ID of the connected user
                         Criteria.property(FEED_ID).in(SITH.id(), JEDI.id(), LUKE.id()),
                         Criteria.property(NEWS_ID).in(MAY_THE_FORCE.id())
@@ -173,13 +173,13 @@ class NewsServiceImplTest {
         Assertions.assertThat(userIdCaptor.getValue()).isEqualTo(LUKE.id());
 
         verify(mockNewsPersistence, times(1)).list(captor.capture());
-        Assertions.assertThat(captor.getValue().filter).isEqualTo(
+        Assertions.assertThat(captor.getValue().filter()).isEqualTo(
                 Criteria.or( // FEED_ID in the 2 FEEDS ids plus the ID of the connected user
                         Criteria.property(FEED_ID).in(SITH.id(), JEDI.id(), LUKE.id()),
                         Criteria.property(NEWS_ID).in(MAY_THE_FORCE.id())
                 )
         );
-        Assertions.assertThat(captor.getValue().teamMates).containsOnly(LUKE.id(), OBIWAN.id());
+        Assertions.assertThat(captor.getValue().teamMates()).containsOnly(LUKE.id(), OBIWAN.id());
     }
 
     @Test

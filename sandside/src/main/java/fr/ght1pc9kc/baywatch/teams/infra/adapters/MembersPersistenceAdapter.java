@@ -1,11 +1,11 @@
 package fr.ght1pc9kc.baywatch.teams.infra.adapters;
 
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.TeamsMembersRecord;
 import fr.ght1pc9kc.baywatch.teams.api.model.TeamMember;
 import fr.ght1pc9kc.baywatch.teams.domain.ports.TeamMemberPersistencePort;
 import fr.ght1pc9kc.baywatch.teams.infra.mappers.TeamsMapper;
-import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
@@ -40,12 +40,12 @@ public class MembersPersistenceAdapter implements TeamMemberPersistencePort {
     @Override
     @SuppressWarnings("resource")
     public Flux<Entity<TeamMember>> list(QueryContext qCtx) {
-        Condition conditions = qCtx.filter.accept(JOOQ_CONDITION_VISITOR);
+        Condition conditions = qCtx.filter().accept(JOOQ_CONDITION_VISITOR);
         if (qCtx.isScoped()) {
-            conditions = conditions.and(TEAMS_MEMBERS.TEME_USER_ID.eq(qCtx.getUserId()));
+            conditions = conditions.and(TEAMS_MEMBERS.TEME_USER_ID.eq(qCtx.userId()));
         }
         Select<TeamsMembersRecord> select = JooqPagination.apply(
-                qCtx.pagination, TEAMS_MEMBERS_PROPERTIES_MAPPING,
+                qCtx.pagination(), TEAMS_MEMBERS_PROPERTIES_MAPPING,
                 dsl.selectFrom(TEAMS_MEMBERS)
                         .where(conditions));
 

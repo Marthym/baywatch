@@ -136,7 +136,7 @@ class SystemMaintenanceServiceImplTest {
 
         ArgumentCaptor<QueryContext> captor = ArgumentCaptor.forClass(QueryContext.class);
         verify(mockNewsRepository, times(1)).list(captor.capture());
-        Assertions.assertThat(captor.getValue().filter).isEqualTo(filter);
+        Assertions.assertThat(captor.getValue().filter()).isEqualTo(filter);
     }
 
     @Test

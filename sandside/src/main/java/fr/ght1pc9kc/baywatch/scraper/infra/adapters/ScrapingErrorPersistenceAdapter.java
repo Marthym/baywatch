@@ -62,7 +62,7 @@ public class ScrapingErrorPersistenceAdapter implements ScrapingErrorPersistence
 
     @Override
     public Flux<Entity<ScrapingError>> list(QueryContext query) {
-        Condition conditions = query.filter.accept(JOOQ_CONDITION_VISITOR);
+        Condition conditions = query.filter().accept(JOOQ_CONDITION_VISITOR);
         SelectQuery<FeedsErrorsRecord> select = dsl.selectQuery(FEEDS_ERRORS);
         select.addConditions(conditions);
 
@@ -82,7 +82,7 @@ public class ScrapingErrorPersistenceAdapter implements ScrapingErrorPersistence
 
     @Override
     public Mono<Void> delete(QueryContext query) {
-        Condition conditions = query.filter.accept(JOOQ_CONDITION_VISITOR);
+        Condition conditions = query.filter().accept(JOOQ_CONDITION_VISITOR);
 
         DeleteQuery<FeedsErrorsRecord> deleteQuery = dsl.deleteQuery(FEEDS_ERRORS);
         deleteQuery.addConditions(conditions);
