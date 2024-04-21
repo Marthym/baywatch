@@ -4,7 +4,7 @@ import fr.ght1pc9kc.baywatch.common.api.DefaultMeta;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.api.PopularNewsService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Popularity;
-import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.TeamServicePort;
 import fr.ght1pc9kc.baywatch.techwatch.infra.persistence.StateRepository;
 import fr.ght1pc9kc.entity.api.Entity;

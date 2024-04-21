@@ -1,26 +1,25 @@
-package fr.ght1pc9kc.baywatch.techwatch.domain.model;
+package fr.ght1pc9kc.baywatch.common.domain;
 
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.api.Pagination;
 import lombok.Builder;
-import lombok.Value;
 import lombok.With;
 
 import java.util.List;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 
-@Value
 @Builder
-public final class QueryContext {
-    @Builder.Default
-    public final Pagination pagination = Pagination.ALL;
-    public final Criteria filter;
-    @With
-    public final String userId;
-
-    public final List<String> teamMates;
+public record QueryContext(
+        Pagination pagination,
+        Criteria filter,
+        @With String userId,
+        List<String> teamMates
+) {
+    public QueryContext {
+        pagination = (pagination == null) ? Pagination.ALL : pagination;
+    }
 
     public static QueryContext from(PageRequest pr) {
         return new QueryContext(pr.pagination(), pr.filter(), null, List.of());

@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.scraper.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.common.api.ScrapingEventHandler;
+import fr.ght1pc9kc.baywatch.scraper.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.scraper.domain.actions.PurgeNewsHandler;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperApplicationProperties;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;

@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.infra.persistence;
 
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
@@ -9,7 +10,6 @@ import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.ConstraintViolationPersistenceException;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.security.infra.adapters.UserMapper;
-import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
@@ -66,9 +66,9 @@ public class UserRepository implements UserPersistencePort {
 
     @Override
     public Flux<Entity<User>> list(QueryContext qCtx) {
-        Condition conditions = qCtx.filter.accept(JOOQ_CONDITION_VISITOR);
+        Condition conditions = qCtx.filter().accept(JOOQ_CONDITION_VISITOR);
         Select<Record> select = JooqPagination.apply(
-                qCtx.pagination, USER_PROPERTIES_MAPPING,
+                qCtx.pagination(), USER_PROPERTIES_MAPPING,
                 dsl.select(USERS.fields()).select(DSL.groupConcat(USERS_ROLES.USRO_ROLE).as(USERS_ROLES.USRO_ROLE.getName()))
                         .from(USERS)
                         .leftJoin(USERS_ROLES).on(USERS_ROLES.USRO_USER_ID.eq(USERS.USER_ID))
@@ -96,7 +96,7 @@ public class UserRepository implements UserPersistencePort {
 
     @Override
     public Mono<Integer> count(QueryContext qCtx) {
-        Condition conditions = qCtx.getFilter().accept(JOOQ_CONDITION_VISITOR);
+        Condition conditions = qCtx.filter().accept(JOOQ_CONDITION_VISITOR);
         return Mono.fromCallable(() -> dsl.fetchCount(dsl.selectFrom(USERS).where(conditions)))
                 .subscribeOn(databaseScheduler);
     }

@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
@@ -11,7 +12,6 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.baywatch.techwatch.domain.filter.CriteriaModifierVisitor;
-import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
@@ -90,13 +90,13 @@ public class NewsServiceImpl implements NewsService {
     }
 
     public Mono<QueryContext> forgeAggregateQueryContext(QueryContext qCtx) {
-        List<String> props = qCtx.filter.accept(new ListPropertiesCriteriaVisitor());
+        List<String> props = qCtx.filter().accept(new ListPropertiesCriteriaVisitor());
         if (props.size() == 1 && ID.equals(props.getFirst())) {
             // Shortcut for get one News from id
             return Mono.just(qCtx);
         }
-        return teamServicePort.getTeamMates(qCtx.getUserId())
-                .concatWith(Mono.just(qCtx.getUserId()))
+        return teamServicePort.getTeamMates(qCtx.userId())
+                .concatWith(Mono.just(qCtx.userId()))
                 .distinct()
                 .collectList()
                 .flatMap(teamMates -> {
@@ -112,11 +112,11 @@ public class NewsServiceImpl implements NewsService {
                         if (!contexts.getT1().isEmpty()) {
                             filters = Criteria.or(filters, Criteria.property(NEWS_ID).in(contexts.getT1()));
                         }
-                        filters = Criteria.and(filters, qCtx.getFilter());
+                        filters = Criteria.and(filters, qCtx.filter());
 
                         return QueryContext.builder()
-                                .pagination(qCtx.getPagination())
-                                .userId(qCtx.getUserId())
+                                .pagination(qCtx.pagination())
+                                .userId(qCtx.userId())
                                 .teamMates(teamMates)
                                 .filter(filters)
                                 .build();
@@ -136,14 +136,14 @@ public class NewsServiceImpl implements NewsService {
      */
     public Mono<List<String>> getFeedFor(QueryContext qCtx, List<String> props) {
         QueryContext feedQCtx = (props.contains(FEED_ID))
-                ? QueryContext.all(qCtx.filter)
-                : QueryContext.all(qCtx.filter).withUserId(qCtx.userId);
+                ? QueryContext.all(qCtx.filter())
+                : QueryContext.all(qCtx.filter()).withUserId(qCtx.userId());
         return feedRepository.list(feedQCtx)
                 .map(Entity::id)
                 .collectList()
                 .map(feeds -> {
                     if (feedQCtx.isScoped()) {
-                        feeds.add(feedQCtx.getUserId());
+                        feeds.add(feedQCtx.userId());
                     }
                     return feeds;
                 });
