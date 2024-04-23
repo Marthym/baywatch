@@ -1,10 +1,11 @@
 type Feed {
-    _id: ID!
+    _id: ID!,
     _createdBy: String,
-    name: String
-    description: String
-    location: String!
-    tags: [String]
+    name: String,
+    description: String,
+    location: String!,
+    tags: [String],
+    errors: ScrapingError,
 }
 
 type SearchFeedsResponse {

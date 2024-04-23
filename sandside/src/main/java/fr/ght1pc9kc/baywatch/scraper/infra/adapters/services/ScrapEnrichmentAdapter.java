@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.scraper.infra.adapters;
+package fr.ght1pc9kc.baywatch.scraper.infra.adapters.services;
 
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.scraper.api.NewsFilter;

@@ -53,16 +53,24 @@ public class PersistErrorsHandler implements ScrapingEventHandler {
     }
 
     private int deepFindStatus(Exception ex) {
-        Throwable current = ex;
-        while (current != null && !current.getCause().getClass().isAssignableFrom(IllegalArgumentException.class)) {
-            current = current.getCause();
-        }
+        try {
+            Throwable current = ex;
+            while (current != null &&
+                    current.getCause() != null &&
+                    !current.getCause().getClass().isAssignableFrom(IllegalArgumentException.class)) {
+                current = current.getCause();
+            }
 
-        if (current == null) {
-            return 0;
-        }
+            if (current == null) {
+                return 0;
+            }
 
-        return 42;
+            String extractedNumber = current.getLocalizedMessage().replaceAll("[^0-9]", "");
+            int status = (!extractedNumber.isEmpty()) ? Integer.parseInt(extractedNumber) : 200;
+            return Math.clamp(status, 200, 599);
+        } catch (Exception ignore) {
+            return 418;
+        }
     }
 
     @Override

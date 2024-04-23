@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.scraper.infra.adapters;
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.dsl.tables.FeedsErrors;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingError;
+import fr.ght1pc9kc.baywatch.scraper.infra.adapters.persistence.ScrapingErrorPersistenceAdapter;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperMapper;
 import fr.ght1pc9kc.baywatch.tests.samples.FeedSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsErrorsRecordSamples;
