@@ -18,7 +18,9 @@ export class FeedService {
     query SearchFeedsQuery ($_p: Int = 0, $_pp: Int = ${FeedService.DEFAULT_PER_PAGE}, $_s: String = "name") {
         feedsSearch(_p: $_p, _pp: $_pp, _s: $_s) {
             totalCount
-            entities {_id name location tags}
+            entities {_id name location tags errors {
+                status since lastTime label
+            }}
         }
     }`;
 

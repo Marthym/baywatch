@@ -4,4 +4,5 @@ export type Feed = {
     description: string;
     location: string;
     tags: string[];
+    icon?: URL,
 }

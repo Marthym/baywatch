@@ -56,13 +56,13 @@
       </th>
       <slot :data="vElement.data"/>
       <td>
-        <div class="btn-group justify-end w-full">
+        <div class="btn-group justify-end w-full lg:whitespace-nowrap">
           <slot name="lineActions" :idx="idx"/>
-          <button v-if="!vElement.isEditable" class="btn btn-sm btn-square btn-ghost"
+          <button v-if="actions.includes('v')" class="btn btn-sm btn-square btn-ghost"
                   @click.stop.prevent="$emit('view', idx)">
             <EyeIcon class="h-6 w-6"/>
           </button>
-          <button v-if="vElement.isEditable" class="btn btn-sm btn-square btn-ghost"
+          <button v-if="actions.includes('u') && vElement.isEditable" class="btn btn-sm btn-square btn-ghost"
                   @click.stop.prevent="$emit('edit', idx)">
             <PencilIcon class="h-6 w-6"/>
           </button>
@@ -112,6 +112,17 @@ import { Observable } from 'rxjs';
 
 /**
  * Table component with global and line actions
+ * <p>List of actions:</p>
+ * <ul>
+ *   <li><b>[letter: 'a', emit: 'add']</b>: it is possible to add elements</li>
+ *   <li><b>[letter: 'i', emit: 'import']</b>: it is possible to batch import elements</li>
+ *   <li><b>[letter: 'e', emit: 'export']</b>: it is possible to export the elements of the list</li>
+ *   <li><b>[letter: 'd', emit: 'deleteSelected', 'delete']</b>: It is possible to delete one element
+ *      or all selected elements</li>
+ *   <li><b>[letter: 'u', emit: 'edit']</b>: it is possible to update elements</li>
+ *   <li><b>[letter: 'v', emit: 'view']</b>: it is possible to view elements</li>
+ *   <li><b>[letter: 'l', emit: 'leave', 'leaveSelected']</b>: it is possible to leave one or all selected elements</li>
+ * </ul>
  * @requires ./SmartTableData.vue
  */
 @Component({

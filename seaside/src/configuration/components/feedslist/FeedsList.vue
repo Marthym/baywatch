@@ -1,73 +1,16 @@
 <template>
   <div class="overflow-x-auto mt-5">
-    <FeedActions v-if="userState.isAuthenticated" :delete-enable="checkState"
-                 @clickAdd="addNewFeed()" @clickImport="this.isFileUploadVisible = true" @clickDelete="bulkDelete()"/>
-    <table class="table w-full" aria-describedby="Feeds list">
-      <thead class="top-0 z-50">
-      <tr>
-        <th scope="col" v-if="userState.isAuthenticated" class="w-1">
-          <label>
-            <input type="checkbox" class="checkbox" ref="globalCheck"
-                   :checked="checkState" @change="onSelectAll()"/>
-          </label>
-        </th>
-        <th scope="colgroup">
-          <div class="grid grid-cols-1 md:grid-cols-12">
-            <div class="md:col-span-3 my-auto">Name</div>
-            <div class="md:col-span-7 my-auto">Link / Categories</div>
-            <div class="md:col-span-2 join justify-end" v-if="pagesNumber > 1">
-              <button v-for="i in pagesNumber" :key="i"
-                      :class="{'btn-active': activePage === i-1}" class="join-item btn btn-sm"
-                      v-on:click="loadFeedPage(i-1).subscribe()">
-                {{ i }}
-              </button>
-            </div>
-          </div>
-        </th>
-      </tr>
-      </thead>
-      <tbody>
-      <template v-if="feeds.length > 0" v-for="vFeed in this.feeds" v-bind:key="vFeed.data._id">
-        <tr>
-          <th scope="row" v-if="userState.isAuthenticated">
-            <label>
-              <input type="checkbox" class="checkbox" v-model="vFeed.isSelected">
-              <span class="checkbox-mark"></span>
-            </label>
-          </th>
-          <td class="grid grid-cols-1 md:grid-cols-12 auto-cols-auto">
-            <FeedListItem :ref="vFeed.data._id" :view="vFeed"
-                          @item-view="itemView" @item-update="itemUpdate" @item-delete="itemDelete"/>
-          </td>
-        </tr>
+    <SmartTable columns="Name / Link / Categories / Actions" :elements="feeds" actions="avieud"
+                @add="addNewFeed()"
+                @delete="idx => itemDelete(idx)"
+                @deleteSelected="idx => bulkDelete(idx)">
+      <template #default="vFeed">
+        <std class="grid grid-cols-1 lg:gap-x-4 md:grid-cols-12 auto-cols-auto">
+          <FeedCard :view="{...vFeed.data, icon: vFeed.data.icon}"/>
+        </std>
       </template>
-      <template v-else>
-        <tr>
-          <td colspan="2" class="text-center">
-            No feed in the list
-          </td>
-        </tr>
-      </template>
-      </tbody>
-      <tfoot>
-      <tr>
-        <th scope="col" v-if="userState.isAuthenticated"></th>
-        <th scope="colgroup">
-          <div class="grid grid-cols-1 md:grid-cols-12">
-            <div class="md:col-span-3 my-auto">Name</div>
-            <div class="md:col-span-7 my-auto">Link / Categories</div>
-            <div class="md:col-span-2 join justify-end" v-if="pagesNumber > 1">
-              <button v-for="i in pagesNumber" :key="i"
-                      :class="{'btn-active': activePage === i-1}" class="join-item btn btn-sm"
-                      v-on:click="loadFeedPage(i-1).subscribe()">
-                {{ i }}
-              </button>
-            </div>
-          </div>
-        </th>
-      </tr>
-      </tfoot>
-    </table>
+    </SmartTable>
+
     <FeedEditor ref="feedEditor"/>
     <FileUploadWindow v-if="isFileUploadVisible" @upload="onOPMLUpload"/>
   </div>
@@ -91,12 +34,28 @@ import { Store, useStore } from 'vuex';
 import { UserState } from '@/security/store/user';
 import { NEWS_FILTER_FEED_MUTATION } from '@/common/model/store/NewsStore.type';
 import { Router, useRouter } from 'vue-router';
+import { InformationCircleIcon } from '@heroicons/vue/24/outline';
+import SmartTable from '@/common/components/smartTable/SmartTable.vue';
+import stla from '@/common/components/smartTable/SmartTableLineAction.vue';
+import std from '@/common/components/smartTable/SmartTableData.vue';
+import { SmartTableView } from '@/common/components/smartTable/SmartTableView.interface';
+import FeedCard from '@/common/components/FeedCard.vue';
 
 const FileUploadWindow = defineAsyncComponent(() => import('@/common/components/FileUploadWindow.vue'));
 
 @Component({
   name: 'FeedsList',
-  components: { FeedActions, FeedEditor, FeedListItem, FileUploadWindow },
+  components: {
+    FeedCard,
+    std,
+    stla,
+    SmartTable,
+    InformationCircleIcon,
+    FeedActions,
+    FeedEditor,
+    FeedListItem,
+    FileUploadWindow,
+  },
   setup() {
     const store: Store<UserState> = useStore();
     return {
@@ -112,7 +71,7 @@ export default class FeedsList extends Vue {
   private router: Router;
   private feedEditor!: FeedEditor;
 // noinspection JSMismatchedCollectionQueryUpdate
-  private feeds: FeedView[] = new Array(0);
+  private feeds: SmartTableView<Feed>[] = [];
   private pagesNumber = 0;
   private activePage = 0;
   private isFileUploadVisible = false;
@@ -143,7 +102,8 @@ export default class FeedsList extends Vue {
           this.activePage = feedPage.currentPage;
           return feedPage.data;
         }),
-        map(fs => fs.map(f => this.modelToView(f))),
+        map(fs => fs.map(f =>
+            this.modelToView({ icon: new URL(new URL(f.location).origin + '/favicon.ico'), ...f }))),
         tap(fs => this.feeds = fs),
     );
   }
@@ -153,12 +113,12 @@ export default class FeedsList extends Vue {
     this.feeds.forEach(f => f.isSelected = !current);
   }
 
-  modelToView(feed: Feed): FeedView {
+  modelToView(feed: Feed): SmartTableView<Feed> {
     return {
-      icon: new URL(feed.location).origin + '/favicon.ico',
       data: feed,
       isSelected: false,
-    } as FeedView;
+      isEditable: true,
+    };
   }
 
   private addNewFeed(): void {
@@ -193,16 +153,12 @@ export default class FeedsList extends Vue {
     });
   }
 
-  private itemDelete(itemId: string): void {
-    const idx = this.feeds.findIndex(fv => fv.data._id === itemId);
+  private itemDelete(idx: number): void {
     const message = `Supprimer l’abonnement au fil <br/> <b>${this.feeds[idx].data.name}</b>`;
     this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
         filter(response => response === AlertResponse.CONFIRM),
-        switchMap(() => feedsService.remove(itemId)),
-        tap(() => {
-          const concernedIndexes = this.feeds.findIndex(fv => fv.data._id === itemId);
-          this.feeds.splice(concernedIndexes, 1);
-        }),
+        switchMap(() => feedsService.remove(this.feeds[idx].data._id)),
+        tap(() => this.feeds.splice(idx, 1)),
     ).subscribe({
       next: feed => notificationService.pushSimpleOk(`Feed ${feed._id.substring(0, 10)} deleted successfully !`),
       error: e => {
@@ -212,8 +168,7 @@ export default class FeedsList extends Vue {
     });
   }
 
-  private bulkDelete(): void {
-    const ids = this.feeds.filter(f => f.isSelected).map(f => f.data._id);
+  private bulkDelete(ids: number[]): void {
     if (ids.length == 0) {
       return;
     } else if (ids.length == 1) {
@@ -222,13 +177,10 @@ export default class FeedsList extends Vue {
     const message = `Supprimer les ${ids.length} abonnements sélectionnés ?`;
     this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
         filter(response => response === AlertResponse.CONFIRM),
-        switchMap(() => feedsService.bulkRemove(ids)),
-        tap(() => {
-          ids.forEach(id => {
-            const idx = this.feeds.findIndex(fv => fv.data._id === id);
-            this.feeds.splice(idx, 1);
-          });
-        }),
+        switchMap(() => feedsService.bulkRemove(ids.map(index => this.feeds[index].data._id))),
+        tap(() =>
+            ids.forEach(idx =>
+                this.feeds.splice(idx, 1))),
     ).subscribe({
       next: () => notificationService.pushSimpleOk(`Désinscription réalisé avec succès !`),
       error: e => {
