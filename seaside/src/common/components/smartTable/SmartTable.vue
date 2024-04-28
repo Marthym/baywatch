@@ -36,10 +36,10 @@
       </th>
       <th v-for="column in _columns" scope="col">{{ column }}</th>
       <th scope="col">
-        <div class="join justify-end" v-if="pagesNumber > 1">
-          <button v-for="i in pagesNumber" :key="i"
+        <div class="join justify-end w-full" v-if="totalPage > 1">
+          <button v-for="i in totalPage" :key="i"
                   :class="{'btn-active': activePage === i-1}" class="join-item btn btn-sm"
-                  v-on:click="loadPageByIndex(i-1).subscribe()">
+                  v-on:click="$emit('navigate',i-1)">
             {{ i }}
           </button>
         </div>
@@ -83,10 +83,10 @@
       <th scope="col" class="w-1"></th>
       <th v-for="column in _columns" scope="col">{{ column }}</th>
       <th scope="col">
-        <div class="join justify-end" v-if="pagesNumber > 1">
-          <button v-for="i in pagesNumber" :key="i"
+        <div class="join justify-end w-full" v-if="totalPage > 1">
+          <button v-for="i in totalPage" :key="i"
                   :class="{'btn-active': activePage === i-1}" class="join-item btn btn-sm"
-                  v-on:click="loadPageByIndex(i-1).subscribe()">
+                  v-on:click="$emit('navigate',i-1)">
             {{ i }}
           </button>
         </div>
@@ -108,7 +108,6 @@ import {
   TrashIcon,
 } from '@heroicons/vue/24/outline';
 import { SmartTableView } from '@/common/components/smartTable/SmartTableView.interface';
-import { Observable } from 'rxjs';
 
 /**
  * Table component with global and line actions
@@ -135,18 +134,15 @@ import { Observable } from 'rxjs';
     PlusCircleIcon,
     TrashIcon,
   },
-  emits: ['add', 'import', 'export', 'deleteSelected', 'delete', 'edit', 'view', 'leave', 'leaveSelected'],
+  emits: ['add', 'import', 'export', 'deleteSelected', 'delete', 'edit', 'view', 'leave', 'leaveSelected', 'navigate'],
   name: 'SmartTable',
 })
 export default class SmartTable extends Vue {
   @Prop() private elements: SmartTableView<unknown>[];
   @Prop({ default: '' }) private columns: string;
   @Prop({ default: 'ad' }) private actions: string;
-  @Prop({ default: p => console.debug(`load page ${p}, not implemented`) })
-  private loadPageByIndex: (page: number) => Observable<SmartTableView<unknown>[]>;
-
-  private pagesNumber = 0;
-  private activePage = 0;
+  @Prop({ default: 0 }) private totalPage: number;
+  @Prop({ default: 0 }) private activePage: number;
 
   get _columns(): string[] {
     return this.columns.split('|');
