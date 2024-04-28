@@ -20,29 +20,37 @@
     <a class="link whitespace-normal">{{ view.location }}</a><br>
     <div v-for="tag in view.tags" class="badge mr-1 rounded">{{ tag }}</div>
   </div>
+  <div v-if="!dense && view.error" :class="{'col-span-2': !dense}" class="text-error-content place-self-end">
+    <div class="tooltip tooltip-left tooltip-error"
+         :data-tip="view.error.since.toLocaleDateString(currentLocale, formatLocaleOptions) +': '+ view.error.message">
+      <ExclamationTriangleIcon class="h-8 w-8"/>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-facing-decorator';
+import { FeedCardView } from '@/common/model/FeedCardView.type';
+import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline';
 
 @Component({
   name: 'FeedCard',
+  components: { ExclamationTriangleIcon },
   props: ['view', 'dense'],
 })
 export default class FeedCard extends Vue {
   @Prop() private view!: FeedCardView;
   @Prop({ default: false }) private dense: false;
 
+  private readonly currentLocale = navigator.languages;
+  private readonly formatLocaleOptions = {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  };
+
   iconFallback(event: ErrorEvent): void {
     (event.target as HTMLImageElement).src = '/favicon.ico';
   }
-}
-
-export type FeedCardView = {
-  _id: string;
-  icon: string;
-  name: string;
-  location: string;
-  tags: string[];
 }
 </script>

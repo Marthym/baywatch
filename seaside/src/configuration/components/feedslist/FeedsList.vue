@@ -1,12 +1,17 @@
 <template>
   <div class="overflow-x-auto mt-5">
     <SmartTable columns="Name / Link / Categories / Actions" :elements="feeds" actions="avieud"
+                :total-page="pagesNumber"
+                :active-page="activePage"
+                @navigate="pageIdx => loadFeedPage(pageIdx).subscribe()"
+                @edit="itemUpdate"
                 @add="addNewFeed()"
+                @view="itemView"
                 @delete="idx => itemDelete(idx)"
                 @deleteSelected="idx => bulkDelete(idx)">
       <template #default="vFeed">
         <std class="grid grid-cols-1 lg:gap-x-4 md:grid-cols-12 auto-cols-auto">
-          <FeedCard :view="{...vFeed.data, icon: vFeed.data.icon}"/>
+          <FeedCard :view="vFeed.data"/>
         </std>
       </template>
     </SmartTable>
@@ -134,12 +139,22 @@ export default class FeedsList extends Vue {
     });
   }
 
-  private itemView(item: Feed): void {
+  private itemView(idx: number): void {
+    const item = this.feeds[idx].data;
+    if (!item) {
+      notificationService.pushSimpleError(`Unable to edit element at index ${idx}`);
+      return;
+    }
     this.store.commit(NEWS_FILTER_FEED_MUTATION, { id: item._id, label: item.name });
     this.router.push('/news');
   }
 
-  private itemUpdate(item: Feed): void {
+  private itemUpdate(idx: number): void {
+    const item = this.feeds[idx].data;
+    if (!item) {
+      notificationService.pushSimpleError(`Unable to edit element at index ${idx}`);
+      return;
+    }
     this.feedEditor.openFeed({ ...item }).pipe(
         take(1),
         switchMap(feed => feedsService.update(feed, item.location !== feed.url)),
