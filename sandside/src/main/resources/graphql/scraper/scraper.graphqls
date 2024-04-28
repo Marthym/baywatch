@@ -16,7 +16,7 @@ type AtomEntry {
 }
 
 type ScrapingError {
-    code: Int,
+    level: Level,
     since: String,
     lastTime: String,
     message: String,

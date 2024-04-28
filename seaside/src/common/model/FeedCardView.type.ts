@@ -1,4 +1,5 @@
 type ScrapingError = {
+    level: 'WARNING' | 'SEVERE';
     since: Date;
     message: string;
 }

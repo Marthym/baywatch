@@ -19,7 +19,7 @@ export class FeedService {
         feedsSearch(_p: $_p, _pp: $_pp, _s: $_s) {
             totalCount
             entities {_id name location tags error {
-                code since message
+                level since message
             }}
         }
     }`;

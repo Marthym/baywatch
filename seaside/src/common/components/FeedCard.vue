@@ -20,8 +20,14 @@
     <a class="link whitespace-normal">{{ view.location }}</a><br>
     <div v-for="tag in view.tags" class="badge mr-1 rounded">{{ tag }}</div>
   </div>
-  <div v-if="!dense && view.error" :class="{'col-span-2': !dense}" class="text-error-content place-self-end">
-    <div class="tooltip tooltip-left tooltip-error"
+  <div v-if="!dense && view.error" :class="{
+          'col-span-2': !dense,
+          'text-error-content': view.error.level == 'ERROR',
+          'text-warning-content': view.error.level == 'WARNING'
+       }"
+       class="place-self-end">
+    <div class="tooltip tooltip-left"
+         :class="{'tooltip-error': view.error.level == 'ERROR', 'tooltip-warning': view.error.level == 'WARNING'}"
          :data-tip="view.error.since.toLocaleDateString(currentLocale, formatLocaleOptions) +': '+ view.error.message">
       <ExclamationTriangleIcon class="h-8 w-8"/>
     </div>

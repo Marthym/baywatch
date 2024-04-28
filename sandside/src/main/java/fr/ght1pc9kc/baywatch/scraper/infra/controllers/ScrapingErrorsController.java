@@ -4,15 +4,19 @@ import fr.ght1pc9kc.baywatch.scraper.api.ScrapingErrorsService;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingError;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.BatchMapping;
+import org.springframework.graphql.data.method.annotation.SchemaMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
 public class ScrapingErrorsController {
     private final ScrapingErrorsService scrapingErrorsService;
 
@@ -29,5 +33,14 @@ public class ScrapingErrorsController {
         return scrapingErrorsService.list(entities.keySet())
                 .map(scrapingError -> Map.entry(entities.get(scrapingError.id()), scrapingError.self()))
                 .collectMap(Map.Entry::getKey, Map.Entry::getValue);
+    }
+
+    @SchemaMapping(typeName = "ScrapingError", field = "level")
+    public Mono<String> computeErrorLevel(ScrapingError error) {
+        if (error.code() > 499) {
+            return Mono.just(Level.SEVERE.getName());
+        } else {
+            return Mono.just(Level.WARNING.getName());
+        }
     }
 }
