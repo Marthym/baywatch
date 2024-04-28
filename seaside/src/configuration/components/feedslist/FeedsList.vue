@@ -7,6 +7,8 @@
                 @edit="itemUpdate"
                 @add="addNewFeed()"
                 @view="itemView"
+                @import="onClickImport"
+                @export="onClickExport"
                 @delete="idx => itemDelete(idx)"
                 @deleteSelected="idx => bulkDelete(idx)">
       <template #default="vFeed">
@@ -23,7 +25,6 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
 import FeedListItem from '@/configuration/components/feedslist/FeedsListItem.vue';
-import { FeedView } from '@/configuration/components/feedslist/model/FeedView';
 import { filter, map, switchMap, take, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { Feed } from '@/configuration/model/Feed.type';
@@ -47,6 +48,7 @@ import { SmartTableView } from '@/common/components/smartTable/SmartTableView.in
 import FeedCard from '@/common/components/FeedCard.vue';
 
 const FileUploadWindow = defineAsyncComponent(() => import('@/common/components/FileUploadWindow.vue'));
+const BASEURL = import.meta.env.VITE_API_BASE_URL;
 
 @Component({
   name: 'FeedsList',
@@ -65,17 +67,14 @@ const FileUploadWindow = defineAsyncComponent(() => import('@/common/components/
     const store: Store<UserState> = useStore();
     return {
       store: store,
-      userState: store.state.user,
       router: useRouter(),
     };
   },
 })
 export default class FeedsList extends Vue {
   private store: Store<UserState>;
-  private userState: UserState;
   private router: Router;
   private feedEditor!: FeedEditor;
-// noinspection JSMismatchedCollectionQueryUpdate
   private feeds: SmartTableView<Feed>[] = [];
   private pagesNumber = 0;
   private activePage = 0;
@@ -99,7 +98,7 @@ export default class FeedsList extends Vue {
     this.feedEditor = this.$refs.feedEditor as FeedEditor;
   }
 
-  loadFeedPage(page: number): Observable<FeedView[]> {
+  loadFeedPage(page: number): Observable<SmartTableView<Feed>[]> {
     const resolvedPage = (page > 0) ? page : 0;
     return feedsService.list({ _p: resolvedPage }).pipe(
         switchMap(feedPage => {
@@ -111,11 +110,6 @@ export default class FeedsList extends Vue {
             this.modelToView({ icon: new URL(new URL(f.location).origin + '/favicon.ico'), ...f }))),
         tap(fs => this.feeds = fs),
     );
-  }
-
-  private onSelectAll(): void {
-    const current = this.checkState;
-    this.feeds.forEach(f => f.isSelected = !current);
   }
 
   modelToView(feed: Feed): SmartTableView<Feed> {
@@ -132,7 +126,7 @@ export default class FeedsList extends Vue {
         switchMap(feed => feedsService.add(feed)),
         switchMap(() => this.loadFeedPage(this.activePage)),
     ).subscribe({
-      next: () => notificationService.pushSimpleOk('Fil ajouté avec succès'),
+      next: () => notificationService.pushSimpleOk('Feed successfully subscribed.'),
       error: e => {
         notificationService.pushSimpleError(e.message);
       },
@@ -160,16 +154,16 @@ export default class FeedsList extends Vue {
         switchMap(feed => feedsService.update(feed, item.location !== feed.url)),
         switchMap(() => this.loadFeedPage(this.activePage)),
     ).subscribe({
-      next: () => notificationService.pushSimpleOk('Mis à jour avec succès'),
+      next: () => notificationService.pushSimpleOk('Feed updated successfully.'),
       error: e => {
         console.error(e);
-        notificationService.pushSimpleError('Impossible de mettre à jour le fil');
+        notificationService.pushSimpleError('Unable to update feed !');
       },
     });
   }
 
   private itemDelete(idx: number): void {
-    const message = `Supprimer l’abonnement au fil <br/> <b>${this.feeds[idx].data.name}</b>`;
+    const message = `Unsubscribe for feed <br/> <b>${this.feeds[idx].data.name}</b>`;
     this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
         filter(response => response === AlertResponse.CONFIRM),
         switchMap(() => feedsService.remove(this.feeds[idx].data._id)),
@@ -178,7 +172,7 @@ export default class FeedsList extends Vue {
       next: feed => notificationService.pushSimpleOk(`Feed ${feed._id.substring(0, 10)} deleted successfully !`),
       error: e => {
         console.error(e);
-        notificationService.pushSimpleError('Impossible de mettre à jour le fil');
+        notificationService.pushSimpleError('Unable to update feed !');
       },
     });
   }
@@ -189,7 +183,7 @@ export default class FeedsList extends Vue {
     } else if (ids.length == 1) {
       return this.itemDelete(ids[0]);
     }
-    const message = `Supprimer les ${ids.length} abonnements sélectionnés ?`;
+    const message = `Remove the ${ids.length} selected subscriptions ?`;
     this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
         filter(response => response === AlertResponse.CONFIRM),
         switchMap(() => feedsService.bulkRemove(ids.map(index => this.feeds[index].data._id))),
@@ -197,12 +191,26 @@ export default class FeedsList extends Vue {
             ids.forEach(idx =>
                 this.feeds.splice(idx, 1))),
     ).subscribe({
-      next: () => notificationService.pushSimpleOk(`Désinscription réalisé avec succès !`),
+      next: () => notificationService.pushSimpleOk(`Unsubscribe successfully !`),
       error: e => {
         console.error(e);
-        notificationService.pushSimpleError('Impossible de se désinscrire des feeds sélectionnés !');
+        notificationService.pushSimpleError('Unable to unsubscribe to the selected feeds !');
       },
     });
+  }
+
+  private onClickExport(): void {
+    const link = document.createElement('a');
+    link.href = `${BASEURL}/opml/export/baywatch.opml`;
+    link.target = '_blank';
+    link.download = 'baywatch.opml';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  private onClickImport(): void {
+    this.isFileUploadVisible = true;
   }
 
   private onOPMLUpload(path: File | undefined): void {
@@ -213,15 +221,14 @@ export default class FeedsList extends Vue {
     opmlService.upload(path).pipe(
         switchMap(() => this.loadFeedPage(this.activePage)),
     ).subscribe({
-      next: () => notificationService.pushSimpleOk('OPML chargé avec succès'),
+      next: () => notificationService.pushSimpleOk('OPML loaded successfully.'),
       error: e => {
         console.error(e);
-        notificationService.pushSimpleError('Impossible de charger le fichier');
+        notificationService.pushSimpleError('Unable to load OPML file !');
       },
     });
   }
 
-  // noinspection JSUnusedGlobalSymbols
   unmounted(): void {
     actionServiceUnregisterFunction();
   }

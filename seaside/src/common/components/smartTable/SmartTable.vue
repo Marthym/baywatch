@@ -1,24 +1,24 @@
 <template>
-  <div class="md:btn-group mb-2">
-    <button v-if="actions.includes('a')" class="btn btn-sm mb-2 mr-2 md:m-0"
+  <div class="md:join mb-2">
+    <button v-if="actions.includes('a')" class="btn btn-sm join-item mb-2 mr-2 md:m-0"
             @click.stop.prevent="$emit('add')">
       <PlusCircleIcon class="w-6 h-6 md:mr-2"/>
       <span>Ajouter</span>
     </button>
-    <button v-if="actions.includes('i')" class="btn btn-sm btn-ghost mb-2 mr-2 md:m-0" @click="$emit('import')">
+    <button v-if="actions.includes('i')" class="btn btn-sm btn-ghost join-item mb-2 mr-2 md:m-0" @click="$emit('import')">
       <ArrowDownTrayIcon class="w-6 h-6 mr-2"/>
       Importer
     </button>
-    <a v-if="actions.includes('e')" class="btn btn-sm btn-ghost mb-2 mr-2 md:m-0" @click="$emit('export')">
+    <a v-if="actions.includes('e')" class="btn btn-sm btn-ghost join-item mb-2 mr-2 md:m-0" @click="$emit('export')">
       <ArrowUpTrayIcon class="w-6 h-6 mr-2"/>
       Exporter
     </a>
-    <button v-if="actions.includes('l')" class="btn btn-sm btn-warning"
+    <button v-if="actions.includes('l')" class="btn btn-sm btn-warning join-item"
             :disabled="selectedElements.length <= 0" @click.stop.prevent="$emit('leaveSelected', selectedElements)">
       <ArrowRightEndOnRectangleIcon class="h-6 w-6"/>
       Leave
     </button>
-    <button v-if="actions.includes('d') && isGlobalEditable" class="btn btn-sm btn-error mb-2 mr-2 md:m-0"
+    <button v-if="actions.includes('d') && isGlobalEditable" class="btn btn-sm btn-error join-item mb-2 mr-2 md:m-0"
             :disabled="selectedElements.length <= 0" @click="$emit('deleteSelected', selectedElements)">
       <TrashIcon class="w-6 h-6"/>
       Supprimer
