@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public class ScrapingErrorsController {
     private final ScrapingErrorsService scrapingErrorsService;
 
-    @BatchMapping(typeName = "Feed", field = "errors", maxBatchSize = 50)
+    @BatchMapping(typeName = "Feed", field = "error", maxBatchSize = 50)
     public Mono<Map<Map<String, Object>, ScrapingError>> errors(List<Map<String, Object>> feeds) {
         if (feeds.isEmpty()) {
             return Mono.just(Map.of());

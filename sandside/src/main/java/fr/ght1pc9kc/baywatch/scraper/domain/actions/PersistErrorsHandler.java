@@ -43,7 +43,7 @@ public class PersistErrorsHandler implements ScrapingEventHandler {
                     assert feed.link() != null : "Feed link must not be null !";
 
                     Instant now = clock.instant();
-                    return Entity.identify(new ScrapingError(now, now, deepFindStatus(fse), fse.getMessage()))
+                    return Entity.identify(new ScrapingError(deepFindStatus(fse), now, now, fse.getMessage()))
                             .withId(Hasher.identify(feed.link()));
                 }).buffer(100)
                 .flatMap(scrapingErrorsService::persist)
@@ -65,7 +65,7 @@ public class PersistErrorsHandler implements ScrapingEventHandler {
                 return 0;
             }
 
-            String extractedNumber = current.getLocalizedMessage().replaceAll("[^0-9]", "");
+            String extractedNumber = current.getLocalizedMessage().replaceAll("\\D", "");
             int status = (!extractedNumber.isEmpty()) ? Integer.parseInt(extractedNumber) : 200;
             return Math.clamp(status, 200, 599);
         } catch (Exception ignore) {

@@ -16,10 +16,10 @@ type AtomEntry {
 }
 
 type ScrapingError {
+    code: Int,
     since: String,
     lastTime: String,
-    status: Int,
-    label: String,
+    message: String,
 }
 
 extend type Query {

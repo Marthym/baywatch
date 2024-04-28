@@ -36,8 +36,8 @@ public interface ScraperMapper {
     @Mapping(source = "raw.link", target = "link")
     AtomEntry getAtomFromNews(News news);
 
-    @Mapping(target = "label", source = "feerLastLabel")
-    @Mapping(target = "status", source = "feerLastStatus")
+    @Mapping(target = "message", source = "feerLastLabel")
+    @Mapping(target = "code", source = "feerLastStatus")
     @Mapping(target = "lastTime", source = "feerLastTime")
     @Mapping(target = "since", source = "feerSince")
     ScrapingError getScrapingError(FeedsErrorsRecord r);

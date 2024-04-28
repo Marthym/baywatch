@@ -5,7 +5,7 @@ type Feed {
     description: String,
     location: String!,
     tags: [String],
-    errors: ScrapingError,
+    error: ScrapingError,
 }
 
 type SearchFeedsResponse {

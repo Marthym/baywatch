@@ -46,9 +46,9 @@ class ScrapingErrorsServiceImplTest {
     void should_fail_to_persist() {
         Instant since = Instant.parse("2024-04-02T22:08:42Z");
         Flux<Entity<ScrapingError>> step = tested.persist(List.of(
-                Entity.identify(new ScrapingError(since, since, 404, "Not found"))
+                Entity.identify(new ScrapingError(403, since, since, "Not found"))
                         .withId(FeedSamples.JEDI.id()),
-                Entity.identify(new ScrapingError(since, since, 404, "Not found"))
+                Entity.identify(new ScrapingError(403, since, since, "Not found"))
                         .withId(FeedSamples.SITH.id())
         ));
 
@@ -63,9 +63,9 @@ class ScrapingErrorsServiceImplTest {
 
         Instant since = Instant.parse("2024-04-02T22:08:42Z");
         Flux<Entity<ScrapingError>> step = tested.persist(List.of(
-                Entity.identify(new ScrapingError(since, since, 404, "Not found"))
+                Entity.identify(new ScrapingError(404, since, since, "Not found"))
                         .withId(FeedSamples.JEDI.id()),
-                Entity.identify(new ScrapingError(since, since, 404, "Not found"))
+                Entity.identify(new ScrapingError(404, since, since, "Not found"))
                         .withId(FeedSamples.SITH.id())
         ));
 
@@ -102,9 +102,9 @@ class ScrapingErrorsServiceImplTest {
     void should_list() {
         Instant since = Instant.parse("2024-04-02T22:08:42Z");
         doReturn(Flux.just(
-                Entity.identify(new ScrapingError(since, since, 404, "Not found"))
+                Entity.identify(new ScrapingError(404, since, since, "Not found"))
                         .withId(FeedSamples.JEDI.id()),
-                Entity.identify(new ScrapingError(since, since, 404, "Not found"))
+                Entity.identify(new ScrapingError(404, since, since, "Not found"))
                         .withId(FeedSamples.SITH.id())
         )).when(persistencePort).list(any());
 
