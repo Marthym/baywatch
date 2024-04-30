@@ -38,4 +38,9 @@ public class ScrapingErrorsController {
     public Mono<String> computeErrorLevel(ScrapingError error) {
         return Mono.just(scrapingErrorsService.level(error).getName());
     }
+
+    @SchemaMapping(typeName = "ScrapingError", field = "message")
+    public Mono<String> filterErrorMessage(ScrapingError error) {
+        return Mono.just(scrapingErrorsService.filterMessage(error));
+    }
 }

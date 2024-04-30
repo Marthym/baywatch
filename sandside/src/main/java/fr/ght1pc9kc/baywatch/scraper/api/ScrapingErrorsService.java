@@ -16,4 +16,6 @@ public interface ScrapingErrorsService {
     Mono<Void> purge(Collection<String> notInFeedsIds);
 
     Level level(ScrapingError error);
+
+    String filterMessage(ScrapingError error);
 }
