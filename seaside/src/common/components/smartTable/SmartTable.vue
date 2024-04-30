@@ -41,7 +41,7 @@
           <button class="btn btn-xs join-item hidden lg:inline" :disabled="activePage < 1"
                   @click="$emit('navigate',activePage-1)">«
           </button>
-          <select class="select select-xs lg:join-item">
+          <select class="select select-xs focus:outline-none lg:join-item">
             <option v-for="i in totalPage" :key="i" :selected="activePage === i-1"
                     @click="$emit('navigate',i-1)">{{ i }}
             </option>
@@ -94,7 +94,7 @@
           <button class="btn btn-xs join-item hidden lg:inline" :disabled="activePage < 1"
                   @click="$emit('navigate',activePage-1)">«
           </button>
-          <select class="select select-xs lg:join-item">
+          <select class="select select-xs focus:outline-none lg:join-item">
             <option v-for="i in totalPage" :key="i" :selected="activePage === i-1"
                     @click="$emit('navigate',i-1)">{{ i }}
             </option>

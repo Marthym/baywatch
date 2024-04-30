@@ -22,12 +22,12 @@
   </div>
   <div v-if="!dense && view.error" :class="{
           'col-span-2': !dense,
-          'text-error-content': view.error.level == 'ERROR',
+          'text-error-content': view.error.level == 'SEVERE',
           'text-warning-content': view.error.level == 'WARNING'
        }"
        class="place-self-end h-full flex flex-col justify-center">
     <div class="tooltip tooltip-left"
-         :class="{'tooltip-error': view.error.level == 'ERROR', 'tooltip-warning': view.error.level == 'WARNING'}"
+         :class="{'tooltip-error': view.error.level == 'SEVERE', 'tooltip-warning': view.error.level == 'WARNING'}"
          :data-tip="view.error.since.toLocaleDateString(currentLocale, formatLocaleOptions) +': '+ view.error.message">
       <ExclamationTriangleIcon class="h-8 w-8"/>
     </div>
