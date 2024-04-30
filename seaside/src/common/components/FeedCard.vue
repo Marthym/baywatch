@@ -17,7 +17,7 @@
     </div>
   </div>
   <div v-if="!dense" :class="{'col-span-7': !dense}">
-    <a class="link whitespace-normal">{{ view.location }}</a><br>
+    <a class="link whitespace-normal break-all">{{ view.location }}</a><br>
     <div v-for="tag in view.tags" class="badge mr-1 rounded">{{ tag }}</div>
   </div>
   <div v-if="!dense && view.error" :class="{
@@ -25,7 +25,7 @@
           'text-error-content': view.error.level == 'ERROR',
           'text-warning-content': view.error.level == 'WARNING'
        }"
-       class="place-self-end">
+       class="place-self-end h-full flex flex-col justify-center">
     <div class="tooltip tooltip-left"
          :class="{'tooltip-error': view.error.level == 'ERROR', 'tooltip-warning': view.error.level == 'WARNING'}"
          :data-tip="view.error.since.toLocaleDateString(currentLocale, formatLocaleOptions) +': '+ view.error.message">
