@@ -11,7 +11,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 @Controller
@@ -37,10 +36,6 @@ public class ScrapingErrorsController {
 
     @SchemaMapping(typeName = "ScrapingError", field = "level")
     public Mono<String> computeErrorLevel(ScrapingError error) {
-        if (error.code() > 499) {
-            return Mono.just(Level.SEVERE.getName());
-        } else {
-            return Mono.just(Level.WARNING.getName());
-        }
+        return Mono.just(scrapingErrorsService.level(error).getName());
     }
 }
