@@ -7,4 +7,5 @@ public enum HeroIcons {
     RSS_ICON,
     USERS_ICON,
     USER_GROUP_ICON,
+    EXCLAMATION_TRIANGLE_ICON,
 }

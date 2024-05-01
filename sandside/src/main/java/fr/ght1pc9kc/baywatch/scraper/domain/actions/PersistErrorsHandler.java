@@ -1,5 +1,9 @@
 package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
+import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
+import fr.ght1pc9kc.baywatch.admin.api.model.CounterGroup;
+import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
+import fr.ght1pc9kc.baywatch.common.api.model.HeroIcons;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapingErrorsService;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapingEventHandler;
@@ -19,9 +23,11 @@ import reactor.core.publisher.Mono;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.EnumSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
-public class PersistErrorsHandler implements ScrapingEventHandler {
+public class PersistErrorsHandler implements ScrapingEventHandler, CounterProvider {
+    private final AtomicInteger lastErrorCount = new AtomicInteger(0);
     private final ScrapingErrorsService scrapingErrorsService;
 
     @Setter(value = AccessLevel.PACKAGE, onMethod = @__({@VisibleForTesting}))
@@ -29,6 +35,7 @@ public class PersistErrorsHandler implements ScrapingEventHandler {
 
     @Override
     public Mono<Void> after(ScrapResult result) {
+        lastErrorCount.set(result.errors().size());
         return Flux.fromIterable(result.errors())
                 .filter(err -> {
                     if (err instanceof FeedScrapingException fse) {
@@ -76,5 +83,23 @@ public class PersistErrorsHandler implements ScrapingEventHandler {
     @Override
     public EnumSet<ScrapingEventType> eventTypes() {
         return EnumSet.of(ScrapingEventType.FEED_SCRAPING);
+    }
+
+    @Override
+    public CounterGroup group() {
+        return CounterGroup.SCRAPER;
+    }
+
+    @Override
+    public Mono<Counter> computeCounter() {
+        return Mono.fromCallable(() -> Counter.create(
+                "Feeds Errors",
+                HeroIcons.EXCLAMATION_TRIANGLE_ICON,
+                Integer.toString(lastErrorCount.intValue()),
+                "error(s) during last scraping"));
+    }
+
+    public int getLastErrorCount() {
+        return lastErrorCount.get();
     }
 }

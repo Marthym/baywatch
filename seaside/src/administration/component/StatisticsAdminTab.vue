@@ -20,6 +20,7 @@ import { Counter } from '@/administration/model/Counter.type';
 import {
   ClockIcon,
   CloudArrowUpIcon,
+  ExclamationTriangleIcon,
   NewspaperIcon,
   QuestionMarkCircleIcon,
   RssIcon,
@@ -34,6 +35,7 @@ import { map } from 'rxjs/operators';
   components: {
     ClockIcon,
     CloudArrowUpIcon,
+    ExclamationTriangleIcon,
     NewspaperIcon,
     QuestionMarkCircleIcon,
     RssIcon,
@@ -85,6 +87,8 @@ export default class StatisticsAdminTab extends Vue {
         return 'UserGroupIcon';
       case 'USERS_ICON':
         return 'UsersIcon';
+      case 'EXCLAMATION_TRIANGLE_ICON':
+        return 'ExclamationTriangleIcon';
       default:
         return 'QuestionMarkCircleIcon';
     }
