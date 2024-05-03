@@ -5,6 +5,7 @@ import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.Publishable;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.RssNamespaces;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import lombok.AccessLevel;
@@ -42,6 +43,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
     private static final Set<String> ALLOWED_PROTOCOL = Set.of("http", "https");
     private static final String CHANNEL = "channel";
     private static final String CONTENT = "content";
+    private static final String DC_DATE = "dc:date";
     private static final String DESCRIPTION = "description";
     private static final String EMAIL = "email";
     private static final String ENTRY = "entry";
@@ -162,16 +164,21 @@ public final class RssAtomParserImpl implements RssAtomParser {
             final XMLEvent nextEvent = events.get(i);
             if (nextEvent.isStartElement()) {
                 final StartElement startElement = nextEvent.asStartElement();
-                if (!startElement.getName().getPrefix().isBlank()) {
+                Optional<RssNamespaces> fieldNamespace = RssNamespaces.fromURI(startElement.getName().getNamespaceURI());
+                if (!startElement.getName().getPrefix().isEmpty() && fieldNamespace.isEmpty()) {
                     continue;
                 }
 
-                bldr = switch (startElement.getName().getLocalPart()) {
+                String fieldName = fieldNamespace
+                        .map(ns -> startElement.getName().getPrefix() + ':' + startElement.getName().getLocalPart())
+                        .orElse(startElement.getName().getLocalPart());
+
+                bldr = switch (fieldName) {
                     case ENTRY, ITEM -> onItemEntry();
                     case TITLE -> onTitle(bldr, events, i);
                     case CONTENT, DESCRIPTION -> onContentDescription(bldr, events, i);
                     case LINK -> onLink(bldr, feed, events, i);
-                    case UPDATED -> onUpdated(bldr, events, i);
+                    case DC_DATE, UPDATED -> onUpdated(bldr, events, i);
                     case PUB_DATE -> onPublicationDate(bldr, events, i);
                     default -> bldr;
                 };
@@ -196,7 +203,8 @@ public final class RssAtomParserImpl implements RssAtomParser {
 
     private RawNews.RawNewsBuilder onItemEntry() {
         log.trace("start parsing entry");
-        return RawNews.builder();
+        return RawNews.builder()
+                .publication(clock.instant()); // Default value
     }
 
     private RawNews.RawNewsBuilder onTitle(RawNews.RawNewsBuilder bldr,

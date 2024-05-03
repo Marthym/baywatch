@@ -140,6 +140,14 @@ class RssAtomParserImplTest {
                     "<p>Uber&#8217;s Storage Platform team talks about the massive strategic undertaking to migrate " +
                     "their Distributed Databases from MySQL to MyRocks resulting in significant Storage usage reduction. " +
                     "The blog details the migration process and challenges faced.</p>",
+            "feeds/librealire-dc.xml, " +
+                    "Bilan du mois d'avril 2024, " +
+                    "https://www.librealire.org/bilan-du-mois-d-avril-2024, " +
+                    "2024-05-02T09:03:39Z, " +
+                    "&lt;p>Quinze transcriptions ont été publiées au mois d'avril 2024, ce qui correspond à 14 heures " +
+                    "et 54 minutes d'enregistrements audio ou de vidéos. &lt;br class='autobr' /> « Si on vous dit qu'on " +
+                    "ne peut pas travailler entièrement sous logiciel libre en établissement scolaire du second degré, " +
+                    "ce n'est pas vrai ! Référez-vous à notre documentation ! On a prouvé que ça marche bien. ",
             "feeds/debian_io.xml, " +
                     "Matrix-Synapse : migrer de SQLite à PostgreSQL, " +
                     "https://www.deblan.io/post/655/matrix-synapse-migrer-de-sqlite-a-postgresql, " +
@@ -266,6 +274,21 @@ class RssAtomParserImplTest {
                                 .isEqualTo(Instant.parse("2020-11-30T15:58:26Z")),
                         () -> assertThat(actual).extracting(RawNews::description).isEqualTo(
                                 "&lt;p>&lt;a href=\"https://www.journalduhacker.net/s/vzuiyr/dbaas_tout_comprendre_des_bases_de_donn_es\">Comments&lt;/a>&lt;/p>")
+                )).verifyComplete();
+    }
+
+    @Test
+    void should_read_rss_item_without_publication_date() {
+        List<XMLEvent> xmlEvents = toXmlEventList("feeds/should_read_rss_item_without_publication_date.xml");
+
+        ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.id(), FeedSamples.JEDI.self().location(),
+                Instant.parse("2024-02-25T17:15:42Z"), null);
+        StepVerifier.create(tested.readEntryEvents(xmlEvents, sampleFeed))
+                .assertNext(actual -> Assertions.assertAll(
+                        () -> assertThat(actual).extracting(RawNews::title)
+                                .isEqualTo("DBaaS: Tout comprendre des bases de données managées"),
+                        () -> assertThat(actual).extracting(RawNews::publication)
+                                .isEqualTo(Instant.parse("2024-03-24T21:17:22Z"))
                 )).verifyComplete();
     }
 
