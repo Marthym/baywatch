@@ -1,11 +1,12 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 
+import fr.ght1pc9kc.baywatch.common.api.model.FeedMeta;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
-import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsUsersRecordSample;
@@ -18,6 +19,7 @@ import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;
 import fr.ght1pc9kc.testy.jooq.WithDslContext;
 import fr.ght1pc9kc.testy.jooq.WithInMemoryDatasource;
 import fr.ght1pc9kc.testy.jooq.WithSampleDataLoaded;
+import org.assertj.core.api.SoftAssertions;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -159,6 +161,7 @@ class FeedRepositoryTest {
                         WebFeed.builder()
                                 .location(URI.create("http://www.jedi.light/01"))
                                 .name("Obiwan Kenobi")
+                                .description("Feed description")
                                 .tags(Set.of("jedi", "light"))
                                 .build())
                 .meta(updated, Instant.parse("2020-12-11T15:12:42Z"))
@@ -176,6 +179,40 @@ class FeedRepositoryTest {
             assertThat(actual).isNotNull();
             assertThat(actual.getFeusFeedName()).isEqualTo("Obiwan Kenobi");
         }
+    }
+
+    @Test
+    void should_partially_update_feed(DSLContext dsl) {
+        String feedOwnedOnlyByObywan = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("01"));
+        SoftAssertions.assertSoftly(softly -> {
+            FeedsRecord initial = dsl.selectFrom(FEEDS).where(FEEDS.FEED_ID.eq(feedOwnedOnlyByObywan)).fetchOne();
+            softly.assertThat(initial).isNotNull();
+            assert initial != null;
+            softly.assertThat(initial.getFeedName()).isEqualTo("Jedi");
+            softly.assertThat(initial.getFeedDescription()).isEqualTo("Feed description");
+            softly.assertThat(initial.getFeedLastEtag()).isNull();
+        });
+
+        Entity<WebFeed> expected = Entity.identify(
+                        WebFeed.builder()
+                                .location(URI.create("http://www.jedi.light/01"))
+                                .tags(Set.of())
+                                .build())
+                .meta(FeedMeta.ETag, "updatedETag")
+                .withId(feedOwnedOnlyByObywan);
+
+        StepVerifier.create(tested.update(List.of(expected)))
+                .assertNext(actual -> assertThat(actual.meta(FeedMeta.ETag)).contains("updatedETag"))
+                .verifyComplete();
+
+        SoftAssertions.assertSoftly(softly -> {
+            FeedsRecord after = dsl.selectFrom(FEEDS).where(FEEDS.FEED_ID.eq(feedOwnedOnlyByObywan)).fetchOne();
+            softly.assertThat(after).isNotNull();
+            assert after != null;
+            softly.assertThat(after.getFeedName()).isEqualTo("Jedi");
+            softly.assertThat(after.getFeedDescription()).isEqualTo("Feed description");
+            softly.assertThat(after.getFeedLastEtag()).isEqualTo("updatedETag");
+        });
     }
 
     @Test
