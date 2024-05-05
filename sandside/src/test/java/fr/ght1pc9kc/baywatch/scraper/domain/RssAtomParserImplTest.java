@@ -17,6 +17,7 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -49,7 +50,7 @@ class RssAtomParserImplTest {
             "feeds/lemonde.xml, item, 672",
     })
     void should_skip_until_entries(String resource, String tag, int expectedCount) {
-        Flux<XMLEvent> actual = Flux.fromIterable(toXmlEventList(resource))
+        Flux<XMLEvent> actual = Flux.fromIterable(resourceToEventList(resource))
                 .skipUntil(tested.firstItemEvent());
 
         StepVerifier.create(actual)
@@ -68,7 +69,7 @@ class RssAtomParserImplTest {
             "feeds/lemonde.xml, item, 17",
     })
     void should_bufferize_entries(String resource, String tag, int expectedCount) {
-        Flux<List<XMLEvent>> actual = Flux.fromIterable(toXmlEventList(resource))
+        Flux<List<XMLEvent>> actual = Flux.fromIterable(resourceToEventList(resource))
                 .bufferUntil(tested.itemEndEvent())
                 .skip(1); // Ignore the first before, it contains all document start event, not skipped
 
@@ -107,10 +108,14 @@ class RssAtomParserImplTest {
                     "Engineering &#8211; Uber Blog | " +
                     "Check out the official blog from Uber to get the latest news, announcements, and things to do in US.\" /><meta name=\"robots\" content=\"index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1\" /><link rel=\"canonical\" href=\"https://www.uber.com/blog/\" /><meta property=\"og:locale\" content=\"en_US\" /><meta property=\"og:type\" content=\"article\" /><meta property=\"og:title\" content=\"US Archives\" /><meta property=\"og:description\" content=\"Check out the official blog from Uber to get the latest news, announcements, and things to do in your community.\" /><meta property=\"og:url\" content=\"https://www.uber.com/blog/\" /><meta property=\"og:site_name\" content=\"Uber Blog\" /><meta property=\"og:image\" content=\"https://blog.uber-cdn.com/cdn-cgi/image/width=500,height=300,quality=80,onerror=redirect,format=auto/wp-content/uploads/2018/09/uber_blog_seo.png\" /><meta property=\"og:image:width\" content=\"500\" /><meta property=\"og:image:height\" content=\"300\" /><meta property=\"og:image:type\" content=\"image/png\" /><meta name=\"twitter:card\" content=\"summary_large_image\" /><meta property=\"fb:pages\" content=\"120945717945722" +
                     "| | https://www.uber.com/ | 2022-09-04T09:30:20Z",
+            "feeds/feed_two_digits_year.xml | 0e224c9828b0ad842d4d62f8ef6109979dab1303d5babf4965269a3c252af3c7 | " +
+                    "Adam Wathan's Blog | " +
+                    "Adam Wathan's blog." +
+                    "| | https://adamwathan.me/rss/ | 2022-05-21T01:18:08Z",
     })
     void should_read_feed_headers(String resource, String expectedId, String expectedTitle, String expectedDescr,
                                   String expectedAuthor, URI expectedLink, Instant updated) {
-        Mono<AtomFeed> actualMono = Flux.fromIterable(toXmlEventList(resource))
+        Mono<AtomFeed> actualMono = Flux.fromIterable(resourceToEventList(resource))
                 .bufferUntil(tested.firstItemEvent())
                 .next()
                 .map(tested::readFeedProperties);
@@ -158,7 +163,7 @@ class RssAtomParserImplTest {
                     "que je gère.</p>"
     })
     void should_read_rss_item(String inputFileName, String expectedTitle, String expectedUrl, String expectedPubDate, String expectedDescription) {
-        List<XMLEvent> xmlEvents = toXmlEventList(inputFileName);
+        List<XMLEvent> xmlEvents = resourceToEventList(inputFileName);
 
         ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.id(), FeedSamples.JEDI.self().location(),
                 Instant.parse("2024-02-25T17:15:42Z"), null);
@@ -173,7 +178,7 @@ class RssAtomParserImplTest {
 
     @Test
     void should_read_atom_entry() {
-        List<XMLEvent> xmlEvents = toXmlEventList("feeds/atom_entry.xml");
+        List<XMLEvent> xmlEvents = resourceToEventList("feeds/atom_entry.xml");
 
         ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.id(), FeedSamples.JEDI.self().location(),
                 Instant.parse("2024-02-25T17:15:42Z"), null);
@@ -197,7 +202,7 @@ class RssAtomParserImplTest {
 
     @Test
     void should_read_atom_entry_with_html_content() {
-        List<XMLEvent> xmlEvents = toXmlEventList("feeds/atom_entry_with_html_content.xml");
+        List<XMLEvent> xmlEvents = resourceToEventList("feeds/atom_entry_with_html_content.xml");
 
         ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.id(), FeedSamples.JEDI.self().location(),
                 Instant.parse("2024-02-25T17:15:42Z"), null);
@@ -218,7 +223,7 @@ class RssAtomParserImplTest {
 
     @Test
     void should_read_rss_item_with_encoded_content() {
-        List<XMLEvent> xmlEvents = toXmlEventList("feeds/rss_item_with_encoded_content.xml");
+        List<XMLEvent> xmlEvents = resourceToEventList("feeds/rss_item_with_encoded_content.xml");
 
         ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.id(), FeedSamples.JEDI.self().location(),
                 Instant.parse("2024-02-25T17:15:42Z"), null);
@@ -239,7 +244,7 @@ class RssAtomParserImplTest {
 
     @Test
     void should_read_rss_item_with_cdata() {
-        List<XMLEvent> xmlEvents = toXmlEventList("feeds/rss_item_with_cdata.xml");
+        List<XMLEvent> xmlEvents = resourceToEventList("feeds/rss_item_with_cdata.xml");
 
         ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.id(), FeedSamples.JEDI.self().location(),
                 Instant.parse("2024-02-25T17:15:42Z"), null);
@@ -260,7 +265,7 @@ class RssAtomParserImplTest {
 
     @Test
     void should_read_rss_item_with_relative_link() {
-        List<XMLEvent> xmlEvents = toXmlEventList("feeds/rss_item_with_relative_link.xml");
+        List<XMLEvent> xmlEvents = resourceToEventList("feeds/rss_item_with_relative_link.xml");
 
         ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.id(), FeedSamples.JEDI.self().location(),
                 Instant.parse("2024-02-25T17:15:42Z"), null);
@@ -279,7 +284,7 @@ class RssAtomParserImplTest {
 
     @Test
     void should_read_rss_item_without_publication_date() {
-        List<XMLEvent> xmlEvents = toXmlEventList("feeds/should_read_rss_item_without_publication_date.xml");
+        List<XMLEvent> xmlEvents = resourceToEventList("feeds/should_read_rss_item_without_publication_date.xml");
 
         ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.id(), FeedSamples.JEDI.self().location(),
                 Instant.parse("2024-02-25T17:15:42Z"), null);
@@ -292,9 +297,36 @@ class RssAtomParserImplTest {
                 )).verifyComplete();
     }
 
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', value = {
+            "Sat, 21 May 22 01:18:08 +0000 | 2022-05-21T01:18:08Z",
+            "Sat, 21 May 22 01:18:08 GMT | 2022-05-21T01:18:08Z",
+            "Mon, 06 Nov 2023 11:30:00 +0100 | 2023-11-06T10:30:00Z",
+            "Sun Sep 04 2022 09:30:20 GMT+0000 (Coordinated Universal Time) | 2022-09-04T09:30:20Z",
+            "2020-11-30T08:20:58+00:00 | 2020-11-30T08:20:58Z",
+            "2020-11-26T14:08:50Z | 2020-11-26T14:08:50Z",
+            "2022-09-01 16:30:00 | 2022-09-01T16:30:00Z",
+            "2022-09-01 | 2022-09-01T00:00:00Z",
+    })
+    void should_parse_publication_date(String pubDate, Instant expected) throws XMLStreamException {
+        ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.id(), FeedSamples.JEDI.self().location(),
+                Instant.parse("2024-02-25T17:15:42Z"), null);
+        ByteArrayInputStream toParse = new ByteArrayInputStream(("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" +
+                "<item>" +
+                "<pubDate>" + pubDate + "</pubDate>" +
+                "<link>https:/blop.fr/</link>" +
+                "</item>"
+        ).getBytes(StandardCharsets.UTF_8));
+        List<XMLEvent> xmlEvents = toXmlEventList(toParse);
+
+        StepVerifier.create(tested.readEntryEvents(xmlEvents, sampleFeed))
+                .assertNext(actual -> assertThat(actual.publication()).isEqualTo(expected))
+                .verifyComplete();
+    }
+
     @Test
     void should_read_rss_item_with_illegal_protocol() {
-        List<XMLEvent> xmlEvents = toXmlEventList("feeds/rss_item_with_illegal_protocol.xml");
+        List<XMLEvent> xmlEvents = resourceToEventList("feeds/rss_item_with_illegal_protocol.xml");
         ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.id(), FeedSamples.JEDI.self().location(),
                 Instant.parse("2024-02-25T17:15:42Z"), null);
         StepVerifier.create(tested.readEntryEvents(xmlEvents, sampleFeed))
@@ -302,18 +334,22 @@ class RssAtomParserImplTest {
                 .verifyComplete();
     }
 
-    private static List<XMLEvent> toXmlEventList(String resource) {
+    private static List<XMLEvent> resourceToEventList(String resource) {
         try (InputStream is = RssAtomParserImplTest.class.getResourceAsStream(resource)) {
-            XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
-            XMLEventReader reader = xmlInputFactory.createXMLEventReader(is, StandardCharsets.UTF_8.displayName());
-            List<XMLEvent> events = new ArrayList<>();
-            while (reader.hasNext()) {
-                events.add(reader.nextEvent());
-            }
-            return List.copyOf(events);
+            return toXmlEventList(is);
         } catch (IOException | XMLStreamException e) {
             Assertions.fail(e);
             return List.of();
         }
+    }
+
+    private static List<XMLEvent> toXmlEventList(InputStream is) throws XMLStreamException {
+        XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+        XMLEventReader reader = xmlInputFactory.createXMLEventReader(is, StandardCharsets.UTF_8.displayName());
+        List<XMLEvent> events = new ArrayList<>();
+        while (reader.hasNext()) {
+            events.add(reader.nextEvent());
+        }
+        return List.copyOf(events);
     }
 }

@@ -64,7 +64,7 @@ public class PersistErrorsHandler implements ScrapingEventHandler, CounterProvid
             Throwable current = ex;
             while (current != null &&
                     current.getCause() != null &&
-                    !current.getCause().getClass().isAssignableFrom(IllegalArgumentException.class)) {
+                    !IllegalArgumentException.class.isAssignableFrom(current.getCause().getClass())) {
                 current = current.getCause();
             }
 

@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.scraper.domain;
 
 import com.machinezoo.noexception.Exceptions;
+import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
@@ -26,6 +27,7 @@ import java.net.URI;
 import java.text.ParsePosition;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -33,6 +35,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * This class parses and renders data as found in news feeds. Under no circumstances is it responsible for sanitizing the data read.
@@ -67,7 +71,12 @@ public final class RssAtomParserImpl implements RssAtomParser {
 
     private static final DateTimeFormatter NON_STANDARD_DATETIME = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
             .withZone(ZoneOffset.UTC);
+    private static final DateTimeFormatter DATE_ONLY_DATETIME = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            .withZone(ZoneOffset.UTC);
     private static final DateTimeFormatter UBER_DATETIME = DateTimeFormatter.ofPattern("EEE MMM dd yyyy HH:mm:ss zzzXXXX")
+            .withZone(ZoneOffset.UTC).withLocale(Locale.US);
+
+    private static final DateTimeFormatter RFC_1123_TWO_DIGITS_YEAR_DATETIME = DateTimeFormatter.ofPattern("EEE, dd MMM [yyyy][yy] HH:mm:ss [Z]['GMT']")
             .withZone(ZoneOffset.UTC).withLocale(Locale.US);
 
     @Setter(value = AccessLevel.PACKAGE, onMethod = @__({@VisibleForTesting}))
@@ -178,8 +187,8 @@ public final class RssAtomParserImpl implements RssAtomParser {
                     case TITLE -> onTitle(bldr, events, i);
                     case CONTENT, DESCRIPTION -> onContentDescription(bldr, events, i);
                     case LINK -> onLink(bldr, feed, events, i);
-                    case DC_DATE, UPDATED -> onUpdated(bldr, events, i);
-                    case PUB_DATE -> onPublicationDate(bldr, events, i);
+                    case UPDATED -> onUpdated(bldr, events, i);
+                    case DC_DATE, PUB_DATE -> onPublicationDate(bldr, events, i);
                     default -> bldr;
                 };
             }
@@ -275,10 +284,19 @@ public final class RssAtomParserImpl implements RssAtomParser {
             String pubDate = readElementText(events, idx);
             try {
 
-                Instant datetime = Exceptions.silence().get(() -> DateTimeFormatter.RFC_1123_DATE_TIME.parse(pubDate, Instant::from))
-                        .orElseGet(Exceptions.silence().supplier(() -> DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(pubDate, Instant::from))
-                                .orElseGet(Exceptions.silence().supplier(() -> Instant.from(UBER_DATETIME.parse(pubDate, new ParsePosition(0))))
-                                        .orElseGet(() -> NON_STANDARD_DATETIME.parse(pubDate, Instant::from))));
+                Instant datetime = Stream.<Supplier<Optional<Instant>>>of(
+                                () -> Exceptions.silence().get(() -> RFC_1123_TWO_DIGITS_YEAR_DATETIME.parse(pubDate, Instant::from)),
+                                () -> Exceptions.silence().get(() -> DateTimeFormatter.RFC_1123_DATE_TIME.parse(pubDate, Instant::from)),
+                                () -> Exceptions.silence().get(() -> DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(pubDate, Instant::from)),
+                                () -> Exceptions.silence().get(() -> Instant.from(UBER_DATETIME.parse(pubDate, new ParsePosition(0)))),
+                                () -> Exceptions.silence().get(() -> NON_STANDARD_DATETIME.parse(pubDate, Instant::from)),
+                                () -> Exceptions.silence().get(() -> DateUtils.toInstant(DATE_ONLY_DATETIME.parse(pubDate, LocalDate::from))))
+                        .map(Supplier::get)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .findFirst()
+                        .orElseThrow();
+
                 result = bldr.publication(datetime);
             } catch (Exception e) {
                 log.atDebug().addArgument(pubDate)

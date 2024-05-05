@@ -133,6 +133,7 @@ class NotifyServiceImplTest {
 
         assertThat(actualObiwan).containsExactly(event);
         assertThat(errorsObiwan).isEmpty();
+        Awaitility.await("Await until disposed").atMost(Duration.ofSeconds(5)).until(disposable::isDisposed);
         assertThat(disposable.isDisposed()).isTrue();
     }
 
