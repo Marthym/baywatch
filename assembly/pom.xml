@@ -84,7 +84,7 @@
                 <configuration>
                     <from>
                         <image>
-                            bellsoft/liberica-openjre-alpine-musl:21.0.1-12@sha256:8fa3b24bc2da328c30ef9d8981ae135dd03cce683b40eb7f81baa375588bd153
+                            bellsoft/liberica-openjre-alpine-musl:21.0.3-10@sha256:1e8d9a763153b68000f509d161d8a4eea232a5242cb5a677577208edc41ee9c1
                         </image>
                     </from>
                     <to>
