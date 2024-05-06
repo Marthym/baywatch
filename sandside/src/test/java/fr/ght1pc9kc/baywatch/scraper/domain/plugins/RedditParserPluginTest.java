@@ -14,7 +14,9 @@ class RedditParserPluginTest {
     @ParameterizedTest
     @CsvSource({
             "https://www.reddit.com/r/programming/.rss, https://www.reddit.com/r/programming/.rss?sort=new",
+            "https://www.reddit.com/r/programming/.rss?sort=new, https://www.reddit.com/r/programming/.rss?sort=new",
             "https://www.reddit.com/r/programming/.rss/, https://www.reddit.com/r/programming/.rss/?sort=new",
+            "https://www.reddit.com/r/programming/.rss?, https://www.reddit.com/r/programming/.rss?sort=new",
             "https://www.reddit.com/r/programming/.rss?test=yes, https://www.reddit.com/r/programming/.rss?test=yes&sort=new"
     })
     void should_modify_url(String uri, String expected) {
