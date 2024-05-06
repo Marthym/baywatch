@@ -8,10 +8,14 @@ import fr.ght1pc9kc.baywatch.scraper.domain.ports.ScrapingErrorPersistencePort;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Clock;
+import java.time.Duration;
 import java.util.Collection;
+import java.util.logging.Level;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 
@@ -19,6 +23,9 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 public class ScrapingErrorsServiceImpl implements ScrapingErrorsService {
     private final ScrapingErrorPersistencePort persistencePort;
     private final ScrapingAuthentFacade authentFacade;
+
+    @Setter
+    private Clock clock = Clock.systemUTC();
 
     @Override
     public Flux<Entity<ScrapingError>> persist(Collection<Entity<ScrapingError>> errors) {
@@ -41,5 +48,27 @@ public class ScrapingErrorsServiceImpl implements ScrapingErrorsService {
                 .filter(authentFacade::hasSystemRole)
                 .switchIfEmpty(Mono.error(() -> new IllegalAccessException("Persis scraping error not permitted !")))
                 .flatMap(u -> persistencePort.delete(query));
+    }
+
+    @Override
+    public Level level(ScrapingError error) {
+        if (error.code() > 499 || error.since().isBefore(clock.instant().minus(Duration.ofDays(90)))) {
+            return Level.SEVERE;
+        } else {
+            return Level.WARNING;
+        }
+    }
+
+    public String filterMessage(ScrapingError error) {
+        return switch (error.code()) {
+            case 200, 599 -> "Error on parsing feed flux. Will be fixed soon.";
+            case 403 -> "Feed expect credentials to be read";
+            case 404 -> "Feed not found.";
+            case 406 -> "Feed format unknown and not supported.";
+            case 410 -> "Feed is gone for ever, you can remove it !";
+            case 500 -> "Feed unavailable";
+            case 521 -> "Feed server is done";
+            default -> "Unknown error message for code " + error.code();
+        };
     }
 }

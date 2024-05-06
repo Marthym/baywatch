@@ -2,6 +2,7 @@ HELP.md
 target/
 *.db
 .attach_*
+.DS_Store
 
 ### STS ###
 .apt_generated

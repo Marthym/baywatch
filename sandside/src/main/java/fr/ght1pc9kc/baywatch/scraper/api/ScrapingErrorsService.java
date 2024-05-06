@@ -6,6 +6,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
+import java.util.logging.Level;
 
 public interface ScrapingErrorsService {
     Flux<Entity<ScrapingError>> persist(Collection<Entity<ScrapingError>> errors);
@@ -13,4 +14,8 @@ public interface ScrapingErrorsService {
     Flux<Entity<ScrapingError>> list(Collection<String> feedsIds);
 
     Mono<Void> purge(Collection<String> notInFeedsIds);
+
+    Level level(ScrapingError error);
+
+    String filterMessage(ScrapingError error);
 }

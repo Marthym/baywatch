@@ -18,7 +18,9 @@ export class FeedService {
     query SearchFeedsQuery ($_p: Int = 0, $_pp: Int = ${FeedService.DEFAULT_PER_PAGE}, $_s: String = "name") {
         feedsSearch(_p: $_p, _pp: $_pp, _s: $_s) {
             totalCount
-            entities {_id name location tags}
+            entities {_id name location tags error {
+                level since message
+            }}
         }
     }`;
 
@@ -49,7 +51,19 @@ export class FeedService {
                     currentPage: resolvedPage,
                     totalPage: Math.ceil(
                         res.data.feedsSearch.totalCount / (options._pp | FeedService.DEFAULT_PER_PAGE)),
-                    data: of(res.data.feedsSearch.entities),
+                    data: of(res.data.feedsSearch.entities).pipe(
+                        map(feeds => {
+                            feeds.forEach(feed => {
+                                if (!feed.icon) {
+                                    feed.icon = new URL(new URL(feed.location).origin + '/favicon.ico');
+                                }
+                                if (feed.error) {
+                                    feed.error.since = new Date(feed.error.since);
+                                }
+                            });
+                            return feeds;
+                        }),
+                    ),
                 };
             }),
             take(1),

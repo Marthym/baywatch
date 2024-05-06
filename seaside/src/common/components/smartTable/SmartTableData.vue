@@ -1,5 +1,5 @@
 <template>
-    <td>
+    <td class="text-ellipsis overflow-hidden">
         <slot/>
     </td>
 </template>

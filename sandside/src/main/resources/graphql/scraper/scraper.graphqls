@@ -15,6 +15,13 @@ type AtomEntry {
     feeds: [String]
 }
 
+type ScrapingError {
+    level: Level,
+    since: String,
+    lastTime: String,
+    message: String,
+}
+
 extend type Query {
     scrapFeedHeader(link: URI): AtomFeed
 }

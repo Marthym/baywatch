@@ -29,6 +29,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -114,19 +115,13 @@ public class FeedRepository implements FeedPersistencePort {
                 .map(baywatchMapper::feedToFeedsRecord).toList();
 
         return Mono.fromCallable(() ->
-                        dsl.loadInto(FEEDS)
-                                .batchAll()
-                                .onDuplicateKeyUpdate()
-                                .onErrorIgnore()
-                                .loadRecords(records)
-                                .fieldsCorresponding()
-                                .execute())
+                        dsl.batchUpdate(records).execute())
                 .subscribeOn(databaseScheduler)
 
-                .map(loader -> {
-                    log.debug("Update {} Feeds with {} error(s) and {} ignored",
-                            loader.stored(), loader.errors().size(), loader.ignored());
-                    return loader;
+                .map(batch -> {
+                    int updated = Arrays.stream(batch).sum();
+                    log.debug("Update {} Feeds successfully.", updated);
+                    return batch;
                 })
 
                 .thenMany(Flux.fromIterable(toUpdate))

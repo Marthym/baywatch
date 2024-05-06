@@ -1,5 +1,5 @@
 <template>
-  <nav role="tablist" class="tabs tabs-boxed place-content-start">
+  <nav role="navigation" class="tabs tabs-boxed place-content-start">
     <a role="tab" class="tab" :class="{'tab-active': 'UserAdminTab' === activeTab}"
        @click.prevent="onChangeTab('UserAdminTab')">Users</a>
     <a role="tab" class="tab" :class="{'tab-active': 'ConfigAdminTab' === activeTab}"

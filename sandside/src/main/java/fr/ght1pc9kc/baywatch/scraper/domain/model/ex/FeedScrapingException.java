@@ -8,7 +8,7 @@ public final class FeedScrapingException extends ScrapingException {
     private final transient AtomFeed entity;
 
     public FeedScrapingException(AtomFeed entity, Throwable cause) {
-        super(cause.getLocalizedMessage(), cause);
+        super((cause != null) ? cause.getLocalizedMessage() : "null", cause);
         this.entity = entity;
     }
 }

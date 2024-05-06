@@ -15,63 +15,63 @@
         <h2 class="font-sans text-xl border-b border-accent/40 pb-2 w-full">{{ title }}</h2>
         <div class="flex flex-wrap content-start ">
           <div class="grow lg:basis-1/2 h-fit p-4">
-            <label class="label">
+            <div class="label">
               <span class="label-text">Login</span>
-            </label>
+            </div>
             <input v-model="modelValue.login" type="text" placeholder="login"
                    class="input input-bordered w-full"
                    :class="{'input-error': errors.has('login')}" @change="onFieldChange('login')"
                    :disabled="isEditionMode">
-            <label class="label -mt-1">
+            <div class="label -mt-1">
               <span class="label-text-alt">&nbsp;</span>
               <span v-if="errors.has('login')" class="label-text-alt">{{ errors.get('login') }}</span>
-            </label>
+            </div>
 
-            <label class="label -mt-6">
+            <div class="label -mt-6">
               <span class="label-text">Username</span>
-            </label>
+            </div>
             <input v-model="modelValue.name" type="text" placeholder="username"
                    class="input input-bordered w-full"
                    :class="{'input-error': errors.has('name')}" @change="onFieldChange('name')">
-            <label class="label -mt-1">
+            <div class="label -mt-1">
               <span class="label-text-alt">&nbsp;</span>
               <span v-if="errors.has('name')" class="label-text-alt">{{ errors.get('name') }}</span>
-            </label>
+            </div>
 
-            <label class="label -mt-6">
+            <div class="label -mt-6">
               <span class="label-text">Mail</span>
-            </label>
+            </div>
             <input v-model="modelValue.mail" type="email" placeholder="mail address"
                    class="input input-bordered w-full"
                    :class="{'input-error': errors.has('mail')}" @change="onFieldChange('mail')"
                    :disabled="isEditionMode">
-            <label class="label -mt-1">
+            <div class="label -mt-1">
               <span class="label-text-alt">&nbsp;</span>
               <span v-if="errors.has('mail')" class="label-text-alt">{{ errors.get('mail') }}</span>
-            </label>
+            </div>
           </div>
           <div class="grow lg:basis-1/2 h-fit p-4">
-            <label class="label">
+            <div class="label">
               <span class="label-text">Password</span>
-            </label>
+            </div>
             <input v-model="modelValue.password" type="password" class="input input-bordered w-full"
                    :class="{'input-error': errors.has('password')}" @change="onFieldChange('password')">
-            <label class="label -mt-1">
+            <div class="label -mt-1">
               <span class="label-text-alt">&nbsp;</span>
               <span v-if="errors.has('password')" class="label-text-alt">{{
                   errors.get('password')
                 }}</span>
-            </label>
+            </div>
 
-            <label class="label -mt-6">
+            <div class="label -mt-6">
               <span class="label-text">Password Confirmation</span>
-            </label>
+            </div>
             <input v-model="passwordConfirm" type="password" class="input input-bordered w-full"
                    :class="{'input-error': errors.has('confirm')}" @change="onFieldChange('confirm')">
-            <label class="label -mt-1">
+            <div class="label -mt-1">
               <span class="label-text-alt">&nbsp;</span>
               <span v-if="errors.has('confirm')" class="label-text-alt">{{ errors.get('confirm') }}</span>
-            </label>
+            </div>
           </div>
           <div class="grow lg:basis-1/2 h-fit p-4 border-error rounded-lg"
                :class="{'border': errors.has('roles')}">

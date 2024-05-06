@@ -15,6 +15,7 @@ import reactor.test.StepVerifier;
 
 import java.net.URI;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -42,19 +43,46 @@ class PersistErrorsHandlerTest {
                 new FeedScrapingException(new AtomFeed(
                         "42", "Obiwan Kenobi", null, null,
                         URI.create("https://jedi.com/"), null),
-                        new IllegalArgumentException("test")),
+                        new RuntimeException("test")),
+                new FeedScrapingException(new AtomFeed(
+                        "42", "Obiwan Kenobi", null, null,
+                        URI.create("https://jedi.com/"), null),
+                        new RuntimeException("404 Not found")),
                 new FeedScrapingException(new AtomFeed(
                         "41", "Obiwan Kenobi", null, null, null, null),
                         new IllegalArgumentException("test")),
                 new NewsScrapingException(new AtomEntry(
                         "66", "Kylo Ren", null, null, null,
                         URI.create("https://jedi.com/"), Set.of()),
-                        new IllegalArgumentException("test2"))
+                        new RuntimeException(new NoSuchElementException(new IllegalArgumentException("521 Gone"))))
         )));
 
         StepVerifier.create(step).verifyComplete();
 
-        verify(mockScrapingErrorsService).persist(assertArg(actual -> Assertions.assertThat(actual).hasSize(1)));
-        verify(mockScrapingErrorsService).purge(assertArg(actual -> Assertions.assertThat(actual).hasSize(1)));
+        verify(mockScrapingErrorsService).persist(assertArg(actual -> Assertions.assertThat(actual).hasSize(2)));
+        verify(mockScrapingErrorsService).purge(assertArg(actual -> Assertions.assertThat(actual).hasSize(2)));
     }
+
+    @Test
+    void should_get_event_type() {
+        Assertions.assertThat(tested.eventTypes()).isNotEmpty();
+    }
+
+    @Test
+    void should_compute_counter() {
+        StepVerifier.create(tested.computeCounter())
+                .assertNext(actual -> Assertions.assertThat(actual).isNotNull())
+                .verifyComplete();
+    }
+
+    @Test
+    void should_get_last_errors_count() {
+        Assertions.assertThat(tested.getLastErrorCount()).isNotNegative();
+    }
+
+    @Test
+    void should_get_counter_group() {
+        Assertions.assertThat(tested.group()).isNotNull();
+    }
+
 }
