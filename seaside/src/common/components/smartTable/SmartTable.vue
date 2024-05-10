@@ -26,7 +26,7 @@
     </button>
   </div>
   <table class="table w-full table-compact" aria-describedby="User List">
-    <thead>
+    <thead class="whitespace-normal">
     <tr>
       <th scope="col" class="w-1 pl-0 pr-0">
         <label v-if="isGlobalEditable">
@@ -41,9 +41,8 @@
           <button class="btn btn-xs join-item hidden lg:inline" :disabled="activePage < 1"
                   @click="$emit('navigate',activePage-1)">«
           </button>
-          <select class="select select-xs focus:outline-none lg:join-item">
-            <option v-for="i in totalPage" :key="i" :selected="activePage === i-1"
-                    @click="$emit('navigate',i-1)">{{ i }}
+          <select class="select select-xs focus:outline-none lg:join-item" @change="onSelectPage">
+            <option v-for="i in totalPage" :key="i" :selected="activePage === i-1">{{ i }}
             </option>
           </select>
           <button class="btn btn-xs join-item hidden lg:inline" :disabled="activePage >= totalPage-1"
@@ -85,7 +84,7 @@
       </td>
     </tr>
     </tbody>
-    <tfoot>
+    <tfoot class="whitespace-normal">
     <tr>
       <th scope="col" class="w-1"></th>
       <th v-for="column in _columns" scope="col">{{ column }}</th>
@@ -94,9 +93,8 @@
           <button class="btn btn-xs join-item hidden lg:inline" :disabled="activePage < 1"
                   @click="$emit('navigate',activePage-1)">«
           </button>
-          <select class="select select-xs focus:outline-none lg:join-item">
-            <option v-for="i in totalPage" :key="i" :selected="activePage === i-1"
-                    @click="$emit('navigate',i-1)">{{ i }}
+          <select class="select select-xs focus:outline-none lg:join-item" @change="onSelectPage">
+            <option v-for="i in totalPage" :key="i" :selected="activePage === i-1">{{ i }}
             </option>
           </select>
           <button class="btn btn-xs join-item hidden lg:inline" :disabled="activePage >= totalPage-1"
@@ -176,6 +174,11 @@ export default class SmartTable extends Vue {
       this.$refs['globalCheck'].indeterminate = (selected.length > 0) && this.elements.find(t => !t.isSelected) !== undefined;
     }
     return selected;
+  }
+
+  private onSelectPage(event: InputEvent): void {
+    const target: HTMLSelectElement = event.target as HTMLSelectElement;
+    this.$emit('navigate', target.value - 1);
   }
 
   private onSelectAll(event: InputEvent): void {
