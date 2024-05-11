@@ -96,7 +96,7 @@ public class AuthenticationGqlController {
                 String user = cookieManager.getTokenCookie(exchange.getRequest())
                         .map(HttpCookie::getValue)
                         .map(tokenProvider::getAuthentication)
-                        .map(a -> String.format("%s (%s)", a.user().self().login, a.user().id()))
+                        .map(a -> String.format("%s (%s)", a.user().self().login(), a.user().id()))
                         .orElse("Unknown User");
                 log.debug("Logout for {}.", user);
             }

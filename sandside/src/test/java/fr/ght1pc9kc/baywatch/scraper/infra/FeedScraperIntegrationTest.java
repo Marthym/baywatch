@@ -213,7 +213,7 @@ class FeedScraperIntegrationTest {
             @Override
             public Context withAuthentication(Entity<User> user) {
                 Authentication authentication = new PreAuthenticatedAuthenticationToken(user, null,
-                        AuthorityUtils.createAuthorityList(user.self().roles.stream().map(RoleUtils::toSpringAuthority).toArray(String[]::new)));
+                        AuthorityUtils.createAuthorityList(user.self().roles().stream().map(RoleUtils::toSpringAuthority).toArray(String[]::new)));
                 return ReactiveSecurityContextHolder.withAuthentication(authentication);
             }
         };

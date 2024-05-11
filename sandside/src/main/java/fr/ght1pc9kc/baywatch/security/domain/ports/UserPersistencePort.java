@@ -1,8 +1,7 @@
 package fr.ght1pc9kc.baywatch.security.domain.ports;
 
-import fr.ght1pc9kc.baywatch.security.api.model.UpdatableUser;
-import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
+import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.entity.api.Entity;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -45,7 +44,7 @@ public interface UserPersistencePort {
      */
     Mono<Void> delete(String role, Collection<String> userIds);
 
-    Mono<Entity<User>> update(String id, UpdatableUser user);
+    Mono<Entity<User>> update(Entity<User> user);
 
     Mono<Integer> delete(Collection<String> id);
 }

@@ -32,7 +32,7 @@ public class SpringAuthenticationContext implements AuthenticationFacade {
     @Override
     public Context withAuthentication(Entity<User> user) {
         Authentication authentication = new PreAuthenticatedAuthenticationToken(user, null,
-                AuthorityUtils.createAuthorityList(user.self().roles.stream()
+                AuthorityUtils.createAuthorityList(user.self().roles().stream()
                         .map(Permission::toString)
                         .toArray(String[]::new)));
         return ReactiveSecurityContextHolder.withAuthentication(authentication);

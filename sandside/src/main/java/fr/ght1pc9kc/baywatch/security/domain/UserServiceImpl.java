@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.security.domain;
 
 import com.github.f4b6a3.ulid.UlidFactory;
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.AuthorizationService;
 import fr.ght1pc9kc.baywatch.security.api.PasswordService;
@@ -8,7 +9,6 @@ import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
-import fr.ght1pc9kc.baywatch.security.api.model.UpdatableUser;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.ConstraintViolationPersistenceException;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
@@ -17,7 +17,6 @@ import fr.ght1pc9kc.baywatch.security.domain.exceptions.UserCreateException;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.NotificationPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
-import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
@@ -36,10 +35,10 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.NO_ONE;
-import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdAt;
-import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdBy;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ROLES;
+import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdAt;
+import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdBy;
 import static fr.ght1pc9kc.baywatch.notify.api.model.EventType.USER_NOTIFICATION;
 import static fr.ght1pc9kc.baywatch.security.api.model.RoleUtils.hasRole;
 import static java.util.function.Predicate.not;
@@ -86,7 +85,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
         Instant now = clock.instant();
         return passwordService.checkPasswordStrength(user)
                 .flatMap(eval -> (eval.isSecure())
-                        ? Mono.just(user.withPassword(passwordService.encode(user.password)))
+                        ? Mono.just(user.withPassword(passwordService.encode(user.password())))
                         : Mono.error(new IllegalArgumentException(eval.message())))
 
                 .flatMap(withPassword -> authFacade.getConnectedUser()
@@ -105,7 +104,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                                 .withId(userId)))
 
                 .flatMap(entity -> userRepository.persist(List.of(entity)).single())
-                .flatMap(ignore -> grants(userId, user.roles))
+                .flatMap(ignore -> grants(userId, user.roles()))
                 .onErrorMap(ConstraintViolationPersistenceException.class, e ->
                         new UserCreateException(
                                 String.format("Unable to create User, %s unavailable !", e.getPropertyField()),
@@ -118,43 +117,42 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
         return userRepository.list(QueryContext.all(Criteria.property(ROLES).eq(Role.ADMIN.toString())))
                 .filter(not(admin -> admin.id().equals(newUser.meta(createdBy).orElse(NO_ONE))))
                 .map(admin -> notificationPort.send(admin.id(), USER_NOTIFICATION,
-                        String.format("New user %s created by %s.", newUser.self().login, newUser.meta(createdBy).orElse(NO_ONE))))
+                        String.format("New user %s created by %s.", newUser.self().login(), newUser.meta(createdBy).orElse(NO_ONE))))
                 .then(Mono.just(newUser));
     }
 
     @Override
-    public Mono<Entity<User>> update(String id, UpdatableUser user) {
-        return update(id, user, null);
+    public Mono<Entity<User>> update(Entity<User> user) {
+        return update(user, null);
     }
 
     @Override
-    public Mono<Entity<User>> update(String id, UpdatableUser user, String currentPassword) {
-        Objects.requireNonNull(id);
+    public Mono<Entity<User>> update(Entity<User> user, String currentPassword) {
         Objects.requireNonNull(user);
-        if (user.roles() != null && user.roles().isEmpty()) {
+        if (user.self().roles().isEmpty()) {
             throw new IllegalArgumentException("User must have at least 1 roles !");
         }
-        if (user.password() != null && user.password().trim().length() < 4) {
+        if (user.self().password() != null && user.self().password().trim().length() < 4) {
             throw new IllegalArgumentException("Password must be stronger !");
         }
-        return authorizeSelfData(id)
+        return authorizeSelfData(user.id())
                 .flatMap(u -> get(u.id()))
                 .handle((u, sink) -> {
                     if (hasRole(u.self(), Role.ADMIN)) {
                         sink.next(u);
-                    } else if (id.equals(u.id())
+                    } else if (user.id().equals(u.id())
                             && Objects.nonNull(currentPassword)
-                            && passwordService.matches(currentPassword, u.self().password)) {
+                            && passwordService.matches(currentPassword, u.self().password())) {
                         sink.next(u);
                     } else {
                         sink.error(new UnauthorizedOperation(UNAUTHORIZED_USER));
                     }
                 }).flatMap(u -> {
-
-                    UpdatableUser checkedUser = user.toBuilder()
-                            .password(Objects.nonNull(user.password()) ? passwordService.encode(user.password()) : null)
-                            .build();
-                    return userRepository.update(id, checkedUser);
+                    Entity<User> checkedUser = Objects.nonNull(user.self().password())
+                            ? user.convert(userWithClearPassword ->
+                            userWithClearPassword.withPassword(passwordService.encode(user.self().password())))
+                            : user;
+                    return userRepository.update(checkedUser);
                 });
     }
 

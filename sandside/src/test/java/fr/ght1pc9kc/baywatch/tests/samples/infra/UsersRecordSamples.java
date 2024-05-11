@@ -19,19 +19,19 @@ public class UsersRecordSamples implements RelationalDataSet<UsersRecord> {
             .setUserId(UserSamples.OBIWAN.id())
             .setUserCreatedAt(UserSamples.OBIWAN.meta(createdAt, Instant.class)
                     .map(i -> i.atOffset(ZoneOffset.UTC).toLocalDateTime()).orElseThrow())
-            .setUserLogin(UserSamples.OBIWAN.self().login)
-            .setUserName(UserSamples.OBIWAN.self().name)
-            .setUserPassword(UserSamples.OBIWAN.self().password)
-            .setUserEmail(UserSamples.OBIWAN.self().mail);
+            .setUserLogin(UserSamples.OBIWAN.self().login())
+            .setUserName(UserSamples.OBIWAN.self().name())
+            .setUserPassword(UserSamples.OBIWAN.self().password())
+            .setUserEmail(UserSamples.OBIWAN.self().mail());
 
     public static final UsersRecord LSKYWALKER = Users.USERS.newRecord()
             .setUserId(UserSamples.LUKE.id())
             .setUserCreatedAt(UserSamples.LUKE.meta(createdAt, Instant.class)
                     .map(i -> i.atOffset(ZoneOffset.UTC).toLocalDateTime()).orElseThrow())
-            .setUserLogin(UserSamples.LUKE.self().login)
-            .setUserName(UserSamples.LUKE.self().name)
-            .setUserPassword(UserSamples.LUKE.self().password)
-            .setUserEmail(UserSamples.LUKE.self().mail);
+            .setUserLogin(UserSamples.LUKE.self().login())
+            .setUserName(UserSamples.LUKE.self().name())
+            .setUserPassword(UserSamples.LUKE.self().password())
+            .setUserEmail(UserSamples.LUKE.self().mail());
 
     public static final UsersRecord DSIDIOUS = Users.USERS.newRecord()
             .setUserId(UserSamples.DSIDIOUS.id())
