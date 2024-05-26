@@ -1,16 +1,13 @@
 package fr.ght1pc9kc.baywatch.security.infra.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
+import fr.ght1pc9kc.baywatch.security.api.AuthenticationService;
+import fr.ght1pc9kc.baywatch.security.api.model.AuthenticationRequest;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.SecurityException;
 import fr.ght1pc9kc.baywatch.security.domain.ports.JwtTokenProvider;
 import fr.ght1pc9kc.baywatch.security.infra.TokenCookieManager;
-import fr.ght1pc9kc.baywatch.security.infra.adapters.AuthenticationManagerAdapter;
 import fr.ght1pc9kc.baywatch.security.infra.exceptions.BaywatchCredentialsException;
-import fr.ght1pc9kc.baywatch.security.infra.model.AuthenticationRequest;
-import fr.ght1pc9kc.baywatch.security.infra.model.BaywatchUserDetails;
 import fr.ght1pc9kc.baywatch.security.infra.model.Session;
 import graphql.GraphQLContext;
 import graphql.GraphqlErrorException;
@@ -25,19 +22,13 @@ import org.springframework.http.HttpCookie;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.observability.micrometer.Micrometer;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuples;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.Set;
 
 @Slf4j
 @Controller
@@ -45,7 +36,7 @@ import java.util.Set;
 public class AuthenticationGqlController {
 
     private final JwtTokenProvider tokenProvider;
-    private final AuthenticationManagerAdapter authenticationManager;
+    private final AuthenticationService authenticationService;
     private final AuthenticationFacade authFacade;
     private final TokenCookieManager cookieManager;
     private final ObjectMapper jsonMapper;
@@ -54,29 +45,13 @@ public class AuthenticationGqlController {
     @MutationMapping
     @PreAuthorize("permitAll()")
     public Mono<Object> login(@Arguments AuthenticationRequest authRequest, GraphQLContext env) {
-        return Mono.just(authRequest)
-                .flatMap(login -> authenticationManager.authenticate(
-                                new UsernamePasswordAuthenticationToken(login.username(), login.password()))
-                        .map(u -> Tuples.of(login.rememberMe(), u)))
-
-                .map(auth -> {
-                    BaywatchUserDetails user = (BaywatchUserDetails) auth.getT2().getPrincipal();
-
+        return authenticationService.login(authRequest).map(bwAuth -> {
                     Optional<ServerWebExchange> orEmpty = env.getOrEmpty(ServerWebExchange.class);
                     orEmpty.ifPresent(exchange -> {
-                        Set<String> authorities = AuthorityUtils.authorityListToSet(user.getAuthorities());
-                        BaywatchAuthentication bwAuth = tokenProvider.createToken(user.entity(), auth.getT1(), authorities);
                         ResponseCookie authCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), bwAuth);
                         exchange.getResponse().addCookie(authCookie);
                     });
-
-                    if (log.isDebugEnabled()) {
-                        InetAddress clientIp = orEmpty.flatMap(ex -> Optional.ofNullable(ex.getRequest().getRemoteAddress()))
-                                .map(InetSocketAddress::getAddress)
-                                .orElse(Exceptions.sneak().get(() -> InetAddress.getByName("127.0.0.1")));
-                        log.debug("Login to {} from {}.", user.getUsername(), clientIp);
-                    }
-                    return jsonMapper.convertValue(user.entity(), Object.class);
+                    return jsonMapper.convertValue(bwAuth.user(), Object.class);
                 })
 
                 .onErrorMap(BadCredentialsException.class, BaywatchCredentialsException::new)
@@ -112,7 +87,7 @@ public class AuthenticationGqlController {
                 .flatMap(exchange ->
                         cookieManager.getTokenCookie(exchange.getRequest())
                                 .map(HttpCookie::getValue)
-                                .map(authenticationManager::refresh)
+                                .map(authenticationService::refresh)
                                 .map(mauth -> mauth.map(auth -> {
                                             ResponseCookie tokenCookie = cookieManager.buildTokenCookie(exchange.getRequest().getURI().getScheme(), auth);
                                             exchange.getResponse().addCookie(tokenCookie);

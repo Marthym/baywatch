@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.security.infra.model;
+package fr.ght1pc9kc.baywatch.security.api.model;
 
 import jakarta.validation.constraints.NotBlank;
 

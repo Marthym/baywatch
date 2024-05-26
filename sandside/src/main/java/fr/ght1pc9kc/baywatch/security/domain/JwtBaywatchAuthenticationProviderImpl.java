@@ -9,7 +9,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import fr.ght1pc9kc.baywatch.common.api.DefaultMeta;
+import fr.ght1pc9kc.baywatch.common.api.model.UserMeta;
 import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
@@ -30,7 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdAt;
+import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdAt;
 import static java.util.function.Predicate.not;
 
 @Slf4j
@@ -117,7 +117,7 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
                             .mail(claims.getStringClaim(MAIL_KEY))
                             .roles(roles)
                             .build())
-                    .meta(DefaultMeta.createdAt, createdAt)
+                    .meta(UserMeta.createdAt, createdAt)
                     .withId(claims.getSubject());
 
             boolean rememberMe = Optional.ofNullable(claims.getBooleanClaim(REMEMBER_ME_KEY)).orElse(false);
