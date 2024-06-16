@@ -1,10 +1,10 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.api.NewsService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
-import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
@@ -13,8 +13,10 @@ import fr.ght1pc9kc.baywatch.tests.samples.FeedSamples;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
+import fr.ght1pc9kc.juery.api.Pagination;
 import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -71,11 +73,17 @@ class NewsServiceImplTest {
     @Test
     void should_list_news_for_anonymous() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.empty());
-        News actual = tested.list(PageRequest.all()).next().block();
 
-        Assertions.assertThat(actual).isNotNull();
-        Assertions.assertThat(actual.getRaw()).isEqualTo(MAY_THE_FORCE.getRaw());
-        Assertions.assertThat(actual.getState()).isEqualTo(MAY_THE_FORCE.getState());
+        StepVerifier.create(tested.list(PageRequest.all())).verifyError();
+
+        StepVerifier.create(tested.list(PageRequest.of(Pagination.of(2, 10), Criteria.none())))
+                .assertNext(actual -> SoftAssertions.assertSoftly(softly -> {
+                    softly.assertThat(actual).isNotNull();
+                    softly.assertThat(actual.getRaw()).isEqualTo(MAY_THE_FORCE.getRaw());
+                    softly.assertThat(actual.getState()).isEqualTo(MAY_THE_FORCE.getState());
+                }))
+                .expectNextCount(2)
+                .verifyComplete();
     }
 
     @Test
