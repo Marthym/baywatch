@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.security.domain;
 
 import com.github.f4b6a3.ulid.UlidFactory;
+import fr.ght1pc9kc.baywatch.common.api.model.UserMeta;
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.AuthorizationService;
@@ -128,6 +129,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
 
     @Override
     public Mono<Entity<User>> update(Entity<User> user, String currentPassword) {
+        log.atDebug().addArgument(user.self().login()).log("Update user {}");
         Objects.requireNonNull(user);
         if (user.self().roles().isEmpty()) {
             throw new IllegalArgumentException("User must have at least 1 roles !");
@@ -147,13 +149,20 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                     } else {
                         sink.error(new UnauthorizedOperation(UNAUTHORIZED_USER));
                     }
+
                 }).flatMap(u -> {
-                    Entity<User> checkedUser = Objects.nonNull(user.self().password())
-                            ? user.convert(userWithClearPassword ->
-                            userWithClearPassword.withPassword(passwordService.encode(user.self().password())))
-                            : user;
-                    return userRepository.update(checkedUser);
-                });
+                    User checkedUser = (Objects.nonNull(user.self().password()))
+                            ? user.self().withPassword(passwordService.encode(user.self().password()))
+                            : user.self();
+
+                    return authFacade.getClientInfoContext()
+                            .map(clientInfo -> Entity.identify(checkedUser)
+                                    .meta(UserMeta.loginIP, clientInfo.ip().toString())
+                                    .meta(UserMeta.loginAt, clock.instant())
+                                    .withId(user.id()))
+                            .switchIfEmpty(Mono.just(user.convert(old -> checkedUser)));
+
+                }).flatMap(userRepository::update);
     }
 
     @Override

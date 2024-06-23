@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.infra.adapters;
 
+import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationService;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.domain.AuthenticationServiceImpl;
@@ -11,10 +12,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthenticationServiceAdapter implements AuthenticationService {
     @Delegate
-    private final AuthenticationService delegate;
+    private final AuthenticationServiceImpl delegate;
 
     public AuthenticationServiceAdapter(
-            AuthenticationManagerPort authenticationManagerPort, JwtTokenProvider tokenProvider, UserService userService) {
-        this.delegate = new AuthenticationServiceImpl(authenticationManagerPort, tokenProvider, userService);
+            AuthenticationManagerPort authenticationManagerPort, JwtTokenProvider tokenProvider, UserService userService,
+            AuthenticationFacade authFacade) {
+        this.delegate = new AuthenticationServiceImpl(authenticationManagerPort, tokenProvider, userService, authFacade);
+        this.delegate.onPostConstruct();
     }
 }

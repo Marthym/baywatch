@@ -1,5 +1,7 @@
 package fr.ght1pc9kc.baywatch.security.infra.adapters;
 
+import fr.ght1pc9kc.baywatch.common.api.model.ClientInfoContext;
+import fr.ght1pc9kc.baywatch.common.infra.filters.ReactiveClientInfoContextHolder;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
@@ -27,6 +29,11 @@ public class SpringAuthenticationContext implements AuthenticationFacade {
         return ReactiveSecurityContextHolder.getContext()
                 .map(SecurityContext::getAuthentication)
                 .map(a -> (Entity<User>) a.getPrincipal());
+    }
+
+    @Override
+    public Mono<ClientInfoContext> getClientInfoContext() {
+        return ReactiveClientInfoContextHolder.getContext();
     }
 
     @Override
