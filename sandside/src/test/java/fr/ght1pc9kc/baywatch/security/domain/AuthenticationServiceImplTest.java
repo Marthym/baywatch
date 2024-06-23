@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.domain;
 
+import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
@@ -49,7 +50,8 @@ class AuthenticationServiceImplTest {
         UserService userServiceMock = mock(UserService.class);
         when(userServiceMock.get(anyString())).thenReturn(Mono.just(user));
 
-        tested = new AuthenticationServiceImpl(authenticationManagerPortMock, tokenProviderMock, userServiceMock);
+        AuthenticationFacade authenticationFacadeMock = mock(AuthenticationFacade.class);
+        tested = new AuthenticationServiceImpl(authenticationManagerPortMock, tokenProviderMock, userServiceMock, authenticationFacadeMock);
     }
 
     @Test
