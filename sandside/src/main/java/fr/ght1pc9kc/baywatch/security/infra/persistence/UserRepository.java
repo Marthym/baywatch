@@ -62,6 +62,7 @@ public class UserRepository implements UserPersistencePort {
     }
 
     @Override
+    @SuppressWarnings("resource")
     public Flux<Entity<User>> list(QueryContext qCtx) {
         Condition conditions = qCtx.filter().accept(JOOQ_CONDITION_VISITOR);
         Select<Record> select = JooqPagination.apply(

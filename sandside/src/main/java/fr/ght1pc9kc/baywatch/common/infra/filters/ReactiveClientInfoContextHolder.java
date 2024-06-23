@@ -30,7 +30,7 @@ public class ReactiveClientInfoContextHolder {
         return context -> context.delete(CLIENT_INFO_CONTEXT_KEY);
     }
 
-    public static Context withClientInfoContext(Mono<? extends ClientInfoContext> clientInfoContext) {
+    public static Context withClientInfoContext(Mono<ClientInfoContext> clientInfoContext) {
         return Context.of(CLIENT_INFO_CONTEXT_KEY, clientInfoContext);
     }
 

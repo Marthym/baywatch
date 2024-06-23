@@ -6,6 +6,7 @@ import fr.ght1pc9kc.baywatch.dsl.tables.Users;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.baywatch.security.domain.exceptions.ConstraintViolationPersistenceException;
 import fr.ght1pc9kc.baywatch.security.infra.adapters.UserMapper;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
@@ -19,8 +20,11 @@ import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;
 import fr.ght1pc9kc.testy.jooq.WithDslContext;
 import fr.ght1pc9kc.testy.jooq.WithInMemoryDatasource;
 import fr.ght1pc9kc.testy.jooq.WithSampleDataLoaded;
+import org.assertj.core.api.SoftAssertions;
 import org.jooq.DSLContext;
+import org.jooq.TransactionalCallable;
 import org.jooq.exception.DataAccessException;
+import org.jooq.exception.IntegrityConstraintViolationException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,6 +41,9 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
 import static fr.ght1pc9kc.baywatch.dsl.tables.UsersRoles.USERS_ROLES;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
 
 class UserRepositoryTest {
     private static final WithInMemoryDatasource wDs = WithInMemoryDatasource.builder().build();
@@ -110,6 +117,15 @@ class UserRepositoryTest {
     }
 
     @Test
+    void should_count_all_users(WithSampleDataLoaded.Tracker dbTracker) {
+        dbTracker.skipNextSampleLoad();
+
+        StepVerifier.create(tested.count(QueryContext.all(Criteria.none())))
+                .expectNextCount(1)
+                .verifyComplete();
+    }
+
+    @Test
     void should_list_user_with_criteria(WithSampleDataLoaded.Tracker dbTracker) {
         dbTracker.skipNextSampleLoad();
 
@@ -168,6 +184,53 @@ class UserRepositoryTest {
         {
             int actual = dsl.fetchCount(Users.USERS);
             assertThat(actual).isEqualTo(2);
+        }
+    }
+
+    @Test
+    void should_persist_users_with_constraint_errors(DSLContext dsl) {
+        {
+            int actual = dsl.fetchCount(Users.USERS);
+            assertThat(actual).isEqualTo(2);
+        }
+
+        DSLContext dslContext = spy(dsl);
+        doThrow(new IntegrityConstraintViolationException("")).when(dslContext).transactionResult(any(TransactionalCallable.class));
+        tested = new UserRepository(Schedulers.immediate(), dslContext, Mappers.getMapper(UserMapper.class));
+
+        Entity<User> dvader = Entity.identify(User.builder()
+                        .login(UserSamples.LUKE.self().login()).name("Darth Vader").mail("darth.vader@sith.fr").password("obscur")
+                        .role(Role.USER).build())
+                .withId(Hasher.sha3("darth.vader@sith.fr"));
+
+        StepVerifier.create(tested.persist(List.of(dvader)))
+                .verifyError(ConstraintViolationPersistenceException.class);
+
+        {
+            int actual = dsl.fetchCount(Users.USERS);
+            assertThat(actual).isEqualTo(2);
+        }
+    }
+
+    @Test
+    void should_update_users(DSLContext dsl) {
+        {
+            var actual = dsl.select(Users.USERS.USER_NAME).from(Users.USERS).where(Users.USERS.USER_ID.eq(UserSamples.OBIWAN.id()))
+                    .fetchOne(Users.USERS.USER_NAME);
+            assertThat(actual).isEqualTo("Obiwan Kenobi");
+        }
+
+        StepVerifier.create(tested.update(UserSamples.OBIWAN.convert(obi -> obi.toBuilder().name("Master Kenobi").build())))
+                .assertNext(actual -> SoftAssertions.assertSoftly(soft -> {
+                    soft.assertThat(actual.id()).isEqualTo(UserSamples.OBIWAN.id());
+                    soft.assertThat(actual.self().name()).isEqualTo("Master Kenobi");
+                }))
+                .verifyComplete();
+
+        {
+            var actual = dsl.select(Users.USERS.USER_NAME).from(Users.USERS).where(Users.USERS.USER_ID.eq(UserSamples.OBIWAN.id()))
+                    .fetchOne(Users.USERS.USER_NAME);
+            assertThat(actual).isEqualTo("Master Kenobi");
         }
     }
 

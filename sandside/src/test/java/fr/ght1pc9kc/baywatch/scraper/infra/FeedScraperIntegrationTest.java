@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.scraper.infra;
 
 import com.samskivert.mustache.Mustache;
 import com.sun.net.httpserver.HttpServer;
+import fr.ght1pc9kc.baywatch.common.api.model.ClientInfoContext;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
@@ -65,7 +66,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -176,9 +176,9 @@ class FeedScraperIntegrationTest {
             "feeds/135-invalid-feed-flux.xml, ",
     })
     void should_scrap_feeds(String feed, String expected) {
-        URI BASE_URI = URI.create(String.format("http://%s:%d/", server.getAddress().getHostName(), server.getAddress().getPort()));
+        URI baseUri = URI.create(String.format("http://%s:%d/", server.getAddress().getHostName(), server.getAddress().getPort()));
         when(mockMaintenancePort.feedList()).thenReturn(
-                Flux.just(new ScrapedFeed("1", BASE_URI.resolve(feed),
+                Flux.just(new ScrapedFeed("1", baseUri.resolve(feed),
                         Instant.parse("2024-02-21T17:11:42Z"), null))
         );
         ArgumentCaptor<Collection<News>> loadCaptor = ArgumentCaptor.forClass(Collection.class);
@@ -191,12 +191,12 @@ class FeedScraperIntegrationTest {
 
         List<News> actual = loadCaptor.getAllValues().stream()
                 .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+                .toList();
 
         if (expected != null) {
             Assertions.assertThat(actual)
                     .extracting(News::id)
-                    .containsOnly(Hasher.identify(URI.create(BASE_URI + expected)));
+                    .containsOnly(Hasher.identify(URI.create(baseUri + expected)));
         } else {
             Assertions.assertThat(actual).isEmpty();
         }
@@ -208,6 +208,11 @@ class FeedScraperIntegrationTest {
             @Override
             public Mono<Entity<User>> getConnectedUser() {
                 return Mono.just(user);
+            }
+
+            @Override
+            public Mono<ClientInfoContext> getClientInfoContext() {
+                return Mono.just(new ClientInfoContext(InetSocketAddress.createUnresolved("127.0.0.1", 80), "User agent"));
             }
 
             @Override

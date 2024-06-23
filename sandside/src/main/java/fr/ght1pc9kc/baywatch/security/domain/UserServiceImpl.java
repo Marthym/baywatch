@@ -28,6 +28,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -139,7 +140,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
         }
         return authorizeSelfData(user.id())
                 .flatMap(u -> get(u.id()))
-                .handle((u, sink) -> {
+                .<Entity<User>>handle((u, sink) -> {
                     if (hasRole(u.self(), Role.ADMIN)) {
                         sink.next(u);
                     } else if (user.id().equals(u.id())
@@ -156,10 +157,9 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                             : user.self();
 
                     return authFacade.getClientInfoContext()
-                            .map(clientInfo -> Entity.identify(checkedUser)
-                                    .meta(UserMeta.loginIP, clientInfo.ip().toString())
-                                    .meta(UserMeta.loginAt, clock.instant())
-                                    .withId(user.id()))
+                            .map(clientInfo -> u.convert(ignore -> checkedUser)
+                                    .withMeta(UserMeta.loginIP, clientInfo.ip().getHostString())
+                                    .withMeta(UserMeta.loginAt, clock.instant().truncatedTo(ChronoUnit.SECONDS)))
                             .switchIfEmpty(Mono.just(user.convert(old -> checkedUser)));
 
                 }).flatMap(userRepository::update);
