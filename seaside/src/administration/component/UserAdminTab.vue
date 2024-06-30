@@ -13,7 +13,8 @@
         <ArrowUpTrayIcon class="w-6 h-6 mr-2"/>
         Exporter
       </a>
-      <button class="btn btn-sm btn-error mb-2 mr-2 join-item md:m-0" :disabled="!checkState" @click="onUserBulkDelete()">
+      <button class="btn btn-sm btn-error mb-2 mr-2 join-item md:m-0" :disabled="!checkState"
+              @click="onUserBulkDelete()">
         <TrashIcon class="w-6 h-6"/>
         Supprimer
       </button>
@@ -22,11 +23,8 @@
       <thead>
       <tr>
         <th scope="col" class="w-1">
-          <label>
-            <input type="checkbox" class="checkbox" ref="globalCheck"
-                   :checked="checkState" @change="onSelectAll()"/>
-            <span class="checkbox-mark"></span>
-          </label>
+          <input type="checkbox" class="checkbox" ref="globalCheck"
+                 :checked="checkState" @change="onSelectAll()"/>
         </th>
         <th scope="col">Pseudo</th>
         <th scope="col">Nom</th>
@@ -193,7 +191,6 @@ export default class UserAdminTab extends Vue {
   }
 
   private onUserSubmit(): void {
-    console.log('sibmit');
     const edit = '_id' in this.activeUser && this.activeUser._id !== undefined;
     if (edit) {
       this.updateActiveUser();

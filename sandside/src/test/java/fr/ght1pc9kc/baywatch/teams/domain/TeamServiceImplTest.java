@@ -161,8 +161,8 @@ class TeamServiceImplTest {
 
     static Stream<Arguments> allowedTeamModificationUsers() {
         return Stream.of(
-                arguments(named(UserSamples.LUKE.self().name, UserSamples.LUKE)),
-                arguments(named(UserSamples.YODA.self().name, UserSamples.YODA))
+                arguments(named(UserSamples.LUKE.self().name(), UserSamples.LUKE)),
+                arguments(named(UserSamples.YODA.self().name(), UserSamples.YODA))
         );
     }
 
@@ -202,8 +202,8 @@ class TeamServiceImplTest {
 
     static Stream<Arguments> addMembersProfiles() {
         return Stream.of(
-                arguments(named(UserSamples.DSIDIOUS.self().name, UserSamples.DSIDIOUS), PendingFor.MANAGER),
-                arguments(named(UserSamples.LUKE.self().name, UserSamples.LUKE), PendingFor.USER)
+                arguments(named(UserSamples.DSIDIOUS.self().name(), UserSamples.DSIDIOUS), PendingFor.MANAGER),
+                arguments(named(UserSamples.LUKE.self().name(), UserSamples.LUKE), PendingFor.USER)
         );
     }
 

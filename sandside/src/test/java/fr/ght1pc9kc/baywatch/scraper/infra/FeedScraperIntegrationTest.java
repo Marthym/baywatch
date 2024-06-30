@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.scraper.infra;
 
 import com.samskivert.mustache.Mustache;
 import com.sun.net.httpserver.HttpServer;
+import fr.ght1pc9kc.baywatch.common.api.model.ClientInfoContext;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
@@ -65,7 +66,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -191,7 +191,7 @@ class FeedScraperIntegrationTest {
 
         List<News> actual = loadCaptor.getAllValues().stream()
                 .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+                .toList();
 
         if (expected != null) {
             Assertions.assertThat(actual)
@@ -211,9 +211,14 @@ class FeedScraperIntegrationTest {
             }
 
             @Override
+            public Mono<ClientInfoContext> getClientInfoContext() {
+                return Mono.just(new ClientInfoContext(InetSocketAddress.createUnresolved("127.0.0.1", 80), "User agent"));
+            }
+
+            @Override
             public Context withAuthentication(Entity<User> user) {
                 Authentication authentication = new PreAuthenticatedAuthenticationToken(user, null,
-                        AuthorityUtils.createAuthorityList(user.self().roles.stream().map(RoleUtils::toSpringAuthority).toArray(String[]::new)));
+                        AuthorityUtils.createAuthorityList(user.self().roles().stream().map(RoleUtils::toSpringAuthority).toArray(String[]::new)));
                 return ReactiveSecurityContextHolder.withAuthentication(authentication);
             }
         };

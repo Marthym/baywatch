@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.notify.domain;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.f4b6a3.ulid.UlidCreator;
+import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyManager;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.notify.api.model.BasicEvent;
@@ -41,6 +42,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
     private final Sinks.Many<ServerEvent> multicast;
     private final Cache<String, ByUserEventPublisherCacheEntry> cache;
     private final Clock clock;
+    private final UlidFactory ulidFactory = UlidFactory.newMonotonicInstance();
 
     public NotifyServiceImpl(
             AuthenticationFacade authenticationFacade, NotificationPersistencePort notificationPersistence,
@@ -114,7 +116,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
 
     @Override
     public <T> BasicEvent<T> send(String userId, EventType type, T data) {
-        BasicEvent<T> event = new BasicEvent<>(PREFIX + UlidCreator.getMonotonicUlid().toString(), type, data);
+        BasicEvent<T> event = new BasicEvent<>(PREFIX + ulidFactory.create().toString(), type, data);
         Optional.ofNullable(cache.getIfPresent(userId))
                 .map(ByUserEventPublisherCacheEntry::sink)
                 .ifPresentOrElse(
@@ -129,7 +131,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
 
     @Override
     public <T> ReactiveEvent<T> send(String userId, EventType type, Mono<T> data) {
-        ReactiveEvent<T> event = new ReactiveEvent<>(PREFIX + UlidCreator.getMonotonicUlid().toString(), type, data);
+        ReactiveEvent<T> event = new ReactiveEvent<>(PREFIX + ulidFactory.create().toString(), type, data);
         Optional.ofNullable(cache.getIfPresent(userId))
                 .map(ByUserEventPublisherCacheEntry::sink)
                 .ifPresentOrElse(
@@ -144,14 +146,14 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
 
     @Override
     public <T> BasicEvent<T> broadcast(EventType type, T data) {
-        BasicEvent<T> event = new BasicEvent<>(PREFIX + UlidCreator.getMonotonicUlid().toString(), type, data);
+        BasicEvent<T> event = new BasicEvent<>(PREFIX + ulidFactory.create().toString(), type, data);
         emit(this.multicast, event);
         return event;
     }
 
     @Override
     public <T> ReactiveEvent<T> broadcast(EventType type, Mono<T> data) {
-        ReactiveEvent<T> event = new ReactiveEvent<>(PREFIX + UlidCreator.getMonotonicUlid().toString(), type, data);
+        ReactiveEvent<T> event = new ReactiveEvent<>(PREFIX + ulidFactory.create().toString(), type, data);
         emit(this.multicast, event);
         return event;
     }

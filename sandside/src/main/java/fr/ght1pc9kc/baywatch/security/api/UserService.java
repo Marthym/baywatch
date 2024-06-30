@@ -1,7 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.api;
 
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
-import fr.ght1pc9kc.baywatch.security.api.model.UpdatableUser;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.PageRequest;
@@ -41,11 +40,10 @@ public interface UserService {
      * The current user must have {@link Role#ADMIN} or more to update a user.
      * The user himself can update its data.
      *
-     * @param id   The ID of the {@link User} {@link Entity} to be updated
-     * @param user The new data for the {@link User}
+     * @param user The new data for the {@link User} as an {@link Entity} containing the ID and other metas of the User.
      * @return The updates {@link User} {@link Entity}
      */
-    Mono<Entity<User>> update(String id, UpdatableUser user);
+    Mono<Entity<User>> update(Entity<User> user);
 
     /**
      * Update {@link User} data. The {@link Role}s are replaced by those provided in input
@@ -53,12 +51,12 @@ public interface UserService {
      * The current user must have {@link Role#ADMIN} or more to update a user.
      * The user himself can update its data.
      *
-     * @param id              The ID of the {@link User} {@link Entity} to be updated
-     * @param user            The new data for the {@link User}
+     * @param user            The new data for the {@link User} as an {@link Entity} containing the ID
+     *                        and other metas of the User.
      * @param currentPassword The current password of the user who made the operation
      * @return The updates {@link User} {@link Entity}
      */
-    Mono<Entity<User>> update(String id, UpdatableUser user, @Nullable String currentPassword);
+    Mono<Entity<User>> update(Entity<User> user, @Nullable String currentPassword);
 
     /**
      * Delete {@link User}s

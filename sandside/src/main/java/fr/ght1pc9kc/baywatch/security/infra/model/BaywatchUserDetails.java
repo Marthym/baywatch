@@ -14,19 +14,19 @@ public record BaywatchUserDetails(
 ) implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return AuthorityUtils.createAuthorityList(entity.self().roles.stream()
+        return AuthorityUtils.createAuthorityList(entity.self().roles().stream()
                 .map(RoleUtils::toSpringAuthority)
                 .toArray(String[]::new));
     }
 
     @Override
     public String getPassword() {
-        return entity.self().password;
+        return entity.self().password();
     }
 
     @Override
     public String getUsername() {
-        return entity.self().login;
+        return entity.self().login();
     }
 
     @Override

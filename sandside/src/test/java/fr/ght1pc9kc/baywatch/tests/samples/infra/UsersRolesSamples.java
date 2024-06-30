@@ -15,13 +15,13 @@ public class UsersRolesSamples implements RelationalDataSet<UsersRolesRecord> {
     @Override
     public List<UsersRolesRecord> records() {
         List<UsersRolesRecord> records = new ArrayList<>(
-                UserSamples.OBIWAN.self().roles.size() + UserSamples.LUKE.self().roles.size());
-        records.addAll(UserSamples.OBIWAN.self().roles.stream()
+                UserSamples.OBIWAN.self().roles().size() + UserSamples.LUKE.self().roles().size());
+        records.addAll(UserSamples.OBIWAN.self().roles().stream()
                 .map(r -> USERS_ROLES.newRecord()
                         .setUsroUserId(UserSamples.OBIWAN.id())
                         .setUsroRole(r.toString()))
                 .toList());
-        records.addAll(UserSamples.LUKE.self().roles.stream()
+        records.addAll(UserSamples.LUKE.self().roles().stream()
                 .map(r -> USERS_ROLES.newRecord()
                         .setUsroUserId(UserSamples.LUKE.id())
                         .setUsroRole(r.toString()))

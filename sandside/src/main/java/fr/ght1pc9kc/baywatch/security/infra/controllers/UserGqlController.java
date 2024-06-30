@@ -63,7 +63,7 @@ public class UserGqlController {
     }
 
     @MutationMapping
-    @PreAuthorize("isAnonymous()")
+    @PreAuthorize("isAnonymous() or hasRole('ADMIN')")
     public Mono<Map<String, Object>> userCreate(@Validated({CreateValidation.class}) @Argument("user") UserForm user) {
         MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
 
@@ -86,7 +86,8 @@ public class UserGqlController {
         MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
 
         return Mono.fromCallable(() -> userMapper.getUpdatableUser(toUpdate))
-                .flatMap(user -> userService.update(id, user, currentPassword))
+                .map(u -> Entity.identify(u).withId(id))
+                .flatMap(user -> userService.update(user, currentPassword))
                 .map(e -> mapper.convertValue(e, gqlType));
     }
 

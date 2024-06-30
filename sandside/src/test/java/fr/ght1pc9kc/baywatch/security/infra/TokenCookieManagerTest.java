@@ -60,7 +60,7 @@ class TokenCookieManagerTest {
     })
     void should_build_token_cookie(String scheme, boolean rememberMe, String expected) {
         BaywatchAuthentication mockAuth = new BaywatchAuthentication(
-                Entity.identify(User.ANONYMOUS).withId(Hasher.sha3(User.ANONYMOUS.mail)),
+                Entity.identify(User.ANONYMOUS).withId(Hasher.sha3(User.ANONYMOUS.mail())),
                 "FAKE_TOKEN", rememberMe, Collections.emptyList());
         ResponseCookie actual = tested.buildTokenCookie(scheme, mockAuth);
         Assertions.assertThat(actual.toString()).containsPattern(expected);

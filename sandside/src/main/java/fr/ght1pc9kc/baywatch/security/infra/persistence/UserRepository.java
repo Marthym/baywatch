@@ -5,7 +5,6 @@ import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRolesRecord;
-import fr.ght1pc9kc.baywatch.security.api.model.UpdatableUser;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.ConstraintViolationPersistenceException;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
@@ -15,7 +14,6 @@ import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
 import org.jooq.Cursor;
 import org.jooq.DSLContext;
@@ -38,7 +36,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Optional;
 
 import static fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers.USER_PROPERTIES_MAPPING;
@@ -126,28 +123,24 @@ public class UserRepository implements UserPersistencePort {
     }
 
     @Override
-    public Mono<Entity<User>> update(@NotNull String id, UpdatableUser user) {
-        UsersRecord usersRecord = userMapper.updatableUserToRecord(user)
-                .setUserId(id);
-        List<UsersRolesRecord> usersRolesRecords = Optional.ofNullable(user.roles()).map(roles ->
-                roles.stream().distinct()
-                        .map(r -> userMapper.permissionToRecord(r).setUsroUserId(id))
-                        .toList()).orElse(null);
+    public Mono<Entity<User>> update(Entity<User> user) {
+        UsersRecord usersRecord = userMapper.entityUserToRecord(user);
+        List<UsersRolesRecord> usersRolesRecords = user.self().roles().stream().distinct()
+                .map(r -> userMapper.permissionToRecord(r).setUsroUserId(user.id()))
+                .toList();
 
         return Mono.fromCallable(() -> dsl.transactionResult(tx -> {
-                    if (Objects.nonNull(usersRolesRecords)) {
-                        tx.dsl().deleteFrom(USERS_ROLES).where(USERS_ROLES.USRO_USER_ID.eq(id)).execute();
-                        if (!usersRolesRecords.isEmpty()) {
-                            tx.dsl().batchInsert(usersRolesRecords).execute();
-                        }
+                    tx.dsl().deleteFrom(USERS_ROLES).where(USERS_ROLES.USRO_USER_ID.eq(user.id())).execute();
+                    if (!usersRolesRecords.isEmpty()) {
+                        tx.dsl().batchInsert(usersRolesRecords).execute();
                     }
                     int updated = tx.dsl().executeUpdate(usersRecord);
                     if (updated <= 0) {
-                        throw new NoSuchElementException(String.format("User %s does not exists !", id));
+                        throw new NoSuchElementException(String.format("User %s does not exists !", user.id()));
                     }
                     return updated;
                 })).subscribeOn(databaseScheduler)
-                .then(get(id));
+                .then(get(user.id()));
     }
 
     @Override

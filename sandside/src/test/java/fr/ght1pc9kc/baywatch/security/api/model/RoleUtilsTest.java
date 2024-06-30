@@ -32,13 +32,13 @@ class RoleUtilsTest {
 
     @Test
     void should_fail_upade_user_roles() {
-        assertThat(UserSamples.OBIWAN.self().withRoles("NOT_A_ROLE", Role.USER.name()).roles)
+        assertThat(UserSamples.OBIWAN.self().withRoles("NOT_A_ROLE", Role.USER.name()).roles())
                 .containsOnly(Role.USER);
     }
 
     @Test
     void should_get_system() {
-        assertThat(RoleUtils.getSystemUser().self().roles).containsOnly(Role.SYSTEM);
+        assertThat(RoleUtils.getSystemUser().self().roles()).containsOnly(Role.SYSTEM);
     }
 
     @ParameterizedTest

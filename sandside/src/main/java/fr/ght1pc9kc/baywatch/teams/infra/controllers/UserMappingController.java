@@ -66,7 +66,7 @@ public class UserMappingController {
     private User filterRoles(@NotNull User user, @NotNull String entityId) {
         return user.toBuilder()
                 .clearRoles()
-                .roles(user.roles.stream()
+                .roles(user.roles().stream()
                         .filter(p -> p.entity().map(id -> id.equals(entityId)).orElse(false))
                         .map(Permission::role)
                         .toList()).build();

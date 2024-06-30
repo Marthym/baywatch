@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.api;
 
+import fr.ght1pc9kc.baywatch.common.api.model.ClientInfoContext;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
@@ -22,6 +23,8 @@ public interface AuthenticationFacade {
      * @return The connected user.
      */
     Mono<Entity<User>> getConnectedUser();
+
+    Mono<ClientInfoContext> getClientInfoContext();
 
     /**
      * Update the {@link org.reactivestreams.Publisher} context with a specific authentication
