@@ -190,10 +190,10 @@ class UserServiceImplTest {
 
             Entity<User> actual = captor.getValue();
             SoftAssertions.assertSoftly(soft -> {
-                soft.assertThat(actual.id()).isEqualTo("US01GRQ11X1W8E6NQER7E1FNQ7HC");
+                soft.assertThat(actual.id()).isEqualTo(UserSamples.OBIWAN.id());
                 soft.assertThat(actual.meta(createdAt, Instant.class)).contains(Instant.parse("1970-01-01T00:00:00Z"));
-                soft.assertThat(actual.meta(loginAt, Instant.class)).contains(Instant.parse("2022-02-08T22:57:00Z"));
-                soft.assertThat(actual.meta(loginIP)).contains("127.0.0.1");
+                soft.assertThat(actual.meta(loginAt, Instant.class)).isEmpty();
+                soft.assertThat(actual.meta(loginIP)).isEmpty();
                 soft.assertThat(actual.self().login()).isEqualTo("okenobi");
             });
         }
@@ -221,7 +221,7 @@ class UserServiceImplTest {
 
             Entity<User> actual = captor.getValue();
             SoftAssertions.assertSoftly(soft -> {
-                soft.assertThat(actual.id()).isEqualTo("US01GRQ11XKGHERDEBSCHBNJAY78");
+                soft.assertThat(actual.id()).isEqualTo(UserSamples.OBIWAN.id());
                 soft.assertThat(actual.meta(createdAt, Instant.class)).contains(Instant.parse("1970-01-01T00:00:00Z"));
                 soft.assertThat(actual.meta(loginAt, Instant.class)).contains(Instant.parse("2022-02-08T22:57:00Z"));
                 soft.assertThat(actual.meta(loginIP)).contains("127.0.0.1");

@@ -157,7 +157,9 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                             : user.self();
 
                     return authFacade.getClientInfoContext()
-                            .map(clientInfo -> u.convert(ignore -> checkedUser)
+                            // update meta-login only if the session user is the updated user
+                            .filter(ignore -> u.id().equals(user.id()))
+                            .map(clientInfo -> user.convert(ignore -> checkedUser)
                                     .withMeta(UserMeta.loginIP, clientInfo.ip().getHostString())
                                     .withMeta(UserMeta.loginAt, clock.instant().truncatedTo(ChronoUnit.SECONDS)))
                             .switchIfEmpty(Mono.just(user.convert(old -> checkedUser)));

@@ -75,7 +75,7 @@ public interface UserMapper {
             usersRecord.setUserEmail(user.self().mail());
         }
 
-        if (user.self().password() != null) {
+        if (Objects.nonNull(user.self().password())) {
             usersRecord.setUserPassword(user.self().password());
         }
         return usersRecord;
