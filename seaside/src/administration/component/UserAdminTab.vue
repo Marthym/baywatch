@@ -31,6 +31,7 @@
         <th scope="col">Mail</th>
         <th scope="col">Role</th>
         <th scope="col">Created At</th>
+        <th scope="col">Last Activity</th>
         <th scope="col">
           <div class="join justify-end" v-if="pagesNumber > 1">
             <button v-for="i in pagesNumber" :key="i"
@@ -52,7 +53,7 @@
         </th>
         <td>
           {{ vUser.data.login }}
-          <div class="tooltip tooltip-right" :data-tip="vUser.data._id">
+          <div class="tooltip tooltip-right tooltip-secondary" :data-tip="vUser.data._id">
             <button class="btn btn-circle btn-xs btn-ghost -ml-2"
                     @click.prevent.stop="onCopyToClipboard(vUser.data._id)">
               <InformationCircleIcon class="w-3 h-3"/>
@@ -63,6 +64,9 @@
         <td>{{ vUser.data.mail }}</td>
         <td>{{ roleFromPermission(vUser.data.roles) }}</td>
         <td>{{ vUser.data._createdAt }}</td>
+        <td>
+          <span class="tooltip tooltip-top tooltip-secondary text-left" :data-tip="vUser.data._loginIP">{{ vUser.data._loginAt }}</span>
+        </td>
         <td>
           <div class="join justify-end w-full">
             <button class="btn btn-sm btn-square btn-ghost join-item" @click.prevent="onUserEdit(vUser.data)">

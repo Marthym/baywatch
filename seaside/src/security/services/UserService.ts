@@ -14,7 +14,7 @@ query LoadUsersAdminList ($_p: Int = 0, $_pp: Int = ${DEFAULT_PER_PAGE}, $_s: St
     userSearch(_p: $_p, _pp: $_pp, _s: $_s) {
         totalCount
         entities {
-            _id _createdAt login name mail roles
+            _id _createdAt _loginAt _loginIP login name mail roles
         }
     }
 }`;
@@ -33,6 +33,7 @@ export function userList(page = 0, query: URLSearchParams = new URLSearchParams(
                 data: response.entities.map(user => ({
                     ...user,
                     _createdAt: utcToZonedTime(user._createdAt),
+                    _loginAt: (user._loginAt)?utcToZonedTime(user._loginAt):null,
                 })),
             }),
         ),
@@ -76,7 +77,7 @@ mutation UpdateNewUser($id:ID , $currentPassword: String, $user:UserForm){
 }`;
 
 export function userUpdate(id: string, user: Partial<User>, currentPassword: string | null = null): Observable<User> {
-    const { _id, _createdAt, ...toUpdate } = user;
+    const { _id, _createdAt, _loginAt, ...toUpdate } = user;
     const variables = { id: id, currentPassword: currentPassword, user: { ...toUpdate } };
     return send<{ userUpdate: User }>(USER_UPGRADE_REQUEST, variables).pipe(
         map(data => data.data.userUpdate),
