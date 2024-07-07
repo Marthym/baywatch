@@ -1,8 +1,8 @@
 package fr.ght1pc9kc.baywatch.common.domain;
 
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

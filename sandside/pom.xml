@@ -99,11 +99,6 @@
             <artifactId>jooq</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <version>${findbugs.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
             <artifactId>owasp-java-html-sanitizer</artifactId>
             <version>${html-sanitizer.version}</version>
@@ -267,7 +262,6 @@
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <implicit>class</implicit>
-                    <generatedSourcesDirectory>target/generated-sources</generatedSourcesDirectory>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.mapstruct</groupId>
