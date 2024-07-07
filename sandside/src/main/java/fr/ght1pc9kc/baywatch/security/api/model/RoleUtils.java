@@ -45,11 +45,11 @@ public final class RoleUtils {
      * @return {@code TRUE} if the user entity or for the specified entity
      */
     public static boolean hasPermission(User user, @NotNull Permission permission) {
-        if (Objects.isNull(user) || user.roles.isEmpty()) {
+        if (Objects.isNull(user) || user.roles().isEmpty()) {
             return false;
         }
 
-        return user.roles.stream()
+        return user.roles().stream()
                 .anyMatch(perm -> {
                     if (perm.equals(permission) || perm.role().ordinal() < permission.role().ordinal()) {
                         return true;
@@ -79,7 +79,7 @@ public final class RoleUtils {
             return Set.of();
         }
 
-        return user.roles.stream()
+        return user.roles().stream()
                 .filter(perm -> role == perm.role() && perm.entity().isPresent())
                 .map(perm -> perm.entity().orElse(""))
                 .collect(Collectors.toUnmodifiableSet());

@@ -2,6 +2,8 @@ type User {
     _id: ID
     _createdAt: String
     _createdBy: String
+    _loginAt: String
+    _loginIP: String
     login: String
     name: String
     mail: String
