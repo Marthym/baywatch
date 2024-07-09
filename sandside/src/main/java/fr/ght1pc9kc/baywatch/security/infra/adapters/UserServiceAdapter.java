@@ -61,7 +61,8 @@ public class UserServiceAdapter implements AuthorizationService, UserService, Re
                 .single()
                 .flatMap(user -> ReactiveClientInfoContextHolder.getContext()
                         .map(clientInfo -> user.withMeta(UserMeta.loginIP, clientInfo.ip().toString())
-                                .withMeta(UserMeta.loginAt, clock.instant().truncatedTo(ChronoUnit.SECONDS))))
+                                .withMeta(UserMeta.loginAt, clock.instant().truncatedTo(ChronoUnit.SECONDS)))
+                        .switchIfEmpty(Mono.just(user)))
                 .map(BaywatchUserDetails::new);
     }
 }
