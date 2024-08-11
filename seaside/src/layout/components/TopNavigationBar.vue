@@ -12,14 +12,14 @@
                    class="py-2 font-medium capitalize focus:outline-none transition duration-500 ease-in-out"
                    aria-label="display news list">
         <NewspaperIcon class="w-8 h-8 sm:w-6 sm:h-6 inline-block -mt-2"/>
-        <span class="hidden sm:inline-block">news</span>
+        <span class="hidden sm:inline-block">{{ t('news') }}</span>
       </router-link>
       <router-link to="/clipped" v-if="isAuthenticated"
                    active-class="border-b-2 text-accent border-accent"
                    class="py-2 ml-2 font-medium capitalize focus:outline-none transition duration-500 ease-in-out"
                    aria-label="display news list">
         <PaperClipIcon class="w-8 h-8 sm:w-6 sm:h-6 inline-block -mt-2"/>
-        <span class="hidden sm:inline-block">Clipped</span>
+        <span class="hidden sm:inline-block">{{ t('clipped') }}</span>
       </router-link>
       <!-- Vertical separator -->
       <div class="divider divider-horizontal hidden sm:flex"></div>
@@ -89,13 +89,13 @@ import {
 } from '@heroicons/vue/24/outline';
 import { NewspaperIcon } from '@heroicons/vue/24/solid';
 import { LocationQueryRaw, RouteLocationRaw } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 
 const AddSingleNewsAction = defineAsyncComponent(() => import('@/layout/components/AddSingleNewsAction.vue'));
 const SearchResultAction = defineAsyncComponent(() => import('@/layout/components/SearchResultAction.vue'));
 
 type ActionOverlayComponent = 'AddSingleNewsAction' | 'SearchResultAction';
 
-// noinspection JSMethodCanBeStatic
 @Component({
   name: 'TopNavigationBar',
   components: {
@@ -112,9 +112,20 @@ type ActionOverlayComponent = 'AddSingleNewsAction' | 'SearchResultAction';
   },
   setup() {
     const store = useStore();
+    const { t } = useI18n({
+      messages: {
+        en: {
+          clipped: 'Clipped',
+        },
+        fr: {
+          clipped: 'A lire'
+        }
+      }
+    });
     return {
       store: store,
       statistics: store.state.statistics,
+      t: t,
     };
   },
 })
@@ -122,6 +133,7 @@ export default class TopNavigationBar extends Vue {
 
   private statistics: StatisticsState;
   private store: Store<any>;
+  private t: unknown;
 
   private actionOverlayOpen = false;
   private actionOverlayContent: ActionOverlayComponent = 'AddSingleNewsAction';
