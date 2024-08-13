@@ -1,16 +1,21 @@
 import { createI18n } from 'vue-i18n';
-import { localeMainEn } from '@/locales/main-en';
-import { localeMainFr } from '@/locales/main-fr';
-
-//TODO: Move locales into common/locales and create a locales file in each module
-//TODO: Add lazy loading for components
+import { en_US } from '@/locales/main-en_US';
+import { fr_FR } from '@/locales/main-fr_FR';
+import { nextTick } from 'vue';
 
 export const i18n = createI18n({
     legacy: false,
-    locale: navigator.language,
-    fallbackLocale: 'en',
-    messages: {
-        en: localeMainEn,
-        fr: localeMainFr,
-    },
+    locale: Intl.DateTimeFormat().resolvedOptions().locale.replace('-', '_'),
+    fallbackLocale: 'en_US',
+    messages: { en_US, fr_FR },
 });
+
+export async function loadLocaleMessages(component) {
+    try {
+        const messages = await import(`@/locales/${component}-${i18n.global.locale.value}.ts`);
+        i18n.global.mergeLocaleMessage(i18n.global.locale.value, messages[i18n.global.locale.value]);
+    } catch (error) {
+    }
+
+    return nextTick();
+}

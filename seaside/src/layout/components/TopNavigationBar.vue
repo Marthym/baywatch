@@ -90,6 +90,8 @@ import {
 import { NewspaperIcon } from '@heroicons/vue/24/solid';
 import { LocationQueryRaw, RouteLocationRaw } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+// import { fr_FR } from '@/locales/HomePage-fr_FR';
+// import { en_US } from '@/locales/HomePage-en_US';
 
 const AddSingleNewsAction = defineAsyncComponent(() => import('@/layout/components/AddSingleNewsAction.vue'));
 const SearchResultAction = defineAsyncComponent(() => import('@/layout/components/SearchResultAction.vue'));
@@ -112,16 +114,7 @@ type ActionOverlayComponent = 'AddSingleNewsAction' | 'SearchResultAction';
   },
   setup() {
     const store = useStore();
-    const { t } = useI18n({
-      messages: {
-        en: {
-          clipped: 'Clipped',
-        },
-        fr: {
-          clipped: 'A lire'
-        }
-      }
-    });
+    const { t } = useI18n();
     return {
       store: store,
       statistics: store.state.statistics,
