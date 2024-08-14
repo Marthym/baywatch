@@ -1,4 +1,16 @@
 export const fr_FR = {
-    news: 'Nouvelles',
-    clipped: 'A lire',
+    'aside.administration': 'administration',
+    'aside.configuration': 'configuration',
+    'aside.login': 'connexion',
+    'aside.logout': 'déconnexion',
+    'aside.register': 'Nouveau compte',
+    'aside.teams': 'équipes',
+    'main.application': 'Baywatch',
+    'sidenav.filters': 'filtres',
+    'sidenav.filters.popular': 'populaire',
+    'sidenav.filters.unread': 'non lu',
+    'sidenav.tags': 'étiquettes',
+    'topnav.clipped': 'à lire',
+    'topnav.news': 'nouvelles',
+    'topnav.search': 'recherche',
 };

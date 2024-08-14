@@ -1,4 +1,16 @@
 export const en_US = {
-    news: 'News',
-    clipped: 'A lire',
+    'aside.administration': 'administration',
+    'aside.configuration': 'configuration',
+    'aside.login': 'log in',
+    'aside.logout': 'log out',
+    'aside.register': 'Register',
+    'aside.teams': 'teams',
+    'main.application': 'Baywatch',
+    'sidenav.filters': 'filters',
+    'sidenav.filters.popular': 'popular',
+    'sidenav.filters.unread': 'unread',
+    'sidenav.tags': 'tags',
+    'topnav.clipped': 'clipped',
+    'topnav.news': 'news',
+    'topnav.search': 'search',
 };

@@ -4,26 +4,26 @@
     <div class="card bordered flex rounded-none overflow-hidden h-full
                 lg:rounded-lg lg:shadow-lg lg:h-fit lg:mt-8 mx-auto lg:card-side lg:max-w-4xl"
          @click.stop>
-      <img class="object-cover" src="/login.webp" alt="Baywatch">
+      <img alt="Baywatch" class="object-cover" src="/login.webp">
       <div class="card-body">
         <form @submit.prevent="onLogin">
-          <h2 class="card-title">Baywatch</h2>
+          <h2 class="card-title">{{ t('main.application') }}</h2>
           <div class="form-control">
-            <label class="label"><span class="label-text">Email Address</span></label>
-            <input ref="usrInput" v-model="username" class="input input-bordered" type="text"
-                   placeholder="Username"
+            <label class="label"><span class="label-text">{{ t('login.username') }}</span></label>
+            <input ref="usrInput" v-model="username" :class="{'input-error': formValidation}" class="input input-bordered"
+                   :placeholder="t('login.username')"
                    tabindex="1"
-                   :class="{'input-error': formValidation}">
+                   type="text">
           </div>
           <div class="form-control mt-4">
-            <label class="label"><span class="label-text">Password</span>
-              <a href="#" class="label-text-alt">Forget password ?</a></label>
-            <input v-model="password" class="input input-bordered" type="password"
-                   placeholder="Password"
+            <label class="label"><span class="label-text">{{ t('login.password') }}</span>
+              <a class="label-text-alt" href="#">{{ t('login.password.forget') }}</a></label>
+            <input v-model="password" :class="{'input-error': formValidation}" class="input input-bordered"
+                   :placeholder="t('login.password')"
                    tabindex="2"
-                   @keyup="formValidation=false"
-                   :class="{'input-error': formValidation}">
-            <button type="submit" class="btn btn-primary mt-4" tabindex="3">Se connecter</button>
+                   type="password"
+                   @keyup="formValidation=false">
+            <button class="btn btn-primary mt-4" tabindex="3" type="submit">{{ t('login.login') }}</button>
           </div>
         </form>
       </div>
@@ -39,22 +39,25 @@ import { UPDATE_MUTATION } from '@/security/store/UserConstants';
 import authenticationService from '@/security/services/AuthenticationService';
 import notificationService from '@/services/notification/NotificationService';
 import { Router, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 
 @Component({
   name: 'LoginPage',
   setup() {
+    const { t } = useI18n();
     return {
       store: useStore(),
       router: useRouter(),
+      t: t,
     };
   },
 })
 export default class LoginPage extends Vue {
-  private store;
-  private router: Router;
-
   public username = '';
   public password = '';
+  private store;
+  private t;
+  private router: Router;
   private formValidation = false;
 
   mounted(): void {

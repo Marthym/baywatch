@@ -1,7 +1,7 @@
 <template>
   <header class="navbar min-h-0 bg-neutral text-neutral-content">
-    <button @click="toggleSidenav" class="btn btn-square btn-sm btn-ghost -mr-2 lg:hidden"
-            aria-label="Open Side Menu">
+    <button aria-label="Open Side Menu" class="btn btn-square btn-sm btn-ghost -mr-2 lg:hidden"
+            @click="toggleSidenav">
       <ChevronDoubleRightIcon class="h-6 w-6"/>
     </button>
     <!-- The left side of top bar -->
@@ -9,17 +9,17 @@
       <!-- The NEWS Tab-->
       <router-link :to="newsToLink"
                    active-class="border-b-2 text-accent border-accent"
-                   class="py-2 font-medium capitalize focus:outline-none transition duration-500 ease-in-out"
-                   aria-label="display news list">
+                   aria-label="display news list"
+                   class="py-2 font-medium capitalize focus:outline-none transition duration-500 ease-in-out">
         <NewspaperIcon class="w-8 h-8 sm:w-6 sm:h-6 inline-block -mt-2"/>
-        <span class="hidden sm:inline-block">{{ t('news') }}</span>
+        <span class="hidden sm:inline-block capitalize">{{ t('topnav.news') }}</span>
       </router-link>
-      <router-link to="/clipped" v-if="isAuthenticated"
-                   active-class="border-b-2 text-accent border-accent"
+      <router-link v-if="isAuthenticated" active-class="border-b-2 text-accent border-accent"
+                   aria-label="display news list"
                    class="py-2 ml-2 font-medium capitalize focus:outline-none transition duration-500 ease-in-out"
-                   aria-label="display news list">
+                   to="/clipped">
         <PaperClipIcon class="w-8 h-8 sm:w-6 sm:h-6 inline-block -mt-2"/>
-        <span class="hidden sm:inline-block">{{ t('clipped') }}</span>
+        <span class="hidden sm:inline-block capitalize">{{ t('topnav.clipped') }}</span>
       </router-link>
       <!-- Vertical separator -->
       <div class="divider divider-horizontal hidden sm:flex"></div>
@@ -48,8 +48,9 @@
       </div>
       <!-- Right Search Bar -->
       <div class="relative">
-        <input type="text" placeholder="Search" class="w-full pr-16 input input-sm input-ghost input-bordered"
-               v-model="searchQuery"
+        <input v-model="searchQuery" :placeholder="t('topnav.search')"
+               class="w-full pr-16 input input-sm input-ghost input-bordered placeholder:capitalize"
+               type="text"
                @keydown.enter.stop="onSearchClick"
                @keydown.esc.stop="exitOverlay">
         <button class="absolute top-0 right-0 rounded-l-none btn btn-ghost btn-sm"
@@ -90,8 +91,6 @@ import {
 import { NewspaperIcon } from '@heroicons/vue/24/solid';
 import { LocationQueryRaw, RouteLocationRaw } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-// import { fr_FR } from '@/locales/HomePage-fr_FR';
-// import { en_US } from '@/locales/HomePage-en_US';
 
 const AddSingleNewsAction = defineAsyncComponent(() => import('@/layout/components/AddSingleNewsAction.vue'));
 const SearchResultAction = defineAsyncComponent(() => import('@/layout/components/SearchResultAction.vue'));

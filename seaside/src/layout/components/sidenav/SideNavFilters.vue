@@ -3,20 +3,20 @@
     <li>
       <div class="flex">
         <FunnelIcon class="w-6 h-6"/>
-        <span class="ml-2 capitalize font-medium">filters</span>
+        <span class="ml-2 capitalize font-medium">{{ t('sidenav.filters') }}</span>
       </div>
 
       <ul class="mt-2 ml-2">
         <li>
           <label class="label cursor-pointer py-1">
-            <span class="label-text">unread</span>
+            <span class="label-text">{{ t('sidenav.filters.unread') }}</span>
             <input type="checkbox" class="toggle"
                    @change="onChangeUnread" :checked="newsStore.unread">
           </label>
         </li>
         <li>
           <label class="label cursor-pointer py-1">
-            <span class="label-text">popular</span>
+            <span class="label-text">{{ t('sidenav.filters.popular') }}</span>
             <input type="checkbox" class="toggle"
                    @change="onChangePopular" :checked="newsStore.popular">
           </label>
@@ -26,7 +26,7 @@
     <li class="mt-2">
       <div class="flex">
         <TagIcon class="h-6 w-6"/>
-        <span class="ml-2 capitalize font-medium">tags</span>
+        <span class="ml-2 capitalize font-medium">{{ t('sidenav.tags') }}</span>
       </div>
 
       <ul class="flex flex-wrap list-none mt-4">
@@ -63,21 +63,25 @@ import {
   NewsStore,
 } from '@/common/model/store/NewsStore.type';
 import { FunnelIcon, TagIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { useI18n } from 'vue-i18n';
 
 @Component({
   name: 'SideNavFilters',
   components: { FunnelIcon, TagIcon, XMarkIcon },
   setup() {
     const store = useStore();
+    const { t } = useI18n();
     return {
       router: useRouter(),
       store: store,
       newsStore: store.state.news,
+      t: t,
     };
   },
 })
 export default class SideNavFilters extends Vue {
   private router: Router;
+  private t;
   private store;
   private newsStore: NewsStore;
   private tags: string[] = [];
