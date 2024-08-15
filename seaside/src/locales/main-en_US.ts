@@ -11,6 +11,7 @@ export const en_US = {
     'sidenav.filters.unread': 'unread',
     'sidenav.tags': 'tags',
     'topnav.clipped': 'clipped',
+    'topnav.feed': 'feed',
     'topnav.news': 'news',
     'topnav.search': 'search',
 };
