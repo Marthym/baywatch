@@ -1,22 +1,22 @@
 <template>
   <div class="overflow-x-auto mt-4">
     <div class="md:join mb-2">
-      <button class="btn btn-sm mb-2 mr-2 join-item md:m-0" @click.prevent="onUserAdd()">
+      <button class="btn btn-sm mb-2 mr-2 join-item md:m-0 capitalize" @click.prevent="onUserAdd()">
         <PlusCircleIcon class="w-6 h-6 md:mr-2"/>
-        <span>Ajouter</span>
+        <span>{{ t('admin.users.add') }}</span>
       </button>
-      <button class="btn btn-sm btn-ghost mb-2 mr-2 join-item md:m-0" @click="">
+      <button class="btn btn-sm btn-ghost mb-2 mr-2 join-item md:m-0 capitalize" @click="">
         <ArrowDownTrayIcon class="w-6 h-6 mr-2"/>
-        Importer
+        {{ t('admin.users.import') }}
       </button>
-      <a class="btn btn-sm btn-ghost mb-2 mr-2 join-item md:m-0">
+      <a class="btn btn-sm btn-ghost mb-2 mr-2 join-item md:m-0 capitalize">
         <ArrowUpTrayIcon class="w-6 h-6 mr-2"/>
-        Exporter
+        {{ t('admin.users.export') }}
       </a>
-      <button class="btn btn-sm btn-error mb-2 mr-2 join-item md:m-0" :disabled="!checkState"
+      <button class="btn btn-sm btn-error mb-2 mr-2 join-item md:m-0 capitalize" :disabled="!checkState"
               @click="onUserBulkDelete()">
         <TrashIcon class="w-6 h-6"/>
-        Supprimer
+        {{ t('admin.users.delete') }}
       </button>
     </div>
     <table class="table w-full table-sm" aria-describedby="User List">
@@ -26,12 +26,12 @@
           <input type="checkbox" class="checkbox" ref="globalCheck"
                  :checked="checkState" @change="onSelectAll()"/>
         </th>
-        <th scope="col">Pseudo</th>
-        <th scope="col">Nom</th>
-        <th scope="col">Mail</th>
-        <th scope="col">Role</th>
-        <th scope="col">Created At</th>
-        <th scope="col">Last Activity</th>
+        <th scope="col" class="capitalize">{{ t('admin.users.login') }}</th>
+        <th scope="col" class="capitalize">{{ t('admin.users.username') }}</th>
+        <th scope="col" class="capitalize">{{ t('admin.users.mail') }}</th>
+        <th scope="col" class="capitalize">{{ t('admin.users.role') }}</th>
+        <th scope="col" class="capitalize">{{ t('admin.users.createdAt') }}</th>
+        <th scope="col" class="capitalize">{{ t('admin.users.lastActivity') }}</th>
         <th scope="col">
           <div class="join justify-end" v-if="pagesNumber > 1">
             <button v-for="i in pagesNumber" :key="i"
@@ -82,11 +82,12 @@
       <tfoot>
       <tr>
         <th scope="col" class="w-1"></th>
-        <th scope="col">Pseudo</th>
-        <th scope="col">Nom</th>
-        <th scope="col">Mail</th>
-        <th scope="col">Role</th>
-        <th scope="col">Created At</th>
+        <th scope="col" class="capitalize">{{ t('admin.users.login') }}</th>
+        <th scope="col" class="capitalize">{{ t('admin.users.username') }}</th>
+        <th scope="col" class="capitalize">{{ t('admin.users.mail') }}</th>
+        <th scope="col" class="capitalize">{{ t('admin.users.role') }}</th>
+        <th scope="col" class="capitalize">{{ t('admin.users.createdAt') }}</th>
+        <th scope="col" class="capitalize">{{ t('admin.users.lastActivity') }}</th>
         <th scope="col">
           <div class="join justify-end" v-if="pagesNumber > 1">
             <button v-for="i in pagesNumber" :key="i"
@@ -126,6 +127,7 @@ import {
   PlusCircleIcon,
   TrashIcon,
 } from '@heroicons/vue/24/outline';
+import { useI18n } from 'vue-i18n';
 
 @Component({
   name: 'UserAdminTab',
@@ -138,8 +140,13 @@ import {
     PlusCircleIcon,
     TrashIcon,
   },
+  setup() {
+    const { t } = useI18n();
+    return { t };
+  }
 })
 export default class UserAdminTab extends Vue {
+  private t;
   private users: UserView[] = [];
   private pagesNumber = 0;
   private activePage = 0;
@@ -191,7 +198,7 @@ export default class UserAdminTab extends Vue {
 
   private onCopyToClipboard(value: string): void {
     navigator.clipboard.writeText(value);
-    notificationService.pushSimpleOk(`User ID copied on clipboard !`);
+    notificationService.pushSimpleOk(this.t('admin.users.messages.userIdCopied'));
   }
 
   private onUserSubmit(): void {
@@ -207,7 +214,7 @@ export default class UserAdminTab extends Vue {
     userCreate(this.activeUser).subscribe({
       next: user => {
         this.users.push({ isSelected: false, data: user });
-        notificationService.pushSimpleOk(`User ${user.login} created successfully !`);
+        notificationService.pushSimpleOk(this.t('admin.users.messages.userCreatedSuccessfully', {login: user.login}));
         this.editorOpened = false;
       },
       error: e => {
@@ -226,7 +233,7 @@ export default class UserAdminTab extends Vue {
     userUpdate(this.activeUser._id, this.activeUser).subscribe({
       next: user => {
         this.users.splice(idx, 1, { isSelected: false, data: user });
-        notificationService.pushSimpleOk(`User ${user.login} updated successfully !`);
+        notificationService.pushSimpleOk(this.t('admin.users.messages.userUpdatedSuccessfully', {login: user.login}));
         this.editorOpened = false;
       },
       error: e => {
@@ -249,7 +256,8 @@ export default class UserAdminTab extends Vue {
   }
 
   private onUserDelete(user: User): void {
-    const message = `Supprimer l’utilisateur <br/> <b>${user.name}</b>`;
+    console.log(user)
+    const message = this.t('admin.users.messages.configUsersDeletion', {login: user.name}, 1);
     this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
         filter(response => response === AlertResponse.CONFIRM),
         switchMap(() => userDelete(user._id ? [user._id] : [])),
@@ -260,10 +268,10 @@ export default class UserAdminTab extends Vue {
           });
         }),
     ).subscribe({
-      next: () => notificationService.pushSimpleOk(`User ${user.name} deleted successfully !`),
+      next: () => notificationService.pushSimpleOk(this.t('admin.users.messages.userDeletedSuccessfully', {login: user.login})),
       error: e => {
         console.error(e);
-        notificationService.pushSimpleError(`Unable to delete user ${user.name} !`);
+        notificationService.pushSimpleError(this.t('admin.users.messages.unableDeleteUser', {login: user.login}));
       },
     });
   }
@@ -275,7 +283,7 @@ export default class UserAdminTab extends Vue {
     } else if (ids.length == 1) {
       return this.onUserDelete(ids[0].data);
     }
-    const message = `Delete all ${ids.length} selected users ?`;
+    const message = this.t('admin.users.messages.configUsersDeletion', ids.length);
     this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
         filter(response => response === AlertResponse.CONFIRM),
         switchMap(() => userDelete(ids.map(uv => uv.data._id!))),
@@ -286,15 +294,14 @@ export default class UserAdminTab extends Vue {
           });
         }),
     ).subscribe({
-      next: () => notificationService.pushSimpleOk('All users deleted successfully !'),
+      next: () => notificationService.pushSimpleOk(this.t('admin.users.messages.userDeletedSuccessfully', ids.length)),
       error: e => {
         console.error(e);
-        notificationService.pushSimpleError('Unable to delete all selected users !');
+        notificationService.pushSimpleError(this.t('admin.users.messages.unableDeleteUser', ids.length));
       },
     });
   }
 
-  // noinspection JSUnusedGlobalSymbols
   public unmounted(): void {
     actionServiceUnregisterFunction();
   }

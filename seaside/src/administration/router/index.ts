@@ -8,9 +8,9 @@ const StatisticsAdminTab = () => import('@/administration/component/StatisticsAd
 export const routes: RouteRecordRaw[] = [
     {
         path: '/admin', component: AdministrationPage, redirect: '/admin/users', name: 'admin', children: [
-            { path: 'users', component: UserAdminTab, name: 'admin/users' },
-            { path: 'config', component: ConfigAdminTab, name: 'admin/config' },
-            { path: 'stats', component: StatisticsAdminTab, name: 'admin/stats' },
+            { path: 'users', component: UserAdminTab, name: 'admin-users' },
+            { path: 'config', component: ConfigAdminTab, name: 'admin-config' },
+            { path: 'stats', component: StatisticsAdminTab, name: 'admin-stats' },
         ],
         meta: { requiresAuth: true },
     },

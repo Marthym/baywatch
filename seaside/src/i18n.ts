@@ -36,7 +36,7 @@ export const i18n = createI18n<[MessageSchema], en_US | fr_FR>({
 });
 
 router.beforeEach(async (to, from, next) => {
-    const localePageFile = `./locales/${to.name}-${i18n.global.locale.value}.ts`;
+    const localePageFile = `./locales/${to.name}_${i18n.global.fallbackLocale.value}.ts`;
     try {
         const messagesFallback = import(`./locales/${to.name}_${i18n.global.fallbackLocale.value}.ts`);
         const messages = import(`./locales/${to.name}_${i18n.global.locale.value}.ts`);
@@ -45,7 +45,7 @@ router.beforeEach(async (to, from, next) => {
             messages.then(msg => i18n.global.mergeLocaleMessage(i18n.global.locale.value, msg[i18n.global.locale.value.replace('-', '_')])),
         ]);
     } catch (error) {
-        console.debug('Error on loading locale file : ', error.message);
+        console.debug('Error on loading locale file', localePageFile, error.message);
     }
 
     await nextTick();
