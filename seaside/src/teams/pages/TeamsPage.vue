@@ -1,16 +1,17 @@
 <template>
   <div v-if="store.getters['user/hasRoleUser']" class="overflow-x-auto mt-4">
-    <SmartTable columns="Name|Managers|Topic" :elements="teams" actions="audl"
+    <SmartTable :elements="teams" actions="audl"
+                :columns="`${t('teams.header.name')}|${t('teams.header.managers')}|${t('teams.header.topic')}`"
                 @add="addNewTeam()"
-                @view="idx => onEditData(idx)"
-                @edit="idx => onEditData(idx)"
                 @delete="idx => onDeleteData(idx)"
+                @deleteSelected="idx => onDeleteSelected(idx)"
+                @edit="idx => onEditData(idx)"
                 @leave="idx => onLeave(idx)"
-                @deleteSelected="idx => onDeleteSelected(idx)">
+                @view="idx => onEditData(idx)">
       <template #default="e">
         <std>
           {{ e.data.name }}
-          <div class="tooltip tooltip-right" :data-tip="e.data._id">
+          <div :data-tip="e.data._id" class="tooltip tooltip-right">
             <button class="btn btn-circle btn-xs btn-ghost -ml-2"
                     @click.prevent.stop="onCopyToClipboard(e.data._id)">
               <InformationCircleIcon class="w-3 h-3"/>
@@ -22,13 +23,13 @@
       </template>
       <template #lineActions="e">
         <stla v-if="this.teams[e.idx].data._me.pending === MemberPending.USER"
-              class="animate-pulse text-accent"
-              :icon="ArrowLeftEndOnRectangleIcon" @click.stop="onJoinTeam(e.idx)"/>
+              :icon="ArrowLeftEndOnRectangleIcon"
+              class="animate-pulse text-accent" @click.stop="onJoinTeam(e.idx)"/>
       </template>
     </SmartTable>
   </div>
-  <team-editor v-if="isEditorOpened" @close="onEditorClose"
-               title="Team Editor" v-model="activeTeam"/>
+  <team-editor v-if="isEditorOpened" v-model="activeTeam"
+               title="Team Editor" @close="onEditorClose"/>
 </template>
 
 <script lang="ts">
@@ -53,6 +54,7 @@ import { ArrowLeftEndOnRectangleIcon, InformationCircleIcon } from '@heroicons/v
 import { MemberPending } from '@/teams/model/MemberPending.enum';
 import { teamMemberAdd, teamMemberDelete } from '@/teams/services/TeamMembers.service';
 import { UserState } from '@/security/store/user';
+import { useI18n } from 'vue-i18n';
 
 @Component({
   name: 'TeamsPage',
@@ -71,12 +73,15 @@ import { UserState } from '@/security/store/user';
     TableActionsComponent,
   },
   setup() {
+    const { t } = useI18n();
     return {
       store: useStore<UserState>(),
+      t: t,
     };
   },
 })
 export default class TeamsPage extends Vue {
+  private t;
   private isEditorOpened: boolean = false;
   private teams: SmartTableView<Team>[] = [];
   private activeTeam: SmartTableView<Team>;
@@ -85,6 +90,18 @@ export default class TeamsPage extends Vue {
   private store: Store<UserState>;
 
   private ArrowLeftEndOnRectangleIcon = ArrowLeftEndOnRectangleIcon;
+
+  public loadNextPage(page: number = 0): Observable<SmartTableView<Team>[]> {
+    const roles: string[] = this.store.state.user.user.roles;
+    return teamsList(page).pipe(
+        switchMap(page => page.data),
+        map(teams => teams.map(team => {
+          const isEditable = roles.includes(`MANAGER:${team._id}`);
+          return { isSelected: false, isEditable: isEditable, data: team } as SmartTableView<Team>;
+        })),
+        tap(teams => this.teams.splice(0, this.teams.length, ...teams)),
+    );
+  }
 
   /**
    * @see mounted
@@ -101,18 +118,6 @@ export default class TeamsPage extends Vue {
     });
   }
 
-  public loadNextPage(page: number = 0): Observable<SmartTableView<Team>[]> {
-    const roles: string[] = this.store.state.user.user.roles;
-    return teamsList(page).pipe(
-        switchMap(page => page.data),
-        map(teams => teams.map(team => {
-          const isEditable = roles.includes(`MANAGER:${team._id}`);
-          return { isSelected: false, isEditable: isEditable, data: team } as SmartTableView<Team>;
-        })),
-        tap(teams => this.teams.splice(0, this.teams.length, ...teams)),
-    );
-  }
-
   private addNewTeam(): void {
     this.activeTeam = { isSelected: false, isEditable: true, data: {} as Team };
     this.isEditorOpened = true;
@@ -126,9 +131,9 @@ export default class TeamsPage extends Vue {
           const meAsMember = members.find(m => m._user._id === id);
           if (meAsMember && meAsMember.pending === MemberPending.NONE) {
             this.teams[idx].data._me.pending = meAsMember.pending;
-            notificationService.pushSimpleOk(`You join the team ${this.teams[idx].data.name} !`);
+            notificationService.pushSimpleOk(this.t('teams.messages.teamJoined', { team: this.teams[idx].data.name }));
           } else {
-            notificationService.pushSimpleError('Unknown error !');
+            notificationService.pushSimpleError(this.t('teams.messages.unknownError'));
           }
         },
       });
@@ -143,11 +148,11 @@ export default class TeamsPage extends Vue {
   }
 
   private onLeave(idx: number): void {
-    const messageConfirm = `You will leave the team <strong>${this.teams[idx].data.name}</strong> definitively ?`;
-    const messageComplete = `You have left the team ${this.teams[idx].data.name} ?`;
+    const messageConfirm = this.t('teams.messages.confirmLeaving', { team: this.teams[idx].data.name });
+    const messageComplete = this.t('teams.messages.leaveSuccessfully', { team: this.teams[idx].data.name });
     const id = this.store.state.user.user._id;
     if (id && this.teams.length >= (idx - 1)) {
-      this.$alert.fire(messageConfirm, AlertType.CONFIRM_DELETE, 'Leave').pipe(
+      this.$alert.fire(messageConfirm, AlertType.CONFIRM_DELETE, this.t('teams.leave')).pipe(
           filter(response => response === AlertResponse.CONFIRM),
           switchMap(() => teamMemberDelete(this.teams[idx].data._id, [id])),
       ).subscribe({
@@ -165,7 +170,7 @@ export default class TeamsPage extends Vue {
   }
 
   private onDeleteData(idx: number): void {
-    const message = `Remove the team <b>${this.teams[idx].data.name}</b> ?`;
+    const message = this.t('teams.messages.confirmDelete', { team: this.teams[idx].data.name });
     if (this.teams.length >= (idx - 1)) {
       this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
           filter(response => response === AlertResponse.CONFIRM),
@@ -173,7 +178,7 @@ export default class TeamsPage extends Vue {
       ).subscribe({
         next: deleted => {
           this.teams.splice(idx, 1);
-          notificationService.pushSimpleOk(`${deleted[0].name} deleted successfully !`);
+          notificationService.pushSimpleOk(this.t('teams.messages.deletedSuccessfully', { team: deleted[0].name }));
         },
         error: err => notificationService.pushNotification({
           code: NotificationCode.ERROR,
@@ -190,7 +195,7 @@ export default class TeamsPage extends Vue {
         .subscribe({
           next: deleted => {
             idx.forEach(i => this.teams.splice(i, 1));
-            notificationService.pushSimpleOk(`${deleted[0].name} deleted successfully !`);
+            notificationService.pushSimpleOk(this.t('teams.messages.deletedSuccessfully', { team: deleted[0].name }));
           },
           error: err => notificationService.pushNotification({
             code: NotificationCode.ERROR,
@@ -209,10 +214,9 @@ export default class TeamsPage extends Vue {
 
   private onCopyToClipboard(value: string): void {
     navigator.clipboard.writeText(value);
-    notificationService.pushSimpleOk(`User ID copied on clipboard !`);
+    notificationService.pushSimpleOk(this.t('teams.messages.copiedUserClipboard'));
   }
 
-  // noinspection JSUnusedLocalSymbols
   private unmounted(): void {
     actionServiceUnregisterFunction();
   }

@@ -1,31 +1,32 @@
 <template>
   <div class="md:join mb-2">
-    <button v-if="actions.includes('a')" class="btn btn-sm join-item mb-2 mr-2 md:m-0"
+    <button v-if="actions.includes('a')" class="btn btn-sm join-item mb-2 mr-2 md:m-0 capitalize"
             @click.stop.prevent="$emit('add')">
       <PlusCircleIcon class="w-6 h-6 md:mr-2"/>
-      <span>Ajouter</span>
+      <span>{{ t('smarttable.actions.add') }}</span>
     </button>
-    <button v-if="actions.includes('i')" class="btn btn-sm btn-ghost join-item mb-2 mr-2 md:m-0"
+    <button v-if="actions.includes('i')" class="btn btn-sm btn-ghost join-item mb-2 mr-2 md:m-0 capitalize"
             @click="$emit('import')">
       <ArrowDownTrayIcon class="w-6 h-6 mr-2"/>
-      Importer
+      {{ t('smarttable.actions.import') }}
     </button>
-    <a v-if="actions.includes('e')" class="btn btn-sm btn-ghost join-item mb-2 mr-2 md:m-0" @click="$emit('export')">
+    <a v-if="actions.includes('e')" class="btn btn-sm btn-ghost join-item mb-2 mr-2 md:m-0 capitalize"
+       @click="$emit('export')">
       <ArrowUpTrayIcon class="w-6 h-6 mr-2"/>
-      Exporter
+      {{ t('smarttable.actions.export') }}
     </a>
-    <button v-if="actions.includes('l')" class="btn btn-sm btn-warning join-item"
+    <button v-if="actions.includes('l')" class="btn btn-sm btn-warning join-item capitalize"
             :disabled="selectedElements.length <= 0" @click.stop.prevent="$emit('leaveSelected', selectedElements)">
       <ArrowRightEndOnRectangleIcon class="h-6 w-6"/>
-      Leave
+      {{ t('smarttable.actions.leave') }}
     </button>
-    <button v-if="actions.includes('d') && isGlobalEditable" class="btn btn-sm btn-error join-item mb-2 mr-2 md:m-0"
+    <button v-if="actions.includes('d') && isGlobalEditable" class="btn btn-sm btn-error join-item mb-2 mr-2 md:m-0 capitalize"
             :disabled="selectedElements.length <= 0" @click="$emit('deleteSelected', selectedElements)">
       <TrashIcon class="w-6 h-6"/>
-      Supprimer
+      {{ t('smarttable.actions.delete') }}
     </button>
   </div>
-  <table class="table w-full table-compact" aria-describedby="User List">
+  <table class="table w-full table-compact" :aria-describedby="t('smarttable.aria.usersList')">
     <thead class="whitespace-normal">
     <tr>
       <th scope="col" class="w-1 pl-0 pr-0">
@@ -35,7 +36,7 @@
           <span class="checkbox-mark"></span>
         </label>
       </th>
-      <th v-for="column in _columns" scope="col">{{ column }}</th>
+      <th v-for="column in _columns" scope="col" class="capitalize">{{ column }}</th>
       <th scope="col" class="text-right">
         <div class="join" v-if="totalPage > 1">
           <button class="btn btn-xs join-item hidden lg:inline" :disabled="activePage < 1"
@@ -87,7 +88,7 @@
     <tfoot class="whitespace-normal">
     <tr>
       <th scope="col" class="w-1"></th>
-      <th v-for="column in _columns" scope="col">{{ column }}</th>
+      <th v-for="column in _columns" scope="col" class="capitalize">{{ column }}</th>
       <th scope="col" class="text-right">
         <div class="join" v-if="totalPage > 1">
           <button class="btn btn-xs join-item hidden lg:inline" :disabled="activePage < 1"
@@ -119,6 +120,7 @@ import {
   TrashIcon,
 } from '@heroicons/vue/24/outline';
 import { SmartTableView } from '@/common/components/smartTable/SmartTableView.interface';
+import { useI18n } from 'vue-i18n';
 
 /**
  * Table component with global and line actions
@@ -147,8 +149,13 @@ import { SmartTableView } from '@/common/components/smartTable/SmartTableView.in
   },
   emits: ['add', 'import', 'export', 'deleteSelected', 'delete', 'edit', 'view', 'leave', 'leaveSelected', 'navigate'],
   name: 'SmartTable',
+  setup() {
+    const { t } = useI18n();
+    return { t };
+  },
 })
 export default class SmartTable extends Vue {
+  private t;
   @Prop() private elements: SmartTableView<unknown>[];
   @Prop({ default: '' }) private columns: string;
   @Prop({ default: 'ad' }) private actions: string;
