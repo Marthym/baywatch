@@ -80,13 +80,6 @@ export default class FeedsList extends Vue {
   private activePage = 0;
   private isFileUploadVisible = false;
 
-  get checkState(): boolean {
-    const isOneSelected = this.feeds.find(f => f.isSelected) !== undefined;
-    if (this.$refs['globalCheck'])
-      this.$refs['globalCheck'].indeterminate = isOneSelected && this.feeds.find(f => !f.isSelected) !== undefined;
-    return isOneSelected;
-  }
-
   mounted(): void {
     this.loadFeedPage(0).subscribe({
       next: () => actionServiceRegisterFunction(context => {
