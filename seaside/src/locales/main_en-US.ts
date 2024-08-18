@@ -5,6 +5,7 @@ export const en_US = {
     'aside.logout': 'log out',
     'aside.register': 'Register',
     'aside.teams': 'teams',
+    'dialog.cancel': 'cancel',
     'main.application': 'Baywatch',
     'sidenav.filters': 'filters',
     'sidenav.filters.popular': 'popular',

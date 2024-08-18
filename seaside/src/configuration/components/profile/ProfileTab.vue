@@ -3,38 +3,42 @@
     <!-- Avatar and name box -->
     <div class="flex">
       <div class="avatar">
-        <img class="w-24 rounded-xl mr-2" :src="avatar" :alt="user.login"/>
+        <img :alt="user.login" :src="avatar" class="w-24 rounded-xl mr-2"/>
       </div>
       <div>
-        ID: <span class="italic text-sm">{{ user._id }}</span><br>
-        <span class="label-text-alt italic">The Avatar was grab from gravatar depending on your mail address</span>
+        {{ t('config.profile.form.id') }}: <span class="italic text-sm">{{ user._id }}</span><br>
+        <p class="label-text-alt italic first-letter:capitalize">{{ t('config.profile.avatar.notice') }}</p>
       </div>
     </div>
     <div class="form-control w-full max-w-lg mt-6">
       <label class="label">
-        <span class="label-text">Login</span>
+        <span class="label-text capitalize">{{ t('config.profile.form.login') }}</span>
       </label>
       <input v-model="user.login"
-             type="text" class="input input-bordered w-full max-w-lg mb-4"/>
+             class="input input-bordered w-full max-w-lg mb-4" type="text"/>
       <label class="label">
-        <span class="label-text">Name</span>
+        <span class="label-text capitalize">{{ t('config.profile.form.name') }}</span>
       </label>
       <input v-model="user.name"
-             type="text" class="input input-bordered w-full max-w-lg mb-4"/>
+             class="input input-bordered w-full max-w-lg mb-4" type="text"/>
       <label class="label">
-        <span class="label-text">Mail adresse</span>
+        <span class="label-text capitalize">{{ t('config.profile.form.mail') }}</span>
       </label>
       <input v-model="user.mail"
-             type="text" class="input input-bordered w-full max-w-lg"/>
+             class="input input-bordered w-full max-w-lg" type="text"/>
       <label class="label">
-        <span class="label-text-alt italic mb-4">Mail address is only use for avatar and security transactions</span>
+        <span class="label-text-alt italic mb-4 first-letter:capitalize">{{ t('config.profile.mail.notice') }}</span>
       </label>
       <div class="join w-full">
-        <input v-model="user.password" placeholder="Enter your password to update your profile"
-               type="password" class="input input-bordered join-item w-full"/>
-        <button class="btn join-item mb-4" @click.stop="onClickChangePassword()">Change Password</button>
+        <input v-model="user.password" :placeholder="t('config.profile.form.password.placeholder')"
+               class="input input-bordered join-item w-full" type="password"/>
+        <button class="btn join-item mb-4 capitalize" :title="t('config.profile.form.password.tooltip')" @click.stop="onClickChangePassword()">
+          {{ t('config.profile.form.password') }}
+        </button>
       </div>
-      <button class="btn btn-primary" :disabled="!updateEnable" @click.stop="onClickSaveProfile()">Save Profile</button>
+      <button :disabled="!updateEnable" class="btn btn-primary capitalize" @click.stop="onClickSaveProfile()">
+        {{ t('config.profile.form.action.save') }}
+      </button>
     </div>
     <ChangePasswordModal v-if="isChangePasswordOpen" :is-open="isChangePasswordOpen"
                          @cancel="onCancelPasswordChange()"
@@ -51,17 +55,21 @@ import { userUpdate } from '@/security/services/UserService';
 import { UPDATE_MUTATION as USER_UPDATE_MUTATION } from '@/security/store/UserConstants';
 import notificationService from '@/services/notification/NotificationService';
 import { User } from '@/security/model/User';
+import { useI18n } from 'vue-i18n';
 
 @Component({
   name: 'ProfileTab',
   components: { ChangePasswordModal },
   setup() {
+    const { t } = useI18n();
     return {
       store: useStore(),
+      t: t,
     };
   },
 })
 export default class ProfileTab extends Vue {
+  private t;
   private store: Store<UserState>;
   private user: User;
   private isChangePasswordOpen: boolean = false;
@@ -98,7 +106,7 @@ export default class ProfileTab extends Vue {
       userUpdate(this.user._id, { password: changePasswordEvent.new }, changePasswordEvent.old)
           .subscribe({
             next: updated => this.store.commit(USER_UPDATE_MUTATION, updated),
-            error: () => notificationService.pushSimpleError('Unable to update user !'),
+            error: () => notificationService.pushSimpleError(this.t('config.profile.messages.unableToUpdate')),
           });
     }
     this.isChangePasswordOpen = false;
@@ -109,9 +117,9 @@ export default class ProfileTab extends Vue {
       userUpdate(this.user._id, this.user, this.user.password).subscribe({
         next: updated => {
           this.store.commit(USER_UPDATE_MUTATION, updated);
-          notificationService.pushSimpleOk('Profile updated successfully !');
+          notificationService.pushSimpleOk(this.t('config.profile.messages.profileUpdateSuccessfully'));
         },
-        error: () => notificationService.pushSimpleError('Unable to update user !'),
+        error: () => notificationService.pushSimpleError(this.t('config.profile.messages.unableToUpdate')),
       });
       delete this.user.password;
     }

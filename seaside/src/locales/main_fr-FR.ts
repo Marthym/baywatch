@@ -5,6 +5,7 @@ export const fr_FR = {
     'aside.logout': 'déconnexion',
     'aside.register': 'Nouveau compte',
     'aside.teams': 'équipes',
+    'dialog.cancel': 'annuler',
     'main.application': 'Baywatch',
     'sidenav.filters': 'filtres',
     'sidenav.filters.popular': 'populaire',

@@ -1,10 +1,12 @@
 <template>
-  <ModalWindow title="Change password" :is-visible="isOpen">
+  <ModalWindow :is-visible="isOpen" :title="t('config.password.title')">
     <div class="join w-full mt-4">
-      <input v-model="oldPassword" @blur.prevent="onBlurOldPassword()"
-             :class="{'input-error': errors.old}"
-             type="password" placeholder="Old Password" class="input input-bordered w-full insecureWarning"
-             autocomplete="current-password" tabindex="1"/>
+      <input v-model="oldPassword" :class="{'input-error': errors.old}"
+             :placeholder="t('config.password.form.old.placeholder')"
+             autocomplete="current-password"
+             class="input input-bordered w-full insecureWarning placeholder:capitalize"
+             tabindex="1"
+             type="password" @blur.prevent="onBlurOldPassword()"/>
       <button class="btn join-item" @click.stop.prevent="onToggleView">
         <EyeIcon class="h-6 w-6"/>
       </button>
@@ -13,10 +15,12 @@
       <span class="label-text-alt">{{ errors.old }}</span>
     </label>
     <div class="join w-full">
-      <input v-model="newPassword" @blur.prevent="onBlurNewPassword()"
-             :class="{'input-error': errors.new, 'input-success': success.new}"
-             type="password" placeholder="New Password" class="input input-bordered join-item w-full"
-             autocomplete="new-password" tabindex="2"/>
+      <input v-model="newPassword" :class="{'input-error': errors.new, 'input-success': success.new}"
+             :placeholder="t('config.password.form.new.placeholder')"
+             autocomplete="new-password"
+             class="input input-bordered join-item w-full placeholder:capitalize"
+             tabindex="2"
+             type="password" @blur.prevent="onBlurNewPassword()"/>
       <button class="btn join-item" @click.stop.prevent="onToggleView">
         <EyeIcon class="h-6 w-6"/>
       </button>
@@ -25,10 +29,10 @@
       <span class="label-text-alt">{{ errors.new }}</span>
     </label>
     <div class="join w-full">
-      <input v-model="confirmPassword" @blur.prevent="onBlurConfirmPassword()"
-             :class="{'input-error': errors.confirm, 'input-success': success.confirm}"
-             type="password" placeholder="Confirm Password" class="input input-bordered w-full"
-             autocomplete="new-password" tabindex="3"/>
+      <input v-model="confirmPassword" :class="{'input-error': errors.confirm, 'input-success': success.confirm}"
+             :placeholder="t('config.password.form.confirm.placeholder')"
+             autocomplete="new-password" class="input input-bordered w-full placeholder:capitalize" tabindex="3"
+             type="password" @blur.prevent="onBlurConfirmPassword()"/>
       <button class="btn join-item" @click.stop.prevent="onToggleView">
         <EyeIcon class="h-6 w-6"/>
       </button>
@@ -37,11 +41,11 @@
       <span class="label-text-alt">{{ errors.confirm }}</span>
     </label>
     <template v-slot:actions>
-      <button class="btn btn-primary" :disabled="updateButtonDisable"
+      <button :disabled="updateButtonDisable" class="btn btn-primary capitalize"
               @click.stop="$emit('submit', {old: oldPassword, new: confirmPassword})">
-        Update
+        {{ t('config.password.form.action.submit') }}
       </button>
-      <button class="btn" @click.stop="$emit('cancel')">Cancel</button>
+      <button class="btn capitalize" @click.stop="$emit('cancel')">{{ t('dialog.cancel') }}</button>
     </template>
   </ModalWindow>
 </template>
@@ -50,13 +54,19 @@ import { Component, Prop, Vue } from 'vue-facing-decorator';
 import ModalWindow from '@/common/components/ModalWindow.vue';
 import { passwordCheckStrength } from '@/security/services/PasswordService';
 import { EyeIcon } from '@heroicons/vue/24/outline';
+import { useI18n } from 'vue-i18n';
 
 @Component({
   name: 'ChangePasswordModal',
   components: { ModalWindow, EyeIcon },
   emits: ['submit', 'cancel'],
+  setup() {
+    const { t } = useI18n();
+    return { t };
+  },
 })
 export default class ChangePasswordModal extends Vue {
+  private t;
   @Prop({ default: false }) private isOpen: boolean = false;
   private oldPassword?: string;
   private newPassword?: string;
@@ -79,7 +89,7 @@ export default class ChangePasswordModal extends Vue {
 
   private onBlurOldPassword(): void {
     if (!this.oldPassword || this.oldPassword.length <= 0) {
-      this.errors.old = 'You must enter old password';
+      this.errors.old = this.t('config.password.error.old.mandatory');
     } else {
       this.success.old = true;
       delete this.errors.old;
@@ -88,7 +98,7 @@ export default class ChangePasswordModal extends Vue {
 
   private onBlurNewPassword(): void {
     if (!this.newPassword || this.newPassword.length <= 3) {
-      this.errors.new = `This password is not secure. An attacker will find it instant !`;
+      this.errors.new = this.t('config.password.error.new.unsecure');
       return;
     }
     passwordCheckStrength(this.newPassword).subscribe({
@@ -111,7 +121,7 @@ export default class ChangePasswordModal extends Vue {
       delete this.errors.confirm;
     } else {
       this.success.confirm = false;
-      this.errors.confirm = 'The new and confirmation passwords must be the same';
+      this.errors.confirm = this.t('config.password.error.confirm.different');
     }
   }
 
