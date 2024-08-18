@@ -8,7 +8,7 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRolesRecord;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.ConstraintViolationPersistenceException;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
-import fr.ght1pc9kc.baywatch.security.infra.adapters.UserMapper;
+import fr.ght1pc9kc.baywatch.security.infra.mappers.UserMapper;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;

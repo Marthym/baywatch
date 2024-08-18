@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.security.infra.adapters;
+package fr.ght1pc9kc.baywatch.security.infra.mappers;
 
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;

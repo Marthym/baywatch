@@ -6,7 +6,7 @@ import fr.ght1pc9kc.baywatch.security.api.AuthorizationService;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
-import fr.ght1pc9kc.baywatch.security.infra.adapters.UserMapper;
+import fr.ght1pc9kc.baywatch.security.infra.mappers.UserMapper;
 import fr.ght1pc9kc.baywatch.security.infra.config.PermissionMixin;
 import fr.ght1pc9kc.baywatch.security.infra.config.UserMixin;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserForm;

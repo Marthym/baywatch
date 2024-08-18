@@ -2,7 +2,7 @@ package fr.ght1pc9kc.baywatch.security.infra.controllers;
 
 import fr.ght1pc9kc.baywatch.security.api.PasswordService;
 import fr.ght1pc9kc.baywatch.security.api.model.PasswordEvaluation;
-import fr.ght1pc9kc.baywatch.security.infra.adapters.UserMapper;
+import fr.ght1pc9kc.baywatch.security.infra.mappers.UserMapper;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserForm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;

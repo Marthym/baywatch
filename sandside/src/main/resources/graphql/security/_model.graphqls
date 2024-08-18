@@ -10,6 +10,15 @@ type User {
     roles: [String]
 }
 
+type UserSettings {
+    _id: ID
+    preferredLocale: String
+}
+
+input UserSettingsForm {
+    preferredLocale: String
+}
+
 type Session {
     user: User
     maxAge: Int
