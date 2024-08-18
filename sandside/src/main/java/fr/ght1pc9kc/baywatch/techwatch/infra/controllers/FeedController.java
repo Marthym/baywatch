@@ -130,6 +130,7 @@ public class FeedController {
                     }
                     sink.next(Entity.identify(WebFeed.builder()
                             .location(feedLocation)
+                            .description(ff.description())
                             .tags(Set.of(ff.tags()))
                             .name(ff.name())
                             .build()).withId(id));

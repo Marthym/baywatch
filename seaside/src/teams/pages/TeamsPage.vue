@@ -1,7 +1,7 @@
 <template>
   <div v-if="store.getters['user/hasRoleUser']" class="overflow-x-auto mt-4">
-    <SmartTable :elements="teams" actions="audl"
-                :columns="`${t('teams.header.name')}|${t('teams.header.managers')}|${t('teams.header.topic')}`"
+    <SmartTable :columns="`${t('teams.header.name')}|${t('teams.header.managers')}|${t('teams.header.topic')}`" :elements="teams"
+                actions="audl"
                 @add="addNewTeam()"
                 @delete="idx => onDeleteData(idx)"
                 @deleteSelected="idx => onDeleteSelected(idx)"
@@ -34,7 +34,6 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
-import TableActionsComponent from '@/common/components/TableActionsComponent.vue';
 import SmartTable from '@/common/components/smartTable/SmartTable.vue';
 import stla from '@/common/components/smartTable/SmartTableLineAction.vue';
 import std from '@/common/components/smartTable/SmartTableData.vue';
@@ -70,7 +69,6 @@ import { useI18n } from 'vue-i18n';
     std,
     stla,
     SmartTable,
-    TableActionsComponent,
   },
   setup() {
     const { t } = useI18n();
