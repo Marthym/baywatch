@@ -1,4 +1,4 @@
-import { smarttable_en_US } from '@/locales/smarttable_en-US';
+import { smarttable_en_US } from '@/locales/components/smarttable_en-US';
 
 export const en_US = {
     ...smarttable_en_US,

@@ -1,4 +1,4 @@
-import { smarttable_fr_FR } from '@/locales/smarttable_fr-FR';
+import { smarttable_fr_FR } from '@/locales/components/smarttable_fr-FR';
 
 const config = await import('@/locales/config_fr-FR');
 export const fr_FR = {

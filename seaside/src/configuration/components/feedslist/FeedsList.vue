@@ -24,7 +24,6 @@
 </template>
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
-import FeedListItem from '@/configuration/components/feedslist/FeedsListItem.vue';
 import { filter, map, switchMap, take, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { Feed } from '@/configuration/model/Feed.type';
@@ -35,7 +34,6 @@ import notificationService from '@/services/notification/NotificationService';
 import { actionServiceRegisterFunction, actionServiceUnregisterFunction } from '@/common/services/ReloadActionService';
 import { defineAsyncComponent } from 'vue';
 import { AlertResponse, AlertType } from '@/common/components/alertdialog/AlertDialog.types';
-import FeedActions from '@/configuration/components/feedslist/FeedActions.vue';
 import { Store, useStore } from 'vuex';
 import { UserState } from '@/security/store/user';
 import { NEWS_FILTER_FEED_MUTATION } from '@/common/model/store/NewsStore.type';
@@ -59,9 +57,7 @@ const BASEURL = import.meta.env.VITE_API_BASE_URL;
     stla,
     SmartTable,
     InformationCircleIcon,
-    FeedActions,
     FeedEditor,
-    FeedListItem,
     FileUploadWindow,
   },
   setup() {
