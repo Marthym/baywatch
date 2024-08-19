@@ -1,7 +1,7 @@
-extend type Mutation {
-    userSettingsUpdate(userId: ID): UserSettings
+extend type Query {
+    userSettingsGet(userId: ID): UserSettings
 }
 
-extend type Query {
-    userSettingsGet(userSettings: UserSettings): UserSettings
+extend type Mutation {
+    userSettingsUpdate(userId: ID, settings: UserSettingsForm): UserSettings
 }

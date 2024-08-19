@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.security.infra.mappers;
 
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersSettingsRecord;
 import fr.ght1pc9kc.baywatch.security.api.model.UserSettings;
+import fr.ght1pc9kc.baywatch.security.infra.model.UserSettingsForm;
 import fr.ght1pc9kc.entity.api.Entity;
 import org.jooq.Record;
 import org.mapstruct.Mapper;
@@ -21,4 +22,6 @@ public interface UserSettingsMapper {
         return USERS_SETTINGS.newRecord()
                 .setUssePreferredLocale(settings.preferredLocale().toLanguageTag());
     }
+
+    UserSettings get(UserSettingsForm form);
 }

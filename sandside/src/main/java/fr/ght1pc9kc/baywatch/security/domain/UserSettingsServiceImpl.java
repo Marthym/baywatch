@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class UserSettingsServiceImpl implements UserSettingsService {
     private final UserSettingsPersistencePort userServicePersistence;
-
+    //FIXME: Add limitation to the current connected user
     @Override
     public Mono<Entity<UserSettings>> get(String userId) {
         return userServicePersistence.get(userId);
