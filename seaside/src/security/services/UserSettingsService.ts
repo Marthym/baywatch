@@ -29,8 +29,8 @@ export function userSettingsUpdate(userId: string, settings: UserSettings): Obse
         id: userId,
         settings: settings,
     };
-    return send<{ userSettingsGet: UserSettings }>(USERS_SETTINGS_GET_REQUEST, variables).pipe(
-        map(data => data.data.userSettingsGet),
+    return send<{ userSettingsUpdate: UserSettings }>(USERS_SETTINGS_UPDATE_REQUEST, variables).pipe(
+        map(data => data.data.userSettingsUpdate),
         take(1),
     );
 }

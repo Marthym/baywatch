@@ -2,7 +2,7 @@
   <div class="m-2">
     <div class="form-control w-full max-w-lg mt-6">
       <div class="label">
-        <span class="label-text">{{ t('config.settings.form.preferredLocale') }}</span>
+        <span class="label-text first-letter:capitalize">{{ t('config.settings.form.preferredLocale') }}</span>
       </div>
       <select v-model="userSettings.preferredLocale" class="select select-bordered w-full max-w-xs">
         <option disabled></option>
@@ -20,21 +20,22 @@ import { Component, Vue } from 'vue-facing-decorator';
 import { UserSettings } from '@/security/model/UserSettings.type';
 import { useI18n } from 'vue-i18n';
 import { userSettingsGet, userSettingsUpdate } from '@/security/services/UserSettingsService';
-import { Store, useStore } from 'vuex';
-import { User } from '@/security/model/User';
+import { useStore } from 'vuex';
 import notificationService from '@/services/notification/NotificationService';
+import { from, switchMap } from 'rxjs';
 
 @Component({
   setup() {
-    const { t, locale } = useI18n();
-
-    return { store: useStore(), t, locale };
+    const { t } = useI18n();
+    const { locale, mergeLocaleMessage } = useI18n({ useScope: 'global' });
+    return { store: useStore(), t, locale, mergeLocaleMessage };
   },
 })
 export default class SettingsTab extends Vue {
-  private store: Store<User>;
+  private store;
   private locale;
   private t;
+  private mergeLocaleMessage;
   private userSettings: UserSettings = {
     preferredLocale: this.locale,
   } as UserSettings;
@@ -50,12 +51,18 @@ export default class SettingsTab extends Vue {
 
   private onClickSaveSettings(): void {
     if (this.store.state.user.user._id) {
-      userSettingsUpdate(this.store.state.user.user._id, this.userSettings).subscribe({
-        next: us => {
-          Object.assign(this.userSettings, us);
+      userSettingsUpdate(this.store.state.user.user._id, this.userSettings).pipe(
+          switchMap(settings => {
+            Object.assign(this.userSettings, settings);
+            return from(import(`../../locales/config-settings_${settings.preferredLocale}.ts`));
+          }),
+      ).subscribe({
+        next: messages => {
+          this.mergeLocaleMessage(this.userSettings.preferredLocale, messages[this.userSettings.preferredLocale.replace('-', '_')]);
+          this.locale = this.userSettings.preferredLocale;
           notificationService.pushSimpleOk(this.t('config.settings.messages.settingsUpdateSuccessfully'));
         },
-        error: () => notificationService.pushSimpleError(this.t('config.settings.messages.unableToUpdate')),
+        error: err => notificationService.pushSimpleError(this.t('config.settings.messages.unableToUpdate')),
       });
     }
   }

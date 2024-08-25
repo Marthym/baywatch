@@ -4,6 +4,7 @@ import { routes as configRoutes } from '@/configuration/router';
 import { routes as teamsRoutes } from '@/teams/router';
 import { routes as techwatchRoutes } from '@/techwatch/router';
 import { requireAuthNavGuard, routes as securityRoutes } from '@/security/router';
+import { lazyloadTranslations } from '@/i18n';
 
 export const router = createRouter({
     history: createWebHashHistory(),
@@ -18,3 +19,4 @@ export const router = createRouter({
 } as RouterOptions);
 
 router.beforeEach(requireAuthNavGuard);
+router.beforeEach(lazyloadTranslations);

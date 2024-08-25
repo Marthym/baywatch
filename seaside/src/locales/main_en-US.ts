@@ -16,3 +16,13 @@ export const en_US = {
     'topnav.news': 'news',
     'topnav.search': 'search',
 };
+
+export const datetimeFormat_en_US = {
+    short: {
+        year: 'numeric', month: 'short', day: 'numeric',
+    },
+    long: {
+        year: 'numeric', month: 'short', day: 'numeric',
+        weekday: 'short', hour: 'numeric', minute: 'numeric',
+    },
+};

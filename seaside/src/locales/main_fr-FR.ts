@@ -16,3 +16,13 @@ export const fr_FR = {
     'topnav.news': 'nouvelles',
     'topnav.search': 'recherche',
 };
+
+export const datetimeFormat_fr_FR = {
+    short: {
+        year: 'numeric', month: 'short', day: 'numeric',
+    },
+    long: {
+        year: 'numeric', month: 'short', day: '2-digit',
+        hour: '2-digit', minute: '2-digit',
+    },
+};

@@ -1,4 +1,4 @@
-import store from './store';
+import { store } from './store';
 import App from './App.vue';
 import '@/assets/styles/index.css';
 import { createApp } from 'vue';

@@ -1,11 +1,11 @@
-import {Statistics} from "@/administration/model/Statistics.type";
+import { Statistics } from '@/administration/model/Statistics.type';
 import {
     DECREMENT_UNREAD,
     FILTER,
     INCREMENT_UNREAD,
     RESET_UPDATED,
-    UPDATE
-} from "@/techwatch/store/statistics/StatisticsConstants";
+    UPDATE,
+} from '@/techwatch/store/statistics/StatisticsConstants';
 
 export type StatisticsState = {
     unread: number;
@@ -20,10 +20,10 @@ const state = (): StatisticsState => ({
 });
 
 // getters
-const getters = {}
+const getters = {};
 
 // actions
-const actions = {}
+const actions = {};
 
 // mutations
 const mutations = {
@@ -44,12 +44,12 @@ const mutations = {
     [FILTER](st: StatisticsState, payload: number): void {
         st.unread_filtered = payload;
     },
-}
+};
 
-export default {
+export const statistics = {
     namespaced: true,
     state,
     getters,
     actions,
-    mutations
-}
+    mutations,
+};

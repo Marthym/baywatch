@@ -1,9 +1,9 @@
 import { smarttable_fr_FR } from '@/locales/components/smarttable_fr-FR';
+import { fr_FR as config_fr_FR } from '@/locales/config_fr-FR';
 
-const config = await import('@/locales/config_fr-FR');
 export const fr_FR = {
     ...smarttable_fr_FR,
-    ...config.fr_FR,
+    ...config_fr_FR,
     'config.profile.form.id': 'id',
     'config.profile.form.login': 'identifiant',
     'config.profile.form.name': 'Nom',
