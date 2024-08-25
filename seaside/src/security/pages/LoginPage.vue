@@ -8,24 +8,28 @@
       <div class="card-body">
         <form @submit.prevent="onLogin">
           <h2 class="card-title">{{ t('main.application') }}</h2>
-          <div class="form-control">
-            <label class="label"><span class="label-text">{{ t('login.username') }}</span></label>
+          <label class="form-control w-full">
+            <span class="label">
+              <span class="label-text">{{ t('login.username') }}</span>
+            </span>
             <input ref="usrInput" v-model="username" :class="{'input-error': formValidation}"
                    :placeholder="t('login.username')"
                    class="input input-bordered"
-                   tabindex="1"
                    type="text">
-          </div>
-          <div class="form-control mt-4">
-            <label class="label"><span class="label-text">{{ t('login.password') }}</span>
-              <a class="label-text-alt" href="#">{{ t('login.password.forget') }}</a></label>
+          </label>
+          <label class="form-control w-full">
+            <span class="label">
+              <span class="label-text">{{ t('login.password') }}</span>
+              <span class="label-text-alt"><a tabindex="-1" class="label-text-alt" href="#">{{
+                  t('login.password.forget')
+                }}</a></span>
+            </span>
             <input v-model="password" :class="{'input-error': formValidation}" :placeholder="t('login.password')"
                    class="input input-bordered"
-                   tabindex="2"
                    type="password"
                    @keyup="formValidation=false">
-            <button class="btn btn-primary mt-4" tabindex="3" type="submit">{{ t('login.login') }}</button>
-          </div>
+          </label>
+          <button class="btn btn-primary mt-4 w-full mt-8" type="submit">{{ t('login.login') }}</button>
         </form>
       </div>
     </div>

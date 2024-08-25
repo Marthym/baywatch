@@ -14,8 +14,7 @@
              class="input input-ghost input-xs w-32 flex-grow focus:outline-none placeholder:capitalize"
              type="text" @keydown="onKeydown">
       <ul v-if="displayProposal && proposal.length > 0"
-          class="py-3 shadow menu bg-neutral border-primary-content border border-opacity-20 dropdown-content w-60"
-          tabindex="0">
+          class="py-3 shadow menu bg-neutral border-primary-content border border-opacity-20 dropdown-content w-60">
         <li v-for="tag in proposal" v-bind:key="tag"><a
             :class="{'proposal-selected': proposal[proposalIndex] === tag}"
             @click="selectProposal">{{ tag }}</a></li>

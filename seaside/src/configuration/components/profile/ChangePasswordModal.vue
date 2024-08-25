@@ -5,9 +5,8 @@
              :placeholder="t('config.password.form.old.placeholder')"
              autocomplete="current-password"
              class="input input-bordered w-full insecureWarning placeholder:capitalize"
-             tabindex="1"
              type="password" @blur.prevent="onBlurOldPassword()"/>
-      <button class="btn join-item" @click.stop.prevent="onToggleView">
+      <button class="btn join-item" @click.stop.prevent="onToggleView" tabindex="-1">
         <EyeIcon class="h-6 w-6"/>
       </button>
     </div>
@@ -19,9 +18,8 @@
              :placeholder="t('config.password.form.new.placeholder')"
              autocomplete="new-password"
              class="input input-bordered join-item w-full placeholder:capitalize"
-             tabindex="2"
              type="password" @blur.prevent="onBlurNewPassword()"/>
-      <button class="btn join-item" @click.stop.prevent="onToggleView">
+      <button class="btn join-item" @click.stop.prevent="onToggleView" tabindex="-1">
         <EyeIcon class="h-6 w-6"/>
       </button>
     </div>
@@ -31,9 +29,9 @@
     <div class="join w-full">
       <input v-model="confirmPassword" :class="{'input-error': errors.confirm, 'input-success': success.confirm}"
              :placeholder="t('config.password.form.confirm.placeholder')"
-             autocomplete="new-password" class="input input-bordered w-full placeholder:capitalize" tabindex="3"
+             autocomplete="new-password" class="input input-bordered w-full placeholder:capitalize"
              type="password" @blur.prevent="onBlurConfirmPassword()"/>
-      <button class="btn join-item" @click.stop.prevent="onToggleView">
+      <button class="btn join-item" @click.stop.prevent="onToggleView" tabindex="-1">
         <EyeIcon class="h-6 w-6"/>
       </button>
     </div>
