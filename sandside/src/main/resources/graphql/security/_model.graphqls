@@ -21,6 +21,7 @@ input UserSettingsForm {
 
 type Session {
     user: User
+    settings: UserSettings
     maxAge: Int
 }
 
