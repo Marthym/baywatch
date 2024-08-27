@@ -10,15 +10,15 @@
         <li>
           <label class="label cursor-pointer py-1">
             <span class="label-text">{{ t('sidenav.filters.unread') }}</span>
-            <input type="checkbox" class="toggle"
-                   @change="onChangeUnread" :checked="newsStore.unread">
+            <input :checked="newsStore.unread" class="toggle"
+                   type="checkbox" @change="onChangeUnread">
           </label>
         </li>
         <li>
           <label class="label cursor-pointer py-1">
             <span class="label-text">{{ t('sidenav.filters.popular') }}</span>
-            <input type="checkbox" class="toggle"
-                   @change="onChangePopular" :checked="newsStore.popular">
+            <input :checked="newsStore.popular" class="toggle"
+                   type="checkbox" @change="onChangePopular">
           </label>
         </li>
       </ul>
@@ -31,7 +31,7 @@
 
       <ul class="flex flex-wrap list-none mt-4">
         <li v-for="tag in tags" v-bind:key="tag">
-          <button class="badge m-1" :class="{'badge-accent': newsStore.tags[0] && tag === newsStore.tags[0]}"
+          <button :class="{'badge-accent': newsStore.tags[0] && tag === newsStore.tags[0]}" class="badge m-1"
                   @click="selectTag">
             {{ tag }}
           </button>
@@ -50,7 +50,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
-import tagsService from '@/techwatch/services/TagsService';
+import { tagsListAll } from '@/techwatch/services/TagsService';
 import { actionServiceReload } from '@/common/services/ReloadActionService';
 import { Router, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
@@ -86,16 +86,16 @@ export default class SideNavFilters extends Vue {
   private newsStore: NewsStore;
   private tags: string[] = [];
 
+  get feedFilter(): FeedFilter | undefined {
+    return this.newsStore.feed;
+  }
+
   mounted(): void {
-    tagsService.list().subscribe({
+    tagsListAll().subscribe({
       next: tags => {
         this.tags = tags;
       },
     });
-  }
-
-  get feedFilter(): FeedFilter | undefined {
-    return this.newsStore.feed;
   }
 
   selectTag(event: MouseEvent): void {

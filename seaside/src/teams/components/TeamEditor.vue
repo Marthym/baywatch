@@ -106,7 +106,7 @@ export default class TeamEditor extends Vue {
             next: team => {
               Object.assign(this.value.data, team);
               this.payload.updated = true;
-              store.commit(USER_ADD_ROLE_MUTATION, `MANAGER:${team._id}`);
+              this.store.commit(USER_ADD_ROLE_MUTATION, `MANAGER:${team._id}`);
               notificationService.pushSimpleOk(`Team ${team.name} saved successfully !`);
             },
           });

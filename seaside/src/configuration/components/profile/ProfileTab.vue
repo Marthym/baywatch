@@ -77,7 +77,7 @@ export default class ProfileTab extends Vue {
   get avatar(): string {
     let avatarHash = '0';
     const user = this.store.state.user.user;
-    if (user.mail !== '') {
+    if (user.mail && user.mail !== '') {
       avatarHash = MD5.generate(user.mail);
     }
     return `https://www.gravatar.com/avatar/${avatarHash}?s=96&d=retro`;

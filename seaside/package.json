@@ -8,7 +8,8 @@
     "dev": "vite",
     "lint": "eslint --fix --ext .js,.vue --ignore-path .gitignore src",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@heroicons/vue": "2.1.5",
@@ -30,6 +31,7 @@
     "@typescript-eslint/eslint-plugin": "8.0.1",
     "@typescript-eslint/parser": "8.0.1",
     "@vitejs/plugin-vue": "5.1.2",
+    "@vitest/coverage-v8": "2.0.5",
     "@vue/test-utils": "2.4.6",
     "autoprefixer": "10.4.20",
     "eslint": "9.9.0",

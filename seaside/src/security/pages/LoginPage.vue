@@ -29,7 +29,7 @@
                    type="password"
                    @keyup="formValidation=false">
           </label>
-          <button class="btn btn-primary mt-4 w-full mt-8" type="submit">{{ t('login.login') }}</button>
+          <button class="btn btn-primary w-full mt-8" type="submit">{{ t('login.login') }}</button>
         </form>
       </div>
     </div>

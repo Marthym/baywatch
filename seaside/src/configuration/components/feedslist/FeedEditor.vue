@@ -14,7 +14,8 @@
           <span class="label-text capitalize">{{ t('config.feeds.editor.form.name') }}</span>
         </label>
         <input id="feedName" v-model="feed.name" :class="{'input-error': errors.indexOf('name') > -1}"
-               class="input input-bordered placeholder:capitalize" :placeholder="t('config.feeds.editor.form.name.placeholder')"
+               :placeholder="t('config.feeds.editor.form.name.placeholder')"
+               class="input input-bordered placeholder:capitalize"
                type="text">
 
         <label class="label" for="feedDescription">
@@ -29,7 +30,10 @@
     </form>
     <template v-slot:actions>
       <button class="btn capitalize" @click.stop="resetAndCloseModal">{{ t('dialog.cancel') }}</button>
-      <button class="btn btn-primary capitalize" @click="onSaveFeed">{{ t('config.feeds.editor.form.action.submit') }}</button>
+      <button class="btn btn-primary capitalize" @click="onSaveFeed">{{
+          t('config.feeds.editor.form.action.submit')
+        }}
+      </button>
     </template>
   </ModalWindow>
 </template>
@@ -40,7 +44,7 @@ import { Feed } from '@/configuration/model/Feed.type';
 import { Observable, Subject } from 'rxjs';
 import ModalWindow from '@/common/components/ModalWindow.vue';
 import TagInput from '@/common/components/TagInput.vue';
-import tagsService from '@/techwatch/services/TagsService';
+import { tagsListAll } from '@/techwatch/services/TagsService';
 import feedService from '@/configuration/services/FeedService';
 import { URL_PATTERN } from '@/common/services/RegexPattern';
 import { useI18n } from 'vue-i18n';
@@ -111,7 +115,7 @@ export default class FeedEditor extends Vue {
   }
 
   private listAvailableTags(): Observable<string[]> {
-    return tagsService.list();
+    return tagsListAll();
   }
 }
 </script>
