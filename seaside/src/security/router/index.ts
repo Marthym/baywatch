@@ -20,7 +20,9 @@ export const requireAuthNavGuard: NavigationGuardWithThis<NavigationGuardWithThi
         try {
             const session: Session = await firstValueFrom(refresh());
 
-            i18n.global.locale.value = session.settings.preferredLocale;
+            if (session.settings?.preferredLocale) {
+                i18n.global.locale.value = session.settings.preferredLocale;
+            }
             store.commit(USER_UPDATE_MUTATION, session.user);
         } catch (err) {
             store.commit(USER_LOGOUT_MUTATION);

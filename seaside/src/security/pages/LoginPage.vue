@@ -20,7 +20,7 @@
           <label class="form-control w-full">
             <span class="label">
               <span class="label-text">{{ t('login.password') }}</span>
-              <span class="label-text-alt"><a tabindex="-1" class="label-text-alt" href="#">{{
+              <span class="label-text-alt"><a class="label-text-alt" href="#" tabindex="-1">{{
                   t('login.password.forget')
                 }}</a></span>
             </span>
@@ -81,7 +81,9 @@ export default class LoginPage extends Vue {
           switchMap(user => userSettingsGet(user._id).pipe(map(settings => ({ user, settings })))),
       ).subscribe({
         next: authent => {
-          this.locale = authent.settings.preferredLocale;
+          if (authent.settings?.preferredLocale) {
+            this.locale = authent.settings.preferredLocale;
+          }
           this.store.commit(UPDATE_MUTATION, authent.user);
           if (this.router.currentRoute.value.query.redirect) {
             for (let route of this.router.getRoutes()) {
