@@ -132,8 +132,19 @@
                 <sonar.host.url>https://sonarcloud.io</sonar.host.url>
                 <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
                 <sonar.coverage.jacoco.xmlReportPaths>**/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-                <sonar.coverage.exclusions>**/*.html</sonar.coverage.exclusions>
-                <sonar.exclusions>**/*.html</sonar.exclusions>
+                <sonar.javascript.lcov.reportPaths>**/lcov.info
+                </sonar.javascript.lcov.reportPaths>
+                <sonar.coverage.exclusions>
+                    **/*.html,
+                    **/*.test.*,
+                    **/locales/**,
+                    ${project.basedir}/seaside/dist/**
+                </sonar.coverage.exclusions>
+                <sonar.exclusions>
+                    **/*.html,
+                    **/locales/**,
+                    **/dist/**
+                </sonar.exclusions>
                 <sonar.java.binaries>${project.build.directory}/classes</sonar.java.binaries>
                 <sonar.java.libraries>${project.build.directory}/dependency</sonar.java.libraries>
             </properties>

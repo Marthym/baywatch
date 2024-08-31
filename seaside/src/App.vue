@@ -28,7 +28,6 @@ import notificationService from '@/services/notification/NotificationService';
 import { Store, useStore } from 'vuex';
 import { UPDATE_MUTATION as STATS_UPDATE_MUTATION } from '@/techwatch/store/statistics/StatisticsConstants';
 import { HAS_ROLE_USER_GETTER } from '@/security/store/UserConstants';
-import { UserState } from '@/security/store/user';
 import { defineAsyncComponent } from 'vue';
 
 const CreateAccountComponent = defineAsyncComponent(() => import('@/security/components/CreateAccountComponent.vue'));
@@ -42,15 +41,14 @@ const CreateAccountComponent = defineAsyncComponent(() => import('@/security/com
     SideNavOverlay,
   },
   setup() {
-    return {
-      store: useStore(),
-    };
+    const store = useStore();
+    return { store };
   },
 })
 export default class App extends Vue {
-  private readonly store: Store<UserState>;
+  private readonly store: Store<unknown>;
 
-  mounted(): void {
+  private mounted(): void {
     if (this.store.state.user.isAuthenticated) {
       this.registerSessionNotifications();
     } else {
@@ -87,4 +85,3 @@ export default class App extends Vue {
   }
 }
 </script>
-

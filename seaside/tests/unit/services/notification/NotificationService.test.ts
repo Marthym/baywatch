@@ -1,14 +1,17 @@
-import {NotificationService} from "@/services/notification/NotificationService";
-import {NotificationCode} from "@/services/notification/NotificationCode.enum";
-import {Severity} from "@/services/notification/Severity.enum";
-import NotificationListener from "@/services/notification/NotificationListener";
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { NotificationService } from '@/services/notification/NotificationService';
+import { NotificationCode } from '@/services/notification/NotificationCode.enum';
+import { Severity } from '@/services/notification/Severity.enum';
+import NotificationListener from '@/services/notification/NotificationListener';
 
 describe('Test Notification service', () => {
     let tested: NotificationService;
 
-    jest.useFakeTimers();
+    vi.useFakeTimers();
 
-    beforeEach(() => tested = new NotificationService(500));
+    beforeEach(() => {
+        tested = new NotificationService(500);
+    });
 
     test('should push/pop notifications', () => {
         const actuals: string[] = [];
@@ -18,19 +21,19 @@ describe('Test Notification service', () => {
         };
         tested.registerNotificationListener(listener);
 
-        tested.pushNotification({code: NotificationCode.UNAUTHORIZED, severity: Severity.info, message: 'push'});
-        tested.pushNotification({code: NotificationCode.UNAUTHORIZED, severity: Severity.info, message: 'push2'});
+        tested.pushNotification({ code: NotificationCode.UNAUTHORIZED, severity: Severity.info, message: 'push' });
+        tested.pushNotification({ code: NotificationCode.UNAUTHORIZED, severity: Severity.info, message: 'push2' });
 
         expect(actuals).toEqual([
             'push : push', 'push : push2',
         ]);
         actuals.splice(0, 2);
 
-        jest.runOnlyPendingTimers();
+        vi.runOnlyPendingTimers();
         expect(actuals).toEqual([
             'pop : push',
         ]);
-        jest.runOnlyPendingTimers();
+        vi.runOnlyPendingTimers();
         expect(actuals).toEqual([
             'pop : push', 'pop : push2',
         ]);
@@ -38,9 +41,9 @@ describe('Test Notification service', () => {
 
         tested.unregisterNotificationListener(listener);
 
-        tested.pushNotification({code: NotificationCode.UNAUTHORIZED, severity: Severity.info, message: 'push3'});
+        tested.pushNotification({ code: NotificationCode.UNAUTHORIZED, severity: Severity.info, message: 'push3' });
 
-        jest.runOnlyPendingTimers();
+        vi.runOnlyPendingTimers();
 
         expect(actuals).toEqual([]);
     });
@@ -52,7 +55,7 @@ describe('Test Notification service', () => {
             onPushNotification: n => actuals.push(`push : ${n.message}`),
         };
         tested.registerNotificationListener(listener);
-        tested.pushNotification({code: NotificationCode.UNAUTHORIZED, severity: Severity.info, message: 'push'});
+        tested.pushNotification({ code: NotificationCode.UNAUTHORIZED, severity: Severity.info, message: 'push' });
         tested.destroy();
         expect(actuals).toEqual([
             'push : push', 'pop : push',

@@ -1,0 +1,7 @@
+extend type Query {
+    userSettingsGet(userId: ID): UserSettings
+}
+
+extend type Mutation {
+    userSettingsUpdate(userId: ID, settings: UserSettingsForm): UserSettings
+}

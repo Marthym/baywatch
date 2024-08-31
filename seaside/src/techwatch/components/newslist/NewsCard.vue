@@ -46,12 +46,19 @@
 import { Component, Prop, Vue } from 'vue-facing-decorator';
 import { NewsView } from '@/techwatch/components/newslist/model/NewsView';
 import { ImgHTMLAttributes } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const EMPTY_IMAGE_DATA: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
-@Component({ name: 'NewsCard', emits: ['activate', 'addFilter', 'clickTitle'] })
+@Component({ name: 'NewsCard', emits: ['activate', 'addFilter', 'clickTitle'],
+  setup() {
+    const { d } = useI18n();
+    return { d };
+  }
+})
 export default class NewsCard extends Vue {
   @Prop() card: NewsView;
+  private d;
 
   get cardImage() {
     return this.card?.data?.image ?? EMPTY_IMAGE_DATA;
@@ -59,10 +66,7 @@ export default class NewsCard extends Vue {
 
   get publication(): string | undefined {
     if (this.card) {
-      return new Date(this.card.data.publication).toLocaleDateString(navigator.languages, {
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit',
-      });
+      return this.d(new Date(this.card.data.publication), 'long');
     } else {
       return undefined;
     }

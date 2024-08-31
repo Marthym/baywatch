@@ -1,33 +1,39 @@
 <template v-if="isOpened">
-  <ModalWindow :title="modalTitle" :is-visible="isOpened">
+  <ModalWindow :is-visible="isOpened" :title="t('config.feeds.editor.title')">
     <form class="form-control" @submit.prevent="onSaveFeed">
       <fieldset :disabled="isFormLock" class="flex flex-col">
         <legend></legend>
         <label class="label" for="feedUrl">
-          <span class="label-text">Location</span>
+          <span class="label-text capitalize">{{ t('config.feeds.editor.form.location') }}</span>
         </label>
-        <input id="feedUrl" v-model="feed.location" type="url" placeholder="https://..." class="input input-bordered"
-               :class="{'input-error': errors.indexOf('location') > -1}"
+        <input id="feedUrl" v-model="feed.location" :class="{'input-error': errors.indexOf('location') > -1}"
+               class="input input-bordered" placeholder="https://..."
+               type="url"
                @blur="onUriBlur">
         <label class="label" for="feedName">
-          <span class="label-text">Nom</span>
+          <span class="label-text capitalize">{{ t('config.feeds.editor.form.name') }}</span>
         </label>
-        <input id="feedName" v-model="feed.name" type="text" placeholder="nom" class="input input-bordered"
-               :class="{'input-error': errors.indexOf('name') > -1}">
+        <input id="feedName" v-model="feed.name" :class="{'input-error': errors.indexOf('name') > -1}"
+               :placeholder="t('config.feeds.editor.form.name.placeholder')"
+               class="input input-bordered placeholder:capitalize"
+               type="text">
 
         <label class="label" for="feedDescription">
-          <span class="label-text">Description</span>
+          <span class="label-text capitalize">{{ t('config.feeds.editor.form.description') }}</span>
         </label>
-        <textarea id="feedDescription" v-model="feed.description" rows="3"
-                  class="textarea italic" readonly/>
+        <textarea id="feedDescription" v-model="feed.description" class="textarea italic"
+                  readonly rows="3"/>
 
         <TagInput v-model="feed.tags" :available-tags-handler="() => listAvailableTags()"/>
       </fieldset>
       <button class="hidden" type="submit"/>
     </form>
     <template v-slot:actions>
-      <button class="btn" @click.stop="resetAndCloseModal">Annuler</button>
-      <button class="btn btn-primary" @click="onSaveFeed">Enregistrer</button>
+      <button class="btn capitalize" @click.stop="resetAndCloseModal">{{ t('dialog.cancel') }}</button>
+      <button class="btn btn-primary capitalize" @click="onSaveFeed">{{
+          t('config.feeds.editor.form.action.submit')
+        }}
+      </button>
     </template>
   </ModalWindow>
 </template>
@@ -38,9 +44,10 @@ import { Feed } from '@/configuration/model/Feed.type';
 import { Observable, Subject } from 'rxjs';
 import ModalWindow from '@/common/components/ModalWindow.vue';
 import TagInput from '@/common/components/TagInput.vue';
-import tagsService from '@/techwatch/services/TagsService';
+import { tagsListAll } from '@/techwatch/services/TagsService';
 import feedService from '@/configuration/services/FeedService';
 import { URL_PATTERN } from '@/common/services/RegexPattern';
+import { useI18n } from 'vue-i18n';
 
 @Component({
   name: 'FeedEditor',
@@ -48,11 +55,15 @@ import { URL_PATTERN } from '@/common/services/RegexPattern';
     TagInput,
     ModalWindow,
   },
+  setup() {
+    const { t } = useI18n();
+    return { t };
+  },
 })
 export default class FeedEditor extends Vue {
+  private t;
   private feed: Feed = {} as Feed;
   private isOpened = false;
-  private modalTitle = 'Ajouter un fil';
   private subject?: Subject<Feed>;
   private errors: string[] = [];
   private isFormLock = false;
@@ -104,7 +115,7 @@ export default class FeedEditor extends Vue {
   }
 
   private listAvailableTags(): Observable<string[]> {
-    return tagsService.list();
+    return tagsListAll();
   }
 }
 </script>

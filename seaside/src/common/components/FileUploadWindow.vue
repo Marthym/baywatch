@@ -1,30 +1,33 @@
 <template>
-  <ModalWindow :title="title">
-    <label class="p-5 relative border-4 border-dotted rounded-lg flex flex-col items-center"
-           :class="{'border-accent-focus': isDragOver, 'border-neutral-content': !isDragOver}"
-           @dragover="isDragOver = true" @dragleave="isDragOver = false" @drop.stop.prevent="onDropFile">
-      <svg class="w-24 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-           :class="{'text-accent-focus': isDragOver, 'text-primary': !isDragOver}"
-           viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-      </svg>
-      <input class="w-full h-full opacity-0 overflow-hidden absolute -mt-5" type="file" multiple
+  <ModalWindow :title="t('fileupload.title')">
+    <label :class="{'border-accent-focus': isDragOver, 'border-neutral-content': !isDragOver}"
+           class="p-5 relative border-4 border-dotted rounded-lg flex flex-col items-center"
+           @dragleave="isDragOver = false" @dragover="isDragOver = true" @drop.stop.prevent="onDropFile">
+      <CloudArrowUpIcon :class="{'text-accent-focus': isDragOver, 'text-primary': !isDragOver}"
+                        class="w-24 mx-auto mb-4"/>
+      <input class="w-full h-full opacity-0 overflow-hidden absolute -mt-5" multiple type="file"
              @change="onChange"/>
-      <span class="btn btn-outline btn-wide"
-            :class="{'btn-accent': isDragOver, 'btn-primary': !isDragOver}">Sélectionner</span>
-      <span v-if="path === null" class="title text-neutral-content">ou déplacer un fichier ici</span>
+      <span :class="{'btn-accent': isDragOver, 'btn-primary': !isDragOver}"
+            class="btn btn-outline btn-wide capitalize">{{ t('fileupload.form.action.choose') }}</span>
+      <span v-if="path === null" class="title text-neutral-content">{{
+          t('fileupload.form.action.choose.notice')
+        }}</span>
       <span v-else class="title text-neutral-content">{{ path.name }}</span>
     </label>
     <template v-slot:actions>
-      <button class="btn" @click.stop="$emit('upload', undefined)">Annuler</button>
-      <button class="btn btn-primary" @click.stop="onUploadFile">Téléverser</button>
+      <button class="btn capitalize" @click.stop="$emit('upload', undefined)">{{ t('dialog.cancel') }}</button>
+      <button class="btn btn-primary capitalize" @click.stop="onUploadFile">{{
+          t('fileupload.form.action.upload')
+        }}
+      </button>
     </template>
   </ModalWindow>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-facing-decorator';
+import { Component, Vue } from 'vue-facing-decorator';
+import { useI18n } from 'vue-i18n';
+import { CloudArrowUpIcon } from '@heroicons/vue/24/outline';
 import ModalWindow from '@/common/components/ModalWindow.vue';
 
 const UPLOAD_EVENT = 'upload';
@@ -32,12 +35,16 @@ const UPLOAD_EVENT = 'upload';
 @Component({
   name: 'FileUploadWindow',
   components: {
-    ModalWindow,
+    CloudArrowUpIcon, ModalWindow,
   },
   emits: [UPLOAD_EVENT],
+  setup() {
+    const { t } = useI18n();
+    return { t };
+  },
 })
 export default class FileUploadWindow extends Vue {
-  @Prop({ default: 'Upload file' }) private title!: string;
+  private t;
   private isDragOver = false;
   private path: File | null = null;
 

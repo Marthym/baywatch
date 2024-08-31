@@ -1,38 +1,30 @@
 <template>
-  <nav role="navigation" class="tabs tabs-boxed place-content-start">
-    <a role="tab" class="tab" :class="{'tab-active': 'UserAdminTab' === activeTab}"
-       @click.prevent="onChangeTab('UserAdminTab')">Users</a>
-    <a role="tab" class="tab" :class="{'tab-active': 'ConfigAdminTab' === activeTab}"
-       @click.prevent="onChangeTab('ConfigAdminTab')">Configuration</a>
-    <a role="tab" class="tab" :class="{'tab-active': 'StatisticsAdminTab' === activeTab}"
-       @click.prevent="onChangeTab('StatisticsAdminTab')">Statistiques</a>
+  <nav class="tabs tabs-boxed place-content-start" role="navigation">
+    <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/admin/users">
+      {{ t('admin.tab.users') }}
+    </router-link>
+    <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/admin/config">
+      {{ t('admin.tab.config') }}
+    </router-link>
+    <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/admin/stats">
+      {{ t('admin.tab.stats') }}
+    </router-link>
   </nav>
-  <component :is="activeTab"></component>
+  <router-view></router-view>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
-import UserAdminTab from '@/administration/component/UserAdminTab.vue';
-import ConfigAdminTab from '@/administration/component/ConfigAdminTab.vue';
-import { defineAsyncComponent } from 'vue';
-
-const StatisticsAdminTab = defineAsyncComponent(() => import('@/administration/component/StatisticsAdminTab.vue'));
-
-type Tab = 'UserAdminTab' | 'ConfigAdminTab' | 'StatisticsAdminTab';
+import { useI18n } from 'vue-i18n';
 
 @Component({
   name: 'AdministrationPage',
-  components: {
-    UserAdminTab,
-    ConfigAdminTab,
-    StatisticsAdminTab,
+  setup() {
+    const { t } = useI18n();
+    return { t };
   },
 })
 export default class AdministrationPage extends Vue {
-  private activeTab: Tab = 'UserAdminTab';
-
-  private onChangeTab(toBeActivate: Tab): void {
-    this.activeTab = toBeActivate;
-  }
+  private t;
 }
 </script>

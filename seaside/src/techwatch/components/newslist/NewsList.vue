@@ -6,23 +6,27 @@
         <template #actions v-if="userStore.isAuthenticated">
           <div class="join -ml-2 lg:ml-0">
             <button v-if="card.data.state.read" @click.stop="toggleRead(idx)"
-                    class="btn btn-xs btn-ghost join-item">
+                    class="btn btn-xs btn-ghost join-item"
+                    :title="t('home.news.unread.tooltip')">
               <EnvelopeOpenIcon class="h-5 w-5 cursor-pointer stroke-2"/>
-              <span class="hidden lg:block">unread</span>
+              <span class="hidden lg:block">{{ t('home.news.unread') }}</span>
             </button>
-            <button v-else @click.stop="toggleRead(idx)" class="btn btn-xs btn-ghost join-item">
+            <button v-else @click.stop="toggleRead(idx)"
+                    class="btn btn-xs btn-ghost join-item"
+                    :title="t('home.news.read.tooltip')">
               <EnvelopeIcon class="h-5 w-5 cursor-pointer stroke-2"/>
-              <span class="hidden lg:block">read</span>
+              <span class="hidden lg:block">{{ t('home.news.read') }}</span>
             </button>
             <button @click.stop="toggleNewsKeep(idx)" class="btn btn-xs btn-ghost join-item"
-                    :class="{'text-accent': card.data.state.keep}">
+                    :class="{'text-accent': card.data.state.keep}"
+                    :title="t('home.news.clip.tooltip')">
               <PaperClipIcon class="h-5 w-5 cursor-pointer stroke-2"/>
-              <span class="hidden lg:block">clip</span>
+              <span class="hidden lg:block">{{ t('home.news.clip') }}</span>
             </button>
             <button @click.stop="toggleNewsShared(idx)" class="btn btn-xs btn-ghost join-item"
                     :class="{'text-accent': card.data.state.shared}">
               <ShareIcon class="h-5 w-5 cursor-pointer stroke-2"/>
-              <span class="hidden lg:block">share</span>
+              <span class="hidden lg:block">{{ t('home.news.share') }}</span>
             </button>
             <button class="btn btn-xs btn-ghost join-item" disabled="disabled">
               <FireIcon class="w-6 h-6" :class="{'text-warning': card.data.popularity?.score > 0}"/>
@@ -68,6 +72,7 @@ import { FireIcon } from '@heroicons/vue/20/solid';
 import { KeyboardController, listener, useKeyboardController } from '@/common/services/KeyboardController';
 import { ref } from 'vue';
 import { Ref, UnwrapRef } from '@vue/reactivity';
+import { useI18n } from 'vue-i18n';
 
 @Component({
   name: 'NewsList',
@@ -78,8 +83,10 @@ import { Ref, UnwrapRef } from '@vue/reactivity';
   setup() {
     const store = useStore();
     const newsList: Ref<UnwrapRef<HTMLElement>> = ref(HTMLElement.prototype);
+    const { t } = useI18n();
     return {
       store: store,
+      t: t,
       userStore: store.state.user,
       newsStore: store.state.news,
       activateOnScroll: useScrollingActivation(),
@@ -91,6 +98,7 @@ import { Ref, UnwrapRef } from '@vue/reactivity';
 })
 export default class NewsList extends Vue implements ScrollActivable, InfiniteScrollable {
   private readonly store;
+  private readonly t: unknown;
   private readonly userStore: UserState;
   private readonly newsStore: NewsStore;
   private readonly activateOnScroll: ScrollingActivationBehaviour;

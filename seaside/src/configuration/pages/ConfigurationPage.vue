@@ -1,31 +1,24 @@
 <template>
-  <nav role="tablist" class="tabs tabs-boxed place-content-start">
-    <router-link to="/config/feeds" role="tab" class="tab" active-class="tab-active">Feeds</router-link>
-    <router-link to="/config/profile" role="tab" class="tab" active-class="tab-active">Profile</router-link>
+  <nav class="tabs tabs-boxed place-content-start" role="tablist">
+    <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/config/feeds">{{ t('config.tab.feeds') }}</router-link>
+    <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/config/profile">{{ t('config.tab.profile') }}</router-link>
+    <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/config/settings">{{ t('config.tab.settings') }}</router-link>
   </nav>
   <router-view></router-view>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
-import FeedsList from '@/configuration/components/feedslist/FeedsList.vue';
-import { defineAsyncComponent } from 'vue';
-
-const ProfileTab = defineAsyncComponent(() => import('@/configuration/components/profile/ProfileTab.vue'));
-
-type Tab = 'FeedsList' | 'ProfileTab';
+import { useI18n } from 'vue-i18n';
 
 @Component({
   name: 'ConfigurationPage',
-  components: {
-    FeedsList, ProfileTab,
+  setup() {
+    const { t } = useI18n();
+    return { t };
   },
 })
 export default class ConfigurationPage extends Vue {
-  private activeTab: Tab = 'FeedsList';
-
-  private onChangeTab(toBeActivate: Tab): void {
-    this.activeTab = toBeActivate;
-  }
+  private t;
 }
 </script>

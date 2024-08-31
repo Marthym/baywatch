@@ -43,6 +43,11 @@
             <version>${entity.version}</version>
         </dependency>
         <dependency>
+            <groupId>fr.ght1pc9kc</groupId>
+            <artifactId>entity-graphql</artifactId>
+            <version>${entity.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
         </dependency>

@@ -85,7 +85,7 @@ const hasRole = (user: User, expectedRole: UserRole, entity?: string): boolean =
     return false;
 };
 
-export default {
+export const user = {
     namespaced: true,
     state,
     getters,

@@ -1,16 +1,16 @@
 <template>
   <div class="overflow-x-auto mt-5">
-    <SmartTable columns="Name / Link / Categories / Actions" :elements="feeds" actions="avieud"
+    <SmartTable :active-page="activePage" :columns="t('config.feeds.table.headers')" :elements="feeds"
                 :total-page="pagesNumber"
-                :active-page="activePage"
-                @navigate="pageIdx => loadFeedPage(pageIdx).subscribe()"
-                @edit="itemUpdate"
+                actions="avieud"
                 @add="addNewFeed()"
-                @view="itemView"
-                @import="onClickImport"
-                @export="onClickExport"
                 @delete="idx => itemDelete(idx)"
-                @deleteSelected="idx => bulkDelete(idx)">
+                @deleteSelected="idx => bulkDelete(idx)"
+                @edit="itemUpdate"
+                @export="onClickExport"
+                @import="onClickImport"
+                @navigate="pageIdx => loadFeedPage(pageIdx).subscribe()"
+                @view="itemView">
       <template #default="vFeed">
         <std class="grid grid-cols-1 lg:gap-x-4 md:grid-cols-12 auto-cols-auto">
           <FeedCard :view="vFeed.data"/>
@@ -24,7 +24,6 @@
 </template>
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
-import FeedListItem from '@/configuration/components/feedslist/FeedsListItem.vue';
 import { filter, map, switchMap, take, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { Feed } from '@/configuration/model/Feed.type';
@@ -35,7 +34,6 @@ import notificationService from '@/services/notification/NotificationService';
 import { actionServiceRegisterFunction, actionServiceUnregisterFunction } from '@/common/services/ReloadActionService';
 import { defineAsyncComponent } from 'vue';
 import { AlertResponse, AlertType } from '@/common/components/alertdialog/AlertDialog.types';
-import FeedActions from '@/configuration/components/feedslist/FeedActions.vue';
 import { Store, useStore } from 'vuex';
 import { UserState } from '@/security/store/user';
 import { NEWS_FILTER_FEED_MUTATION } from '@/common/model/store/NewsStore.type';
@@ -46,6 +44,7 @@ import stla from '@/common/components/smartTable/SmartTableLineAction.vue';
 import std from '@/common/components/smartTable/SmartTableData.vue';
 import { SmartTableView } from '@/common/components/smartTable/SmartTableView.interface';
 import FeedCard from '@/common/components/FeedCard.vue';
+import { useI18n } from 'vue-i18n';
 
 const FileUploadWindow = defineAsyncComponent(() => import('@/common/components/FileUploadWindow.vue'));
 const BASEURL = import.meta.env.VITE_API_BASE_URL;
@@ -58,20 +57,21 @@ const BASEURL = import.meta.env.VITE_API_BASE_URL;
     stla,
     SmartTable,
     InformationCircleIcon,
-    FeedActions,
     FeedEditor,
-    FeedListItem,
     FileUploadWindow,
   },
   setup() {
     const store: Store<UserState> = useStore();
+    const { t } = useI18n();
     return {
       store: store,
       router: useRouter(),
+      t: t,
     };
   },
 })
 export default class FeedsList extends Vue {
+  private t;
   private store: Store<UserState>;
   private router: Router;
   private feedEditor!: FeedEditor;
@@ -79,13 +79,6 @@ export default class FeedsList extends Vue {
   private pagesNumber = 0;
   private activePage = 0;
   private isFileUploadVisible = false;
-
-  get checkState(): boolean {
-    const isOneSelected = this.feeds.find(f => f.isSelected) !== undefined;
-    if (this.$refs['globalCheck'])
-      this.$refs['globalCheck'].indeterminate = isOneSelected && this.feeds.find(f => !f.isSelected) !== undefined;
-    return isOneSelected;
-  }
 
   mounted(): void {
     this.loadFeedPage(0).subscribe({
@@ -118,6 +111,10 @@ export default class FeedsList extends Vue {
       isSelected: false,
       isEditable: true,
     };
+  }
+
+  unmounted(): void {
+    actionServiceUnregisterFunction();
   }
 
   private addNewFeed(): void {
@@ -227,10 +224,6 @@ export default class FeedsList extends Vue {
         notificationService.pushSimpleError('Unable to load OPML file !');
       },
     });
-  }
-
-  unmounted(): void {
-    actionServiceUnregisterFunction();
   }
 }
 </script>

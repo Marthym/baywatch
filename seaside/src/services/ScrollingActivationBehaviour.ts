@@ -1,5 +1,5 @@
-import ScrollActivable from "@/services/model/ScrollActivable";
-import Vue from "vue";
+import ScrollActivable from '@/services/model/ScrollActivable';
+import Vue from 'vue';
 
 /**
  * Allow a List Vue Component to activate Element on scroll without scroll event.
@@ -19,7 +19,7 @@ export class ScrollingActivationBehaviour {
                 const incr = (isAbove) ? +1 : -1;
                 component.activateElement(incr);
             }
-        }, {threshold: [0.25], rootMargin: "-60px 0px 0px 0px"});
+        }, { threshold: [0.25], rootMargin: '-60px 0px 0px 0px' });
     }
 
     public disconnect(): void {

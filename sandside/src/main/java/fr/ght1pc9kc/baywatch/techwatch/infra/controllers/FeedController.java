@@ -130,7 +130,8 @@ public class FeedController {
                     }
                     sink.next(Entity.identify(WebFeed.builder()
                             .location(feedLocation)
-                            .tags(Set.of(ff.tags()))
+                            .description(ff.description())
+                            .tags(Set.copyOf(ff.tags()))
                             .name(ff.name())
                             .build()).withId(id));
                 })
@@ -142,7 +143,7 @@ public class FeedController {
     public Mono<ResponseEntity<Entity<WebFeed>>> subscribe(@Valid @RequestBody Mono<FeedForm> feedForm) {
         return feedForm.map(form -> {
                     URI uri = URI.create(form.location());
-                    Set<String> tags = Optional.ofNullable(form.tags()).map(Set::of).orElseGet(Set::of);
+                    Set<String> tags = Optional.ofNullable(form.tags()).map(Set::copyOf).orElseGet(Set::of);
                     return Entity.identify(WebFeed.builder()
                                     .location(uri)
                                     .tags(tags)
@@ -173,7 +174,7 @@ public class FeedController {
                     return Entity.identify(WebFeed.builder()
                                     .location(uri)
                                     .name(Optional.ofNullable(form.name()).orElseGet(uri::getHost))
-                                    .tags(Set.of(form.tags()))
+                                    .tags(Set.copyOf(form.tags()))
                                     .build())
                             .withId(Hasher.identify(uri));
                 }).collectList()
