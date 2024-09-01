@@ -7,6 +7,7 @@ import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
+import fr.ght1pc9kc.baywatch.techwatch.infra.adapters.TechwatchMapper;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsUsersRecordSample;
@@ -70,8 +71,8 @@ class FeedRepositoryTest {
 
     @BeforeEach
     void setUp(DSLContext dslContext) {
-        BaywatchMapper baywatchMapper = Mappers.getMapper(BaywatchMapper.class);
-        tested = new FeedRepository(Schedulers.immediate(), dslContext, baywatchMapper);
+        TechwatchMapper mapper = Mappers.getMapper(TechwatchMapper.class);
+        tested = new FeedRepository(Schedulers.immediate(), dslContext, mapper);
     }
 
     @Test

@@ -1,12 +1,11 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
-import fr.ght1pc9kc.baywatch.common.api.DefaultMeta;
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.techwatch.api.FeedService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
-import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.ScraperServicePort;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
@@ -26,6 +25,8 @@ import java.util.Set;
 
 import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.NO_ONE;
 import static fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException.AUTHENTICATION_NOT_FOUND;
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
+import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.createdBy;
 
 @RequiredArgsConstructor
 public class FeedServiceImpl implements FeedService {
@@ -42,6 +43,7 @@ public class FeedServiceImpl implements FeedService {
         return feedRepository.get(QueryContext.id(id));
     }
 
+
     @Override
     public Flux<Entity<WebFeed>> list() {
         return list(PageRequest.all());
@@ -51,7 +53,7 @@ public class FeedServiceImpl implements FeedService {
     public Flux<Entity<WebFeed>> list(PageRequest pageRequest) {
         return authFacade.getConnectedUser()
                 .map(u -> {
-                    if (pageRequest.filter().accept(propertiesVisitor).contains(EntitiesProperties.ID)) {
+                    if (pageRequest.filter().accept(propertiesVisitor).contains(ID)) {
                         return Tuples.of(QueryContext.from(pageRequest), u.id());
                     }
                     return Tuples.of(QueryContext.from(pageRequest).withUserId(u.id()), u.id());
@@ -59,18 +61,18 @@ public class FeedServiceImpl implements FeedService {
                 .switchIfEmpty(Mono.just(Tuples.of(QueryContext.from(pageRequest), NO_ONE)))
                 .flatMapMany(qc -> feedRepository.list(qc.getT1())
                         .map(re -> {
-                            String createdBy = Arrays.stream(re.meta(DefaultMeta.createdBy).orElse(NO_ONE).split(","))
+                            String createdByMeta = Arrays.stream(re.meta(createdBy).orElse(NO_ONE).split(","))
                                     .filter(u -> qc.getT2().equals(u))
                                     .findAny().orElse(NO_ONE);
                             return Entity.identify(re.self())
-                                    .meta(DefaultMeta.createdBy, createdBy)
+                                    .meta(createdBy, createdByMeta)
                                     .withId(re.id());
                         }));
     }
 
     @Override
     public Mono<Integer> count(PageRequest pageRequest) {
-        if (pageRequest.filter().accept(propertiesVisitor).contains(EntitiesProperties.ID)) {
+        if (pageRequest.filter().accept(propertiesVisitor).contains(ID)) {
             return feedRepository.count(QueryContext.from(pageRequest));
         } else {
             return authFacade.getConnectedUser()
@@ -90,7 +92,9 @@ public class FeedServiceImpl implements FeedService {
         }
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .flatMap(u -> feedRepository.update(toPersist.id(), u.id(), toPersist.self()));
+                .flatMap(u -> feedRepository.update(toPersist.id(), u.id(), toPersist.self()))
+                .thenMany(list(PageRequest.one(Criteria.property(ID).eq(toPersist.id()))))
+                .next();
     }
 
     @Override
@@ -139,7 +143,7 @@ public class FeedServiceImpl implements FeedService {
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
                 .map(u -> QueryContext.builder()
                         .filter(Criteria.property(EntitiesProperties.FEED_ID).in(toDelete)
-                                .or(Criteria.property(EntitiesProperties.ID).in(toDelete)))
+                                .or(Criteria.property(ID).in(toDelete)))
                         .userId(u.id())
                         .build())
                 .flatMap(feedRepository::delete)

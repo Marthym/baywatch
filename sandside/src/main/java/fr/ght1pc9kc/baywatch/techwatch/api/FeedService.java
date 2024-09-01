@@ -1,12 +1,16 @@
 package fr.ght1pc9kc.baywatch.techwatch.api;
 
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
+import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedProperties;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.PageRequest;
+import org.jetbrains.annotations.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
+import java.util.EnumSet;
+import java.util.Map;
 
 public interface FeedService {
     /**

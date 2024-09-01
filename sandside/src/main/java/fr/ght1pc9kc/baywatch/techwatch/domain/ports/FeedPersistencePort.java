@@ -1,17 +1,31 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain.ports;
 
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
-import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
+import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedProperties;
 import fr.ght1pc9kc.entity.api.Entity;
+import org.jetbrains.annotations.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
+import java.util.EnumSet;
+import java.util.Map;
 
 public interface FeedPersistencePort {
     Mono<Entity<WebFeed>> get(QueryContext qCtx);
+
+    /**
+     * Get override properties of {@link WebFeed}
+     *
+     * @param userId     The {@link fr.ght1pc9kc.baywatch.security.api.model.User} concern by the request
+     * @param feedIds    One or more feeds to complete properties
+     * @param properties Filter the properties to look for. No filter if null
+     */
+    Flux<Entity<Map<FeedProperties, String>>> getFeedProperties(
+            String userId, Collection<String> feedIds, @Nullable EnumSet<FeedProperties> properties);
 
     default Flux<Entity<WebFeed>> list() {
         return list(QueryContext.empty());
@@ -40,9 +54,9 @@ public interface FeedPersistencePort {
      * @param id       The ID of the {@link WebFeed} to update
      * @param userId   The user id used to update
      * @param toUpdate The {@link WebFeed} to persist
-     * @return The new updated {@link WebFeed}
+     * @return {@code Mono<Void>} when update is complete
      */
-    Mono<Entity<WebFeed>> update(String id, String userId, WebFeed toUpdate);
+    Mono<Void> update(String id, String userId, WebFeed toUpdate);
 
     /**
      * Persist one or more {@link WebFeed}s into {@code FEED} table
