@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
+import fr.ght1pc9kc.baywatch.common.api.model.FeedMeta;
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
@@ -9,6 +10,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.ScraperServicePort;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
+import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedProperties;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
@@ -21,12 +23,14 @@ import reactor.util.function.Tuples;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.NO_ONE;
 import static fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException.AUTHENTICATION_NOT_FOUND;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.createdBy;
+import static java.util.Objects.isNull;
 
 @RequiredArgsConstructor
 public class FeedServiceImpl implements FeedService {
@@ -42,7 +46,6 @@ public class FeedServiceImpl implements FeedService {
     public Mono<Entity<WebFeed>> get(String id) {
         return feedRepository.get(QueryContext.id(id));
     }
-
 
     @Override
     public Flux<Entity<WebFeed>> list() {
@@ -67,7 +70,43 @@ public class FeedServiceImpl implements FeedService {
                             return Entity.identify(re.self())
                                     .meta(createdBy, createdByMeta)
                                     .withId(re.id());
-                        }));
+                        }))
+
+                .buffer(Math.min(pageRequest.pagination().size(), 100))
+                .flatMap(webFeeds -> {
+                    String createdBy = webFeeds.getFirst().meta(FeedMeta.createdBy).orElse(null);
+                    if (isNull(createdBy)) {
+                        return Flux.fromIterable(webFeeds);
+                    }
+                    List<String> feedsIds = webFeeds.stream().map(Entity::id).toList();
+                    return authFacade.getConnectedUser()
+                            .map(Entity::id)
+                            .switchIfEmpty(Mono.just(NO_ONE))
+                            .flatMapMany(userId -> feedRepository.getFeedProperties(userId, feedsIds, null))
+                            .map(eProps -> Map.entry(eProps.id(), eProps.self()))
+                            .collectMap(Map.Entry::getKey, Map.Entry::getValue)
+                            .flatMapMany(allProps -> Flux.fromIterable(webFeeds)
+                                    .map(webFeed -> {
+                                        Map<FeedProperties, String> feedProperties = allProps.get(webFeed.id());
+                                        if (isNull(feedProperties)) {
+                                            return webFeed;
+                                        } else {
+                                            return webFeed.convert(self -> {
+                                                WebFeed.WebFeedBuilder selfBuilder = self.toBuilder();
+                                                feedProperties.forEach((feedProp, value) -> {
+                                                    switch (feedProp) {
+                                                        case DESCRIPTION -> selfBuilder.description(value);
+                                                        case NAME -> selfBuilder.name(value);
+                                                        case TAG -> selfBuilder.tags(Set.of(value.split(",")));
+                                                        case null, default -> {
+                                                        }
+                                                    }
+                                                });
+                                                return selfBuilder.build();
+                                            });
+                                        }
+                                    }));
+                });
     }
 
     @Override
@@ -93,8 +132,7 @@ public class FeedServiceImpl implements FeedService {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
                 .flatMap(u -> feedRepository.update(toPersist.id(), u.id(), toPersist.self()))
-                .thenMany(list(PageRequest.one(Criteria.property(ID).eq(toPersist.id()))))
-                .next();
+                .then(get(toPersist.id()));
     }
 
     @Override

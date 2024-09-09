@@ -22,6 +22,7 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.UsersRoles.USERS_ROLES;
 public final class PropertiesMappers {
     public static final NewsUserState POPULAR = NEWS_USER_STATE.as("POPULAR");
     public static final NewsUserState NEWS_STATE = NEWS_USER_STATE.as("NEWS_STATE");
+    public static final Field<String> FEUS_TAGS = DSL.field("tags", String.class);
 
     public static final Map<String, Field<?>> FEEDS_PROPERTIES_MAPPING = Map.of(
             EntitiesProperties.ID, FEEDS.FEED_ID,
@@ -30,7 +31,7 @@ public final class PropertiesMappers {
             EntitiesProperties.LAST_WATCH, FEEDS.FEED_LAST_WATCH,
             EntitiesProperties.USER_ID, FEEDS_USERS.FEUS_USER_ID,
             EntitiesProperties.FEED_ID, FEEDS_USERS.FEUS_FEED_ID,
-            EntitiesProperties.TAGS, DSL.concat(DSL.value(TAGS_SEPARATOR), FEEDS_USERS.FEUS_TAGS, DSL.value(TAGS_SEPARATOR))
+            EntitiesProperties.TAGS, DSL.concat(DSL.value(TAGS_SEPARATOR), FEUS_TAGS, DSL.value(TAGS_SEPARATOR))
     );
 
     public static final Map<String, Field<?>> NEWS_PROPERTIES_MAPPING = Map.of(

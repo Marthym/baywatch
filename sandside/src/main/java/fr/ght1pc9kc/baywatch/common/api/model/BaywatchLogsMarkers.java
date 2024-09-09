@@ -5,6 +5,6 @@ import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
 @UtilityClass
-public class BaywatchLogsMakers {
+public class BaywatchLogsMarkers {
     public static final Marker PERFORMANCE = MarkerFactory.getMarker("performance");
 }

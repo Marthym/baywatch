@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.common.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.common.api.model.BaywatchLogsMakers;
+import fr.ght1pc9kc.baywatch.common.api.model.BaywatchLogsMarkers;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.ExecuteContext;
@@ -33,7 +33,7 @@ public class PerformanceJooqListener implements ExecuteListener {
                     .addArgument(() -> Optional.ofNullable(ctx.query())
                             .map(q -> q.getSQL(ParamType.INLINED))
                             .orElse("UNKNOWN"))
-                    .addMarker(BaywatchLogsMakers.PERFORMANCE)
+                    .addMarker(BaywatchLogsMarkers.PERFORMANCE)
                     .log("Slow query executed in {}ms : {}");
         } else if (log.isTraceEnabled()) {
             log.atTrace()
@@ -41,7 +41,7 @@ public class PerformanceJooqListener implements ExecuteListener {
                     .addArgument(() -> Optional.ofNullable(ctx.query())
                             .map(q -> q.getSQL(ParamType.INLINED))
                             .orElse("UNKNOWN"))
-                    .addMarker(BaywatchLogsMakers.PERFORMANCE)
+                    .addMarker(BaywatchLogsMarkers.PERFORMANCE)
                     .log("Query executed in {}ms : {}");
         }
     }

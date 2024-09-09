@@ -7,7 +7,7 @@ import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
-import fr.ght1pc9kc.baywatch.techwatch.infra.adapters.TechwatchMapper;
+import fr.ght1pc9kc.baywatch.techwatch.infra.config.TechwatchMapper;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsUsersRecordSample;
@@ -167,9 +167,7 @@ class FeedRepositoryTest {
                                 .build())
                 .meta(updated, Instant.parse("2020-12-11T15:12:42Z"))
                 .withId(feedOwnedOnlyByObywan);
-        Mono<Entity<WebFeed>> update = tested.update(expected.id(), OKENOBI.getUserId(), expected.self());
-        StepVerifier.create(update)
-                .assertNext(actual -> assertThat(actual).isEqualTo(expected))
+        StepVerifier.create(tested.update(expected.id(), OKENOBI.getUserId(), expected.self()))
                 .verifyComplete();
 
         {

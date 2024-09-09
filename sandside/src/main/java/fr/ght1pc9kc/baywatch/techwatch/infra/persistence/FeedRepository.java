@@ -8,7 +8,7 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersPropertiesRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
-import fr.ght1pc9kc.baywatch.techwatch.infra.adapters.TechwatchMapper;
+import fr.ght1pc9kc.baywatch.techwatch.infra.config.TechwatchMapper;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedProperties;
 import fr.ght1pc9kc.entity.api.Entity;
@@ -33,12 +33,12 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.util.function.Tuples;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -81,12 +81,11 @@ public class FeedRepository implements FeedPersistencePort {
         }
 
         SelectQuery<FeedsUsersPropertiesRecord> query = dsl.selectQuery(FEEDS_USERS_PROPERTIES);
-        query.addFrom(FEEDS_USERS_PROPERTIES);
         query.addConditions(FEEDS_USERS_PROPERTIES.FUPR_USER_ID.eq(userId));
         if (feedIds.size() > 1) {
-            FEEDS_USERS_PROPERTIES.FUPR_FEED_ID.in(feedIds);
+            query.addConditions(FEEDS_USERS_PROPERTIES.FUPR_FEED_ID.in(feedIds));
         } else {
-            FEEDS_USERS_PROPERTIES.FUPR_FEED_ID.eq(feedIds.iterator().next());
+            query.addConditions(FEEDS_USERS_PROPERTIES.FUPR_FEED_ID.eq(feedIds.iterator().next()));
         }
         if (nonNull(properties)) {
             if (properties.size() == 1) {
@@ -113,11 +112,48 @@ public class FeedRepository implements FeedPersistencePort {
                 .map(props -> {
                     FeedsUsersPropertiesRecord first = props.getFirst();
                     Map<FeedProperties, String> mapProperties = props.stream().map(prop -> Map.entry(FeedProperties.valueOf(prop.getFuprPropertyName()), prop.getFuprPropertyValue()))
-                            .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
+                            .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue, (left, right) -> left + "," + right));
                     return Entity.identify(mapProperties)
                             .meta(createdBy, first.getFuprUserId())
                             .withId(first.getFuprFeedId());
                 });
+    }
+
+    public Mono<Void> setFeedProperties(String userId, Collection<Entity<WebFeed>> feeds) {
+        var records = new ArrayList<FeedsUsersPropertiesRecord>();
+        List<String> feedsIds = feeds.stream().map(Entity::id).distinct().toList();
+        for (Entity<WebFeed> feed : feeds) {
+            if (nonNull(feed.self().name()) && !feed.self().name().isEmpty()) {
+                records.add(FEEDS_USERS_PROPERTIES.newRecord()
+                        .setFuprFeedId(feed.id())
+                        .setFuprUserId(userId)
+                        .setFuprPropertyName(FeedProperties.NAME.name())
+                        .setFuprPropertyValue(feed.self().name()));
+            }
+            if (nonNull(feed.self().description()) && !feed.self().description().isEmpty()) {
+                records.add(FEEDS_USERS_PROPERTIES.newRecord()
+                        .setFuprFeedId(feed.id())
+                        .setFuprUserId(userId)
+                        .setFuprPropertyName(FeedProperties.DESCRIPTION.name())
+                        .setFuprPropertyValue(feed.self().description()));
+            }
+            if (!feed.self().tags().isEmpty()) {
+                feed.self().tags().forEach(tag -> records.add(FEEDS_USERS_PROPERTIES.newRecord()
+                        .setFuprFeedId(feed.id())
+                        .setFuprUserId(userId)
+                        .setFuprPropertyName(FeedProperties.TAG.name())
+                        .setFuprPropertyValue(tag)));
+            }
+        }
+
+        return Mono.fromCallable(() -> dsl.transactionResult(tx -> {
+                    tx.dsl().deleteFrom(FEEDS_USERS_PROPERTIES)
+                            .where(FEEDS_USERS_PROPERTIES.FUPR_USER_ID.eq(userId)
+                                    .and(FEEDS_USERS_PROPERTIES.FUPR_FEED_ID.in(feedsIds)))
+                            .execute();
+                    return tx.dsl().batchInsert(records).execute();
+                })).subscribeOn(databaseScheduler)
+                .then();
     }
 
     @Override
@@ -191,7 +227,7 @@ public class FeedRepository implements FeedPersistencePort {
                 .meta(createdBy, userId)
                 .withId(id);
         var records = mapper.webFeedToRecords(webFeedEntity);
-        return Mono.fromCallable(() -> dsl.batchMerge(records))
+        return Mono.fromCallable(() -> dsl.batchMerge(records).execute())
                 .subscribeOn(databaseScheduler)
                 .then();
     }
@@ -226,9 +262,9 @@ public class FeedRepository implements FeedPersistencePort {
     @Override
     public Flux<Entity<WebFeed>> persistUserRelation(Collection<Entity<WebFeed>> feeds, String userId) {
         List<FeedsUsersRecord> feedsUsersRecords = feeds.stream()
-                .map(mapper::feedToFeedsUsersRecord)
-                .filter(Objects::nonNull)
-                .map(r -> r.setFeusUserId(userId))
+                .map(f -> FEEDS_USERS.newRecord()
+                        .setFeusFeedId(f.id())
+                        .setFeusUserId(userId))
                 .toList();
 
         return Mono.fromCallable(() ->
@@ -301,7 +337,6 @@ public class FeedRepository implements FeedPersistencePort {
         select.addConditions(conditions);
 
         if (qCtx.isScoped()) {
-            select.addSelect(FEEDS_USERS.FEUS_TAGS, FEEDS_USERS.FEUS_FEED_NAME);
             select.addJoin(FEEDS_USERS, JoinType.JOIN,
                     FEEDS.FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID).and(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId())));
         } else {
