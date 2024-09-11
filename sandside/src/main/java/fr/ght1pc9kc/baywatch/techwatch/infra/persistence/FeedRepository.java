@@ -13,6 +13,7 @@ import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedProperties;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
+import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
 import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.TAGS;
 import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.createdBy;
 import static fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers.FEEDS_PROPERTIES_MAPPING;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
@@ -57,6 +59,8 @@ import static java.util.Objects.nonNull;
 public class FeedRepository implements FeedPersistencePort {
     private static final JooqConditionVisitor JOOQ_CONDITION_VISITOR =
             new JooqConditionVisitor(FEEDS_PROPERTIES_MAPPING::get);
+    private static final ListPropertiesCriteriaVisitor PROPERTIES_CRITERIA_VISITOR =
+            new ListPropertiesCriteriaVisitor();
 
     private final Scheduler databaseScheduler;
     private final DSLContext dsl;
@@ -330,6 +334,7 @@ public class FeedRepository implements FeedPersistencePort {
     }
 
     private Select<Record> buildSelectQuery(QueryContext qCtx) {
+        List<String> filterProperties = qCtx.filter().accept(PROPERTIES_CRITERIA_VISITOR);
         Condition conditions = qCtx.filter().accept(JOOQ_CONDITION_VISITOR);
         SelectQuery<Record> select = dsl.selectQuery();
         select.addSelect(FEEDS.fields());
@@ -337,9 +342,19 @@ public class FeedRepository implements FeedPersistencePort {
         select.addConditions(conditions);
 
         if (qCtx.isScoped()) {
+            if (filterProperties.contains(TAGS)) {
+                select.addJoin(FEEDS_USERS_PROPERTIES, JoinType.JOIN,
+                        FEEDS_USERS_PROPERTIES.FUPR_FEED_ID.eq(FEEDS.FEED_ID).and(
+                                FEEDS_USERS_PROPERTIES.FUPR_USER_ID.eq(qCtx.userId())));
+            }
             select.addJoin(FEEDS_USERS, JoinType.JOIN,
                     FEEDS.FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID).and(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId())));
         } else {
+            if (filterProperties.contains(TAGS)) {
+                select.addJoin(FEEDS_USERS_PROPERTIES, JoinType.JOIN,
+                        FEEDS_USERS_PROPERTIES.FUPR_FEED_ID.eq(FEEDS.FEED_ID).and(
+                                FEEDS_USERS_PROPERTIES.FUPR_USER_ID.isNull()));
+            }
             select.addSelect(DSL.groupConcat(FEEDS_USERS.FEUS_USER_ID).as(FEEDS_USERS.FEUS_USER_ID));
             select.addJoin(FEEDS_USERS, JoinType.LEFT_OUTER_JOIN,
                     FEEDS.FEED_ID.eq(FEEDS_USERS.FEUS_FEED_ID));

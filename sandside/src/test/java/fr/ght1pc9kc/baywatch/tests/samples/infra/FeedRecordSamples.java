@@ -43,7 +43,6 @@ public class FeedRecordSamples implements RelationalDataSet<FeedsRecord> {
         public static final FeedUserRecordSamples SAMPLE = new FeedUserRecordSamples();
 
         public static final List<FeedsUsersRecord> FEEDS_USERS_RECORDS;
-        private static final List<String> tags = List.of("jedi", "sith", "light", "dark", "republic", "empire");
 
         static {
             List<FeedsUsersRecord> feedsUsersRecords = new ArrayList<>();
@@ -55,8 +54,7 @@ public class FeedRecordSamples implements RelationalDataSet<FeedsRecord> {
                 }
                 feedsUsersRecords.add(FEEDS_USERS.newRecord()
                         .setFeusFeedId(fr.getFeedId())
-                        .setFeusUserId(UsersRecordSamples.OKENOBI.getUserId())
-                        .setFeusTags(String.join(",", tags.subList(idx - 1, idx + 1))));
+                        .setFeusUserId(UsersRecordSamples.OKENOBI.getUserId()));
 
                 if (idx++ < 3) {
                     feedsUsersRecords.add(FEEDS_USERS.newRecord()

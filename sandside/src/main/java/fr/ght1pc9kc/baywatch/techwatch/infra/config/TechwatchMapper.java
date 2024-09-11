@@ -3,7 +3,6 @@ package fr.ght1pc9kc.baywatch.techwatch.infra.config;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
-import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersPropertiesRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.ImageProxyProperties;
@@ -103,7 +102,7 @@ public interface TechwatchMapper {
                 .setFeusFeedId(feed.id())
                 .setFeusUserId(userId);
 
-        FeedsUsersPropertiesRecord feedsUsersPropertiesRecord = FEEDS_USERS_PROPERTIES.newRecord()
+        UpdatableRecord<?> feedsUsersPropertiesRecord = (UpdatableRecord<?>) FEEDS_USERS_PROPERTIES.newRecord()
                 .setFuprFeedId(feed.id())
                 .setFuprUserId(userId)
                 .setFuprPropertyName(DESCRIPTION.name())

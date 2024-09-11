@@ -3,7 +3,6 @@ package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 import fr.ght1pc9kc.baywatch.common.api.model.FeedMeta;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
-import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
@@ -128,10 +127,10 @@ class FeedRepositoryTest {
     @Test
     void should_persist_feeds_to_user(DSLContext dsl) {
         Entity<WebFeed> expected = Entity.identify(
-                        Mappers.getMapper(BaywatchMapper.class).recordToFeed(FeedRecordSamples.JEDI)
+                        Mappers.getMapper(TechwatchMapper.class).recordToFeed(FeedRecordSamples.JEDI)
                                 .self().toBuilder()
                                 .name(FeedRecordSamples.JEDI.getFeedName() + " of Obiwan")
-                                .tags(Set.of("jedi", "saber"))
+                                .tags(Set.of())
                                 .build())
                 .meta(updated, Instant.parse("2020-12-11T15:12:42Z"))
                 .withId(FeedRecordSamples.JEDI.getFeedId());
@@ -151,7 +150,6 @@ class FeedRepositoryTest {
                     .fetchOne();
             assertThat(actual).isNotNull();
             assertThat(actual.getFeusUserId()).isEqualTo(OKENOBI.getUserId());
-            assertThat(actual.getFeusTags()).isEqualTo(String.join(",", expected.self().tags()));
         }
     }
 
@@ -176,7 +174,6 @@ class FeedRepositoryTest {
                                     .and(FEEDS_USERS.FEUS_FEED_ID.eq(feedOwnedOnlyByObywan)))
                     .fetchOne();
             assertThat(actual).isNotNull();
-            assertThat(actual.getFeusFeedName()).isEqualTo("Obiwan Kenobi");
         }
     }
 

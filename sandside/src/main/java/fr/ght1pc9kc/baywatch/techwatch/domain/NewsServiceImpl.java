@@ -11,7 +11,6 @@ import fr.ght1pc9kc.baywatch.techwatch.api.NewsService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
-import fr.ght1pc9kc.baywatch.techwatch.domain.filter.CriteriaModifierVisitor;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.StatePersistencePort;
@@ -65,25 +64,23 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public Flux<News> list(PageRequest pageRequest) {
-        PageRequest validRequest = pageRequest.withFilter(pageRequest.filter().accept(new CriteriaModifierVisitor()));
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(() -> new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .map(user -> throwOnInvalidRequest(validRequest, user))
-                .map(user -> QueryContext.from(validRequest).withUserId(user.id()))
+                .map(user -> throwOnInvalidRequest(pageRequest, user))
+                .map(user -> QueryContext.from(pageRequest).withUserId(user.id()))
                 .flatMap(this::forgeAggregateQueryContext)
                 .onErrorResume(UnauthenticatedUser.class, e ->
-                        Mono.fromCallable(() -> throwOnInvalidRequest(validRequest, null))
-                                .thenReturn(QueryContext.from(validRequest)))
+                        Mono.fromCallable(() -> throwOnInvalidRequest(pageRequest, null))
+                                .thenReturn(QueryContext.from(pageRequest)))
                 .flatMapMany(newsRepository::list);
     }
 
     @Override
     public Mono<Integer> count(PageRequest pageRequest) {
-        PageRequest validRequest = pageRequest.withFilter(pageRequest.filter().accept(new CriteriaModifierVisitor()));
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(() -> new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .map(user -> throwOnInvalidRequest(validRequest, user))
-                .map(user -> QueryContext.all(validRequest.filter()).withUserId(user.id()))
+                .map(user -> throwOnInvalidRequest(pageRequest, user))
+                .map(user -> QueryContext.all(pageRequest.filter()).withUserId(user.id()))
                 .flatMap(this::forgeAggregateQueryContext)
                 .flatMap(newsRepository::count)
                 .onErrorResume(UnauthenticatedUser.class, e -> Mono.just(pageRequest.pagination().size()));
