@@ -63,10 +63,8 @@ public class GraphQLFeedsController {
     }
 
     @SchemaMapping(typeName = "SearchFeedsResponse")
-    public Flux<Map<String, Object>> entities(Page<Entity<WebFeed>> searchFeedsResponse) {
-        MapType gqlType = jsonMapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
-        return Optional.ofNullable(searchFeedsResponse.getBody()).orElse(Flux.empty())
-                .map(e -> jsonMapper.convertValue(e, gqlType));
+    public Flux<Entity<WebFeed>> entities(Page<Entity<WebFeed>> searchFeedsResponse) {
+        return Optional.ofNullable(searchFeedsResponse.getBody()).orElse(Flux.empty());
     }
 
     @SchemaMapping(typeName = "SearchFeedsResponse")
@@ -112,6 +110,17 @@ public class GraphQLFeedsController {
         return feedService.get(id)
                 .map(feed -> feed.convert(e -> e.toBuilder().name(name).tags(tagsSet).build()))
                 .flatMapMany(f -> feedService.subscribe(Collections.singleton(f)))
+                .next();
+    }
+
+    @MutationMapping
+    @PreAuthorize("isAuthenticated()")
+    public Mono<Entity<WebFeed>> feedUpdate(
+            @Argument String id, @Argument String name, @Argument String description, @Argument Collection<String> tags) {
+        Set<String> tagsSet = Optional.ofNullable(tags).map(Set::copyOf).orElse(Set.of());
+        return feedService.get(id)
+                .map(feed -> feed.convert(e -> e.toBuilder().name(name).description(description).tags(tagsSet).build()))
+                .flatMapMany(feedService::update)
                 .next();
     }
 }

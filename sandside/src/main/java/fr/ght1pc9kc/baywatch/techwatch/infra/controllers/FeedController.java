@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -120,8 +119,7 @@ public class FeedController {
         return Flux.concat(operations);
     }
 
-    @PutMapping("/{id}")
-    public Mono<Entity<WebFeed>> update(@PathVariable("id") String id, @Valid @RequestBody Mono<FeedForm> feedForm) {
+    private Mono<Entity<WebFeed>> update(String id, Mono<FeedForm> feedForm) {
         return feedForm.<Entity<WebFeed>>handle((ff, sink) -> {
                     URI feedLocation = URI.create(ff.location());
                     if (!id.equals(Hasher.identify(feedLocation))) {

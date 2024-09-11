@@ -131,7 +131,8 @@ public class FeedServiceImpl implements FeedService {
         }
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .flatMap(u -> feedRepository.update(toPersist.id(), u.id(), toPersist.self()))
+                .flatMap(u -> feedRepository.persistUserRelation(List.of(toPersist), u.id())
+                        .then(feedRepository.setFeedProperties(u.id(), List.of(toPersist))))
                 .then(get(toPersist.id()));
     }
 

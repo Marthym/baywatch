@@ -27,6 +27,15 @@ public interface FeedPersistencePort {
     Flux<Entity<Map<FeedProperties, String>>> getFeedProperties(
             String userId, Collection<String> feedIds, @Nullable EnumSet<FeedProperties> properties);
 
+    /**
+     * Override feed properties for the user
+     *
+     * @param userId The {@link fr.ght1pc9kc.baywatch.security.api.model.User} concern by the request
+     * @param feeds  One or more feeds to complete properties
+     * @return {@code Void} when update is persisted
+     */
+    Mono<Void> setFeedProperties(String userId, Collection<Entity<WebFeed>> feeds);
+
     default Flux<Entity<WebFeed>> list() {
         return list(QueryContext.empty());
     }
@@ -34,16 +43,6 @@ public interface FeedPersistencePort {
     Flux<Entity<WebFeed>> list(QueryContext qCtx);
 
     Mono<Integer> count(QueryContext qCtx);
-
-    /**
-     * <p>Update {@link WebFeed} name, tags or updated date.</p>
-     * <p>URL was immutable. The Feed was shared and the URL give the ID so the URL was not updatable.</p>
-     *
-     * @param id       The ID of the {@link WebFeed} to update
-     * @param toUpdate The {@link WebFeed} to persist
-     * @return The new updated {@link WebFeed}
-     */
-    Mono<Entity<WebFeed>> update(String id, WebFeed toUpdate);
 
     Flux<Entity<WebFeed>> update(Collection<Entity<WebFeed>> toUpdate);
 

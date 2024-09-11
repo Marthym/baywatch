@@ -30,5 +30,6 @@ extend type Query {
 }
 
 extend type Mutation {
+    feedUpdate(id: ID, name: String, description: String, tags: [String]): Feed
     subscribe(id: ID, name: String, tags: [String]): Feed
 }

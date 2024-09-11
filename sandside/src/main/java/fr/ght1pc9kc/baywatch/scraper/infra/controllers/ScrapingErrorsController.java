@@ -2,6 +2,8 @@ package fr.ght1pc9kc.baywatch.scraper.infra.controllers;
 
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapingErrorsService;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingError;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
+import fr.ght1pc9kc.entity.api.Entity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
@@ -20,13 +22,13 @@ public class ScrapingErrorsController {
     private final ScrapingErrorsService scrapingErrorsService;
 
     @BatchMapping(typeName = "Feed", field = "error", maxBatchSize = 50)
-    public Mono<Map<Map<String, Object>, ScrapingError>> errors(List<Map<String, Object>> feeds) {
+    public Mono<Map<Entity<WebFeed>, ScrapingError>> errors(List<Entity<WebFeed>> feeds) {
         if (feeds.isEmpty()) {
             return Mono.just(Map.of());
         }
 
         var entities = feeds.stream()
-                .map(e -> Map.entry(e.get("_id").toString(), e))
+                .map(e -> Map.entry(e.id(), e))
                 .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
 
         return scrapingErrorsService.list(entities.keySet())
