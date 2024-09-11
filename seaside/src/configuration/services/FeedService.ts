@@ -77,24 +77,6 @@ export class FeedService {
         );
     }
 
-    public update(feed: Feed, urlChange: boolean = true): Observable<string> {
-        if (!urlChange) {
-            return rest.put(`/feeds/${feed._id}`, feed).pipe(
-                switchMap(this.responseToFeed),
-                map((updatedFeed: Feed) => updatedFeed._id),
-                take(1),
-            );
-        } else {
-            const jsonPatch: OpPatch[] = [];
-            jsonPatch.push({ op: 'remove', path: `/feeds/${feed._id}` });
-            jsonPatch.push({ op: 'add', path: '/feeds', value: feed });
-
-            return this.patch(jsonPatch).pipe(
-                map(updated => updated.pop()),
-            );
-        }
-    }
-
     public remove(id: string): Observable<Feed> {
         return rest.delete(`/feeds/${id}`).pipe(
             switchMap(this.responseToFeed),
@@ -153,6 +135,23 @@ export class FeedService {
             take(1),
         );
     }
+}
+
+const FEED_UPDATE = `#graphql
+mutation FeedUpdate($id: ID, $name: String, $description: String, $tags: [String]) {
+    feedUpdate(id: $id, name: $name, description: $description, tags: $tags) {_id name}
+}`;
+
+export function feedUpdate(id: string, feed: Pick<Feed, 'name' | 'description' | 'tags'>): Observable<Feed> {
+    const { name, description, tags } = feed;
+    if (id === undefined) {
+        return throwError(() => new Error('Feed id is mandatory !'));
+    }
+
+    return send<{ feedUpdate: Feed }>(FEED_UPDATE, { id, name, description, tags }).pipe(
+        map(data => data.data.feedUpdate),
+        take(1),
+    );
 }
 
 export default new FeedService();
