@@ -14,5 +14,5 @@ export const fr_FR = {
     'config.feeds.editor.form.name': 'nom du flux',
     'config.feeds.editor.form.name.placeholder': 'nom du flux',
     'config.feeds.editor.form.description': 'description',
-    'config.feeds.editor.form.action.submit': 'ajouter',
+    'config.feeds.editor.form.action.submit': 'enregistrer',
 };

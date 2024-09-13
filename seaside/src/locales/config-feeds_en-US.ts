@@ -14,5 +14,5 @@ export const en_US = {
     'config.feeds.editor.form.name': 'name',
     'config.feeds.editor.form.name.placeholder': 'name',
     'config.feeds.editor.form.description': 'description',
-    'config.feeds.editor.form.action.submit': 'add',
+    'config.feeds.editor.form.action.submit': 'save',
 };
