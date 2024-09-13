@@ -47,17 +47,6 @@ public interface FeedPersistencePort {
     Flux<Entity<WebFeed>> update(Collection<Entity<WebFeed>> toUpdate);
 
     /**
-     * <p>Allow user to update {@link WebFeed} name or tags.</p>
-     * <p>URL was immutable. The Feed was shared and the URL give the ID so the URL was not updatable.</p>
-     *
-     * @param id       The ID of the {@link WebFeed} to update
-     * @param userId   The user id used to update
-     * @param toUpdate The {@link WebFeed} to persist
-     * @return {@code Mono<Void>} when update is complete
-     */
-    Mono<Void> update(String id, String userId, WebFeed toUpdate);
-
-    /**
      * Persist one or more {@link WebFeed}s into {@code FEED} table
      *
      * @param toPersist the list of Feed to persist

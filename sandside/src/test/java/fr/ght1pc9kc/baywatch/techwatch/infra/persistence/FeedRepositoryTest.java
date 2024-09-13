@@ -129,7 +129,7 @@ class FeedRepositoryTest {
         Entity<WebFeed> expected = Entity.identify(
                         Mappers.getMapper(TechwatchMapper.class).recordToFeed(FeedRecordSamples.JEDI)
                                 .self().toBuilder()
-                                .name(FeedRecordSamples.JEDI.getFeedName() + " of Obiwan")
+                                .name(FeedRecordSamples.JEDI.getFeedName())
                                 .tags(Set.of())
                                 .build())
                 .meta(updated, Instant.parse("2020-12-11T15:12:42Z"))
@@ -150,30 +150,6 @@ class FeedRepositoryTest {
                     .fetchOne();
             assertThat(actual).isNotNull();
             assertThat(actual.getFeusUserId()).isEqualTo(OKENOBI.getUserId());
-        }
-    }
-
-    @Test
-    void should_update_feed(DSLContext dsl) {
-        String feedOwnedOnlyByObywan = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("01"));
-        Entity<WebFeed> expected = Entity.identify(
-                        WebFeed.builder()
-                                .location(URI.create("http://www.jedi.light/01"))
-                                .name("Obiwan Kenobi")
-                                .description("Feed description")
-                                .tags(Set.of("jedi", "light"))
-                                .build())
-                .meta(updated, Instant.parse("2020-12-11T15:12:42Z"))
-                .withId(feedOwnedOnlyByObywan);
-        StepVerifier.create(tested.update(expected.id(), OKENOBI.getUserId(), expected.self()))
-                .verifyComplete();
-
-        {
-            FeedsUsersRecord actual = dsl.selectFrom(FEEDS_USERS).where(
-                            FEEDS_USERS.FEUS_USER_ID.eq(OKENOBI.getUserId())
-                                    .and(FEEDS_USERS.FEUS_FEED_ID.eq(feedOwnedOnlyByObywan)))
-                    .fetchOne();
-            assertThat(actual).isNotNull();
         }
     }
 

@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.scraper.infra.controllers;
 
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapingErrorsService;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingError;
+import fr.ght1pc9kc.baywatch.tests.samples.FeedSamples;
 import fr.ght1pc9kc.entity.api.Entity;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
@@ -12,7 +13,6 @@ import reactor.test.StepVerifier;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -40,7 +40,9 @@ class ScrapingErrorsControllerTest {
                         .withId("f9e2eaaa42d9fe9e558a9b8ef1bf366f190aacaa83bad2641ee106e9041096e4")
         )).when(mockScrapingErrorService).list(anyCollection());
 
-        StepVerifier.create(tested.errors(List.of(Map.of("_id", "f9e2eaaa42d9fe9e558a9b8ef1bf366f190aacaa83bad2641ee106e9041096e4"))))
+        StepVerifier.create(tested.errors(List.of(Entity.identify(FeedSamples.JEDI.self())
+                        .withId("f9e2eaaa42d9fe9e558a9b8ef1bf366f190aacaa83bad2641ee106e9041096e4")
+                )))
                 .assertNext(actual -> SoftAssertions.assertSoftly(softly -> {
                     softly.assertThat(actual).isNotNull().hasSize(1);
                     softly.assertThat(actual.values().stream().findFirst()).contains(expected);

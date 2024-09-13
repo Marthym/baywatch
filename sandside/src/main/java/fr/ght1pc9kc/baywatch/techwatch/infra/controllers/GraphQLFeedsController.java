@@ -1,7 +1,5 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.MapType;
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.common.domain.exceptions.BadRequestCriteria;
 import fr.ght1pc9kc.baywatch.common.infra.model.Page;
@@ -43,13 +41,10 @@ public class GraphQLFeedsController {
     private static final QueryStringParser qsParser = QueryStringParser.withDefaultConfig();
     private final FeedService feedService;
     private final PopularNewsService popularService;
-    private final ObjectMapper jsonMapper;
 
     @QueryMapping
-    public Mono<Map<String, Object>> getFeed(@Argument("id") String id) {
-        MapType gqlType = jsonMapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
+    public Mono<Entity<WebFeed>> getFeed(@Argument("id") String id) {
         return feedService.get(id)
-                .map(e -> jsonMapper.<Map<String, Object>>convertValue(e, gqlType))
                 .onErrorMap(BadRequestCriteria.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
     }
 
@@ -76,11 +71,10 @@ public class GraphQLFeedsController {
     }
 
     @BatchMapping
-    public Mono<Map<News, List<Map<String, Object>>>> feeds(List<News> news) {
+    public Mono<Map<News, List<Entity<WebFeed>>>> feeds(List<News> news) {
         if (news.isEmpty()) {
             return Mono.just(Map.of());
         }
-        MapType gqlType = jsonMapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
         List<String> feedsIds = news.stream().flatMap(n -> n.getFeeds().stream()).distinct().toList();
         PageRequest pageRequest = qsParser.parse(Map.of(EntitiesProperties.ID, feedsIds));
         return feedService.list(pageRequest).collectList()
@@ -88,7 +82,7 @@ public class GraphQLFeedsController {
                 .map(feeds -> news.stream()
                         .collect(Collectors.toUnmodifiableMap(Function.identity(), n -> n.getFeeds().stream()
                                 .filter(feeds::containsKey)
-                                .map(feedId -> jsonMapper.<Map<String, Object>>convertValue(feeds.get(feedId), gqlType)).toList())));
+                                .map(feeds::get).toList())));
     }
 
     @BatchMapping

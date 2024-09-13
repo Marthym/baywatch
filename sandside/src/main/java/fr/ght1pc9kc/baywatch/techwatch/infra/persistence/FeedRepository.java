@@ -207,17 +207,6 @@ public class FeedRepository implements FeedPersistencePort {
     }
 
     @Override
-    public Mono<Void> update(String id, String userId, WebFeed toUpdate) {
-        Entity<WebFeed> webFeedEntity = Entity.identify(toUpdate)
-                .meta(createdBy, userId)
-                .withId(id);
-        var records = mapper.webFeedToRecords(webFeedEntity);
-        return Mono.fromCallable(() -> dsl.batchMerge(records).execute())
-                .subscribeOn(databaseScheduler)
-                .then();
-    }
-
-    @Override
     public Flux<Entity<WebFeed>> persist(Collection<Entity<WebFeed>> toPersist) {
         List<FeedsRecord> records = toPersist.stream()
                 .map(mapper::feedToFeedsRecord)
