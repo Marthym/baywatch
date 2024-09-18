@@ -149,12 +149,19 @@ public class FeedServiceImpl implements FeedService {
                 .flatMapMany(feedRepository::persist);
     }
 
+    // FIXME: Update and subscribe do the same things
     @Override
     public Flux<Entity<WebFeed>> subscribe(Collection<Entity<WebFeed>> feeds) {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
                 .map(u -> Tuples.of(feeds, u.id()))
-                .flatMapMany(t -> feedRepository.persistUserRelation(t.getT1(), t.getT2()));
+                .flatMap(t -> feedRepository.persistUserRelation(t.getT1(), t.getT2())
+                        .then().thenReturn(t.getT2()))
+
+                .flatMap(uid -> feedRepository.setFeedProperties(uid, feeds))
+
+                .thenMany(list(PageRequest.all(Criteria.property(ID)
+                        .in(feeds.stream().map(Entity::id).toList()))));
     }
 
     @Override

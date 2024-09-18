@@ -244,7 +244,7 @@ public class FeedRepository implements FeedPersistencePort {
         return Mono.fromCallable(() ->
                         dsl.loadInto(FEEDS_USERS)
                                 .batchAll()
-                                .onDuplicateKeyUpdate()
+                                .onDuplicateKeyIgnore()
                                 .onErrorIgnore()
                                 .loadRecords(feedsUsersRecords)
                                 .fieldsCorresponding()

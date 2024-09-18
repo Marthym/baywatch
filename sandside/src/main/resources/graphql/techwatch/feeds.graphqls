@@ -8,6 +8,13 @@ type Feed {
     error: ScrapingError,
 }
 
+input FeedForm {
+    name: String
+    location: String
+    description: String
+    tags: [String]
+}
+
 type SearchFeedsResponse {
     entities: [Feed]
     totalCount: Int
@@ -30,6 +37,7 @@ extend type Query {
 }
 
 extend type Mutation {
+    feedAddAndSubscribe(feed: FeedForm): Feed
     feedUpdate(id: ID, name: String, description: String, tags: [String]): Feed
     subscribe(id: ID, name: String, tags: [String]): Feed
 }
