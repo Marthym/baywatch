@@ -28,7 +28,7 @@ import { filter, map, switchMap, take, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { Feed } from '@/configuration/model/Feed.type';
 import FeedEditor from '@/configuration/components/feedslist/FeedEditor.vue';
-import feedsService, { feedUpdate } from '@/configuration/services/FeedService';
+import feedsService, { feedAddAndSubscribe, feedUpdate } from '@/configuration/services/FeedService';
 import opmlService from '@/techwatch/services/OpmlService';
 import notificationService from '@/services/notification/NotificationService';
 import { actionServiceRegisterFunction, actionServiceUnregisterFunction } from '@/common/services/ReloadActionService';
@@ -120,7 +120,7 @@ export default class FeedsList extends Vue {
   private addNewFeed(): void {
     this.feedEditor.openEmpty().pipe(
         take(1),
-        switchMap(feed => feedsService.add(feed)),
+        switchMap(feed => feedAddAndSubscribe(feed)),
         switchMap(() => this.loadFeedPage(this.activePage)),
     ).subscribe({
       next: () => notificationService.pushSimpleOk('Feed successfully subscribed.'),

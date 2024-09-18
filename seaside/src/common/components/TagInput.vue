@@ -49,7 +49,9 @@ export default class TagInput extends Vue {
   private tags: TagView[] = [];
 
   get proposal(): string[] {
-    return this.availableTags.filter(t => t.startsWith(this.tag)).slice(0, 4);
+    return this.availableTags
+        .filter(tag => this.tags.findIndex(tv => tv.name === tag) < 0)
+        .filter(t => t.startsWith(this.tag)).slice(0, 4);
   }
 
   mounted(): void {

@@ -70,13 +70,6 @@ export class FeedService {
         );
     }
 
-    public add(feed: Feed): Observable<Feed> {
-        return rest.post('/feeds', feed).pipe(
-            switchMap(this.responseToFeed),
-            take(1),
-        );
-    }
-
     public remove(id: string): Observable<Feed> {
         return rest.delete(`/feeds/${id}`).pipe(
             switchMap(this.responseToFeed),
@@ -150,6 +143,27 @@ export function feedUpdate(id: string, feed: Pick<Feed, 'name' | 'description' |
 
     return send<{ feedUpdate: Feed }>(FEED_UPDATE, { id, name, description, tags }).pipe(
         map(data => data.data.feedUpdate),
+        take(1),
+    );
+}
+
+const FEED_ADD_AND_SUBSCRIBE = `#graphql
+mutation FeedAddAndSubscribe($feed: FeedForm) {
+    feedAddAndSubscribe(feed: $feed) {_id name}
+}`;
+
+export function feedAddAndSubscribe(feed: Pick<Feed, 'name' | 'description' | 'tags' | 'location'>): Observable<Feed> {
+    const { name, description, tags, location } = feed;
+
+    return send<{ feedAddAndSubscribe: Feed }>(FEED_ADD_AND_SUBSCRIBE, {
+        feed: {
+            name,
+            description,
+            tags,
+            location,
+        },
+    }).pipe(
+        map(data => data.data.feedAddAndSubscribe),
         take(1),
     );
 }
