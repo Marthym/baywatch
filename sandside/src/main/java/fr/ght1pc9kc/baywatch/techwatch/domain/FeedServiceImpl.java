@@ -123,20 +123,6 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public Mono<Entity<WebFeed>> update(Entity<WebFeed> toPersist) {
-        if (toPersist == null
-                || toPersist.self().location().getScheme() == null
-                || !ALLOWED_PROTOCOL.contains(toPersist.self().location().getScheme().toLowerCase())) {
-            return Mono.error(() -> new IllegalArgumentException("Illegal URL for Feed !"));
-        }
-        return authFacade.getConnectedUser()
-                .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .flatMap(u -> feedRepository.persistUserRelation(List.of(toPersist), u.id())
-                        .then(feedRepository.setFeedProperties(u.id(), List.of(toPersist))))
-                .then(get(toPersist.id()));
-    }
-
-    @Override
     public Flux<Entity<WebFeed>> add(Collection<Entity<WebFeed>> toAdd) {
         if (toAdd.stream().anyMatch(f -> (f == null
                 || f.self().location().getScheme() == null
@@ -149,16 +135,19 @@ public class FeedServiceImpl implements FeedService {
                 .flatMapMany(feedRepository::persist);
     }
 
-    // FIXME: Update and subscribe do the same things
     @Override
     public Flux<Entity<WebFeed>> subscribe(Collection<Entity<WebFeed>> feeds) {
+        if (feeds.stream().anyMatch(f -> (f == null
+                || f.self().location().getScheme() == null
+                || !ALLOWED_PROTOCOL.contains(f.self().location().getScheme().toLowerCase())))) {
+            return Flux.error(() -> new IllegalArgumentException("Illegal URL for Feed !"));
+        }
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .map(u -> Tuples.of(feeds, u.id()))
-                .flatMap(t -> feedRepository.persistUserRelation(t.getT1(), t.getT2())
-                        .then().thenReturn(t.getT2()))
+                .flatMap(u -> feedRepository.persistUserRelation(feeds, u.id())
+                        .then().thenReturn(u))
 
-                .flatMap(uid -> feedRepository.setFeedProperties(uid, feeds))
+                .flatMap(u -> feedRepository.setFeedProperties(u.id(), feeds))
 
                 .thenMany(list(PageRequest.all(Criteria.property(ID)
                         .in(feeds.stream().map(Entity::id).toList()))));

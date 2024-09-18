@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.DefaultMeta;
+import fr.ght1pc9kc.baywatch.common.api.model.FeedMeta;
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
@@ -18,6 +19,7 @@ import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -67,6 +70,8 @@ class FeedServiceImplTest {
                 .when(mockFeedRepository).getFeedProperties(UserSamples.OBIWAN.id(), List.of(jediFeed.id()), null);
         doReturn(Flux.empty())
                 .when(mockFeedRepository).getFeedProperties(DefaultMeta.NO_ONE, List.of(jediFeed.id()), null);
+        doReturn(Flux.empty().then()).when(mockFeedRepository).setFeedProperties(anyString(), anyCollection());
+
 
         ScraperServicePort mockScraperService = mock(ScraperServicePort.class);
         when(mockScraperService.fetchFeedData(any())).thenReturn(Mono.just(FeedSamples.JEDI.self()));
@@ -148,15 +153,23 @@ class FeedServiceImplTest {
     @SuppressWarnings("unchecked")
     void should_subscribe_feeds_for_user() {
         Entity<WebFeed> jediFeed = BAYWATCH_MAPPER.recordToFeed(FeedRecordSamples.JEDI);
+        var expected = Entity.identify(WebFeed.builder()
+                        .name("Customized Name")
+                        .description("Feed description")
+                        .location(URI.create("http://www.jedi.light/"))
+                        .tags(List.of("force", "jedi")).build())
+                .meta(FeedMeta.createdBy, DefaultMeta.NO_ONE)
+                .withId(jediFeed.id());
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
         ArgumentCaptor<List<Entity<WebFeed>>> captor = ArgumentCaptor.forClass(List.class);
 
         StepVerifier.create(tested.subscribe(List.of(jediFeed)))
-                .expectNext(jediFeed)
+                .assertNext(actual -> Assertions.assertThat(actual).isEqualTo(expected))
                 .verifyComplete();
 
         verify(mockFeedRepository, times(1)).persistUserRelation(captor.capture(),
                 eq(UsersRecordSamples.OKENOBI.getUserId()));
+        verify(mockFeedRepository).setFeedProperties(eq(UsersRecordSamples.OKENOBI.getUserId()), anyCollection());
         assertThat(captor.getValue()).containsExactly(jediFeed);
     }
 
@@ -166,7 +179,7 @@ class FeedServiceImplTest {
         StepVerifier.create(tested.add(List.of(FeedSamples.UNSECURE_PROTOCOL)))
                 .verifyError(IllegalArgumentException.class);
 
-        StepVerifier.create(tested.update(FeedSamples.UNSECURE_PROTOCOL))
+        StepVerifier.create(tested.subscribe(List.of(FeedSamples.UNSECURE_PROTOCOL)))
                 .verifyError(IllegalArgumentException.class);
 
     }

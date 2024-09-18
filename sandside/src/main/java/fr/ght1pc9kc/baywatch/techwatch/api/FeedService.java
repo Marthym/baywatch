@@ -44,14 +44,6 @@ public interface FeedService {
     Mono<Integer> count(PageRequest pageRequest);
 
     /**
-     * Update the subscription to a {@link WebFeed}
-     *
-     * @param toPersist the Feed of the subscription to update
-     * @return The new Feed of the subscription
-     */
-    Mono<Entity<WebFeed>> update(Entity<WebFeed> toPersist);
-
-    /**
      * Add a {@link WebFeed} to the available Feed list in database
      *
      * @param toAdd The list of {@link WebFeed} to add

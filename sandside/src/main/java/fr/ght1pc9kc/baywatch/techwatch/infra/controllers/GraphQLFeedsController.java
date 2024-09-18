@@ -141,8 +141,8 @@ public class GraphQLFeedsController {
             @Argument String id, @Argument String name, @Argument String description, @Argument Collection<String> tags) {
         Set<String> tagsSet = Optional.ofNullable(tags).map(Set::copyOf).orElse(Set.of());
         return feedService.get(id)
-                .map(feed -> feed.convert(e -> e.toBuilder().name(name).description(description).tags(tagsSet).build()))
-                .flatMapMany(feedService::update)
+                .map(feed -> List.of(feed.convert(e -> e.toBuilder().name(name).description(description).tags(tagsSet).build())))
+                .flatMapMany(feedService::subscribe)
                 .next();
     }
 }
