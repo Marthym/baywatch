@@ -60,8 +60,8 @@ class FeedServiceImplTest {
         when(mockFeedRepository.list(any())).thenReturn(Flux.just(jediFeed));
         when(mockFeedRepository.persist(any())).thenAnswer(a ->
                 Flux.fromIterable(a.getArgument(0, List.class)));
-        when(mockFeedRepository.persistUserRelation(anyCollection(), anyString())).thenAnswer(a ->
-                Flux.fromIterable(a.getArgument(0, List.class)));
+        when(mockFeedRepository.persistUserRelation(anyString(), anyCollection())).thenAnswer(a ->
+                Flux.fromIterable(a.getArgument(1, List.class)));
         when(mockFeedRepository.count(any())).thenReturn(Mono.just(42));
         doReturn(Flux.just(Entity.identify(Map.of(
                 FeedProperties.NAME, "Customized Name",
@@ -167,8 +167,8 @@ class FeedServiceImplTest {
                 .assertNext(actual -> Assertions.assertThat(actual).isEqualTo(expected))
                 .verifyComplete();
 
-        verify(mockFeedRepository, times(1)).persistUserRelation(captor.capture(),
-                eq(UsersRecordSamples.OKENOBI.getUserId()));
+        verify(mockFeedRepository, times(1))
+                .persistUserRelation(eq(UsersRecordSamples.OKENOBI.getUserId()), captor.capture());
         verify(mockFeedRepository).setFeedProperties(eq(UsersRecordSamples.OKENOBI.getUserId()), anyCollection());
         assertThat(captor.getValue()).containsExactly(jediFeed);
     }

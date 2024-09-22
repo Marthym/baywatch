@@ -61,5 +61,12 @@ public interface FeedService {
 
     Flux<Entity<WebFeed>> addAndSubscribe(Collection<Entity<WebFeed>> feeds);
 
-    Mono<Integer> delete(Collection<String> toDelete);
+    /**
+     * <p>Unsubscribe {@link fr.ght1pc9kc.baywatch.security.api.model.User} from one or more {@link WebFeed}.</p>
+     * <p>This will remove all user feed customizations</p>
+     *
+     * @param toDelete The collection of {@link WebFeed} IDs to unsubscribe
+     * @return The number of unsubscribed feeds.
+     */
+    Mono<Integer> unsubscribe(Collection<String> toDelete);
 }

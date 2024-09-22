@@ -65,7 +65,7 @@ public class OpmlServiceImpl implements OpmlService {
                     return Flux.merge(db, feeds)
                             .buffer(100)
                             .flatMap(f -> feedRepository.persist(f).collectList())
-                            .flatMap(f -> feedRepository.persistUserRelation(f, owner.id()));
+                            .flatMap(f -> feedRepository.persistUserRelation(owner.id(), f));
                 })).then();
     }
 

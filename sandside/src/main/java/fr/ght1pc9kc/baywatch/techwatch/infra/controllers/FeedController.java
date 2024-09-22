@@ -60,12 +60,6 @@ public class FeedController {
                 .map(count -> Page.of(feeds, count));
     }
 
-    @DeleteMapping("/{id}")
-    public Mono<Entity<WebFeed>> unsubscribe(@PathVariable("id") String id) {
-        return feedService.get(id)
-                .flatMap(feed -> feedService.delete(Collections.singleton(id)).thenReturn(feed));
-    }
-
     @PostMapping("/import")
     public Flux<Entity<WebFeed>> importFeeds(@RequestBody @Valid Flux<FeedForm> feedForms) {
         return feedForms.map(form -> {

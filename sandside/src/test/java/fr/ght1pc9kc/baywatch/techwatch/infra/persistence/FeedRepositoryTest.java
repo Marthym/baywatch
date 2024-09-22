@@ -136,7 +136,7 @@ class FeedRepositoryTest {
                 .withId(FeedRecordSamples.JEDI.getFeedId());
 
 
-        StepVerifier.create(tested.persistUserRelation(Collections.singleton(expected), OKENOBI.getUserId()))
+        StepVerifier.create(tested.persistUserRelation(OKENOBI.getUserId(), Collections.singleton(expected)))
                 .assertNext(actual -> assertThat(actual).isEqualTo(expected))
                 .verifyComplete();
 

@@ -52,6 +52,7 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsersProperties.FEEDS_USERS_PROPERTIES;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
 
 @Slf4j
 @Repository
@@ -234,7 +235,7 @@ public class FeedRepository implements FeedPersistencePort {
     }
 
     @Override
-    public Flux<Entity<WebFeed>> persistUserRelation(Collection<Entity<WebFeed>> feeds, String userId) {
+    public Flux<Entity<WebFeed>> persistUserRelation(String userId, Collection<Entity<WebFeed>> feeds) {
         List<FeedsUsersRecord> feedsUsersRecords = feeds.stream()
                 .map(f -> FEEDS_USERS.newRecord()
                         .setFeusFeedId(f.id())
@@ -258,6 +259,7 @@ public class FeedRepository implements FeedPersistencePort {
                         .build()));
     }
 
+    @Deprecated
     @Override
     public Mono<FeedDeletedResult> delete(QueryContext qCtx) {
         Condition feedsUsersConditions = qCtx.filter().accept(FeedConditionsVisitors.feedUserIdVisitor());
@@ -301,6 +303,34 @@ public class FeedRepository implements FeedPersistencePort {
                     int purged = deleteFeedQuery.map(q -> tx.dsl().execute(q)).orElse(0);
                     return new FeedDeletedResult(unsubscribed, purged);
                 }));
+    }
+
+    @Override
+    public Mono<Void> deleteUserRelations(String userId, Collection<String> feedsIds) {
+        if (feedsIds.isEmpty()) {
+            return Mono.empty().then();
+        }
+        requireNonNull(userId, "User ID is mandatory for this operation");
+        return Mono.fromCallable(() -> dsl.delete(FEEDS_USERS).where(
+                                FEEDS_USERS.FEUS_USER_ID.eq(userId),
+                                FEEDS_USERS.FEUS_FEED_ID.in(feedsIds))
+                        .execute())
+                .subscribeOn(databaseScheduler)
+                .then();
+    }
+
+    @Override
+    public Mono<Void> deleteFeedProperties(String userId, Collection<String> feedsIds) {
+        if (feedsIds.isEmpty()) {
+            return Mono.empty().then();
+        }
+        requireNonNull(userId, "User ID is mandatory for this operation");
+        return Mono.fromCallable(() -> dsl.delete(FEEDS_USERS_PROPERTIES).where(
+                                FEEDS_USERS_PROPERTIES.FUPR_USER_ID.eq(userId),
+                                FEEDS_USERS_PROPERTIES.FUPR_FEED_ID.in(feedsIds))
+                        .execute())
+                .subscribeOn(databaseScheduler)
+                .then();
     }
 
     private Select<Record> buildSelectQuery(QueryContext qCtx) {

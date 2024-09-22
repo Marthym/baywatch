@@ -12,6 +12,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedForm;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.graphql.SearchFeedsRequest;
 import fr.ght1pc9kc.entity.api.Entity;
+import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
 import graphql.ErrorClassification;
@@ -144,5 +145,12 @@ public class GraphQLFeedsController {
                 .map(feed -> List.of(feed.convert(e -> e.toBuilder().name(name).description(description).tags(tagsSet).build())))
                 .flatMapMany(feedService::subscribe)
                 .next();
+    }
+
+    @MutationMapping
+    @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
+    public Flux<Entity<WebFeed>> feedDelete(@Argument("ids") Collection<String> ids) {
+        return feedService.list(PageRequest.all(Criteria.property(EntitiesProperties.ID).in(ids)))
+                .flatMap(toBeReturned -> feedService.unsubscribe(ids).thenMany(Flux.just(toBeReturned)));
     }
 }

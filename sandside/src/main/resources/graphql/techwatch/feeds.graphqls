@@ -39,5 +39,6 @@ extend type Query {
 extend type Mutation {
     feedAddAndSubscribe(feed: FeedForm): Feed
     feedUpdate(id: ID, name: String, description: String, tags: [String]): Feed
+    feedDelete(ids: [ID]): [Feed]
     subscribe(id: ID, name: String, tags: [String]): Feed
 }

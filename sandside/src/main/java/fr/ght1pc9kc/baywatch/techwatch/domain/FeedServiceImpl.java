@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
-import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.common.api.model.FeedMeta;
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
@@ -9,7 +8,6 @@ import fr.ght1pc9kc.baywatch.techwatch.api.FeedService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.ScraperServicePort;
-import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedProperties;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -144,7 +142,7 @@ public class FeedServiceImpl implements FeedService {
         }
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .flatMap(u -> feedRepository.persistUserRelation(feeds, u.id())
+                .flatMap(u -> feedRepository.persistUserRelation(u.id(), feeds)
                         .then().thenReturn(u))
 
                 .flatMap(u -> feedRepository.setFeedProperties(u.id(), feeds))
@@ -173,15 +171,11 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public Mono<Integer> delete(Collection<String> toDelete) {
+    public Mono<Integer> unsubscribe(Collection<String> toDelete) {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
-                .map(u -> QueryContext.builder()
-                        .filter(Criteria.property(EntitiesProperties.FEED_ID).in(toDelete)
-                                .or(Criteria.property(ID).in(toDelete)))
-                        .userId(u.id())
-                        .build())
-                .flatMap(feedRepository::delete)
-                .map(FeedDeletedResult::unsubscribed);
+                .flatMap(user -> feedRepository.deleteFeedProperties(user.id(), toDelete).thenReturn(user))
+                .flatMap(user -> feedRepository.deleteUserRelations(user.id(), toDelete))
+                .thenReturn(toDelete.size());
     }
 }
