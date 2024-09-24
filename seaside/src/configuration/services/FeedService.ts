@@ -139,7 +139,7 @@ mutation FeedDelete($ids: [ID]) {
     feedDelete(ids: $ids) {_id name}
 }`;
 
-export function feedDelete(ids: String[]): Observable<Pick<Feed, '_id' | 'name'>[]> {
+export function feedDelete(ids: string[]): Observable<Pick<Feed, '_id' | 'name'>[]> {
     return send<{ feedDelete: Feed[] }>(FEED_DELETE, { ids }).pipe(
         map(data => data.data.feedDelete),
         take(1),

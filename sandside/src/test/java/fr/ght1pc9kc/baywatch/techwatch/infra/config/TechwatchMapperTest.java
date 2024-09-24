@@ -30,13 +30,13 @@ class TechwatchMapperTest {
     void should_convert_FeedRecord_to_Feed_pojo() {
         List<Field<?>> fields = new ArrayList<>(Arrays.asList(FEEDS.fields()));
 
-        Record record = DSL.using(new DefaultConfiguration()).newRecord(fields);
-        record.set(FEEDS.FEED_ID, FeedSamples.JEDI.id());
-        record.set(FEEDS.FEED_NAME, "Blog ght1pc9kc");
-        record.set(FEEDS.FEED_URL, FeedSamples.JEDI.self().location().toString());
-        record.set(FEEDS.FEED_LAST_WATCH, DateUtils.toLocalDateTime(Instant.parse("2024-09-11T19:05:42Z")));
+        Record feedRecord = DSL.using(new DefaultConfiguration()).newRecord(fields);
+        feedRecord.set(FEEDS.FEED_ID, FeedSamples.JEDI.id());
+        feedRecord.set(FEEDS.FEED_NAME, "Blog ght1pc9kc");
+        feedRecord.set(FEEDS.FEED_URL, FeedSamples.JEDI.self().location().toString());
+        feedRecord.set(FEEDS.FEED_LAST_WATCH, DateUtils.toLocalDateTime(Instant.parse("2024-09-11T19:05:42Z")));
 
-        Entity<WebFeed> actual = tested.recordToFeed(record);
+        Entity<WebFeed> actual = tested.recordToFeed(feedRecord);
 
         org.junit.jupiter.api.Assertions.assertAll(
                 () -> assertThat(actual.id()).isEqualTo(FeedSamples.JEDI.id()),

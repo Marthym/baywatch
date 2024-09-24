@@ -30,6 +30,7 @@ import static fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException.
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.createdBy;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @RequiredArgsConstructor
 public class FeedServiceImpl implements FeedService {
@@ -72,39 +73,44 @@ public class FeedServiceImpl implements FeedService {
                         }))
 
                 .buffer(Math.min(pageRequest.pagination().size(), 100))
-                .flatMap(webFeeds -> {
-                    String createdBy = webFeeds.getFirst().meta(FeedMeta.createdBy).orElse(null);
+                .flatMap(rawWebFeeds -> {
+                    String createdBy = rawWebFeeds.getFirst().meta(FeedMeta.createdBy).orElse(null);
                     if (isNull(createdBy)) {
-                        return Flux.fromIterable(webFeeds);
+                        return Flux.fromIterable(rawWebFeeds);
                     }
-                    List<String> feedsIds = webFeeds.stream().map(Entity::id).toList();
+                    List<String> feedsIds = rawWebFeeds.stream().map(Entity::id).toList();
                     return authFacade.getConnectedUser()
                             .map(Entity::id)
                             .switchIfEmpty(Mono.just(NO_ONE))
                             .flatMapMany(userId -> feedRepository.getFeedProperties(userId, feedsIds, null))
                             .map(eProps -> Map.entry(eProps.id(), eProps.self()))
                             .collectMap(Map.Entry::getKey, Map.Entry::getValue)
-                            .flatMapMany(allProps -> Flux.fromIterable(webFeeds)
-                                    .map(webFeed -> {
-                                        Map<FeedProperties, String> feedProperties = allProps.get(webFeed.id());
-                                        if (isNull(feedProperties)) {
-                                            return webFeed;
-                                        } else {
-                                            return webFeed.convert(self -> {
-                                                WebFeed.WebFeedBuilder selfBuilder = self.toBuilder();
-                                                feedProperties.forEach((feedProp, value) -> {
-                                                    switch (feedProp) {
-                                                        case DESCRIPTION -> selfBuilder.description(value);
-                                                        case NAME -> selfBuilder.name(value);
-                                                        case TAG -> selfBuilder.tags(Set.of(value.split(",")));
-                                                        case null, default -> {
-                                                        }
-                                                    }
-                                                });
-                                                return selfBuilder.build();
-                                            });
-                                        }
-                                    }));
+                            .flatMapMany(allProps -> overrideCustomizedFeedProperties(allProps, rawWebFeeds));
+                });
+    }
+
+    private Flux<Entity<WebFeed>> overrideCustomizedFeedProperties(
+            Map<String, Map<FeedProperties, String>> allPropertiesByFeed,
+            List<Entity<WebFeed>> rawFeeds) {
+        return Flux.fromIterable(rawFeeds)
+                .map(webFeed -> {
+                    Map<FeedProperties, String> feedProperties = allPropertiesByFeed.get(webFeed.id());
+                    if (isNull(feedProperties)) {
+                        return webFeed;
+                    } else {
+                        return webFeed.convert(self -> {
+                            WebFeed.WebFeedBuilder selfBuilder = self.toBuilder();
+                            feedProperties.forEach((feedProp, value) -> {
+                                switch (feedProp) {
+                                    case DESCRIPTION -> selfBuilder.description(value);
+                                    case NAME -> selfBuilder.name(value);
+                                    case TAG -> selfBuilder.tags(Set.of(value.split(",")));
+                                    case null, default -> {/* Nothing to do if null */}
+                                }
+                            });
+                            return selfBuilder.build();
+                        });
+                    }
                 });
     }
 
@@ -151,36 +157,41 @@ public class FeedServiceImpl implements FeedService {
                 .flatMap(u -> feedRepository.list(QueryContext.all(Criteria.property(ID).in(subscribedIds)))
                         .collectMap(Entity::id, Function.identity())
                         .map(originals -> feeds.stream()
-                                .map(feedEntity -> feedEntity.convert(feed -> {
-                                    Entity<WebFeed> rawFeed = originals.get(feedEntity.id());
-                                    if (isNull(rawFeed)) {
-                                        return null;
-                                    }
-                                    WebFeed.WebFeedBuilder feedBuilder = WebFeed.builder()
-                                            .location(rawFeed.self().location());
-                                    boolean isSame = true;
-                                    if (!feed.name().equals(rawFeed.self().name())) {
-                                        feedBuilder.name(feed.name());
-                                        isSame = false;
-                                    }
-                                    if (!feed.description().equals(rawFeed.self().description())) {
-                                        feedBuilder.description(feed.description());
-                                        isSame = false;
-                                    }
-                                    if (!feed.tags().equals(rawFeed.self().tags())) {
-                                        feedBuilder.tags(feed.tags());
-                                        isSame = false;
-                                    }
-                                    if (isSame) {
-                                        return null;
-                                    } else {
-                                        return feedBuilder.build();
-                                    }
-                                })).toList())
+                                .map(feedEntity -> feedEntity.convert(ignore -> optimizeWebFeedToUpdate(feedEntity, originals)))
+                                .toList())
                         .flatMap(optimisedFeeds -> feedRepository.setFeedProperties(u.id(), optimisedFeeds)))
 
                 .thenMany(list(PageRequest.all(Criteria.property(ID)
                         .in(subscribedIds))));
+    }
+
+    private WebFeed optimizeWebFeedToUpdate(Entity<WebFeed> feedEntity, Map<String, Entity<WebFeed>> originals) {
+
+        Entity<WebFeed> rawFeed = originals.get(feedEntity.id());
+        if (isNull(rawFeed)) {
+            return null;
+        }
+        WebFeed.WebFeedBuilder feedBuilder = WebFeed.builder()
+                .location(rawFeed.self().location());
+        final WebFeed feed = feedEntity.self();
+        boolean isSame = true;
+        if (nonNull(feed.name()) && !feed.name().equals(rawFeed.self().name())) {
+            feedBuilder.name(feed.name());
+            isSame = false;
+        }
+        if (nonNull(feed.description()) && !feed.description().equals(rawFeed.self().description())) {
+            feedBuilder.description(feed.description());
+            isSame = false;
+        }
+        if (!feed.tags().equals(rawFeed.self().tags())) {
+            feedBuilder.tags(feed.tags());
+            isSame = false;
+        }
+        if (isSame) {
+            return null;
+        } else {
+            return feedBuilder.build();
+        }
     }
 
     @Override

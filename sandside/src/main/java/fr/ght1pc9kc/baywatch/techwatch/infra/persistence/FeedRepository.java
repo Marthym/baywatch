@@ -261,8 +261,13 @@ public class FeedRepository implements FeedPersistencePort {
                         .build()));
     }
 
-    @Deprecated
+    /**
+     * @param qCtx Context of the query, containing the filter.
+     * @return Result of deletion
+     * @deprecated Should be moved to FeedAdminPersistence
+     */
     @Override
+    @Deprecated(since = "2.1.4")
     public Mono<FeedDeletedResult> delete(QueryContext qCtx) {
         Condition feedsUsersConditions = qCtx.filter().accept(FeedConditionsVisitors.feedUserIdVisitor());
         final Optional<Query> deleteUserLinkQuery;
