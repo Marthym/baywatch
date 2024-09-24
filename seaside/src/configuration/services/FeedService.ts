@@ -1,10 +1,7 @@
-import { map, switchMap, take } from 'rxjs/operators';
-import { HttpStatusError } from '@/common/errors/HttpStatusError';
+import { map, take } from 'rxjs/operators';
 import { Feed } from '@/configuration/model/Feed.type';
 import { Page } from '@/common/model/Page';
-import { from, Observable, of, throwError } from 'rxjs';
-import rest from '@/common/services/RestWrapper';
-import { OpPatch } from 'json-patch';
+import { Observable, of, throwError } from 'rxjs';
 import { AtomFeed, ScrapFeedHeaderResponse } from '@/configuration/model/GraphQLScraper.type';
 import { SearchFeedsRequest, SearchFeedsResponse } from '@/configuration/model/SearchFeedsResponse.type';
 import { send } from '@/common/services/GraphQLClient';
@@ -44,13 +41,13 @@ export class FeedService {
      * @return The {@link Feed} page corresponding to the options
      */
     public list(options: SearchFeedsRequest): Observable<Page<Feed>> {
-        const resolvedPage = (options._p > 0) ? options._p : 0;
+        const resolvedPage: number = (options._p && options._p > 0) ? options._p : 0;
         return send<SearchFeedsResponse>(FeedService.FEEDS_SEARCH_REQUEST, options).pipe(
             map(res => {
                 return {
                     currentPage: resolvedPage,
                     totalPage: Math.ceil(
-                        res.data.feedsSearch.totalCount / (options._pp | FeedService.DEFAULT_PER_PAGE)),
+                        res.data.feedsSearch.totalCount / (options._pp ?? FeedService.DEFAULT_PER_PAGE)),
                     data: of(res.data.feedsSearch.entities).pipe(
                         map(feeds => {
                             feeds.forEach(feed => {
@@ -68,37 +65,6 @@ export class FeedService {
             }),
             take(1),
         );
-    }
-
-    public remove(id: string): Observable<Feed> {
-        return rest.delete(`/feeds/${id}`).pipe(
-            switchMap(this.responseToFeed),
-            take(1),
-        );
-    }
-
-    public bulkRemove(ids: string[]): Observable<number> {
-        const jsonPatch: OpPatch[] = [];
-        ids.forEach(id => jsonPatch.push({ op: 'remove', path: `/feeds/${id}` }));
-        return this.patch(jsonPatch).pipe(
-            map(deleted => deleted.length),
-        );
-    }
-
-    private patch(payload: OpPatch[]): Observable<string[]> {
-        return rest.patch('/feeds', payload).pipe(
-            switchMap(this.responseToFeed),
-            take(1),
-        );
-    }
-
-    private responseToFeed(response: Response): Observable<any> {
-        if (response.ok) {
-            return from(response.json());
-        } else {
-            return from(response.json()).pipe(switchMap(j =>
-                throwError(() => new HttpStatusError(response.status, j.message))));
-        }
     }
 
     public fetchFeedInformation(link?: string): Observable<Feed> {
@@ -164,6 +130,18 @@ export function feedAddAndSubscribe(feed: Pick<Feed, 'name' | 'description' | 't
         },
     }).pipe(
         map(data => data.data.feedAddAndSubscribe),
+        take(1),
+    );
+}
+
+const FEED_DELETE = `#graphql
+mutation FeedDelete($ids: [ID]) {
+    feedDelete(ids: $ids) {_id name}
+}`;
+
+export function feedDelete(ids: String[]): Observable<Pick<Feed, '_id' | 'name'>[]> {
+    return send<{ feedDelete: Feed[] }>(FEED_DELETE, { ids }).pipe(
+        map(data => data.data.feedDelete),
         take(1),
     );
 }

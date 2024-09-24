@@ -21,8 +21,7 @@
         <label class="label" for="feedDescription">
           <span class="label-text capitalize">{{ t('config.feeds.editor.form.description') }}</span>
         </label>
-        <textarea id="feedDescription" v-model="feed.description" class="textarea italic"
-                  readonly rows="3"/>
+        <textarea id="feedDescription" v-model="feed.description" class="textarea textarea-bordered italic" rows="3"/>
 
         <TagInput v-model="feed.tags" :available-tags-handler="() => listAvailableTags()"/>
       </fieldset>

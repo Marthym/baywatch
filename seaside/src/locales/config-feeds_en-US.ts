@@ -15,4 +15,9 @@ export const en_US = {
     'config.feeds.editor.form.name.placeholder': 'name',
     'config.feeds.editor.form.description': 'description',
     'config.feeds.editor.form.action.submit': 'save',
+    'config.feeds.messages.feedUnsubscribeSuccessfully': 'Flux {feed} supprimé avec succès ! ' +
+        '| {n} flux supprimés avec succès !',
+    'config.feeds.messages.feedUnsubscribeFailed': 'An error occur during feed unsubscribe !',
+    'config.feeds.confirm.feedsDeletion': 'Unsubscribe from "<b>{feed}</b>" ?' +
+        '| Unsubscribe from {n} feeds ?',
 };
