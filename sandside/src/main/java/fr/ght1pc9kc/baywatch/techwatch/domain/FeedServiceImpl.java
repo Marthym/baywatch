@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.NO_ONE;
 import static fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException.AUTHENTICATION_NOT_FOUND;
@@ -140,15 +141,46 @@ public class FeedServiceImpl implements FeedService {
                 || !ALLOWED_PROTOCOL.contains(f.self().location().getScheme().toLowerCase())))) {
             return Flux.error(() -> new IllegalArgumentException("Illegal URL for Feed !"));
         }
+
+        List<String> subscribedIds = feeds.stream().map(Entity::id).toList();
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
                 .flatMap(u -> feedRepository.persistUserRelation(u.id(), feeds)
                         .then().thenReturn(u))
 
-                .flatMap(u -> feedRepository.setFeedProperties(u.id(), feeds))
+                .flatMap(u -> feedRepository.list(QueryContext.all(Criteria.property(ID).in(subscribedIds)))
+                        .collectMap(Entity::id, Function.identity())
+                        .map(originals -> feeds.stream()
+                                .map(feedEntity -> feedEntity.convert(feed -> {
+                                    Entity<WebFeed> rawFeed = originals.get(feedEntity.id());
+                                    if (isNull(rawFeed)) {
+                                        return null;
+                                    }
+                                    WebFeed.WebFeedBuilder feedBuilder = WebFeed.builder()
+                                            .location(rawFeed.self().location());
+                                    boolean isSame = true;
+                                    if (!feed.name().equals(rawFeed.self().name())) {
+                                        feedBuilder.name(feed.name());
+                                        isSame = false;
+                                    }
+                                    if (!feed.description().equals(rawFeed.self().description())) {
+                                        feedBuilder.description(feed.description());
+                                        isSame = false;
+                                    }
+                                    if (!feed.tags().equals(rawFeed.self().tags())) {
+                                        feedBuilder.tags(feed.tags());
+                                        isSame = false;
+                                    }
+                                    if (isSame) {
+                                        return null;
+                                    } else {
+                                        return feedBuilder.build();
+                                    }
+                                })).toList())
+                        .flatMap(optimisedFeeds -> feedRepository.setFeedProperties(u.id(), optimisedFeeds)))
 
                 .thenMany(list(PageRequest.all(Criteria.property(ID)
-                        .in(feeds.stream().map(Entity::id).toList()))));
+                        .in(subscribedIds))));
     }
 
     @Override

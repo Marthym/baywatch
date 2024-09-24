@@ -128,26 +128,28 @@ public class FeedRepository implements FeedPersistencePort {
         var records = new ArrayList<FeedsUsersPropertiesRecord>();
         List<String> feedsIds = feeds.stream().map(Entity::id).distinct().toList();
         for (Entity<WebFeed> feed : feeds) {
-            if (nonNull(feed.self().name()) && !feed.self().name().isEmpty()) {
-                records.add(FEEDS_USERS_PROPERTIES.newRecord()
-                        .setFuprFeedId(feed.id())
-                        .setFuprUserId(userId)
-                        .setFuprPropertyName(FeedProperties.NAME.name())
-                        .setFuprPropertyValue(feed.self().name()));
-            }
-            if (nonNull(feed.self().description()) && !feed.self().description().isEmpty()) {
-                records.add(FEEDS_USERS_PROPERTIES.newRecord()
-                        .setFuprFeedId(feed.id())
-                        .setFuprUserId(userId)
-                        .setFuprPropertyName(FeedProperties.DESCRIPTION.name())
-                        .setFuprPropertyValue(feed.self().description()));
-            }
-            if (!feed.self().tags().isEmpty()) {
-                feed.self().tags().forEach(tag -> records.add(FEEDS_USERS_PROPERTIES.newRecord()
-                        .setFuprFeedId(feed.id())
-                        .setFuprUserId(userId)
-                        .setFuprPropertyName(FeedProperties.TAG.name())
-                        .setFuprPropertyValue(tag)));
+            if (nonNull(feed.self())) {
+                if (nonNull(feed.self().name()) && !feed.self().name().isEmpty()) {
+                    records.add(FEEDS_USERS_PROPERTIES.newRecord()
+                            .setFuprFeedId(feed.id())
+                            .setFuprUserId(userId)
+                            .setFuprPropertyName(FeedProperties.NAME.name())
+                            .setFuprPropertyValue(feed.self().name()));
+                }
+                if (nonNull(feed.self().description()) && !feed.self().description().isEmpty()) {
+                    records.add(FEEDS_USERS_PROPERTIES.newRecord()
+                            .setFuprFeedId(feed.id())
+                            .setFuprUserId(userId)
+                            .setFuprPropertyName(FeedProperties.DESCRIPTION.name())
+                            .setFuprPropertyValue(feed.self().description()));
+                }
+                if (!feed.self().tags().isEmpty()) {
+                    feed.self().tags().forEach(tag -> records.add(FEEDS_USERS_PROPERTIES.newRecord()
+                            .setFuprFeedId(feed.id())
+                            .setFuprUserId(userId)
+                            .setFuprPropertyName(FeedProperties.TAG.name())
+                            .setFuprPropertyValue(tag)));
+                }
             }
         }
 
