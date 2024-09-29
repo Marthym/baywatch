@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<opml version="2.0">
+    <head>
+        <title>Baywatch OPML export</title>
+        <dateCreated>Sun, 28 Apr 2024 17:47:47 GMT</dateCreated>
+        <ownerName>Fred</ownerName>
+        <ownerEmail>marthym@gmail.com</ownerEmail>
+    </head>
+    <body>
+        <outline text="A Java Geek" type="rss" xmlUrl="https://blog.frankel.ch/feed.xml" title="A Java Geek"
+                 category="coding,java,techno"/>
+        <outline text="Clubic.com" type="rss" xmlUrl="https://www.clubic.com/feed/news-pro.rss" title="Clubic.com"
+                 category="culture,high-tech"/>
+        <outline text="Clubic.com" type="rss" xmlUrl="https://www.clubic.com/feed/news.rss" title="Clubic.com"
+                 category="culture,high-tech"/>
+        <outline text="Bits from Debian" type="rss" xmlUrl="https://bits.debian.org/feeds/feed.rss"
+                 title="Bits from Debian" category="linux,techno"/>
+        <outline text="Developpez.com" type="rss" xmlUrl="https://www.developpez.com/index/rss" title="Developpez.com"
+                 category="high-tech,coding"/>
+        <outline text="ght1kp9kc.fr" type="rss" xmlUrl="https://blog.ght1pc9kc.fr/index.xml" title="ght1kp9kc.fr"
+                 category="techno,culture"/>
+        <outline text="Human Coders News" type="rss" xmlUrl="https://news.humancoders.com/items/feed.rss"
+                 title="Human Coders News" category="coding,java,techno"/>
+        <outline text="Journal du hacker" type="rss" xmlUrl="https://www.journalduhacker.net/rss"
+                 title="Journal du hacker" category="culture,techno"/>
+        <outline text="Le blog de Seboss666" type="rss" xmlUrl="https://blog.seboss666.info/feed/"
+                 title="Le blog de Seboss666" category="culture,techno"/>
+        <outline text="Le Monde.fr - Actualités et Infos en France et dans le monde" type="rss"
+                 xmlUrl="https://www.lemonde.fr/rss/une.xml"
+                 title="Le Monde.fr - Actualités et Infos en France et dans le monde" category="culture,general"/>
+        <outline text="Les Cast Codeurs" type="rss" xmlUrl="https://lescastcodeurs.libsyn.com/rss"
+                 title="Les Cast Codeurs" category="culture,java,techno"/>
+        <outline text="OCTO Talks !" type="rss" xmlUrl="https://blog.octo.com/feed/" title="OCTO Talks !"
+                 category="culture,techno"/>
+        <outline text="Spring" type="rss" xmlUrl="https://spring.io/blog.atom" title="Spring" category="java,techno"/>
+        <outline text="Lyft Engineering - Medium" type="rss" xmlUrl="https://eng.lyft.com/feed"
+                 title="Lyft Engineering - Medium" category="techno"/>
+        <outline text="Netflix TechBlog - Medium" type="rss" xmlUrl="https://netflixtechblog.com/feed"
+                 title="Netflix TechBlog - Medium" category="techno"/>
+        <outline text="The Airbnb Tech Blog - Medium" type="rss" xmlUrl="https://medium.com/feed/airbnb-engineering"
+                 title="The Airbnb Tech Blog - Medium" category="techno"/>
+        <outline text="The Pragmatic Engineer" type="rss" xmlUrl="https://feeds.feedburner.com/ThePragmaticEngineer"
+                 title="The Pragmatic Engineer" category="techno,management"/>
+        <outline text="Solutions Numeriques" type="rss" xmlUrl="https://www.solutions-numeriques.com/dossiers/feed/"
+                 title="Solutions Numeriques" category="management,high-tech"/>
+        <outline text="Uber Blog" type="rss" xmlUrl="https://www.uber.com/blog/engineering/rss/" title="Uber Blog"
+                 category="techno,coding"/>
+        <outline text="ByteByteGo Newsletter" type="rss" xmlUrl="https://blog.bytebytego.com/feed"
+                 title="ByteByteGo Newsletter" category="techno,management"/>
+        <outline text="HowToDoInJava" type="rss" xmlUrl="https://howtodoinjava.com/feed/" title="HowToDoInJava"
+                 category="coding,java,techno"/>
+        <outline text="patkua.com" type="rss" xmlUrl="https://www.patkua.com/feed/" title="patkua.com"
+                 category="techno,management"/>
+        <outline text="Une tasse de café" type="rss" xmlUrl="https://une-tasse-de.cafe/index.xml"
+                 title="Une tasse de café" category="sysadmin,techno"/>
+        <outline text="Tailwind CSS Blog" type="rss" xmlUrl="https://tailwindcss.com/feeds/feed.xml"
+                 title="Tailwind CSS Blog" category=""/>
+        <outline text="foojay" type="rss" xmlUrl="https://foojay.io/feed/" title="foojay"
+                 category="coding,java,techno"/>
+        <outline text="Java Newsletter" type="rss" xmlUrl="https://javabulletin.substack.com/feed"
+                 title="Java Newsletter" category="coding,java,techno"/>
+        <outline text="Guillaume Laforge" type="rss" xmlUrl="https://glaforge.dev/index.xml" title="Guillaume Laforge"
+                 category="coding,high-tech"/>
+        <outline text="Frontend Masters Boost" type="rss" xmlUrl="https://frontendmasters.com/blog/feed/"
+                 title="Frontend Masters Boost" category="coding,frontend"/>
+        <outline text="top scoring links : java" type="rss" xmlUrl="https://www.reddit.com/r/java/top/.rss?sort=new"
+                 title="top scoring links : java" category="coding,java,techno"/>
+        <outline text="top scoring links : programming" type="rss"
+                 xmlUrl="https://www.reddit.com/r/programming/top/.rss?sort=new" title="top scoring links : programming"
+                 category="coding,techno"/>
+    </body>
+</opml>

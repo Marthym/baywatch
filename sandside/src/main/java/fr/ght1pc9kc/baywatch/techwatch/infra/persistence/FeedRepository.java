@@ -94,9 +94,9 @@ public class FeedRepository implements FeedPersistencePort {
         }
         if (nonNull(properties)) {
             if (properties.size() == 1) {
-                FEEDS_USERS_PROPERTIES.FUPR_PROPERTY_NAME.eq(properties.iterator().next().name());
+                query.addConditions(FEEDS_USERS_PROPERTIES.FUPR_PROPERTY_NAME.eq(properties.iterator().next().name()));
             } else if (!properties.isEmpty()) {
-                FEEDS_USERS_PROPERTIES.FUPR_PROPERTY_NAME.in(properties.stream().map(FeedProperties::name).toList());
+                query.addConditions(FEEDS_USERS_PROPERTIES.FUPR_PROPERTY_NAME.in(properties.stream().map(FeedProperties::name).toList()));
             }
         }
         query.addOrderBy(FEEDS_USERS_PROPERTIES.FUPR_USER_ID, FEEDS_USERS_PROPERTIES.FUPR_FEED_ID);
