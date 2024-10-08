@@ -1,8 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { createI18n } from 'vue-i18n';
-import { createRouter, createWebHashHistory } from 'vue-router';
-import LoginPage from '@/security/pages/LoginPage.vue';
 import NewsList from '@/techwatch/components/newslist/NewsList.vue';
 import NewsCard from '@/techwatch/components/newslist/NewsCard.vue';
 import { i18n } from '@/i18n';
