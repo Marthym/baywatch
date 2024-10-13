@@ -3,15 +3,16 @@ package fr.ght1pc9kc.baywatch.common.infra.mappers;
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
+import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedProperties;
 import lombok.experimental.UtilityClass;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 import java.util.Map;
 
-import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.TAGS_SEPARATOR;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
+import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsersProperties.FEEDS_USERS_PROPERTIES;
 import static fr.ght1pc9kc.baywatch.dsl.tables.News.NEWS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
@@ -30,7 +31,8 @@ public final class PropertiesMappers {
             EntitiesProperties.LAST_WATCH, FEEDS.FEED_LAST_WATCH,
             EntitiesProperties.USER_ID, FEEDS_USERS.FEUS_USER_ID,
             EntitiesProperties.FEED_ID, FEEDS_USERS.FEUS_FEED_ID,
-            EntitiesProperties.TAGS, DSL.concat(DSL.value(TAGS_SEPARATOR), FEEDS_USERS.FEUS_TAGS, DSL.value(TAGS_SEPARATOR))
+            EntitiesProperties.TAGS, DSL.if_(FEEDS_USERS_PROPERTIES.FUPR_PROPERTY_NAME.eq(FeedProperties.TAG.name()),
+                    FEEDS_USERS_PROPERTIES.FUPR_PROPERTY_VALUE, DSL.nullCondition())
     );
 
     public static final Map<String, Field<?>> NEWS_PROPERTIES_MAPPING = Map.of(

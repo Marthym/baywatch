@@ -9,18 +9,20 @@ import lombok.experimental.Delegate;
 import java.util.Set;
 
 /**
- * The News element customized with state and {@link WebFeed#reference()}
+ * The News element customized with state and {@link WebFeed}
  */
 @With
 @Value
 @Builder
 public class News {
     @Delegate(types = RawNews.class)
-    @NonNull RawNews raw;
+    @NonNull
+    RawNews raw;
 
     Set<String> feeds;
     Set<String> tags;
 
     @Delegate(types = State.class)
-    @NonNull State state;
+    @NonNull
+    State state;
 }

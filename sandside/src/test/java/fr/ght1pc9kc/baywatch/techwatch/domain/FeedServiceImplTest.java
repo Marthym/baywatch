@@ -1,13 +1,16 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
-import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
+import fr.ght1pc9kc.baywatch.common.api.DefaultMeta;
+import fr.ght1pc9kc.baywatch.common.api.model.FeedMeta;
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.techwatch.api.FeedService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
-import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.ScraperServicePort;
+import fr.ght1pc9kc.baywatch.techwatch.infra.config.TechwatchMapper;
+import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedProperties;
 import fr.ght1pc9kc.baywatch.tests.samples.FeedSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
@@ -16,6 +19,7 @@ import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,13 +29,16 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -39,7 +46,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class FeedServiceImplTest {
-    public static final BaywatchMapper BAYWATCH_MAPPER = Mappers.getMapper(BaywatchMapper.class);
+    public static final TechwatchMapper BAYWATCH_MAPPER = Mappers.getMapper(TechwatchMapper.class);
 
     private final FeedPersistencePort mockFeedRepository = mock(FeedPersistencePort.class);
     private final AuthenticationFacade mockAuthFacade = mock(AuthenticationFacade.class);
@@ -53,9 +60,18 @@ class FeedServiceImplTest {
         when(mockFeedRepository.list(any())).thenReturn(Flux.just(jediFeed));
         when(mockFeedRepository.persist(any())).thenAnswer(a ->
                 Flux.fromIterable(a.getArgument(0, List.class)));
-        when(mockFeedRepository.persistUserRelation(anyCollection(), anyString())).thenAnswer(a ->
-                Flux.fromIterable(a.getArgument(0, List.class)));
+        when(mockFeedRepository.persistUserRelation(anyString(), anyCollection())).thenAnswer(a ->
+                Flux.fromIterable(a.getArgument(1, List.class)));
         when(mockFeedRepository.count(any())).thenReturn(Mono.just(42));
+        doReturn(Flux.just(Entity.identify(Map.of(
+                FeedProperties.NAME, "Customized Name",
+                FeedProperties.TAG, "jedi,force"
+        )).withId(jediFeed.id())))
+                .when(mockFeedRepository).getFeedProperties(UserSamples.OBIWAN.id(), List.of(jediFeed.id()), null);
+        doReturn(Flux.empty())
+                .when(mockFeedRepository).getFeedProperties(DefaultMeta.NO_ONE, List.of(jediFeed.id()), null);
+        doReturn(Flux.empty().then()).when(mockFeedRepository).setFeedProperties(anyString(), anyCollection());
+
 
         ScraperServicePort mockScraperService = mock(ScraperServicePort.class);
         when(mockScraperService.fetchFeedData(any())).thenReturn(Mono.just(FeedSamples.JEDI.self()));
@@ -74,7 +90,7 @@ class FeedServiceImplTest {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.empty());
         ArgumentCaptor<QueryContext> captor = ArgumentCaptor.forClass(QueryContext.class);
 
-        tested.list().collectList().block();
+        StepVerifier.create(tested.list()).expectNextCount(1).verifyComplete();
 
         verify(mockFeedRepository, times(1)).list(captor.capture());
 
@@ -87,9 +103,10 @@ class FeedServiceImplTest {
         ArgumentCaptor<QueryContext> captor = ArgumentCaptor.forClass(QueryContext.class);
 
         {
-            tested.list().collectList().block();
+            StepVerifier.create(tested.list()).expectNextCount(1).verifyComplete();
 
             verify(mockFeedRepository, times(1)).list(captor.capture());
+            verify(mockFeedRepository, times(1)).getFeedProperties(anyString(), anyCollection(), any());
             assertThat(captor.getValue()).isEqualTo(QueryContext.empty().withUserId(UserSamples.OBIWAN.id()));
         }
 
@@ -136,15 +153,23 @@ class FeedServiceImplTest {
     @SuppressWarnings("unchecked")
     void should_subscribe_feeds_for_user() {
         Entity<WebFeed> jediFeed = BAYWATCH_MAPPER.recordToFeed(FeedRecordSamples.JEDI);
+        var expected = Entity.identify(WebFeed.builder()
+                        .name("Customized Name")
+                        .description("Feed description")
+                        .location(URI.create("http://www.jedi.light/"))
+                        .tags(List.of("force", "jedi")).build())
+                .meta(FeedMeta.createdBy, DefaultMeta.NO_ONE)
+                .withId(jediFeed.id());
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
         ArgumentCaptor<List<Entity<WebFeed>>> captor = ArgumentCaptor.forClass(List.class);
 
         StepVerifier.create(tested.subscribe(List.of(jediFeed)))
-                .expectNext(jediFeed)
+                .assertNext(actual -> Assertions.assertThat(actual).isEqualTo(expected))
                 .verifyComplete();
 
-        verify(mockFeedRepository, times(1)).persistUserRelation(captor.capture(),
-                eq(UsersRecordSamples.OKENOBI.getUserId()));
+        verify(mockFeedRepository, times(1))
+                .persistUserRelation(eq(UsersRecordSamples.OKENOBI.getUserId()), captor.capture());
+        verify(mockFeedRepository).setFeedProperties(eq(UsersRecordSamples.OKENOBI.getUserId()), anyCollection());
         assertThat(captor.getValue()).containsExactly(jediFeed);
     }
 
@@ -154,7 +179,7 @@ class FeedServiceImplTest {
         StepVerifier.create(tested.add(List.of(FeedSamples.UNSECURE_PROTOCOL)))
                 .verifyError(IllegalArgumentException.class);
 
-        StepVerifier.create(tested.update(FeedSamples.UNSECURE_PROTOCOL))
+        StepVerifier.create(tested.subscribe(List.of(FeedSamples.UNSECURE_PROTOCOL)))
                 .verifyError(IllegalArgumentException.class);
 
     }

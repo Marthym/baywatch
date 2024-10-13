@@ -3,12 +3,15 @@ package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
 import fr.ght1pc9kc.baywatch.common.api.model.FeedMeta;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
-import fr.ght1pc9kc.baywatch.common.infra.mappers.BaywatchMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersPropertiesRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
+import fr.ght1pc9kc.baywatch.techwatch.infra.config.TechwatchMapper;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
+import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedProperties;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
+import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsUsersPropertiesRecordSample;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsUsersRecordSample;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples;
@@ -19,6 +22,8 @@ import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;
 import fr.ght1pc9kc.testy.jooq.WithDslContext;
 import fr.ght1pc9kc.testy.jooq.WithInMemoryDatasource;
 import fr.ght1pc9kc.testy.jooq.WithSampleDataLoaded;
+import org.apache.commons.lang3.stream.Streams;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +37,9 @@ import reactor.test.StepVerifier;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.COUNT;
@@ -40,7 +47,9 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.FEED_ID;
 import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.updated;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
+import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsersProperties.FEEDS_USERS_PROPERTIES;
 import static fr.ght1pc9kc.baywatch.tests.samples.UserSamples.OBIWAN;
+import static fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples.LSKYWALKER;
 import static fr.ght1pc9kc.baywatch.tests.samples.infra.UsersRecordSamples.OKENOBI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -57,6 +66,7 @@ class FeedRepositoryTest {
             .addDataset(NewsRecordSamples.SAMPLE)
             .addDataset(NewsRecordSamples.NewsFeedsRecordSample.SAMPLE)
             .addDataset(FeedsUsersRecordSample.SAMPLE)
+            .addDataset(FeedsUsersPropertiesRecordSample.SAMPLE)
             .build();
 
     @RegisterExtension
@@ -70,12 +80,13 @@ class FeedRepositoryTest {
 
     @BeforeEach
     void setUp(DSLContext dslContext) {
-        BaywatchMapper baywatchMapper = Mappers.getMapper(BaywatchMapper.class);
-        tested = new FeedRepository(Schedulers.immediate(), dslContext, baywatchMapper);
+        TechwatchMapper mapper = Mappers.getMapper(TechwatchMapper.class);
+        tested = new FeedRepository(Schedulers.immediate(), dslContext, mapper);
     }
 
     @Test
-    void should_get_user_feed() {
+    void should_get_user_feed(WithSampleDataLoaded.Tracker tracker) {
+        tracker.skipNextSampleLoad();
         FeedsRecord expected = FeedRecordSamples.SAMPLE.records().getFirst();
         Entity<WebFeed> actual = tested.get(QueryContext.id(expected.getFeedId())).block();
 
@@ -127,16 +138,16 @@ class FeedRepositoryTest {
     @Test
     void should_persist_feeds_to_user(DSLContext dsl) {
         Entity<WebFeed> expected = Entity.identify(
-                        Mappers.getMapper(BaywatchMapper.class).recordToFeed(FeedRecordSamples.JEDI)
+                        Mappers.getMapper(TechwatchMapper.class).recordToFeed(FeedRecordSamples.JEDI)
                                 .self().toBuilder()
-                                .name(FeedRecordSamples.JEDI.getFeedName() + " of Obiwan")
-                                .tags(Set.of("jedi", "saber"))
+                                .name(FeedRecordSamples.JEDI.getFeedName())
+                                .tags(Set.of())
                                 .build())
                 .meta(updated, Instant.parse("2020-12-11T15:12:42Z"))
                 .withId(FeedRecordSamples.JEDI.getFeedId());
 
 
-        StepVerifier.create(tested.persistUserRelation(Collections.singleton(expected), OKENOBI.getUserId()))
+        StepVerifier.create(tested.persistUserRelation(OKENOBI.getUserId(), Collections.singleton(expected)))
                 .assertNext(actual -> assertThat(actual).isEqualTo(expected))
                 .verifyComplete();
 
@@ -150,34 +161,6 @@ class FeedRepositoryTest {
                     .fetchOne();
             assertThat(actual).isNotNull();
             assertThat(actual.getFeusUserId()).isEqualTo(OKENOBI.getUserId());
-            assertThat(actual.getFeusTags()).isEqualTo(String.join(",", expected.self().tags()));
-        }
-    }
-
-    @Test
-    void should_update_feed(DSLContext dsl) {
-        String feedOwnedOnlyByObywan = Hasher.identify(FeedRecordSamples.JEDI_BASE_URI.resolve("01"));
-        Entity<WebFeed> expected = Entity.identify(
-                        WebFeed.builder()
-                                .location(URI.create("http://www.jedi.light/01"))
-                                .name("Obiwan Kenobi")
-                                .description("Feed description")
-                                .tags(Set.of("jedi", "light"))
-                                .build())
-                .meta(updated, Instant.parse("2020-12-11T15:12:42Z"))
-                .withId(feedOwnedOnlyByObywan);
-        Mono<Entity<WebFeed>> update = tested.update(expected.id(), OKENOBI.getUserId(), expected.self());
-        StepVerifier.create(update)
-                .assertNext(actual -> assertThat(actual).isEqualTo(expected))
-                .verifyComplete();
-
-        {
-            FeedsUsersRecord actual = dsl.selectFrom(FEEDS_USERS).where(
-                            FEEDS_USERS.FEUS_USER_ID.eq(OKENOBI.getUserId())
-                                    .and(FEEDS_USERS.FEUS_FEED_ID.eq(feedOwnedOnlyByObywan)))
-                    .fetchOne();
-            assertThat(actual).isNotNull();
-            assertThat(actual.getFeusFeedName()).isEqualTo("Obiwan Kenobi");
         }
     }
 
@@ -272,9 +255,177 @@ class FeedRepositoryTest {
     }
 
     @Test
-    void should_list_orphan_feed() {
+    void should_list_orphan_feed(WithSampleDataLoaded.Tracker tracker) {
+        tracker.skipNextSampleLoad();
         List<Entity<WebFeed>> actuals = tested.list(QueryContext.all(Criteria.property(COUNT).eq(0))).collectList().block();
         assertThat(actuals).extracting(Entity::id).containsExactly(
                 FeedRecordSamples.FEEDS_RECORDS.getLast().getFeedId());
+    }
+
+    @Test
+    void should_get_feed_user_properties(WithSampleDataLoaded.Tracker tracker) {
+        tracker.skipNextSampleLoad();
+        StepVerifier.create(tested.getFeedProperties(
+                        OKENOBI.getUserId(),
+                        List.of(FeedRecordSamples.JEDI.getFeedId()),
+                        EnumSet.of(FeedProperties.NAME)
+                ))
+                .assertNext(actual -> Assertions.assertThat(actual).isEqualTo(Entity.identify(
+                                Map.of(FeedProperties.NAME, "Customized for Obiwan JEDI Name"))
+                        .meta(FeedMeta.createdBy, OKENOBI.getUserId())
+                        .withId(FeedRecordSamples.JEDI.getFeedId())
+                ))
+                .verifyComplete();
+
+        StepVerifier.create(tested.getFeedProperties(
+                        OKENOBI.getUserId(),
+                        List.of(FeedRecordSamples.JEDI.getFeedId()),
+                        null
+                ))
+                .assertNext(actual -> Assertions.assertThat(actual).isEqualTo(Entity.identify(
+                                Map.of(
+                                        FeedProperties.NAME, "Customized for Obiwan JEDI Name",
+                                        FeedProperties.TAG, "light,republic"
+                                ))
+                        .meta(FeedMeta.createdBy, OKENOBI.getUserId())
+                        .withId(FeedRecordSamples.JEDI.getFeedId())
+                ))
+                .verifyComplete();
+
+        StepVerifier.create(tested.getFeedProperties(
+                        OKENOBI.getUserId(),
+                        List.of(FeedRecordSamples.JEDI.getFeedId()),
+                        EnumSet.of(FeedProperties.NAME, FeedProperties.TAG)
+                ))
+                .assertNext(actual -> Assertions.assertThat(actual).isEqualTo(Entity.identify(
+                                Map.of(
+                                        FeedProperties.NAME, "Customized for Obiwan JEDI Name",
+                                        FeedProperties.TAG, "light,republic"
+                                ))
+                        .meta(FeedMeta.createdBy, OKENOBI.getUserId())
+                        .withId(FeedRecordSamples.JEDI.getFeedId())
+                ))
+                .verifyComplete();
+
+        StepVerifier.create(tested.getFeedProperties(
+                        OKENOBI.getUserId(),
+                        List.of(FeedRecordSamples.JEDI.getFeedId()),
+                        EnumSet.noneOf(FeedProperties.class)
+                ))
+                .assertNext(actual -> Assertions.assertThat(actual).isEqualTo(Entity.identify(
+                                Map.of(
+                                        FeedProperties.NAME, "Customized for Obiwan JEDI Name",
+                                        FeedProperties.TAG, "light,republic"
+                                ))
+                        .meta(FeedMeta.createdBy, OKENOBI.getUserId())
+                        .withId(FeedRecordSamples.JEDI.getFeedId())
+                ))
+                .verifyComplete();
+
+        StepVerifier.create(tested.getFeedProperties(
+                        OKENOBI.getUserId(),
+                        List.of(FeedRecordSamples.JEDI.getFeedId(), "42"),
+                        EnumSet.of(FeedProperties.NAME)
+                ))
+                .assertNext(actual -> Assertions.assertThat(actual).isEqualTo(Entity.identify(
+                                Map.of(FeedProperties.NAME, "Customized for Obiwan JEDI Name"))
+                        .meta(FeedMeta.createdBy, OKENOBI.getUserId())
+                        .withId(FeedRecordSamples.JEDI.getFeedId())
+                ))
+                .verifyComplete();
+
+        StepVerifier.create(tested.getFeedProperties(
+                OKENOBI.getUserId(),
+                List.of(),
+                EnumSet.of(FeedProperties.NAME)
+        )).verifyError(IllegalArgumentException.class);
+    }
+
+    @Test
+    void should_set_feed_user_properties(DSLContext dslContext) {
+        FeedsUsersPropertiesRecord beforeRecord = dslContext.selectFrom(FEEDS_USERS_PROPERTIES).where(
+                FEEDS_USERS_PROPERTIES.FUPR_FEED_ID.eq(FeedRecordSamples.JEDI.getFeedId()),
+                FEEDS_USERS_PROPERTIES.FUPR_USER_ID.eq(LSKYWALKER.getUserId())
+        ).fetchOne();
+
+        Assertions.assertThat(beforeRecord).isNull();
+
+        StepVerifier.create(tested.setFeedProperties(LSKYWALKER.getUserId(), List.of(
+                Entity.identify(WebFeed.builder()
+                                .location(URI.create("https://jedi.com"))
+                                .name("Customized for Obiwan JEDI Name")
+                                .description("Customized for Obiwan JEDI Description")
+                                .tags(Set.of("light", "good"))
+                                .build())
+                        .withId(FeedRecordSamples.JEDI.getFeedId())
+        ))).verifyComplete();
+
+        FeedsUsersPropertiesRecord[] actualRecord = dslContext.selectFrom(FEEDS_USERS_PROPERTIES).where(
+                FEEDS_USERS_PROPERTIES.FUPR_FEED_ID.eq(FeedRecordSamples.JEDI.getFeedId()),
+                FEEDS_USERS_PROPERTIES.FUPR_USER_ID.eq(LSKYWALKER.getUserId())
+        ).fetchArray();
+
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(actualRecord)
+                    .isNotNull()
+                    .hasSize(4);
+
+            softly.assertThat(Streams.of(actualRecord).map(FeedsUsersPropertiesRecord::getFuprPropertyName))
+                    .containsExactly(
+                            FeedProperties.NAME.name(),
+                            FeedProperties.DESCRIPTION.name(),
+                            FeedProperties.TAG.name(),
+                            FeedProperties.TAG.name()
+                    );
+
+            softly.assertThat(Streams.of(actualRecord).map(FeedsUsersPropertiesRecord::getFuprPropertyValue))
+                    .containsExactlyInAnyOrder(
+                            "Customized for Obiwan JEDI Name",
+                            "Customized for Obiwan JEDI Description",
+                            "light",
+                            "good"
+                    );
+        });
+
+    }
+
+    @Test
+    void should_delete_feed_user_properties(DSLContext dslContext) {
+        int initialCount = dslContext.fetchCount(FEEDS_USERS_PROPERTIES,
+                FEEDS_USERS_PROPERTIES.FUPR_FEED_ID.eq(FeedRecordSamples.JEDI.getFeedId()),
+                FEEDS_USERS_PROPERTIES.FUPR_USER_ID.eq(OKENOBI.getUserId())
+        );
+
+        Assertions.assertThat(initialCount).isNotZero();
+
+        StepVerifier.create(tested.deleteFeedProperties(
+                        OKENOBI.getUserId(), List.of(FeedRecordSamples.JEDI.getFeedId())))
+                .verifyComplete();
+
+        int actualCount = dslContext.fetchCount(FEEDS_USERS_PROPERTIES,
+                FEEDS_USERS_PROPERTIES.FUPR_FEED_ID.eq(FeedRecordSamples.JEDI.getFeedId()),
+                FEEDS_USERS_PROPERTIES.FUPR_USER_ID.eq(OKENOBI.getUserId())
+        );
+        Assertions.assertThat(actualCount).isZero();
+    }
+
+    @Test
+    void should_delete_feed_user_relations(DSLContext dslContext) {
+        int initialCount = dslContext.fetchCount(FEEDS_USERS,
+                FEEDS_USERS.FEUS_FEED_ID.eq(FeedRecordSamples.JEDI.getFeedId()),
+                FEEDS_USERS.FEUS_USER_ID.eq(OKENOBI.getUserId())
+        );
+
+        Assertions.assertThat(initialCount).isNotZero();
+
+        StepVerifier.create(tested.deleteUserRelations(
+                        OKENOBI.getUserId(), List.of(FeedRecordSamples.JEDI.getFeedId())))
+                .verifyComplete();
+
+        int actualCount = dslContext.fetchCount(FEEDS_USERS,
+                FEEDS_USERS.FEUS_FEED_ID.eq(FeedRecordSamples.JEDI.getFeedId()),
+                FEEDS_USERS.FEUS_USER_ID.eq(OKENOBI.getUserId())
+        );
+        Assertions.assertThat(actualCount).isZero();
     }
 }

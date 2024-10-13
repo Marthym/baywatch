@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.techwatch.api.model;
 
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.With;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -21,6 +22,6 @@ public record WebFeed(
         @With String name,
         @With String description,
         @NonNull URI location,
-        @NonNull @Unmodifiable Set<String> tags
+        @NonNull @Unmodifiable @Singular Set<String> tags
 ) {
 }

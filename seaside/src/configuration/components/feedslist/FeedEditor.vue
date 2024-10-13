@@ -6,10 +6,15 @@
         <label class="label" for="feedUrl">
           <span class="label-text capitalize">{{ t('config.feeds.editor.form.location') }}</span>
         </label>
-        <input id="feedUrl" v-model="feed.location" :class="{'input-error': errors.indexOf('location') > -1}"
-               class="input input-bordered" placeholder="https://..."
-               type="url"
-               @blur="onUriBlur">
+        <span class="join w-full">
+          <input id="feedUrl" v-model="feed.location" :class="{'input-error': errors.indexOf('location') > -1}"
+                 class="input input-bordered join-item w-full" placeholder="https://..."
+                 type="url"
+                 @blur="onUriBlur">
+          <button class="btn join-item" @click.stop="onUriBlur">
+            <ArrowPathIcon class="h-6 w-6"/>
+          </button>
+        </span>
         <label class="label" for="feedName">
           <span class="label-text capitalize">{{ t('config.feeds.editor.form.name') }}</span>
         </label>
@@ -21,8 +26,7 @@
         <label class="label" for="feedDescription">
           <span class="label-text capitalize">{{ t('config.feeds.editor.form.description') }}</span>
         </label>
-        <textarea id="feedDescription" v-model="feed.description" class="textarea italic"
-                  readonly rows="3"/>
+        <textarea id="feedDescription" v-model="feed.description" class="textarea textarea-bordered italic" rows="3"/>
 
         <TagInput v-model="feed.tags" :available-tags-handler="() => listAvailableTags()"/>
       </fieldset>
@@ -48,10 +52,12 @@ import { tagsListAll } from '@/techwatch/services/TagsService';
 import feedService from '@/configuration/services/FeedService';
 import { URL_PATTERN } from '@/common/services/RegexPattern';
 import { useI18n } from 'vue-i18n';
+import { ArrowPathIcon } from '@heroicons/vue/24/outline';
 
 @Component({
   name: 'FeedEditor',
   components: {
+    ArrowPathIcon,
     TagInput,
     ModalWindow,
   },

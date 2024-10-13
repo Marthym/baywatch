@@ -28,7 +28,7 @@ import { filter, map, switchMap, take, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { Feed } from '@/configuration/model/Feed.type';
 import FeedEditor from '@/configuration/components/feedslist/FeedEditor.vue';
-import feedsService from '@/configuration/services/FeedService';
+import feedsService, { feedAddAndSubscribe, feedDelete, feedUpdate } from '@/configuration/services/FeedService';
 import opmlService from '@/techwatch/services/OpmlService';
 import notificationService from '@/services/notification/NotificationService';
 import { actionServiceRegisterFunction, actionServiceUnregisterFunction } from '@/common/services/ReloadActionService';
@@ -120,10 +120,10 @@ export default class FeedsList extends Vue {
   private addNewFeed(): void {
     this.feedEditor.openEmpty().pipe(
         take(1),
-        switchMap(feed => feedsService.add(feed)),
+        switchMap(feed => feedAddAndSubscribe(feed)),
         switchMap(() => this.loadFeedPage(this.activePage)),
     ).subscribe({
-      next: () => notificationService.pushSimpleOk('Feed successfully subscribed.'),
+      next: () => notificationService.pushSimpleOk(this.t('config.feeds.messages.feedSubscribedSuccessfully')),
       error: e => {
         notificationService.pushSimpleError(e.message);
       },
@@ -133,7 +133,7 @@ export default class FeedsList extends Vue {
   private itemView(idx: number): void {
     const item = this.feeds[idx].data;
     if (!item) {
-      notificationService.pushSimpleError(`Unable to edit element at index ${idx}`);
+      notificationService.pushSimpleError(this.t('config.feeds.messages.unableEditElement', { idx }));
       return;
     }
     this.store.commit(NEWS_FILTER_FEED_MUTATION, { id: item._id, label: item.name });
@@ -143,34 +143,33 @@ export default class FeedsList extends Vue {
   private itemUpdate(idx: number): void {
     const item = this.feeds[idx].data;
     if (!item) {
-      notificationService.pushSimpleError(`Unable to edit element at index ${idx}`);
+      notificationService.pushSimpleError(this.t('config.feeds.messages.unableEditElement', { idx }));
       return;
     }
     this.feedEditor.openFeed({ ...item }).pipe(
         take(1),
-        switchMap(feed => feedsService.update(feed, item.location !== feed.url)),
+        switchMap((feed: Feed) => feedUpdate(feed._id, feed)),
         switchMap(() => this.loadFeedPage(this.activePage)),
     ).subscribe({
-      next: () => notificationService.pushSimpleOk('Feed updated successfully.'),
+      next: () => notificationService.pushSimpleOk(this.t('config.feeds.messages.feedUpdatedSuccessfully')),
       error: e => {
+        notificationService.pushSimpleError(this.t('config.feeds.messages.feedUpdatedFailed'));
         console.error(e);
-        notificationService.pushSimpleError('Unable to update feed !');
       },
     });
   }
 
   private itemDelete(idx: number): void {
-    const message = `Unsubscribe for feed <br/> <b>${this.feeds[idx].data.name}</b>`;
+    const message = this.t('config.feeds.confirm.feedsDeletion', { feed: this.feeds[idx].data.name });
     this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
         filter(response => response === AlertResponse.CONFIRM),
-        switchMap(() => feedsService.remove(this.feeds[idx].data._id)),
+        switchMap(() => feedDelete([this.feeds[idx].data._id])),
         tap(() => this.feeds.splice(idx, 1)),
     ).subscribe({
-      next: feed => notificationService.pushSimpleOk(`Feed ${feed._id.substring(0, 10)} deleted successfully !`),
-      error: e => {
-        console.error(e);
-        notificationService.pushSimpleError('Unable to update feed !');
-      },
+      next: feeds =>
+          notificationService.pushSimpleOk(this.t('config.feeds.messages.feedUnsubscribedSuccessfully', feeds.length)),
+      error: () =>
+          notificationService.pushSimpleError(this.t('config.feeds.messages.feedUnsubscribedFailed')),
     });
   }
 
@@ -180,19 +179,16 @@ export default class FeedsList extends Vue {
     } else if (ids.length == 1) {
       return this.itemDelete(ids[0]);
     }
-    const message = `Remove the ${ids.length} selected subscriptions ?`;
+    const message = this.t('config.feeds.confirm.feedsDeletion', ids.length);
     this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
         filter(response => response === AlertResponse.CONFIRM),
-        switchMap(() => feedsService.bulkRemove(ids.map(index => this.feeds[index].data._id))),
-        tap(() =>
-            ids.forEach(idx =>
-                this.feeds.splice(idx, 1))),
+        switchMap(() => feedDelete(ids.map(index => this.feeds[index].data._id))),
+        tap(() => ids.forEach(idx => this.feeds.splice(idx, 1))),
     ).subscribe({
-      next: () => notificationService.pushSimpleOk(`Unsubscribe successfully !`),
-      error: e => {
-        console.error(e);
-        notificationService.pushSimpleError('Unable to unsubscribe to the selected feeds !');
-      },
+      next: feeds =>
+          notificationService.pushSimpleOk(this.t('config.feeds.messages.feedUnsubscribedSuccessfully', feeds.length)),
+      error: () =>
+          notificationService.pushSimpleError(this.t('config.feeds.messages.feedUnsubscribedFailed')),
     });
   }
 
@@ -218,10 +214,10 @@ export default class FeedsList extends Vue {
     opmlService.upload(path).pipe(
         switchMap(() => this.loadFeedPage(this.activePage)),
     ).subscribe({
-      next: () => notificationService.pushSimpleOk('OPML loaded successfully.'),
+      next: () => notificationService.pushSimpleOk(this.t('config.feeds.messages.opmlLoadedSuccessfully')),
       error: e => {
         console.error(e);
-        notificationService.pushSimpleError('Unable to load OPML file !');
+        notificationService.pushSimpleError(this.t('config.feeds.messages.opmlLoadedFailed'));
       },
     });
   }

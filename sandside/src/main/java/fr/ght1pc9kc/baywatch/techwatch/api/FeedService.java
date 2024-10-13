@@ -44,14 +44,6 @@ public interface FeedService {
     Mono<Integer> count(PageRequest pageRequest);
 
     /**
-     * Update the subscription to a {@link WebFeed}
-     *
-     * @param toPersist the Feed of the subscription to update
-     * @return The new Feed of the subscription
-     */
-    Mono<Entity<WebFeed>> update(Entity<WebFeed> toPersist);
-
-    /**
      * Add a {@link WebFeed} to the available Feed list in database
      *
      * @param toAdd The list of {@link WebFeed} to add
@@ -69,5 +61,12 @@ public interface FeedService {
 
     Flux<Entity<WebFeed>> addAndSubscribe(Collection<Entity<WebFeed>> feeds);
 
-    Mono<Integer> delete(Collection<String> toDelete);
+    /**
+     * <p>Unsubscribe {@link fr.ght1pc9kc.baywatch.security.api.model.User} from one or more {@link WebFeed}.</p>
+     * <p>This will remove all user feed customizations</p>
+     *
+     * @param toDelete The collection of {@link WebFeed} IDs to unsubscribe
+     * @return The number of unsubscribed feeds.
+     */
+    Mono<Integer> unsubscribe(Collection<String> toDelete);
 }

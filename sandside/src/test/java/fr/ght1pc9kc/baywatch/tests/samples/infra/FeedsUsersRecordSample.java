@@ -17,10 +17,6 @@ public class FeedsUsersRecordSample implements RelationalDataSet<FeedsUsersRecor
     public static final List<FeedsUsersRecord> FEEDS_USERS_RECORDS;
 
     static {
-        String[] tags = new String[]{
-                "java,spring",
-                "cpp"
-        };
         // -1 allow to keep one orphan feed for tests
         FEEDS_USERS_RECORDS = Stream.concat(IntStream.range(0, FeedRecordSamples.FEEDS_RECORDS.size() - 1)
                 .mapToObj(f -> {
@@ -28,13 +24,11 @@ public class FeedsUsersRecordSample implements RelationalDataSet<FeedsUsersRecor
                     List<UsersRecord> users = UsersRecordSamples.SAMPLE.records();
                     return FEEDS_USERS.newRecord()
                             .setFeusFeedId(feed.getFeedId())
-                            .setFeusUserId(users.get(f % users.size()).getUserId())
-                            .setFeusTags(tags[f % tags.length]);
+                            .setFeusUserId(users.get(f % users.size()).getUserId());
                 }), Stream.of( // Link the first FEED to Obiwan AND Luke
                 FEEDS_USERS.newRecord()
                         .setFeusFeedId(FeedRecordSamples.FEEDS_RECORDS.get(1).getFeedId())
                         .setFeusUserId(UsersRecordSamples.SAMPLE.records().get(0).getUserId())
-                        .setFeusTags("cpp")
         )).toList();
     }
 
