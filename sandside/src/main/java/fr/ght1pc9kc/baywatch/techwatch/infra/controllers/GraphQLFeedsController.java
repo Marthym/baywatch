@@ -15,7 +15,6 @@ import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
-import graphql.ErrorClassification;
 import graphql.GraphqlErrorException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +24,7 @@ import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
+import org.springframework.graphql.execution.ErrorType;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -111,7 +111,7 @@ public class GraphQLFeedsController {
     public Mono<Entity<WebFeed>> feedAddAndSubscribe(@Valid @Argument("feed") FeedForm feedForm) {
         if (isNull(feedForm)) {
             return Mono.error(() -> GraphqlErrorException.newErrorException()
-                    .errorClassification(ErrorClassification.errorClassification("BAD_REQUEST"))
+                    .errorClassification(ErrorType.BAD_REQUEST)
                     .build());
         }
 
