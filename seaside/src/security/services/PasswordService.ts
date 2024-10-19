@@ -29,7 +29,8 @@ query GeneratePasswords($count: Int) {
 
 
 export function passwordAnonymousCheckStrength(user: User): Observable<PasswordEvaluation> {
-    return send<PasswordAnonymousCheckResponse>(PASSWORD_ANONYMOUS_CHECK_REQUEST, { user: user }).pipe(
+    const {_id, _createdAt, _loginAt, _loginIP, ...passwordCheckedProps} = user;
+    return send<PasswordAnonymousCheckResponse>(PASSWORD_ANONYMOUS_CHECK_REQUEST, { user: passwordCheckedProps }).pipe(
         map(data => data.data.passwordCheckAnonymous),
         take(1),
     );
