@@ -12,48 +12,47 @@
       <form v-if="opened"
             class="justify-self-end flex flex-col bg-base-100 text-base-content lg:w-3/4 w-full h-full overflow-auto p-2"
             @click.stop @submit.prevent="onSaveUser">
-        <h2 class="font-sans text-xl border-b border-accent/40 pb-2 w-full">{{ title }}</h2>
+        <h2 class="font-sans text-xl border-b border-accent/40 pb-2 w-full first-letter:capitalize">{{ title }}</h2>
         <div class="flex flex-wrap content-start ">
           <div class="grow lg:basis-1/2 h-fit p-4">
             <div class="label">
-              <span class="label-text">Login</span>
+              <span class="label-text capitalize">{{ t('admin.users.login') }}</span>
             </div>
             <input v-model="modelValue.login" :class="{'input-error': errors.has('login')}" :disabled="isEditionMode"
-                   class="input input-bordered w-full"
-                   placeholder="login" type="text"
+                   class="input input-bordered w-full" type="text"
                    @change="onFieldChange('login')">
-            <div class="label -mt-1">
+            <div class="label -mt-1 mb-2">
               <span class="label-text-alt">&nbsp;</span>
-              <span v-if="errors.has('login')" class="label-text-alt">{{ errors.get('login') }}</span>
+              <span v-if="errors.has('login')" class="label-text-alt text-error-content">{{
+                  errors.get('login')
+                }}</span>
             </div>
 
             <div class="label -mt-6">
-              <span class="label-text">Username</span>
+              <span class="label-text capitalize">{{ t('admin.users.username') }}</span>
             </div>
             <input v-model="modelValue.name" :class="{'input-error': errors.has('name')}"
                    class="input input-bordered w-full"
-                   placeholder="username"
                    type="text" @change="onFieldChange('name')">
-            <div class="label -mt-1">
+            <div class="label -mt-1 mb-2">
               <span class="label-text-alt">&nbsp;</span>
-              <span v-if="errors.has('name')" class="label-text-alt">{{ errors.get('name') }}</span>
+              <span v-if="errors.has('name')" class="label-text-alt text-error-content">{{ errors.get('name') }}</span>
             </div>
 
             <div class="label -mt-6">
-              <span class="label-text">Mail</span>
+              <span class="label-text capitalize">{{ t('admin.users.mail') }}</span>
             </div>
-            <input v-model="modelValue.mail" :class="{'input-error': errors.has('mail')}" :disabled="isEditionMode"
-                   class="input input-bordered w-full"
-                   placeholder="mail address" type="email"
+            <input v-model="modelValue.mail" :class="{'input-error': errors.has('mail')}"
+                   class="input input-bordered w-full" type="email"
                    @change="onFieldChange('mail')">
-            <div class="label -mt-1">
+            <div class="label -mt-1 mb-2">
               <span class="label-text-alt">&nbsp;</span>
-              <span v-if="errors.has('mail')" class="label-text-alt">{{ errors.get('mail') }}</span>
+              <span v-if="errors.has('mail')" class="label-text-alt text-error-content">{{ errors.get('mail') }}</span>
             </div>
           </div>
           <div class="grow lg:basis-1/2 h-fit p-4">
             <div class="label">
-              <span class="label-text">Password</span>
+              <span class="label-text capitalize">{{ t('admin.users.password') }}</span>
             </div>
             <div class="join w-full">
               <input v-model="modelValue.password" :class="{'input-error': errors.has('password')}"
@@ -67,17 +66,19 @@
                 <EyeIcon v-if="!visible.password" class="h-6 w-6 opacity-50"/>
                 <EyeSlashIcon v-else class="h-6 w-6 opacity-50"/>
               </button>
-              <button class="btn join-item" @click.prevent.stop="onPasswordGenerate">Generate</button>
+              <button class="btn join-item" @click.prevent.stop="onPasswordGenerate">
+                {{ t('admin.users.editor.button.generate') }}
+              </button>
             </div>
-            <div class="label -mt-1">
+            <div class="label -mt-1 mb-2">
               <span class="label-text-alt">&nbsp;</span>
-              <span v-if="errors.has('password')" class="label-text-alt text-error-content">{{
-                  errors.get('password')
-                }}</span>
+              <span v-if="errors.has('password')" class="label-text-alt text-error-content">
+                {{ errors.get('password') }}
+              </span>
             </div>
 
             <div class="label -mt-6">
-              <span class="label-text">Password Confirmation</span>
+              <span class="label-text capitalize">{{ t('admin.users.confirmation') }}</span>
             </div>
             <div class="join w-full">
               <input v-model="passwordConfirm" :class="{'input-error': errors.has('confirm')}"
@@ -92,22 +93,24 @@
                 <EyeSlashIcon v-else class="h-6 w-6 opacity-50"/>
               </button>
             </div>
-            <div class="label -mt-1">
+            <div class="label -mt-1 mb-2">
               <span class="label-text-alt">&nbsp;</span>
-              <span v-if="errors.has('confirm')" class="label-text-alt text-error">{{ errors.get('confirm') }}</span>
+              <span v-if="errors.has('confirm')" class="label-text-alt text-error-content">
+                {{ errors.get('confirm') }}
+              </span>
             </div>
           </div>
           <div :class="{'border': errors.has('roles')}"
                class="grow lg:basis-1/2 h-fit p-4 border-error rounded-lg">
             <UserRoleInput :model-value="modelValue.roles" @update:modelValue="onRoleUpdate"/>
-            <span v-if="errors.has('roles')" class="label-text-alt">{{ errors.get('roles') }}</span>
+            <span v-if="errors.has('roles')" class="label-text-alt text-error-content">{{ errors.get('roles') }}</span>
           </div>
         </div>
         <span class="grow"></span>
         <div>
-          <button class="btn m-2" @click.prevent.stop="onCancel">Annuler</button>
+          <button class="btn m-2" @click.prevent.stop="onCancel">{{ t('admin.users.editor.button.cancel') }}</button>
           <button :disabled="!hasValidRoles" class="btn btn-primary m-2" @click.prevent.stop="onSaveUser">
-            Enregistrer
+            {{ t('admin.users.editor.button.save') }}
           </button>
         </div>
       </form>
@@ -129,6 +132,8 @@ import { passwordAnonymousCheckStrength, passwordGenerate } from '@/security/ser
 const CANCEL_EVENT: string = 'cancel';
 const SUBMIT_EVENT: string = 'submit';
 const CHANGE_EVENT: string = 'change';
+const FIELD_PASSWORD: string = 'password';
+const FIELD_CONFIRM: string = 'confirm';
 
 @Component({
   name: 'UserEditor',
@@ -143,7 +148,7 @@ export default class UserEditor extends Vue {
   @Prop() private modelValue: User;
   private readonly t;
   private passwordConfirm: string = '';
-  private title = 'Create new user';
+  private title: string = '';
   private isEditionMode: boolean = false;
   private errors: Map<string, string> = new Map<string, string>();
   private visible = {
@@ -159,7 +164,9 @@ export default class UserEditor extends Vue {
 
   mounted(): void {
     this.isEditionMode = '_id' in this.modelValue && this.modelValue._id !== undefined;
-    this.title = this.isEditionMode ? `Update user ${this.modelValue.login}` : 'Create new user';
+    this.title = this.isEditionMode
+        ? this.t('admin.users.editor.title.update', { login: this.modelValue.login })
+        : this.t('admin.users.editor.title.create');
     this.$nextTick(() => this.opened = true);
   }
 
@@ -170,13 +177,13 @@ export default class UserEditor extends Vue {
   private onPasswordGenerate(): void {
     passwordGenerate(20).subscribe({
       next: passwords => {
-        this.errors.delete('password');
+        this.errors.delete(FIELD_PASSWORD);
         let randomValue = new Uint32Array(1);
         crypto.getRandomValues(randomValue);
         this.modelValue.password = passwords[randomValue[0] % 19];
         this.passwordConfirm = this.modelValue.password;
       },
-      error: err => this.errors.set('password', err.message),
+      error: err => this.errors.set(FIELD_PASSWORD, err.message),
     });
   }
 
@@ -184,30 +191,31 @@ export default class UserEditor extends Vue {
     if (!this.modelValue.password || this.modelValue.password.length === 0) {
       return;
     } else if (!this.modelValue.password || this.modelValue.password.length <= 3) {
-      this.errors.set('password', 'This password is not secure. An attacker will find it instant !');
+      this.errors.set(FIELD_PASSWORD, this.t('admin.users.editor.message.password_too_short'));
       return;
     }
     if (!this.modelValue.login) {
-      this.errors.set('password', 'Login field is required to check password strength');
+      this.errors.set(FIELD_PASSWORD, this.t('admin.users.editor.message.login_field_required'));
       return;
     }
     passwordAnonymousCheckStrength(this.modelValue).subscribe({
       next: evaluation => {
         if (evaluation.isSecure) {
-          this.errors.delete('password');
+          this.errors.delete(FIELD_PASSWORD);
         } else {
-          this.errors.set('password', evaluation.message);
+          this.errors.set(FIELD_PASSWORD, evaluation.message);
         }
       },
-      error: err => this.errors.set('password', err.message),
+      error: err => this.errors.set(FIELD_PASSWORD, err.message),
     });
   }
 
   private onBlurConfirmPassword(): void {
+    console.log(this.passwordConfirm === this.modelValue.password);
     if (this.passwordConfirm && this.passwordConfirm.length > 3 && this.passwordConfirm === this.modelValue.password) {
-      this.errors.delete('passwordConfirm');
+      this.errors.delete(FIELD_CONFIRM);
     } else {
-      this.errors.set('passwordConfirm', 'The new and confirmation passwords must be the same');
+      this.errors.set(FIELD_CONFIRM, this.t('admin.users.editor.message.wrong_confirmation'));
     }
   }
 
@@ -219,27 +227,27 @@ export default class UserEditor extends Vue {
   private onSaveUser(): void {
     console.debug('onSaveUser');
     if (!this.modelValue.login) {
-      this.errors.set('login', 'Login is mandatory !');
+      this.errors.set('login', this.t('admin.users.editor.message.login_mandatory'));
     }
     if (!this.modelValue.name) {
-      this.errors.set('name', 'Name is mandatory !');
+      this.errors.set('name', this.t('admin.users.editor.message.name_mandatory'));
     }
     if (!this.modelValue.mail) {
-      this.errors.set('mail', 'Mail address is mandatory !');
+      this.errors.set('mail', this.t('admin.users.editor.message.mail_mandatory'));
     } else if (!MAIL_PATTERN.test(this.modelValue.mail)) {
-      this.errors.set('mail', 'Mail address must be syntactically correct !');
+      this.errors.set('mail', this.t('admin.users.editor.message.mail_incorrect'));
     }
     if (!this.modelValue.roles || this.modelValue.roles.length === 0) {
-      this.errors.set('roles', 'Role is mandatory !');
+      this.errors.set('roles', this.t('admin.users.editor.message.role_mandatory'));
     }
     if (!this.hasValidRoles) {
-      this.errors.set('roles', `All role scope must match ${ULID_PATTERN}`);
+      this.errors.set('roles', this.t('admin.users.editor.message.role_incorrect', { pattern: ULID_PATTERN }));
     }
     if (!this.isEditionMode) {
       if (!this.modelValue.password) {
-        this.errors.set('password', 'Password is mandatory !');
+        this.errors.set(FIELD_PASSWORD, this.t('admin.users.editor.message.password_mandatory'));
       } else if (this.modelValue.password !== this.passwordConfirm) {
-        this.errors.set('confirm', 'Password confirmation doesn\'t match !');
+        this.errors.set(FIELD_CONFIRM, this.t('admin.users.editor.message.wrong_confirmation'));
       }
     }
 
