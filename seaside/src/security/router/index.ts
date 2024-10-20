@@ -7,6 +7,7 @@ import { refresh } from '@/security/services/AuthenticationService';
 import {
     LOGOUT_MUTATION as USER_LOGOUT_MUTATION,
     UPDATE_MUTATION as USER_UPDATE_MUTATION,
+    UPDATE_SETTINGS_MUTATION as USER_UPDATE_SETTINGS_MUTATION,
 } from '@/security/store/UserConstants';
 
 const LoginPage = () => import('@/security/pages/LoginPage.vue');
@@ -24,6 +25,7 @@ export const requireAuthNavGuard: NavigationGuardWithThis<NavigationGuardWithThi
                 i18n.global.locale.value = session.settings.preferredLocale;
             }
             store.commit(USER_UPDATE_MUTATION, session.user);
+            store.commit(USER_UPDATE_SETTINGS_MUTATION, session.settings);
         } catch (err) {
             store.commit(USER_LOGOUT_MUTATION);
         }

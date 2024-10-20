@@ -9,19 +9,23 @@ import {
     LOGOUT,
     OPEN_CREATE_ACCOUNT,
     UPDATE,
+    UPDATE_SETTINGS,
 } from '@/security/store/UserConstants';
 import { GetterTree } from 'vuex';
+import { UserSettings } from '@/security/model/UserSettings.type';
 
 export type UserState = {
     user: User;
     isAuthenticated: boolean | undefined;
     isCreateAccountOpen: boolean;
+    autoread: boolean;
 }
 
 const state = (): UserState => ({
     user: ANONYMOUS,
     isAuthenticated: undefined,
     isCreateAccountOpen: false,
+    autoread: true,
 });
 
 // getters
@@ -58,6 +62,9 @@ const mutations = {
     [UPDATE](st: UserState, payload: User): void {
         st.user = payload;
         st.isAuthenticated = hasRole(st.user, UserRole.USER);
+    },
+    [UPDATE_SETTINGS](st: UserState, payload: UserSettings): void {
+        st.autoread = payload.autoread;
     },
 };
 

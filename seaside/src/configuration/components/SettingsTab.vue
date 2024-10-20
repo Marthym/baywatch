@@ -11,7 +11,7 @@
       </select>
       <label class="label cursor-pointer mt-4">
         <span class="label-text capitalize">{{ t('config.settings.form.autoread.label') }}</span>
-        <input :checked="userSettings.autoread" class="toggle" type="checkbox"/>
+        <input v-model="userSettings.autoread" class="toggle" type="checkbox"/>
       </label>
       <div class="label label-text-alt pt-0">{{ t('config.settings.form.autoread.alt') }}</div>
       <button class="btn btn-primary capitalize mt-5" @click.stop="onClickSaveSettings()">
@@ -28,6 +28,8 @@ import { userSettingsGet, userSettingsUpdate } from '@/security/services/UserSet
 import { useStore } from 'vuex';
 import notificationService from '@/services/notification/NotificationService';
 import { from, switchMap } from 'rxjs';
+import { store } from '@/store';
+import { UPDATE_SETTINGS_MUTATION as USER_UPDATE_SETTINGS_MUTATION } from '@/security/store/UserConstants';
 
 @Component({
   setup() {
@@ -43,6 +45,7 @@ export default class SettingsTab extends Vue {
   private mergeLocaleMessage;
   private userSettings: UserSettings = {
     preferredLocale: this.locale,
+    autoread: true,
   } as UserSettings;
 
   private mounted(): void {
@@ -66,6 +69,7 @@ export default class SettingsTab extends Vue {
           this.mergeLocaleMessage(this.userSettings.preferredLocale, messages[this.userSettings.preferredLocale.replace('-', '_')]);
           this.locale = this.userSettings.preferredLocale;
           notificationService.pushSimpleOk(this.t('config.settings.messages.settingsUpdateSuccessfully'));
+          store.commit(USER_UPDATE_SETTINGS_MUTATION, this.userSettings);
         },
         error: err => notificationService.pushSimpleError(this.t('config.settings.messages.unableToUpdate')),
       });
