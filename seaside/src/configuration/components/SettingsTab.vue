@@ -4,11 +4,16 @@
       <div class="label">
         <span class="label-text first-letter:capitalize">{{ t('config.settings.form.preferredLocale') }}</span>
       </div>
-      <select v-model="userSettings.preferredLocale" class="select select-bordered w-full max-w-xs">
+      <select v-model="userSettings.preferredLocale" class="select select-bordered w-full">
         <option disabled></option>
         <option value="en-US">English (en-US)</option>
         <option value="fr-FR">Français (fr-FR)</option>
       </select>
+      <label class="label cursor-pointer mt-4">
+        <span class="label-text capitalize">{{ t('config.settings.form.autoread.label') }}</span>
+        <input :checked="userSettings.autoread" class="toggle" type="checkbox"/>
+      </label>
+      <div class="label label-text-alt pt-0">{{ t('config.settings.form.autoread.alt') }}</div>
       <button class="btn btn-primary capitalize mt-5" @click.stop="onClickSaveSettings()">
         {{ t('config.settings.form.action.save') }}
       </button>
