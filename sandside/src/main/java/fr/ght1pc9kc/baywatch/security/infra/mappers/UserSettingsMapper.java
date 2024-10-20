@@ -14,13 +14,16 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.UsersSettings.USERS_SETTINGS;
 @Mapper(componentModel = "spring")
 public interface UserSettingsMapper {
     default Entity<UserSettings> getUserSettingsEntity(Record r) {
-        return Entity.identify(new UserSettings(Locale.forLanguageTag(r.get(USERS_SETTINGS.USSE_PREFERRED_LOCALE))))
-                .withId(r.get(USERS_SETTINGS.USSE_USER_ID));
+        return Entity.identify(new UserSettings(
+                Locale.forLanguageTag(r.get(USERS_SETTINGS.USSE_PREFERRED_LOCALE)),
+                r.get(USERS_SETTINGS.USSE_AUTOREAD))
+        ).withId(r.get(USERS_SETTINGS.USSE_USER_ID));
     }
 
     default UsersSettingsRecord getUserSettingsRecord(UserSettings settings) {
         return USERS_SETTINGS.newRecord()
-                .setUssePreferredLocale(settings.preferredLocale().toLanguageTag());
+                .setUssePreferredLocale(settings.preferredLocale().toLanguageTag())
+                .setUsseAutoread(settings.autoread());
     }
 
     UserSettings get(UserSettingsForm form);

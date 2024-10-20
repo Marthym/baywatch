@@ -13,10 +13,12 @@ type User {
 type UserSettings {
     _id: ID
     preferredLocale: String
+    autoread: Boolean
 }
 
 input UserSettingsForm {
     preferredLocale: String
+    autoread: Boolean
 }
 
 type Session {
