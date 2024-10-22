@@ -12,15 +12,18 @@ public class UsersSettingsRecordSamples implements RelationalDataSet<UsersSettin
 
     public static final UsersSettingsRecord OKENOBI_SETTINGS = UsersSettings.USERS_SETTINGS.newRecord()
             .setUsseUserId(UsersRecordSamples.OKENOBI.getUserId())
-            .setUssePreferredLocale(Locale.FRANCE.toLanguageTag());
+            .setUssePreferredLocale(Locale.FRANCE.toLanguageTag())
+            .setUsseAutoread(true);
 
     public static final UsersSettingsRecord LSKYWALKER_SETTINGS = UsersSettings.USERS_SETTINGS.newRecord()
             .setUsseUserId(UsersRecordSamples.LSKYWALKER.getUserId())
-            .setUssePreferredLocale(Locale.JAPAN.toLanguageTag());
+            .setUssePreferredLocale(Locale.JAPAN.toLanguageTag())
+            .setUsseAutoread(true);
 
     public static final UsersSettingsRecord DSIDIOUS_SETTINGS = UsersSettings.USERS_SETTINGS.newRecord()
             .setUsseUserId(UsersRecordSamples.DSIDIOUS.getUserId())
-            .setUssePreferredLocale(Locale.ENGLISH.toLanguageTag());
+            .setUssePreferredLocale(Locale.ENGLISH.toLanguageTag())
+            .setUsseAutoread(false);
 
     @Override
     public List<UsersSettingsRecord> records() {

@@ -29,7 +29,7 @@ class UserSettingsServiceImplTest {
     @BeforeEach
     void setUp() {
         UserSettingsPersistencePort mockPersistence = mock(UserSettingsPersistencePort.class);
-        doReturn(Mono.just(Entity.identify(new UserSettings(Locale.FRENCH)).withId(UserSamples.LUKE.id())))
+        doReturn(Mono.just(Entity.identify(new UserSettings(Locale.FRENCH, true)).withId(UserSamples.LUKE.id())))
                 .when(mockPersistence).get(anyString());
 
         doAnswer(answer -> {
@@ -70,7 +70,7 @@ class UserSettingsServiceImplTest {
     void should_update_user_settings() {
         doReturn(Mono.just(UserSamples.LUKE)).when(mockAuthentication).getConnectedUser();
 
-        StepVerifier.create(tested.update(UserSamples.LUKE.id(), new UserSettings(Locale.FRENCH)))
+        StepVerifier.create(tested.update(UserSamples.LUKE.id(), new UserSettings(Locale.FRENCH, true)))
                 .assertNext(actual -> Assertions.assertThat(actual.id()).isEqualTo(UserSamples.LUKE.id()))
                 .verifyComplete();
     }
@@ -79,7 +79,7 @@ class UserSettingsServiceImplTest {
     void should_fail_update_settings_on_unauthorize() {
         doReturn(Mono.just(UserSamples.LUKE)).when(mockAuthentication).getConnectedUser();
 
-        StepVerifier.create(tested.update(UserSamples.OBIWAN.id(), new UserSettings(Locale.FRENCH)))
+        StepVerifier.create(tested.update(UserSamples.OBIWAN.id(), new UserSettings(Locale.FRENCH, true)))
                 .verifyError(UnauthorizedException.class);
     }
 
@@ -87,7 +87,7 @@ class UserSettingsServiceImplTest {
     void should_fail_update_settings_on_unauthenticated() {
         doReturn(Mono.empty()).when(mockAuthentication).getConnectedUser();
 
-        StepVerifier.create(tested.update(UserSamples.OBIWAN.id(), new UserSettings(Locale.FRENCH)))
+        StepVerifier.create(tested.update(UserSamples.OBIWAN.id(), new UserSettings(Locale.FRENCH, true)))
                 .verifyError(UnauthenticatedUser.class);
     }
 }
