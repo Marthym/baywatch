@@ -10,15 +10,20 @@ type User {
     roles: [String]
 }
 
+enum NewsViewType {
+    CARD, MAGAZINE
+}
 type UserSettings {
     _id: ID
     preferredLocale: String
     autoread: Boolean
+    newsView: NewsViewType
 }
 
 input UserSettingsForm {
     preferredLocale: String
     autoread: Boolean
+    newsView: NewsViewType
 }
 
 type Session {
