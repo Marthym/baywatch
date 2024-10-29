@@ -12,13 +12,14 @@ import {
     UPDATE_SETTINGS,
 } from '@/security/store/UserConstants';
 import { GetterTree } from 'vuex';
-import { UserSettings } from '@/security/model/UserSettings.type';
+import { NewsViewType, UserSettings } from '@/security/model/UserSettings.type';
 
 export type UserState = {
     user: User;
     isAuthenticated: boolean | undefined;
     isCreateAccountOpen: boolean;
     autoread: boolean;
+    newView: NewsViewType;
 }
 
 const state = (): UserState => ({
@@ -26,6 +27,7 @@ const state = (): UserState => ({
     isAuthenticated: undefined,
     isCreateAccountOpen: false,
     autoread: true,
+    newView: 'MAGAZINE',
 });
 
 // getters
@@ -65,6 +67,7 @@ const mutations = {
     },
     [UPDATE_SETTINGS](st: UserState, payload: UserSettings): void {
         st.autoread = payload.autoread;
+        st.newView = payload.newsView;
     },
 };
 

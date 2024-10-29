@@ -2,7 +2,8 @@ import { en_US as config_en_US } from '@/locales/config_en-US';
 
 export const en_US = {
     ...config_en_US,
-    'config.settings.form.preferredLocale': 'Choose your preferred language',
+    'config.settings.form.preferredLocale': 'choose your preferred language',
+    'config.settings.form.newsView': 'choose news view mode :',
     'config.settings.form.autoread.label': 'news auto read',
     'config.settings.form.autoread.alt': 'In the article list, ' +
         'autoread marks articles as read as soon as you move on to the next one.',

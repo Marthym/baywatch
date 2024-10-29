@@ -15,7 +15,7 @@ export class AuthenticationService {
     private static readonly LOGOUT_REQUEST = 'mutation {logout}';
 
     login(username: string, password: string): Observable<User> {
-        return send(AuthenticationService.LOGIN_REQUEST, { username: username, password: password },
+        return send<{ login: User }>(AuthenticationService.LOGIN_REQUEST, { username: username, password: password },
         ).pipe(
             map(response => response.data.login),
             take(1),
@@ -34,7 +34,7 @@ const SESSION_REFRESH_REQUEST = `#graphql
 mutation {
     refreshSession {
         user { _id login mail name roles }
-        settings { preferredLocale autoread }
+        settings { preferredLocale autoread newsView }
         maxAge
     }
 }`;

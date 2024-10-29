@@ -1,7 +1,7 @@
 <template>
-  <div ref="newsList" class="max-w-5xl focus:outline-none">
+  <div ref="newsList" class="max-w-5xl focus:outline-none flex flex-row flex-wrap">
     <template v-for="(card, idx) in news" :key="card.data.id">
-      <NewsCard :ref="card.data.id" :card="card"
+      <NewsCard :ref="card.data.id" :card="card" :news-view="viewMode"
                 @activate="activateNewsCard(idx)" @addFilter="onAddFilter" @clickTitle="markNewsRead(idx, true)">
         <template v-if="userStore.isAuthenticated" #actions>
           <div class="join -ml-2 lg:ml-0">
@@ -111,6 +111,10 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
 
   get isAuthenticated(): boolean | undefined {
     return this.userStore.isAuthenticated;
+  }
+
+  get viewMode(): 'CARD' | 'MAGAZINE' {
+    return this.userStore.newView;
   }
 
   @Watch('isAuthenticated')
