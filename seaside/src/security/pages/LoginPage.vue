@@ -39,7 +39,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
 import { Store, useStore } from 'vuex';
-import { UPDATE_MUTATION } from '@/security/store/UserConstants';
+import { UPDATE_MUTATION, UPDATE_SETTINGS_MUTATION } from '@/security/store/UserConstants';
 
 import authenticationService from '@/security/services/AuthenticationService';
 import notificationService from '@/services/notification/NotificationService';
@@ -85,6 +85,7 @@ export default class LoginPage extends Vue {
             this.locale = authent.settings.preferredLocale;
           }
           this.store.commit(UPDATE_MUTATION, authent.user);
+          this.store.commit(UPDATE_SETTINGS_MUTATION, authent.settings);
           if (this.router.currentRoute.value.query.redirect) {
             for (let route of this.router.getRoutes()) {
               if (route.path === this.router.currentRoute.value.query.redirect) {

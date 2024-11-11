@@ -1,5 +1,5 @@
 import ScrollActivable from '@/services/model/ScrollActivable';
-import Vue from 'vue';
+import { Vue } from 'vue-facing-decorator';
 
 /**
  * Allow a List Vue Component to activate Element on scroll without scroll event.
@@ -9,15 +9,15 @@ import Vue from 'vue';
  *
  */
 export class ScrollingActivationBehaviour {
-    private observer: IntersectionObserver;
+    private observer: IntersectionObserver | null = null;
 
-    public connect(component: ScrollActivable & Vue): void {
+    public connect(component: ScrollActivable & typeof Vue): void {
         this.observer = new IntersectionObserver((entries) => {
             const entry = entries[0];
-            if (!entry.isIntersecting && entry.rootBounds !== undefined) {
+            if (!entry.isIntersecting && entry.rootBounds !== undefined && entry.rootBounds !== null) {
                 const isAbove = entry.boundingClientRect.y < entry.rootBounds.y;
                 const incr = (isAbove) ? +1 : -1;
-                component.activateElement(incr);
+                component.onScrollActivation(incr);
             }
         }, { threshold: [0.25], rootMargin: '-60px 0px 0px 0px' });
     }
@@ -29,8 +29,8 @@ export class ScrollingActivationBehaviour {
     }
 
     public observe(el: Element): void {
-        this.observer.disconnect();
-        this.observer.observe(el);
+        this.observer?.disconnect();
+        this.observer?.observe(el);
     }
 }
 

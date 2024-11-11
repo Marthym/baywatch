@@ -1,8 +1,8 @@
 <template>
   <div ref="newsList" class="max-w-5xl focus:outline-none flex flex-row flex-wrap">
     <template v-for="(card, idx) in news" :key="card.data.id">
-      <NewsCard :ref="card.data.id" :card="card" :news-view="viewMode"
-                @activate="activateNewsCard(idx)" @addFilter="onAddFilter" @clickTitle="markNewsRead(idx, true)">
+      <NewsCard :ref="card.data.id" :card="card" :view-mode="viewMode"
+                @activate="onClickNewActivate(idx)" @addFilter="onAddFilter" @clickTitle="markNewsRead(idx, true)">
         <template v-if="userStore.isAuthenticated" #actions>
           <div class="join -ml-2 lg:ml-0">
             <button v-if="card.data.state.read" :title="t('home.news.unread.tooltip')"
@@ -133,12 +133,14 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     this.keyboardController.register(
         listener('n', event => {
           event.preventDefault();
-          this.activateNewsCard(this.activeNews + 1);
+          this.applyNewsAutoRead();
+          this.applyNewsCardActivation(this.activeNews + 1);
           this.scrollToActivateNews('center');
         }),
         listener('k', event => {
           event.preventDefault();
-          this.activateNewsCard(this.activeNews - 1);
+          this.applyNewsAutoRead();
+          this.applyNewsCardActivation(this.activeNews - 1);
           this.scrollToActivateNews('center');
         }),
         listener('m', event => {
@@ -197,34 +199,27 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     return elements.asObservable();
   }
 
-  activateElement(incr: number): Element {
-    this.activateNewsCard(this.activeNews + incr);
-    const newsView = this.news[this.activeNews];
-    if (newsView) {
-      return this.getRefElement(newsView.data.id);
-    } else {
-      return {} as Element;
-    }
+  onClickNewActivate(idx: number): void {
+    this.applyNewsAutoRead();
+    this.applyNewsCardActivation(idx);
   }
 
-  activateNewsCard(_idx: number): void {
-    if (this.activeNews >= 0 && this.activeNews < this.news.length) {
-      // Manage previous news
-      this.news[this.activeNews].isActive = false;
-      if (!this.news[this.activeNews].keepMark && this.userStore.autoread) {
-        this.markNewsRead(this.activeNews, true);
-      }
+  onScrollActivation(incr: number): Element {
+    this.applyNewsAutoRead();
+    switch (this.viewMode) {
+      case 'MAGAZINE':
+        this.applyNewsCardActivation(this.activeNews + incr);
+        const newsView = this.news[this.activeNews];
+        if (newsView) {
+          return this.getRefElement(newsView.data.id);
+        } else {
+          return {} as Element;
+        }
+      case 'CARD':
+        this.applyNewsCardActivation(this.activeNews + incr);
+        return {} as Element;
+      default:
     }
-
-    const idx = Math.max(-1, Math.min(_idx, this.news.length));
-    this.activeNews = idx;
-    if (idx >= this.news.length || idx < 0) {
-      // Stop if last news
-      return;
-    }
-
-    this.news[this.activeNews].isActive = true;
-    this.activateOnScroll.observe(this.getRefElement(this.news[this.activeNews].data.id));
   }
 
   toggleRead(idx: number): void {
@@ -249,6 +244,31 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     this.activateOnScroll.disconnect();
     this.infiniteScroll.disconnect();
     actionServiceUnregisterFunction();
+  }
+
+  private applyNewsAutoRead(): void {
+    if (this.activeNews >= 0) {
+      if (!this.news[this.activeNews].keepMark && this.userStore.autoread) {
+        this.markNewsRead(this.activeNews, true);
+      }
+    }
+  }
+
+  private applyNewsCardActivation(_idx: number): void {
+    if (this.activeNews >= 0 && this.activeNews < this.news.length) {
+      // Manage previous news
+      this.news[this.activeNews].isActive = false;
+    }
+
+    const idx = Math.max(-1, Math.min(_idx, this.news.length));
+    this.activeNews = idx;
+    if (idx >= this.news.length || idx < 0) {
+      // Stop if last news
+      return;
+    }
+
+    this.news[this.activeNews].isActive = true;
+    this.activateOnScroll.observe(this.getRefElement(this.news[this.activeNews].data.id));
   }
 
   private observeFirst(el: Element): void {

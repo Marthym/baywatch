@@ -1,8 +1,8 @@
 <template>
   <div :class="{
-        'shadow-lg lg:h-60 my-8 border border-base-200': card.isActive,
-        'lg:flex-row': newsView === 'MAGAZINE',
-        'max-w-72 lg:h-80 lg:flex-col': newsView === 'CARD',
+        'shadow-lg lg:m-5 lg:h-60 my-5 border border-base-200': card.isActive,
+        'lg:flex-row': displayAsMagazine,
+        'lg:max-w-72 lg:h-80 lg:flex-col': displayAsCard,
         'lg:h-56 m-5': !card.isActive,
         'opacity-30': card.data.state?.read && !card.isActive,
        }"
@@ -11,8 +11,8 @@
     <figure class="flex-none">
       <img :alt="card.data.title"
            :class="{
-            'lg:rounded-none lg:rounded-l-lg lg:h-full lg:w-60': newsView === 'MAGAZINE',
-            'w-full': newsView === 'CARD',
+            'lg:rounded-none lg:rounded-l-lg lg:h-full lg:w-60': displayAsMagazine,
+            'w-full': displayAsCard,
            }"
            :sizes="card.sizes"
            :src="cardImage"
@@ -29,16 +29,14 @@
       <div class="flex flex-col h-full overflow-hidden">
         <a
             :class="{
-              'text-xl': newsView === 'MAGAZINE',
-              'grow line-clamp-5': newsView === 'CARD',
+              'text-xl': displayAsMagazine,
+              'grow line-clamp-5': displayAsCard,
             }"
             :href="card.data.link" :title="card.data.link"
             class="font-semibold" target="_blank"
             @auxclick="$emit('clickTitle')"
             @click="$emit('clickTitle')">{{ card.data.title }}</a>
-        <span :class="{
-                'lg:hidden': newsView === 'CARD'
-              }"
+        <span :class="{'lg:hidden': displayAsCard}"
               class="mt-2 text-base flex-grow max-h-80 overflow-hidden"
               v-html="card.data.description"></span>
 
@@ -74,9 +72,17 @@ const EMPTY_IMAGE_DATA: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA
   },
 })
 export default class NewsCard extends Vue {
-  @Prop({ default: 'MAGAZINE' }) newsView!: 'MAGAZINE' | 'CARD';
+  @Prop({ default: 'MAGAZINE' }) viewMode!: 'MAGAZINE' | 'CARD';
   @Prop() card: NewsView;
   private d;
+
+  get displayAsMagazine(): boolean {
+    return this.viewMode === 'MAGAZINE';
+  }
+
+  get displayAsCard(): boolean {
+    return this.viewMode === 'CARD';
+  }
 
   get cardImage() {
     return this.card?.data?.image ?? EMPTY_IMAGE_DATA;
