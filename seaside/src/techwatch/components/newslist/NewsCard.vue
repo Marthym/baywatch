@@ -1,12 +1,14 @@
 <template>
   <div :class="{
-        'shadow-lg lg:m-5 lg:h-60 my-5 border border-base-200': card.isActive,
-        'lg:flex-row': displayAsMagazine,
+        'shadow-lg lg:h-60 border border-base-200': card.isActive,
+        'scale-105': card.isActive && displayAsCard,
+        'lg:flex-row mx-5': displayAsMagazine,
+        'mx-0': displayAsMagazine && card.isActive,
         'lg:max-w-72 lg:h-80 lg:flex-col': displayAsCard,
-        'lg:h-56 m-5': !card.isActive,
+        'lg:h-56': !card.isActive,
         'opacity-30': card.data.state?.read && !card.isActive,
        }"
-       class="flex flex-col bg-base-100 shadow rounded-lg w-full" @click="$emit('activate')">
+       class="flex flex-col bg-base-100 shadow rounded-lg scroll-mt-12 w-full" @click="$emit('activate')">
 
     <figure class="flex-none">
       <img :alt="card.data.title"
@@ -27,16 +29,15 @@
 
     <div :class="{ 'm-6': card.isActive, 'm-4': !card.isActive}" class="flex-grow">
       <div class="flex flex-col h-full overflow-hidden">
-        <a
-            :class="{
+        <a :class="{
               'text-xl': displayAsMagazine,
-              'grow line-clamp-5': displayAsCard,
+              'line-clamp-5': displayAsCard,
             }"
-            :href="card.data.link" :title="card.data.link"
-            class="font-semibold" target="_blank"
-            @auxclick="$emit('clickTitle')"
-            @click="$emit('clickTitle')">{{ card.data.title }}</a>
-        <span :class="{'lg:hidden': displayAsCard}"
+           :href="card.data.link" :title="card.data.link"
+           class="font-semibold" target="_blank"
+           @auxclick="$emit('clickTitle')"
+           @click="$emit('clickTitle')">{{ card.data.title }}</a>
+        <span :class="{'grow invisible truncate': displayAsCard}"
               class="mt-2 text-base flex-grow max-h-80 overflow-hidden"
               v-html="card.data.description"></span>
 

@@ -1,5 +1,8 @@
 <template>
-  <div ref="newsList" class="max-w-5xl focus:outline-none flex flex-row flex-wrap">
+  <div ref="newsList" :class="{
+    'max-w-5xl': displayAsMagazine,
+    'max-w-7xl': displayAsCard,
+  }" class="max-w-7xl focus:outline-none flex flex-row flex-wrap gap-5">
     <template v-for="(card, idx) in news" :key="card.data.id">
       <NewsCard :ref="card.data.id" :card="card" :view-mode="viewMode"
                 @activate="onClickNewActivate(idx)" @addFilter="onAddFilter" @clickTitle="markNewsRead(idx, true)">
@@ -117,6 +120,14 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     return this.userStore.newView;
   }
 
+  get displayAsMagazine(): boolean {
+    return this.userStore.newView === 'MAGAZINE';
+  }
+
+  get displayAsCard(): boolean {
+    return this.userStore.newView === 'CARD';
+  }
+
   @Watch('isAuthenticated')
   onAuthenticationChange(): void {
     this.loadNextPage().pipe(take(1)).subscribe({ next: el => this.observeFirst(el) });
@@ -134,14 +145,14 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
         listener('n', event => {
           event.preventDefault();
           this.applyNewsAutoRead();
+          this.scrollToNews('start', this.activeNews + 1);
           this.applyNewsCardActivation(this.activeNews + 1);
-          this.scrollToActivateNews('center');
         }),
         listener('k', event => {
           event.preventDefault();
           this.applyNewsAutoRead();
+          this.scrollToNews('start', this.activeNews - 1);
           this.applyNewsCardActivation(this.activeNews - 1);
-          this.scrollToActivateNews('center');
         }),
         listener('m', event => {
           event.preventDefault();
@@ -408,12 +419,13 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
    *
    * @private
    */
-  private scrollToActivateNews(block: string = 'center') {
-    if (this.activeNews >= this.news.length - 2 || this.activeNews < 0) {
+  private scrollToNews(block: string = 'start', idx: number = this.activeNews) {
+    if (idx >= this.news.length - 2 || idx < 0) {
       // Stop if last news
       return;
     }
-    const current = this.news[this.activeNews];
+    const current = this.news[idx];
+
     this.$nextTick(() => {
       this.getRefElement(current.data.id).scrollIntoView(
           { block: block, behavior: 'smooth' } as ScrollIntoViewOptions);
