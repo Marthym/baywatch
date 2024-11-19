@@ -41,6 +41,24 @@
       </NewsCard>
     </template>
   </div>
+  <teleport to=".--js-right-nav-bar">
+    <div class="indicator mx-1">
+      <div class="dropdown dropdown-hover">
+        <div class="btn btn-square btn-ghost btn-sm" role="button" tabindex="0">
+          <WindowIcon class="h-6 w-6"/>
+        </div>
+        <ul class="dropdown-content menu bg-base-100 rounded z-[1] shadow border p-1 border-base-200 -ml-1.5"
+            tabindex="0">
+          <li><a class="p-1" @click="onChangeDisplay('CARD')">
+            <Squares2X2Icon class="h-6 w-6"/>
+          </a></li>
+          <li><a class="p-1" @click="onChangeDisplay('MAGAZINE')">
+            <IdentificationIcon class="h-6 w-6"/>
+          </a></li>
+        </ul>
+      </div>
+    </div>
+  </teleport>
 </template>
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-facing-decorator';
@@ -70,17 +88,28 @@ import { NewsSearchRequest } from '@/techwatch/model/NewsSearchRequest.type';
 import { News } from '@/techwatch/model/News.type';
 import { NEWS_FILTER_FEED_MUTATION, NewsStore } from '@/common/model/store/NewsStore.type';
 import { Feed } from '@/techwatch/model/Feed.type';
-import { EnvelopeIcon, EnvelopeOpenIcon, PaperClipIcon, ShareIcon } from '@heroicons/vue/24/outline';
-import { FireIcon } from '@heroicons/vue/20/solid';
+import {
+  ArrowPathIcon,
+  EnvelopeIcon,
+  EnvelopeOpenIcon,
+  IdentificationIcon,
+  PaperClipIcon,
+  ShareIcon,
+  Squares2X2Icon,
+} from '@heroicons/vue/24/outline';
+import { FireIcon, WindowIcon } from '@heroicons/vue/20/solid';
 import { KeyboardController, listener, useKeyboardController } from '@/common/services/KeyboardController';
 import { ref } from 'vue';
 import { Ref, UnwrapRef } from '@vue/reactivity';
 import { useI18n } from 'vue-i18n';
+import { ViewMode, ViewModeStrings } from '@/common/model/NewsViewMode';
+import { UPDATE_SETTINGS_VIEW_MODE_MUTATION } from '@/security/store/UserConstants';
 
 @Component({
   name: 'NewsList',
   components: {
-    PaperClipIcon, EnvelopeIcon, EnvelopeOpenIcon, ShareIcon, FireIcon,
+    ArrowPathIcon,
+    PaperClipIcon, EnvelopeIcon, EnvelopeOpenIcon, ShareIcon, FireIcon, WindowIcon, Squares2X2Icon, IdentificationIcon,
     NewsCard,
   },
   setup() {
@@ -116,16 +145,16 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     return this.userStore.isAuthenticated;
   }
 
-  get viewMode(): 'CARD' | 'MAGAZINE' {
-    return this.userStore.newView;
+  get viewMode(): ViewMode {
+    return this.userStore.newViewMode;
   }
 
   get displayAsMagazine(): boolean {
-    return this.userStore.newView === 'MAGAZINE';
+    return this.userStore.newViewMode === ViewMode.MAGAZINE;
   }
 
   get displayAsCard(): boolean {
-    return this.userStore.newView === 'CARD';
+    return this.userStore.newViewMode === ViewMode.CARD;
   }
 
   @Watch('isAuthenticated')
@@ -218,7 +247,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   onScrollActivation(incr: number): Element {
     this.applyNewsAutoRead();
     switch (this.viewMode) {
-      case 'MAGAZINE':
+      case ViewMode.MAGAZINE:
         this.applyNewsCardActivation(this.activeNews + incr);
         const newsView = this.news[this.activeNews];
         if (newsView) {
@@ -226,7 +255,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
         } else {
           return {} as Element;
         }
-      case 'CARD':
+      case ViewMode.CARD:
         this.applyNewsCardActivation(this.activeNews + incr);
         return {} as Element;
       default:
@@ -255,6 +284,11 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     this.activateOnScroll.disconnect();
     this.infiniteScroll.disconnect();
     actionServiceUnregisterFunction();
+  }
+
+  private onChangeDisplay(viewMode: ViewModeStrings): void {
+    this.store.commit(UPDATE_SETTINGS_VIEW_MODE_MUTATION, ViewMode[viewMode]);
+    this.$refs['newsList'].focus();
   }
 
   private applyNewsAutoRead(): void {

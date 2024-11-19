@@ -10,16 +10,18 @@ import {
     OPEN_CREATE_ACCOUNT,
     UPDATE,
     UPDATE_SETTINGS,
+    UPDATE_SETTINGS_VIEW_MODE,
 } from '@/security/store/UserConstants';
 import { GetterTree } from 'vuex';
-import { NewsViewType, UserSettings } from '@/security/model/UserSettings.type';
+import { UserSettings } from '@/security/model/UserSettings.type';
+import { ViewMode } from '@/common/model/NewsViewMode';
 
 export type UserState = {
     user: User;
     isAuthenticated: boolean | undefined;
     isCreateAccountOpen: boolean;
     autoread: boolean;
-    newView: NewsViewType;
+    newViewMode: ViewMode;
 }
 
 const state = (): UserState => ({
@@ -27,7 +29,7 @@ const state = (): UserState => ({
     isAuthenticated: undefined,
     isCreateAccountOpen: false,
     autoread: true,
-    newView: 'MAGAZINE',
+    newViewMode: ViewMode.MAGAZINE,
 });
 
 // getters
@@ -67,7 +69,10 @@ const mutations = {
     },
     [UPDATE_SETTINGS](st: UserState, payload: UserSettings): void {
         st.autoread = payload.autoread;
-        st.newView = payload.newsView;
+        st.newViewMode = payload.newsViewMode;
+    },
+    [UPDATE_SETTINGS_VIEW_MODE](st: UserState, payload: ViewMode): void {
+        st.newViewMode = payload;
     },
 };
 

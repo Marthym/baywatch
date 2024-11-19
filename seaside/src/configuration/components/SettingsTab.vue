@@ -17,7 +17,7 @@
       <div class="label">
         <span class="label-text first-letter:capitalize">{{ t('config.settings.form.newsView') }}</span>
       </div>
-      <select v-model="userSettings.newsView" class="select select-bordered w-full">
+      <select v-model="userSettings.newsViewMode" class="select select-bordered w-full">
         <option disabled></option>
         <option value="MAGAZINE">Magazine</option>
         <option value="CARD">Card</option>
