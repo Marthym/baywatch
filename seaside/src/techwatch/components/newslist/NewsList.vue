@@ -460,8 +460,15 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     }
     const current = this.news[idx];
 
+    const refElement = this.getRefElement(current.data.id);
+    refElement.closest('main').addEventListener(
+        'scrollend',
+        () => this.activateOnScroll.restart(),
+        { once: true },
+    );
     this.$nextTick(() => {
-      this.getRefElement(current.data.id).scrollIntoView(
+      this.activateOnScroll.pause();
+      refElement.scrollIntoView(
           { block: block, behavior: 'smooth' } as ScrollIntoViewOptions);
     });
   }

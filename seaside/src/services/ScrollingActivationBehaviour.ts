@@ -10,6 +10,7 @@ import { Vue } from 'vue-facing-decorator';
  */
 export class ScrollingActivationBehaviour {
     private observer: IntersectionObserver | null = null;
+    private isPaused: boolean = false;
 
     public connect(component: ScrollActivable & typeof Vue): void {
         this.observer = new IntersectionObserver((entries) => {
@@ -17,7 +18,9 @@ export class ScrollingActivationBehaviour {
             if (!entry.isIntersecting && entry.rootBounds !== undefined && entry.rootBounds !== null) {
                 const isAbove = entry.boundingClientRect.y < entry.rootBounds.y;
                 const incr = (isAbove) ? +1 : -1;
-                component.onScrollActivation(incr);
+                if (!this.isPaused) {
+                    component.onScrollActivation(incr);
+                }
             }
         }, { threshold: [0.25], rootMargin: '-60px 0px 0px 0px' });
     }
@@ -31,6 +34,14 @@ export class ScrollingActivationBehaviour {
     public observe(el: Element): void {
         this.observer?.disconnect();
         this.observer?.observe(el);
+    }
+
+    public pause(): void {
+        this.isPaused = true;
+    }
+
+    public restart(): void {
+        this.isPaused = false;
     }
 }
 

@@ -1,6 +1,6 @@
 <template>
   <div :class="{
-        'shadow-lg lg:h-60 border border-base-200': card.isActive,
+        'shadow-lg lg:h-60 border border-base-200 scale-105': card.isActive,
         'scale-105': card.isActive && displayAsCard,
         'lg:flex-row mx-5': displayAsMagazine,
         'mx-0': displayAsMagazine && card.isActive,
