@@ -5,6 +5,6 @@ import java.util.Locale;
 public record UserSettings(
         Locale preferredLocale,
         boolean autoread,
-        NewsViewType newsView
+        NewsViewType newsViewMode
 ) {
 }

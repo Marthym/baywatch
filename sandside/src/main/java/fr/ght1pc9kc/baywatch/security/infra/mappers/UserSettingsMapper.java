@@ -26,7 +26,7 @@ public interface UserSettingsMapper {
         return USERS_SETTINGS.newRecord()
                 .setUssePreferredLocale(settings.preferredLocale().toLanguageTag())
                 .setUsseAutoread(settings.autoread())
-                .setUsseNewsView(settings.newsView().name());
+                .setUsseNewsView(settings.newsViewMode().name());
     }
 
     UserSettings get(UserSettingsForm form);

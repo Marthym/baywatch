@@ -41,7 +41,7 @@
       </NewsCard>
     </template>
   </div>
-  <teleport to=".--js-right-nav-bar">
+  <teleport v-if="isAuthenticated" :disabled="!isAuthenticated" to=".--js-right-nav-bar">
     <div class="indicator mx-1">
       <div class="dropdown dropdown-hover">
         <div class="btn btn-square btn-ghost btn-sm" role="button" tabindex="0">
@@ -146,15 +146,15 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   }
 
   get viewMode(): ViewMode {
-    return this.userStore.newViewMode;
+    return this.userStore.newsViewMode;
   }
 
   get displayAsMagazine(): boolean {
-    return this.userStore.newViewMode === ViewMode.MAGAZINE;
+    return this.userStore.newsViewMode === ViewMode.MAGAZINE;
   }
 
   get displayAsCard(): boolean {
-    return this.userStore.newViewMode === ViewMode.CARD;
+    return this.userStore.newsViewMode === ViewMode.CARD;
   }
 
   @Watch('isAuthenticated')

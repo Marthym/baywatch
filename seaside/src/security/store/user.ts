@@ -21,7 +21,7 @@ export type UserState = {
     isAuthenticated: boolean | undefined;
     isCreateAccountOpen: boolean;
     autoread: boolean;
-    newViewMode: ViewMode;
+    newsViewMode: ViewMode;
 }
 
 const state = (): UserState => ({
@@ -29,7 +29,7 @@ const state = (): UserState => ({
     isAuthenticated: undefined,
     isCreateAccountOpen: false,
     autoread: true,
-    newViewMode: ViewMode.MAGAZINE,
+    newsViewMode: ViewMode.MAGAZINE,
 });
 
 // getters
@@ -69,10 +69,10 @@ const mutations = {
     },
     [UPDATE_SETTINGS](st: UserState, payload: UserSettings): void {
         st.autoread = payload.autoread;
-        st.newViewMode = payload.newsViewMode;
+        st.newsViewMode = payload.newsViewMode;
     },
     [UPDATE_SETTINGS_VIEW_MODE](st: UserState, payload: ViewMode): void {
-        st.newViewMode = payload;
+        st.newsViewMode = payload;
     },
 };
 

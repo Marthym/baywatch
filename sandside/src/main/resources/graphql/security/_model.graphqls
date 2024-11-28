@@ -17,13 +17,13 @@ type UserSettings {
     _id: ID
     preferredLocale: String
     autoread: Boolean
-    newsView: NewsViewType
+    newsViewMode: NewsViewType
 }
 
 input UserSettingsForm {
     preferredLocale: String
     autoread: Boolean
-    newsView: NewsViewType
+    newsViewMode: NewsViewType
 }
 
 type Session {

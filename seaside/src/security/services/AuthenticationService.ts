@@ -34,7 +34,7 @@ const SESSION_REFRESH_REQUEST = `#graphql
 mutation {
     refreshSession {
         user { _id login mail name roles }
-        settings { preferredLocale autoread newsView }
+        settings { preferredLocale autoread newsViewMode }
         maxAge
     }
 }`;

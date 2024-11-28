@@ -7,6 +7,6 @@ import java.util.Locale;
 public record UserSettingsForm(
         Locale preferredLocale,
         boolean autoread,
-        NewsViewType newsView
+        NewsViewType newsViewMode
 ) {
 }
