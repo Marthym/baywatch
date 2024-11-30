@@ -84,7 +84,7 @@
                 <configuration>
                     <from>
                         <image>
-                            bellsoft/liberica-runtime-container:jre-21.0.4_10-slim-musl@sha256:20fe1056fdf6f042bd2a6a059c53558c14c280c2abd988fe60b78e3e27caf8ba
+                            bellsoft/liberica-runtime-container:jre-21.0.5_12-crac-slim-musl@sha256:0311a6f805bbbf0168e767f4bdc784b33844fbec5a1b85f2592fadb32d919c07
                         </image>
                     </from>
                     <to>
