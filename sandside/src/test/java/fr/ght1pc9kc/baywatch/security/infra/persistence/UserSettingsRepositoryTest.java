@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.infra.persistence;
 
+import fr.ght1pc9kc.baywatch.security.api.model.NewsViewType;
 import fr.ght1pc9kc.baywatch.security.api.model.UserSettings;
 import fr.ght1pc9kc.baywatch.security.infra.mappers.UserSettingsMapper;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersSettingsRecordSamples;
@@ -64,7 +65,7 @@ class UserSettingsRepositoryTest {
                     USERS_SETTINGS.USSE_USER_ID.eq(DSIDIOUS_SETTINGS.getUsseUserId()));
             Assertions.assertThat(count).isZero();
         }
-        StepVerifier.create(tested.persist(DSIDIOUS_SETTINGS.getUsseUserId(), new UserSettings(Locale.GERMANY, true)))
+        StepVerifier.create(tested.persist(DSIDIOUS_SETTINGS.getUsseUserId(), new UserSettings(Locale.GERMANY, true, NewsViewType.MAGAZINE)))
                 .assertNext(actual -> Assertions.assertThat(actual.self().preferredLocale())
                         .isEqualTo(Locale.GERMANY))
                 .verifyComplete();
@@ -82,7 +83,7 @@ class UserSettingsRepositoryTest {
                     USERS_SETTINGS.USSE_USER_ID.eq(OKENOBI_SETTINGS.getUsseUserId()));
             Assertions.assertThat(count).isOne();
         }
-        StepVerifier.create(tested.persist(OKENOBI_SETTINGS.getUsseUserId(), new UserSettings(Locale.GERMANY, true)))
+        StepVerifier.create(tested.persist(OKENOBI_SETTINGS.getUsseUserId(), new UserSettings(Locale.GERMANY, true, NewsViewType.MAGAZINE)))
                 .assertNext(actual -> Assertions.assertThat(actual.self().preferredLocale())
                         .isEqualTo(Locale.GERMANY))
                 .verifyComplete();
