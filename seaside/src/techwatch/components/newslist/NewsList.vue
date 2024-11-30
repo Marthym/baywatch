@@ -44,11 +44,10 @@
   <teleport v-if="isAuthenticated" :disabled="!isAuthenticated" to=".--js-right-nav-bar">
     <div class="indicator mx-1">
       <div class="dropdown dropdown-hover">
-        <div class="btn btn-square btn-ghost btn-sm" role="button" tabindex="0">
+        <button class="btn btn-square btn-ghost btn-sm">
           <WindowIcon class="h-6 w-6"/>
-        </div>
-        <ul class="dropdown-content menu bg-base-100 rounded z-[1] shadow border p-1 border-base-200 -ml-1.5"
-            tabindex="0">
+        </button>
+        <ul class="dropdown-content menu bg-base-100 rounded z-[1] shadow border p-1 border-base-200 -ml-1.5">
           <li><a class="p-1" @click="onChangeDisplay('CARD')">
             <Squares2X2Icon class="h-6 w-6"/>
           </a></li>
@@ -247,7 +246,7 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
   onScrollActivation(incr: number): Element {
     this.applyNewsAutoRead();
     switch (this.viewMode) {
-      case ViewMode.MAGAZINE:
+      case ViewMode.MAGAZINE: {
         this.applyNewsCardActivation(this.activeNews + incr);
         const newsView = this.news[this.activeNews];
         if (newsView) {
@@ -255,9 +254,11 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
         } else {
           return {} as Element;
         }
-      case ViewMode.CARD:
+      }
+      case ViewMode.CARD: {
         this.applyNewsCardActivation(this.activeNews + incr);
         return {} as Element;
+      }
       default:
     }
   }
