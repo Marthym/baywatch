@@ -14,6 +14,14 @@
         <input v-model="userSettings.autoread" class="toggle" type="checkbox"/>
       </label>
       <div class="label label-text-alt pt-0">{{ t('config.settings.form.autoread.alt') }}</div>
+      <div class="label">
+        <span class="label-text first-letter:capitalize">{{ t('config.settings.form.newsView') }}</span>
+      </div>
+      <select v-model="userSettings.newsViewMode" class="select select-bordered w-full">
+        <option disabled></option>
+        <option value="MAGAZINE">Magazine</option>
+        <option value="CARD">Card</option>
+      </select>
       <button class="btn btn-primary capitalize mt-5" @click.stop="onClickSaveSettings()">
         {{ t('config.settings.form.action.save') }}
       </button>

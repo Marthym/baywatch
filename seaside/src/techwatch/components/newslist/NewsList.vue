@@ -1,8 +1,11 @@
 <template>
-  <div ref="newsList" class="max-w-5xl focus:outline-none">
+  <div ref="newsList" :class="{
+    'max-w-5xl': displayAsMagazine,
+    'max-w-7xl': displayAsCard,
+  }" class="max-w-7xl focus:outline-none flex flex-row flex-wrap gap-5">
     <template v-for="(card, idx) in news" :key="card.data.id">
-      <NewsCard :ref="card.data.id" :card="card"
-                @activate="activateNewsCard(idx)" @addFilter="onAddFilter" @clickTitle="markNewsRead(idx, true)">
+      <NewsCard :ref="card.data.id" :card="card" :view-mode="viewMode"
+                @activate="onClickNewActivate(idx)" @addFilter="onAddFilter" @clickTitle="markNewsRead(idx, true)">
         <template v-if="userStore.isAuthenticated" #actions>
           <div class="join -ml-2 lg:ml-0">
             <button v-if="card.data.state.read" :title="t('home.news.unread.tooltip')"
@@ -38,6 +41,24 @@
       </NewsCard>
     </template>
   </div>
+  <teleport v-if="isAuthenticated" :disabled="!isAuthenticated" to=".--js-right-nav-bar">
+    <div class="indicator mx-1">
+      <div class="dropdown dropdown-hover">
+        <div class="btn btn-square btn-ghost btn-sm" role="button" tabindex="0">
+          <WindowIcon class="h-6 w-6"/>
+        </div>
+        <ul class="dropdown-content menu bg-base-100 rounded z-[1] shadow border p-1 border-base-200 -ml-1.5"
+            tabindex="0">
+          <li><a class="p-1" @click="onChangeDisplay('CARD')">
+            <Squares2X2Icon class="h-6 w-6"/>
+          </a></li>
+          <li><a class="p-1" @click="onChangeDisplay('MAGAZINE')">
+            <IdentificationIcon class="h-6 w-6"/>
+          </a></li>
+        </ul>
+      </div>
+    </div>
+  </teleport>
 </template>
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-facing-decorator';
@@ -67,17 +88,28 @@ import { NewsSearchRequest } from '@/techwatch/model/NewsSearchRequest.type';
 import { News } from '@/techwatch/model/News.type';
 import { NEWS_FILTER_FEED_MUTATION, NewsStore } from '@/common/model/store/NewsStore.type';
 import { Feed } from '@/techwatch/model/Feed.type';
-import { EnvelopeIcon, EnvelopeOpenIcon, PaperClipIcon, ShareIcon } from '@heroicons/vue/24/outline';
-import { FireIcon } from '@heroicons/vue/20/solid';
+import {
+  ArrowPathIcon,
+  EnvelopeIcon,
+  EnvelopeOpenIcon,
+  IdentificationIcon,
+  PaperClipIcon,
+  ShareIcon,
+  Squares2X2Icon,
+} from '@heroicons/vue/24/outline';
+import { FireIcon, WindowIcon } from '@heroicons/vue/20/solid';
 import { KeyboardController, listener, useKeyboardController } from '@/common/services/KeyboardController';
 import { ref } from 'vue';
 import { Ref, UnwrapRef } from '@vue/reactivity';
 import { useI18n } from 'vue-i18n';
+import { ViewMode, ViewModeStrings } from '@/common/model/NewsViewMode';
+import { UPDATE_SETTINGS_VIEW_MODE_MUTATION } from '@/security/store/UserConstants';
 
 @Component({
   name: 'NewsList',
   components: {
-    PaperClipIcon, EnvelopeIcon, EnvelopeOpenIcon, ShareIcon, FireIcon,
+    ArrowPathIcon,
+    PaperClipIcon, EnvelopeIcon, EnvelopeOpenIcon, ShareIcon, FireIcon, WindowIcon, Squares2X2Icon, IdentificationIcon,
     NewsCard,
   },
   setup() {
@@ -113,6 +145,18 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     return this.userStore.isAuthenticated;
   }
 
+  get viewMode(): ViewMode {
+    return this.userStore.newsViewMode;
+  }
+
+  get displayAsMagazine(): boolean {
+    return this.userStore.newsViewMode === ViewMode.MAGAZINE;
+  }
+
+  get displayAsCard(): boolean {
+    return this.userStore.newsViewMode === ViewMode.CARD;
+  }
+
   @Watch('isAuthenticated')
   onAuthenticationChange(): void {
     this.loadNextPage().pipe(take(1)).subscribe({ next: el => this.observeFirst(el) });
@@ -129,13 +173,15 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     this.keyboardController.register(
         listener('n', event => {
           event.preventDefault();
-          this.activateNewsCard(this.activeNews + 1);
-          this.scrollToActivateNews('center');
+          this.applyNewsAutoRead();
+          this.scrollToNews('start', this.activeNews + 1);
+          this.applyNewsCardActivation(this.activeNews + 1);
         }),
         listener('k', event => {
           event.preventDefault();
-          this.activateNewsCard(this.activeNews - 1);
-          this.scrollToActivateNews('center');
+          this.applyNewsAutoRead();
+          this.scrollToNews('start', this.activeNews - 1);
+          this.applyNewsCardActivation(this.activeNews - 1);
         }),
         listener('m', event => {
           event.preventDefault();
@@ -193,34 +239,27 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     return elements.asObservable();
   }
 
-  activateElement(incr: number): Element {
-    this.activateNewsCard(this.activeNews + incr);
-    const newsView = this.news[this.activeNews];
-    if (newsView) {
-      return this.getRefElement(newsView.data.id);
-    } else {
-      return {} as Element;
-    }
+  onClickNewActivate(idx: number): void {
+    this.applyNewsAutoRead();
+    this.applyNewsCardActivation(idx);
   }
 
-  activateNewsCard(_idx: number): void {
-    if (this.activeNews >= 0 && this.activeNews < this.news.length) {
-      // Manage previous news
-      this.news[this.activeNews].isActive = false;
-      if (!this.news[this.activeNews].keepMark && this.userStore.autoread) {
-        this.markNewsRead(this.activeNews, true);
-      }
+  onScrollActivation(incr: number): Element {
+    this.applyNewsAutoRead();
+    switch (this.viewMode) {
+      case ViewMode.MAGAZINE:
+        this.applyNewsCardActivation(this.activeNews + incr);
+        const newsView = this.news[this.activeNews];
+        if (newsView) {
+          return this.getRefElement(newsView.data.id);
+        } else {
+          return {} as Element;
+        }
+      case ViewMode.CARD:
+        this.applyNewsCardActivation(this.activeNews + incr);
+        return {} as Element;
+      default:
     }
-
-    const idx = Math.max(-1, Math.min(_idx, this.news.length));
-    this.activeNews = idx;
-    if (idx >= this.news.length || idx < 0) {
-      // Stop if last news
-      return;
-    }
-
-    this.news[this.activeNews].isActive = true;
-    this.activateOnScroll.observe(this.getRefElement(this.news[this.activeNews].data.id));
   }
 
   toggleRead(idx: number): void {
@@ -245,6 +284,36 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     this.activateOnScroll.disconnect();
     this.infiniteScroll.disconnect();
     actionServiceUnregisterFunction();
+  }
+
+  private onChangeDisplay(viewMode: ViewModeStrings): void {
+    this.store.commit(UPDATE_SETTINGS_VIEW_MODE_MUTATION, ViewMode[viewMode]);
+    this.$refs['newsList'].focus();
+  }
+
+  private applyNewsAutoRead(): void {
+    if (this.activeNews >= 0) {
+      if (!this.news[this.activeNews].keepMark && this.userStore.autoread) {
+        this.markNewsRead(this.activeNews, true);
+      }
+    }
+  }
+
+  private applyNewsCardActivation(_idx: number): void {
+    if (this.activeNews >= 0 && this.activeNews < this.news.length) {
+      // Manage previous news
+      this.news[this.activeNews].isActive = false;
+    }
+
+    const idx = Math.max(-1, Math.min(_idx, this.news.length));
+    this.activeNews = idx;
+    if (idx >= this.news.length || idx < 0) {
+      // Stop if last news
+      return;
+    }
+
+    this.news[this.activeNews].isActive = true;
+    this.activateOnScroll.observe(this.getRefElement(this.news[this.activeNews].data.id));
   }
 
   private observeFirst(el: Element): void {
@@ -384,14 +453,22 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
    *
    * @private
    */
-  private scrollToActivateNews(block: string = 'center') {
-    if (this.activeNews >= this.news.length - 2 || this.activeNews < 0) {
+  private scrollToNews(block: string = 'start', idx: number = this.activeNews) {
+    if (idx >= this.news.length - 2 || idx < 0) {
       // Stop if last news
       return;
     }
-    const current = this.news[this.activeNews];
+    const current = this.news[idx];
+
+    const refElement = this.getRefElement(current.data.id);
+    refElement.closest('main').addEventListener(
+        'scrollend',
+        () => this.activateOnScroll.restart(),
+        { once: true },
+    );
     this.$nextTick(() => {
-      this.getRefElement(current.data.id).scrollIntoView(
+      this.activateOnScroll.pause();
+      refElement.scrollIntoView(
           { block: block, behavior: 'smooth' } as ScrollIntoViewOptions);
     });
   }

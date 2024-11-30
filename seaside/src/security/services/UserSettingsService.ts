@@ -6,7 +6,7 @@ import { UserSettings } from '@/security/model/UserSettings.type';
 const USERS_SETTINGS_GET_REQUEST = `#graphql
 query UserSettingsGet($id: ID){
     userSettingsGet(userId: $id) {
-        preferredLocale autoread
+        preferredLocale autoread newsViewMode
     }
 }`;
 
@@ -20,7 +20,7 @@ export function userSettingsGet(userId: string): Observable<UserSettings> {
 const USERS_SETTINGS_UPDATE_REQUEST = `#graphql
 mutation UserSettingsUpdate($id: ID, $settings: UserSettingsForm){
     userSettingsUpdate(userId: $id, settings: $settings) {
-        preferredLocale autoread
+        preferredLocale autoread newsViewMode
     }
 }`;
 

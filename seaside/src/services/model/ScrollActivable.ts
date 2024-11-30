@@ -1,3 +1,3 @@
 export default interface ScrollActivable {
-    activateElement(incr: number): Element;
+    onScrollActivation(incr: number): Element;
 }

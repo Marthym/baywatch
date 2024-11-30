@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.security.infra.mappers;
 
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersSettingsRecord;
+import fr.ght1pc9kc.baywatch.security.api.model.NewsViewType;
 import fr.ght1pc9kc.baywatch.security.api.model.UserSettings;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserSettingsForm;
 import fr.ght1pc9kc.entity.api.Entity;
@@ -16,14 +17,16 @@ public interface UserSettingsMapper {
     default Entity<UserSettings> getUserSettingsEntity(Record r) {
         return Entity.identify(new UserSettings(
                 Locale.forLanguageTag(r.get(USERS_SETTINGS.USSE_PREFERRED_LOCALE)),
-                r.get(USERS_SETTINGS.USSE_AUTOREAD))
+                r.get(USERS_SETTINGS.USSE_AUTOREAD),
+                NewsViewType.valueOf(r.get(USERS_SETTINGS.USSE_NEWS_VIEW)))
         ).withId(r.get(USERS_SETTINGS.USSE_USER_ID));
     }
 
     default UsersSettingsRecord getUserSettingsRecord(UserSettings settings) {
         return USERS_SETTINGS.newRecord()
                 .setUssePreferredLocale(settings.preferredLocale().toLanguageTag())
-                .setUsseAutoread(settings.autoread());
+                .setUsseAutoread(settings.autoread())
+                .setUsseNewsView(settings.newsViewMode().name());
     }
 
     UserSettings get(UserSettingsForm form);

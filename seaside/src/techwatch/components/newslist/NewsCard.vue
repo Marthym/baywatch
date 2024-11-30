@@ -1,39 +1,54 @@
 <template>
-  <div class="flex flex-col lg:flex-row bg-base-100 shadow rounded-lg"
-       :class="{
-        'shadow-lg lg:h-60 my-8 border border-base-200': card.isActive,
-        'lg:h-56 m-5': !card.isActive,
+  <div :class="{
+        'shadow-lg lg:h-60 border border-base-200 scale-105': card.isActive,
+        'scale-105': card.isActive && displayAsCard,
+        'lg:flex-row mx-5': displayAsMagazine,
+        'mx-0': displayAsMagazine && card.isActive,
+        'lg:max-w-72 lg:h-80 lg:flex-col': displayAsCard,
+        'lg:h-56': !card.isActive,
         'opacity-30': card.data.state?.read && !card.isActive,
-       }" @click="$emit('activate')">
+       }"
+       class="flex flex-col bg-base-100 shadow rounded-lg scroll-mt-12 w-full" @click="$emit('activate')">
 
     <figure class="flex-none">
-      <img :src="cardImage"
-           :srcset="card.srcset"
+      <img :alt="card.data.title"
+           :class="{
+            'lg:rounded-none lg:rounded-l-lg lg:h-full lg:w-60': displayAsMagazine,
+            'w-full': displayAsCard,
+           }"
            :sizes="card.sizes"
-           class="w-full h-24 lg:h-full lg:w-60 object-cover rounded-t-lg lg:rounded-none lg:rounded-l-lg
-              bg-no-repeat bg-cover lg:bg-contain bg-center
+           :src="cardImage"
+           :srcset="card.srcset"
+           class="h-24 object-cover rounded-t-lg
+              bg-no-repeat bg-cover lg:bg-contain bg-center w-full
               bg-[url('/placeholder.svg')] text-transparent"
            loading="lazy"
-           :alt="card.data.title"
            @error.stop.prevent="onImageError"
       />
     </figure>
 
     <div :class="{ 'm-6': card.isActive, 'm-4': !card.isActive}" class="flex-grow">
       <div class="flex flex-col h-full overflow-hidden">
-        <a class="font-semibold text-xl" target="_blank" :href="card.data.link" :title="card.data.link"
+        <a :class="{
+              'text-xl': displayAsMagazine,
+              'line-clamp-5': displayAsCard,
+            }"
+           :href="card.data.link" :title="card.data.link"
+           class="font-semibold" target="_blank"
            @auxclick="$emit('clickTitle')"
            @click="$emit('clickTitle')">{{ card.data.title }}</a>
-        <span v-html="card.data.description" class="mt-2 text-base flex-grow max-h-80 overflow-hidden"></span>
+        <span :class="{'grow invisible truncate': displayAsCard}"
+              class="mt-2 text-base flex-grow max-h-80 overflow-hidden"
+              v-html="card.data.description"></span>
 
         <div class="flex flex-row flex-wrap-reverse lg:justify-end text-xs mt-2">
           <slot name="actions"></slot>
           <span class="grow"></span>
           <span class="italic self-start lg:block">{{ publication }}</span>
           <div class="text-right lg:whitespace-nowrap order-last basis-full">
-            <button class="badge badge-neutral badge-sm m-px rounded lg:whitespace-nowrap order-last basis-full"
-                    @click.stop="$emit('addFilter', {type: 'feed', entity: f})"
-                    v-for="f in card.data.feeds">{{ f.name }}
+            <button v-for="f in card.data.feeds"
+                    class="badge badge-neutral badge-sm m-px rounded lg:whitespace-nowrap order-last basis-full"
+                    @click.stop="$emit('addFilter', {type: 'feed', entity: f})">{{ f.name }}
             </button>
           </div>
         </div>
@@ -50,15 +65,25 @@ import { useI18n } from 'vue-i18n';
 
 const EMPTY_IMAGE_DATA: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
-@Component({ name: 'NewsCard', emits: ['activate', 'addFilter', 'clickTitle'],
+@Component({
+  name: 'NewsCard', emits: ['activate', 'addFilter', 'clickTitle'],
   setup() {
     const { d } = useI18n();
     return { d };
-  }
+  },
 })
 export default class NewsCard extends Vue {
+  @Prop({ default: 'MAGAZINE' }) viewMode!: 'MAGAZINE' | 'CARD';
   @Prop() card: NewsView;
   private d;
+
+  get displayAsMagazine(): boolean {
+    return this.viewMode === 'MAGAZINE';
+  }
+
+  get displayAsCard(): boolean {
+    return this.viewMode === 'CARD';
+  }
 
   get cardImage() {
     return this.card?.data?.image ?? EMPTY_IMAGE_DATA;
