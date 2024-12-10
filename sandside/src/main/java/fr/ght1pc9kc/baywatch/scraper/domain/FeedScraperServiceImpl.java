@@ -8,6 +8,7 @@ import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperPlugin;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
+import fr.ght1pc9kc.baywatch.scraper.api.ScrapingErrorsService;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapResult;
@@ -285,8 +286,10 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                 .acceptCharset(StandardCharsets.UTF_8)
                 .exchangeToFlux(response -> {
                     if (!response.statusCode().is2xxSuccessful()) {
-                        log.info("Host {} respond {}", link.getHost(), response.statusCode());
-                        return Flux.empty();
+                        return Flux.error(() -> new ScrapingException(
+                                ScrapingErrorsService.filterMessage(response.statusCode().value()),
+                                new IllegalArgumentException()
+                        ));
                     }
                     return this.xmlEventDecoder.decode(
                             response.bodyToFlux(DataBuffer.class),

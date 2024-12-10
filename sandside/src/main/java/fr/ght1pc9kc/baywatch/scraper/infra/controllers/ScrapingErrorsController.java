@@ -43,6 +43,6 @@ public class ScrapingErrorsController {
 
     @SchemaMapping(typeName = "ScrapingError", field = "message")
     public Mono<String> filterErrorMessage(ScrapingError error) {
-        return Mono.just(scrapingErrorsService.filterMessage(error));
+        return Mono.just(ScrapingErrorsService.filterMessage(error.code()));
     }
 }

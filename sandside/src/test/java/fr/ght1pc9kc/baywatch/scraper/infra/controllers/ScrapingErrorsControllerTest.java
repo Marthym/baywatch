@@ -67,7 +67,6 @@ class ScrapingErrorsControllerTest {
 
     @Test
     void should_filter_error_message() {
-        doReturn("Filtered").when(mockScrapingErrorService).filterMessage(any(ScrapingError.class));
         Instant since = Instant.parse("2024-05-05T12:42:02Z");
         ScrapingError sample = new ScrapingError(404, since, since, "Not found");
 

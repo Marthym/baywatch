@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.scraper.domain;
 
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
+import fr.ght1pc9kc.baywatch.scraper.api.ScrapingErrorsService;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingError;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.ScrapingAuthentFacade;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.ScrapingErrorPersistencePort;
@@ -139,7 +140,7 @@ class ScrapingErrorsServiceImplTest {
         Instant since = Instant.parse("2024-04-02T22:08:42Z");
         Instant now = Instant.parse("2024-04-04T22:08:42Z");
         Stream.of(200, 403, 404, 406, 410, 500, 521, 599, 42)
-                .map(code -> tested.filterMessage(new ScrapingError(code, since, now, "Message")))
+                .map(ScrapingErrorsService::filterMessage)
                 .forEach(actual -> Assertions.assertThat(actual).isNotEqualTo("Message"));
     }
 }
