@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import SettingsTab from '@/configuration/components/SettingsTab.vue';
 import { createI18n } from 'vue-i18n';
 import { of } from 'rxjs';
+import { en_US } from '@/locales/config-settings_en-US';
 
 vi.mock('@/security/services/UserSettingsService', () => {
     return {
@@ -19,10 +20,7 @@ describe('SettingsTab', () => {
         const i18n = createI18n({
             legacy: false,
             messages: {
-                'en': {
-                    'config.settings.form.preferredLocale': 'en',
-                    'config.settings.form.action.save': 'Save',
-                },
+                'en': en_US,
             },
         });
 

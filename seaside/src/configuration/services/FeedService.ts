@@ -21,14 +21,6 @@ export class FeedService {
         }
     }`;
 
-    private static readonly SCRAP_FEED_HEAD_REQUEST = `#graphql
-    query ScrapFeedHeader($link: URI!) {
-        scrapFeedHeader(link: $link) {
-            title
-            description
-        }
-    }`;
-
     private static readonly FEED_SUBSCRIBE = `#graphql
     mutation Subscription($feedId: ID) {
         subscribe(id: $feedId) {_id name}
@@ -63,23 +55,6 @@ export class FeedService {
                     ),
                 };
             }),
-            take(1),
-        );
-    }
-
-    public fetchFeedInformation(link?: string): Observable<Feed> {
-        if (link === undefined) {
-            return throwError(() => new Error('Link is mandatory !'));
-        } else if (!URL_PATTERN.test(link)) {
-            return throwError(() => new Error('Argument link must be a valid URL !'));
-        }
-
-        return send<ScrapFeedHeaderResponse>(FeedService.SCRAP_FEED_HEAD_REQUEST, { link: link }).pipe(
-            map(data => data.data.scrapFeedHeader),
-            map((atom: AtomFeed) => ({
-                name: atom.title,
-                description: atom.description,
-            } as Feed)),
             take(1),
         );
     }
@@ -142,6 +117,31 @@ mutation FeedDelete($ids: [ID]) {
 export function feedDelete(ids: string[]): Observable<Pick<Feed, '_id' | 'name'>[]> {
     return send<{ feedDelete: Feed[] }>(FEED_DELETE, { ids }).pipe(
         map(data => data.data.feedDelete),
+        take(1),
+    );
+}
+
+const SCRAP_FEED_HEAD_REQUEST = `#graphql
+query ScrapFeedHeader($link: URI!) {
+    scrapFeedHeader(link: $link) {
+        title
+        description
+    }
+}`;
+
+export function feedFetchInformation(link?: string): Observable<Feed> {
+    if (link === undefined) {
+        return throwError(() => new Error('Link is mandatory !'));
+    } else if (!URL_PATTERN.test(link)) {
+        return throwError(() => new Error('Argument link must be a valid URL !'));
+    }
+
+    return send<ScrapFeedHeaderResponse>(SCRAP_FEED_HEAD_REQUEST, { link: link }).pipe(
+        map(data => data.data.scrapFeedHeader),
+        map((atom: AtomFeed) => ({
+            name: atom.title,
+            description: atom.description,
+        } as Feed)),
         take(1),
     );
 }

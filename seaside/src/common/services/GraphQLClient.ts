@@ -1,20 +1,22 @@
-import {Observable} from "rxjs";
-import {fromFetch} from "rxjs/fetch";
-import {ConstantHttpHeaders, ConstantMediaTypes} from "@/constants";
-import {map, switchMap} from "rxjs/operators";
-import {UnauthorizedError} from "@/common/errors/UnauthorizedError";
-import {UnknownFetchError} from "@/common/errors/UnknownFetchError";
+import { Observable } from 'rxjs';
+import { fromFetch } from 'rxjs/fetch';
+import { ConstantHttpHeaders, ConstantMediaTypes } from '@/constants';
+import { map, switchMap } from 'rxjs/operators';
+import { UnauthorizedError } from '@/common/errors/UnauthorizedError';
+import { UnknownFetchError } from '@/common/errors/UnknownFetchError';
 import {
+    BAD_REQUEST,
     FORBIDDEN,
     GraphqlResponse,
     INTERNAL_ERROR,
     INVALID_SYNTAX,
     UNAUTHORIZED,
-    VALIDATION_ERROR
-} from "@/common/model/GraphqlResponse.type";
-import {handleStatusCodeErrors} from "@/common/services/common";
-import {ForbiddenError} from "@/common/errors/ForbiddenError";
+    VALIDATION_ERROR,
+} from '@/common/model/GraphqlResponse.type';
+import { handleStatusCodeErrors } from '@/common/services/common';
+import { ForbiddenError } from '@/common/errors/ForbiddenError';
 import { ValidationError } from '@/common/errors/ValidationError';
+import { BadRequestError } from '@/common/errors/BadRequestError';
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL + import.meta.env.VITE_GQL_ENDPOINT;
 
@@ -80,6 +82,18 @@ function handleForbiddenErrors<T>(data: GraphqlResponse<T>): GraphqlResponse<T> 
     return data;
 }
 
+function handleBadRequestErrors<T>(data: GraphqlResponse<T>): GraphqlResponse<T> {
+    if (data.errors) {
+        const errIdx = data.errors.findIndex(e => e.extensions.classification === BAD_REQUEST);
+        if (errIdx !== -1) {
+            throw new BadRequestError(
+                data.errors[errIdx].extensions.translation ?? 'unknown.error.code',
+                data.errors[errIdx].message);
+        }
+    }
+    return data;
+}
+
 export function send<T>(query: string, vars?: any): Observable<GraphqlResponse<T>> {
     const headers = new Headers();
     headers.set(ConstantHttpHeaders.CONTENT_TYPE, ConstantMediaTypes.JSON_UTF8);
@@ -88,14 +102,15 @@ export function send<T>(query: string, vars?: any): Observable<GraphqlResponse<T
         headers: headers,
         body: JSON.stringify({
             query: gqlMinify(query),
-            variables: vars
-        })
+            variables: vars,
+        }),
     }).pipe(
         switchMap(handleStatusCodeErrors),
         switchMap(r => r.json() as Promise<GraphqlResponse<T>>),
         map(handleAuthenticationErrors),
         map(handleForbiddenErrors),
         map(handleValidationErrors),
+        map(handleBadRequestErrors),
         map(handleSyntaxErrors),
         map(handleInternalServerErrors),
     );

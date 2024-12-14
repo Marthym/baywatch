@@ -1,7 +1,8 @@
 import { describe, expect, test, vi } from 'vitest';
 import { lastValueFrom, of } from 'rxjs';
+import { feedFetchInformation } from '@/configuration/services/FeedService';
 
-vi.doMock('@/common/services/GraphQLClient', () => {
+vi.mock('@/common/services/GraphQLClient', () => {
     return {
         send: vi.fn().mockReturnValue(of({
             data: {
@@ -74,7 +75,7 @@ describe('Configuration FeedService', () => {
     });
 
     test('should fetch feed information', async () => {
-        const actual = await lastValueFrom(feedService.fetchFeedInformation('https://jedi.com/atom.xml'));
+        const actual = await lastValueFrom(feedFetchInformation('https://jedi.com/atom.xml'));
 
         expect(send).toHaveBeenCalled();
         expect(actual).toEqual({ description: 'Testdescription', name: 'Test tile' });

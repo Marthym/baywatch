@@ -3,22 +3,28 @@
     <form class="form-control" @submit.prevent="onSaveFeed">
       <fieldset :disabled="isFormLock" class="flex flex-col">
         <legend></legend>
-        <label class="label" for="feedUrl">
-          <span class="label-text capitalize">{{ t('config.feeds.editor.form.location') }}</span>
+        <label for="feedUrl">
+          <span class="label">
+            <span class="label-text capitalize">{{ t('config.feeds.editor.form.location') }}</span>
+          </span>
+          <span class="join w-full">
+            <input id="feedUrl" v-model="feed.location" :class="{'input-error': errors.location}"
+                   class="input input-bordered join-item w-full" placeholder="https://..."
+                   type="url"
+                   @blur="onUriBlur">
+            <button class="btn join-item" @click.stop="onUriBlur">
+              <ArrowPathIcon class="h-6 w-6"/>
+            </button>
+          </span>
+          <span class="label">
+            <span class="label-text-alt"/>
+            <span class="label-text-alt text-error-content first-letter:capitalize">{{ errors.location }}</span>
+          </span>
         </label>
-        <span class="join w-full">
-          <input id="feedUrl" v-model="feed.location" :class="{'input-error': errors.indexOf('location') > -1}"
-                 class="input input-bordered join-item w-full" placeholder="https://..."
-                 type="url"
-                 @blur="onUriBlur">
-          <button class="btn join-item" @click.stop="onUriBlur">
-            <ArrowPathIcon class="h-6 w-6"/>
-          </button>
-        </span>
-        <label class="label" for="feedName">
+        <label class="label -mt-6" for="feedName">
           <span class="label-text capitalize">{{ t('config.feeds.editor.form.name') }}</span>
         </label>
-        <input id="feedName" v-model="feed.name" :class="{'input-error': errors.indexOf('name') > -1}"
+        <input id="feedName" v-model="feed.name" :class="{'input-error': errors.name}"
                :placeholder="t('config.feeds.editor.form.name.placeholder')"
                class="input input-bordered placeholder:capitalize"
                type="text">
@@ -34,7 +40,9 @@
     </form>
     <template v-slot:actions>
       <button class="btn capitalize" @click.stop="resetAndCloseModal">{{ t('dialog.cancel') }}</button>
-      <button class="btn btn-primary capitalize" @click="onSaveFeed">{{
+      <button class="btn btn-primary capitalize"
+              :disabled="Object.entries(errors).length > 0"
+              @click="onSaveFeed">{{
           t('config.feeds.editor.form.action.submit')
         }}
       </button>
@@ -49,7 +57,7 @@ import { Observable, Subject } from 'rxjs';
 import ModalWindow from '@/common/components/ModalWindow.vue';
 import TagInput from '@/common/components/TagInput.vue';
 import { tagsListAll } from '@/techwatch/services/TagsService';
-import feedService from '@/configuration/services/FeedService';
+import { feedFetchInformation } from '@/configuration/services/FeedService';
 import { URL_PATTERN } from '@/common/services/RegexPattern';
 import { useI18n } from 'vue-i18n';
 import { ArrowPathIcon } from '@heroicons/vue/24/outline';
@@ -71,7 +79,10 @@ export default class FeedEditor extends Vue {
   private feed: Feed = {} as Feed;
   private isOpened = false;
   private subject?: Subject<Feed>;
-  private errors: string[] = [];
+  private errors: {
+    name?: string;
+    location?: string;
+  } = {};
   private isFormLock = false;
 
   public openEmpty(): Observable<Feed> {
@@ -82,7 +93,7 @@ export default class FeedEditor extends Vue {
     this.feed = feed;
     this.isOpened = true;
     this.subject = new Subject<Feed>();
-    this.errors.splice(0);
+    Object.assign(this.errors, {});
     return this.subject.asObservable();
   }
 
@@ -94,14 +105,14 @@ export default class FeedEditor extends Vue {
   }
 
   private onSaveFeed(): void {
-    this.errors.splice(0);
+    Object.assign(this.errors, {});
     if (this.feed.name === undefined || /^ *$/.exec(this.feed.name) !== null) {
-      this.errors.push('name');
+      this.errors.name = this.t('config.feeds.messages.nameMandatory');
     }
     if (!URL_PATTERN.test(this.feed.location)) {
-      this.errors.push('location');
+      this.errors.location = this.t('config.feeds.messages.locationMustBeURL');;
     }
-    if (this.errors.length === 0) {
+    if (Object.entries(this.errors).length === 0) {
       this.subject?.next(this.feed);
       this.resetAndCloseModal();
     }
@@ -109,14 +120,19 @@ export default class FeedEditor extends Vue {
 
   private onUriBlur(): void {
     if (!URL_PATTERN.test(this.feed.location)) {
-      this.errors.push('location');
+      this.errors.location = this.t('config.feeds.messages.locationMustBeURL');;
       return;
+    } else {
+      delete this.errors.location;
     }
     this.isFormLock = true;
-    feedService.fetchFeedInformation(this.feed.location).subscribe({
+    feedFetchInformation(this.feed.location).subscribe({
       next: f => Object.assign(this.feed, { ...f, url: this.feed.location }),
       complete: () => this.isFormLock = false,
-      error: () => this.isFormLock = false,
+      error: err => {
+        this.errors.location = this.t(err.code);
+        this.isFormLock = false;
+      }
     });
   }
 
