@@ -8,7 +8,6 @@ import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperPlugin;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
-import fr.ght1pc9kc.baywatch.scraper.api.ScrapingErrorsService;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapResult;
@@ -16,6 +15,7 @@ import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingEventType;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.FeedScrapingException;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.ScrapingException;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.ScrapingExceptionCode;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.ScraperMaintenancePort;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
@@ -287,7 +287,7 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                 .exchangeToFlux(response -> {
                     if (!response.statusCode().is2xxSuccessful()) {
                         return Flux.error(() -> new ScrapingException(
-                                ScrapingErrorsService.filterMessage(response.statusCode().value()),
+                                ScrapingExceptionCode.fromHttpStatus(response.statusCode().value()),
                                 new IllegalArgumentException()
                         ));
                     }
@@ -299,7 +299,8 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                 .bufferUntil(feedParser.firstItemEvent())
                 .next()
                 .map(feedParser::readFeedProperties)
-                .flatMap(scrapEnrichmentService::applyFeedsFilters);
+                .flatMap(scrapEnrichmentService::applyFeedsFilters)
+                .onErrorMap(t -> new ScrapingException(ScrapingExceptionCode.PARSING, t));
     }
 
     private Mono<News> handleEnrichmentException(Try<News> news, Sinks.Many<ScrapingException> errors) {

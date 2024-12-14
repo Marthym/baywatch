@@ -9,6 +9,8 @@ import org.springframework.graphql.execution.DataFetcherExceptionResolverAdapter
 import org.springframework.graphql.execution.ErrorType;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 @Component
 public class ScraperExceptionResolverAdapter extends DataFetcherExceptionResolverAdapter {
     @Override
@@ -17,9 +19,11 @@ public class ScraperExceptionResolverAdapter extends DataFetcherExceptionResolve
             case ScrapingException scrapingEx -> GraphqlErrorBuilder.newError(env)
                     .errorType(ErrorType.BAD_REQUEST)
                     .message(scrapingEx.getLocalizedMessage())
+                    .extensions(Map.of("translation", scrapingEx.getTranslation().getCode()))
                     .build();
             default -> GraphqlErrorBuilder.newError(env)
                     .errorType(ErrorType.INTERNAL_ERROR)
+                    .message("Unknown internal error")
                     .build();
         };
     }

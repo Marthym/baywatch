@@ -16,17 +16,4 @@ public interface ScrapingErrorsService {
     Mono<Void> purge(Collection<String> notInFeedsIds);
 
     Level level(ScrapingError error);
-
-    static String filterMessage(int httpStatusCode) {
-        return switch (httpStatusCode) {
-            case 200, 599 -> "Error on parsing feed flux. Will be fixed soon.";
-            case 403 -> "Feed expect credentials to be read";
-            case 404 -> "Feed not found.";
-            case 406 -> "Feed format unknown and not supported.";
-            case 410 -> "Feed is gone for ever, you can remove it !";
-            case 500 -> "Feed unavailable";
-            case 521 -> "Feed server is done";
-            default -> "Unknown error message for code " + httpStatusCode;
-        };
-    }
 }
