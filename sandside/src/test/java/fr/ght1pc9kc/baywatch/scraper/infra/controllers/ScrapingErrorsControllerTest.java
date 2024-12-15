@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.scraper.infra.controllers;
 
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapingErrorsService;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingError;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.ScrapingExceptionCode;
 import fr.ght1pc9kc.baywatch.tests.samples.FeedSamples;
 import fr.ght1pc9kc.entity.api.Entity;
 import org.assertj.core.api.Assertions;
@@ -67,12 +68,11 @@ class ScrapingErrorsControllerTest {
 
     @Test
     void should_filter_error_message() {
-        doReturn("Filtered").when(mockScrapingErrorService).filterMessage(any(ScrapingError.class));
         Instant since = Instant.parse("2024-05-05T12:42:02Z");
-        ScrapingError sample = new ScrapingError(404, since, since, "Not found");
+        ScrapingError sample = new ScrapingError(404, since, since, "Secret error message");
 
         StepVerifier.create(tested.filterErrorMessage(sample))
-                .assertNext(actual -> Assertions.assertThat(actual).isEqualTo("Filtered"))
+                .assertNext(actual -> Assertions.assertThat(actual).isEqualTo(ScrapingExceptionCode.NOT_FOUND.getDefaultMessage()))
                 .verifyComplete();
     }
 }

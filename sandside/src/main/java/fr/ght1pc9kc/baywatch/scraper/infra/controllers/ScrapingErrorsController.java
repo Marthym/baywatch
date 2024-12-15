@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.scraper.infra.controllers;
 
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapingErrorsService;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingError;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.ScrapingExceptionCode;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.entity.api.Entity;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,6 @@ public class ScrapingErrorsController {
 
     @SchemaMapping(typeName = "ScrapingError", field = "message")
     public Mono<String> filterErrorMessage(ScrapingError error) {
-        return Mono.just(scrapingErrorsService.filterMessage(error));
+        return Mono.just(ScrapingExceptionCode.fromHttpStatus(error.code()).getDefaultMessage());
     }
 }
