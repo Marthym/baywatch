@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
-import fr.ght1pc9kc.baywatch.common.api.ScrapingEventHandler;
+import fr.ght1pc9kc.baywatch.scraper.api.ScrapingEventHandler;
+import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingEventType;
 import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -10,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
-import java.util.Set;
+import java.util.EnumSet;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.COUNT;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.FEED_ID;
@@ -60,8 +61,8 @@ public class DeleteOrphanFeedHandler implements ScrapingEventHandler {
     }
 
     @Override
-    public Set<String> eventTypes() {
-        return Set.of("FEED_SCRAPING");
+    public EnumSet<ScrapingEventType> eventTypes() {
+        return EnumSet.of(ScrapingEventType.FEED_SCRAPING);
     }
 
 }

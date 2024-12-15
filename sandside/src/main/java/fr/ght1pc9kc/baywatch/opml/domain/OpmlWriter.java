@@ -71,10 +71,10 @@ public final class OpmlWriter {
             xmlWriter.writeCharacters(ZonedDateTime.now(clock).format(OPML_DATETIME_FORMATTER));
             xmlWriter.writeEndElement(); // dateCreated
             xmlWriter.writeStartElement(OPMLTags.OWNER_NAME);
-            xmlWriter.writeCharacters(owner.name);
+            xmlWriter.writeCharacters(owner.name());
             xmlWriter.writeEndElement(); // ownerName
             xmlWriter.writeStartElement(OPMLTags.OWNER_EMAIL);
-            xmlWriter.writeCharacters(owner.mail);
+            xmlWriter.writeCharacters(owner.mail());
             xmlWriter.writeEndElement(); // ownerEmail
             xmlWriter.writeEndElement(); // head
         } catch (XMLStreamException e) {

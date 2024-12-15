@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.tests.samples;
 
+import fr.ght1pc9kc.baywatch.common.api.model.UserMeta;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
@@ -7,8 +8,6 @@ import fr.ght1pc9kc.entity.api.Entity;
 
 import java.time.Instant;
 import java.util.List;
-
-import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdAt;
 
 public final class UserSamples {
     /**
@@ -22,7 +21,7 @@ public final class UserSamples {
                             .role(Role.ADMIN)
                             .password("adoy")
                             .build())
-            .meta(createdAt, Instant.EPOCH)
+            .meta(UserMeta.createdAt, Instant.EPOCH)
             .withId("US01GRQ11X1W8E6NQER7E1FNQ7HC");
 
     /**
@@ -36,7 +35,7 @@ public final class UserSamples {
                             .role(Role.MANAGER)
                             .password("nawibo")
                             .build())
-            .meta(createdAt, Instant.EPOCH)
+            .meta(UserMeta.createdAt, Instant.EPOCH)
             .withId("US01GRQ11XKGHERDEBSCHBNJAY78");
 
     /**
@@ -52,7 +51,7 @@ public final class UserSamples {
                             .role(Permission.manager("TM01GP696RFPTY32WD79CVB0KDTF"))
                             .password("ekul")
                             .build())
-            .meta(createdAt, Instant.EPOCH)
+            .meta(UserMeta.createdAt, Instant.EPOCH)
             .withId("US01GRQ15DCEX52JH4GWJ26G33ME");
 
     /**
@@ -68,7 +67,7 @@ public final class UserSamples {
                             .role(Permission.manager("TM01GP696RFPTY32WD79CVB0KDTF"))
                             .password("udniw")
                             .build())
-            .meta(createdAt, Instant.EPOCH)
+            .meta(UserMeta.createdAt, Instant.EPOCH)
             .withId("US01GRQ15DCEX52JH4GWJ26G33ME");
 
     /**
@@ -84,7 +83,7 @@ public final class UserSamples {
                             .role(Permission.manager("TM01GPETWVATJ968SJ717NRHYSEZ"))
                             .password("suoidis")
                             .build())
-            .meta(createdAt, Instant.EPOCH)
+            .meta(UserMeta.createdAt, Instant.EPOCH)
             .withId("US01GRQ15F7DNWH4Q6Q1H5F7HYT0");
 
     /**
@@ -95,7 +94,7 @@ public final class UserSamples {
                             .name(Role.SYSTEM.name())
                             .login(Role.SYSTEM.name().toLowerCase())
                             .role(Role.SYSTEM).build())
-            .meta(createdAt, Instant.EPOCH)
+            .meta(UserMeta.createdAt, Instant.EPOCH)
             .withId(Role.SYSTEM.name());
 
     public static final List<Entity<User>> SAMPLES = List.of(OBIWAN, LUKE);

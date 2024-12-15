@@ -1,9 +1,17 @@
 type Feed {
-    _id: ID!
+    _id: ID!,
     _createdBy: String,
+    name: String,
+    description: String,
+    location: String!,
+    tags: [String],
+    error: ScrapingError,
+}
+
+input FeedForm {
     name: String
+    location: String
     description: String
-    location: String!
     tags: [String]
 }
 
@@ -29,5 +37,8 @@ extend type Query {
 }
 
 extend type Mutation {
+    feedAddAndSubscribe(feed: FeedForm): Feed
+    feedUpdate(id: ID, name: String, description: String, tags: [String]): Feed
+    feedDelete(ids: [ID]): [Feed]
     subscribe(id: ID, name: String, tags: [String]): Feed
 }

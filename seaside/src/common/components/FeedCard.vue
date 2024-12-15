@@ -17,32 +17,46 @@
     </div>
   </div>
   <div v-if="!dense" :class="{'col-span-7': !dense}">
-    <a class="link whitespace-normal">{{ view.location }}</a><br>
+    <a class="link whitespace-normal break-all">{{ view.location }}</a><br>
     <div v-for="tag in view.tags" class="badge mr-1 rounded">{{ tag }}</div>
+  </div>
+  <div v-if="!dense && view.error" :class="{
+          'col-span-2': !dense,
+          'text-error-content': view.error.level == 'SEVERE',
+          'text-warning-content': view.error.level == 'WARNING'
+       }"
+       class="place-self-end h-full flex flex-col justify-center">
+    <div class="tooltip tooltip-left"
+         :class="{'tooltip-error': view.error.level == 'SEVERE', 'tooltip-warning': view.error.level == 'WARNING'}"
+         :data-tip="view.error.since.toLocaleDateString(currentLocale, formatLocaleOptions) +': '+ view.error.message">
+      <ExclamationTriangleIcon class="h-8 w-8"/>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-facing-decorator';
+import { FeedCardView } from '@/common/model/FeedCardView.type';
+import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline';
 
 @Component({
   name: 'FeedCard',
+  components: { ExclamationTriangleIcon },
   props: ['view', 'dense'],
 })
 export default class FeedCard extends Vue {
   @Prop() private view!: FeedCardView;
   @Prop({ default: false }) private dense: false;
 
+  private readonly currentLocale = navigator.languages;
+  private readonly formatLocaleOptions = {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  };
+
   iconFallback(event: ErrorEvent): void {
     (event.target as HTMLImageElement).src = '/favicon.ico';
   }
-}
-
-export type FeedCardView = {
-  _id: string;
-  icon: string;
-  name: string;
-  location: string;
-  tags: string[];
 }
 </script>

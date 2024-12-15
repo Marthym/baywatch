@@ -1,18 +1,16 @@
 package fr.ght1pc9kc.baywatch.opml.domain;
 
 import com.machinezoo.noexception.Exceptions;
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.opml.api.OpmlService;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
-import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.infra.persistence.FeedRepository;
 import fr.ght1pc9kc.entity.api.Entity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -20,6 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.function.Supplier;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -47,25 +46,17 @@ public class OpmlServiceImpl implements OpmlService {
     }
 
     @Override
-    public Mono<Void> opmlImport(Flux<DataBuffer> data) {
-        log.debug("Start importing...");
+    public Mono<Void> opmlImport(Supplier<InputStream> inputSupplier) {
         return authFacade.getConnectedUser()
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser("Authentication not found !")))
                 .flatMapMany(Exceptions.wrap().function(owner -> {
-                    PipedOutputStream pos = new PipedOutputStream();
-                    PipedInputStream pis = new PipedInputStream(pos);
-                    Flux<Entity<WebFeed>> feeds = readOpml(pis);
-                    Mono<Entity<WebFeed>> db = DataBufferUtils.write(data, pos)
-                            .map(DataBufferUtils::release)
-                            .doOnTerminate(Exceptions.wrap().runnable(() -> {
-                                pos.flush();
-                                pos.close();
-                            }))
-                            .then(Mono.empty());
-                    return Flux.merge(db, feeds)
+                    InputStream is = inputSupplier.get();
+                    return readOpml(is)
                             .buffer(100)
                             .flatMap(f -> feedRepository.persist(f).collectList())
-                            .flatMap(f -> feedRepository.persistUserRelation(f, owner.id()));
+                            .flatMap(f -> feedRepository.persistUserRelation(owner.id(), f))
+                            .doOnTerminate(Exceptions.wrap().runnable(is::close));
+
                 })).then();
     }
 

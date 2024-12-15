@@ -1,31 +1,38 @@
 <template>
-  <div class="max-w-5xl focus:outline-none" ref="newsList">
+  <div ref="newsList" :class="{
+    'max-w-5xl': displayAsMagazine,
+    'max-w-7xl': displayAsCard,
+  }" class="max-w-7xl focus:outline-none flex flex-row flex-wrap gap-5">
     <template v-for="(card, idx) in news" :key="card.data.id">
-      <NewsCard :ref="card.data.id" :card="card"
-                @activate="activateNewsCard(idx)" @addFilter="onAddFilter" @clickTitle="markNewsRead(idx, true)">
-        <template #actions v-if="userStore.isAuthenticated">
+      <NewsCard :ref="card.data.id" :card="card" :view-mode="viewMode"
+                @activate="onClickNewActivate(idx)" @addFilter="onAddFilter" @clickTitle="markNewsRead(idx, true)">
+        <template v-if="userStore.isAuthenticated" #actions>
           <div class="join -ml-2 lg:ml-0">
-            <button v-if="card.data.state.read" @click.stop="toggleRead(idx)"
-                    class="btn btn-xs btn-ghost join-item">
+            <button v-if="card.data.state.read" :title="t('home.news.unread.tooltip')"
+                    class="btn btn-xs btn-ghost join-item"
+                    @click.stop="toggleRead(idx)">
               <EnvelopeOpenIcon class="h-5 w-5 cursor-pointer stroke-2"/>
-              <span class="hidden lg:block">unread</span>
+              <span class="hidden lg:block">{{ t('home.news.unread') }}</span>
             </button>
-            <button v-else @click.stop="toggleRead(idx)" class="btn btn-xs btn-ghost join-item">
+            <button v-else :title="t('home.news.read.tooltip')"
+                    class="btn btn-xs btn-ghost join-item"
+                    @click.stop="toggleRead(idx)">
               <EnvelopeIcon class="h-5 w-5 cursor-pointer stroke-2"/>
-              <span class="hidden lg:block">read</span>
+              <span class="hidden lg:block">{{ t('home.news.read') }}</span>
             </button>
-            <button @click.stop="toggleNewsKeep(idx)" class="btn btn-xs btn-ghost join-item"
-                    :class="{'text-accent': card.data.state.keep}">
+            <button :class="{'text-accent': card.data.state.keep}" :title="t('home.news.clip.tooltip')"
+                    class="btn btn-xs btn-ghost join-item"
+                    @click.stop="toggleNewsKeep(idx)">
               <PaperClipIcon class="h-5 w-5 cursor-pointer stroke-2"/>
-              <span class="hidden lg:block">clip</span>
+              <span class="hidden lg:block">{{ t('home.news.clip') }}</span>
             </button>
-            <button @click.stop="toggleNewsShared(idx)" class="btn btn-xs btn-ghost join-item"
-                    :class="{'text-accent': card.data.state.shared}">
+            <button :class="{'text-accent': card.data.state.shared}" class="btn btn-xs btn-ghost join-item"
+                    @click.stop="toggleNewsShared(idx)">
               <ShareIcon class="h-5 w-5 cursor-pointer stroke-2"/>
-              <span class="hidden lg:block">share</span>
+              <span class="hidden lg:block">{{ t('home.news.share') }}</span>
             </button>
             <button class="btn btn-xs btn-ghost join-item" disabled="disabled">
-              <FireIcon class="w-6 h-6" :class="{'text-warning': card.data.popularity?.score > 0}"/>
+              <FireIcon :class="{'text-warning': card.data.popularity?.score > 0}" class="w-6 h-6"/>
               <span v-if="card.data.popularity?.score > 0"
                     class="hidden lg:block text-warning">{{ card.data.popularity.score }}</span>
             </button>
@@ -34,6 +41,23 @@
       </NewsCard>
     </template>
   </div>
+  <teleport v-if="isAuthenticated" :disabled="!isAuthenticated" to=".--js-right-nav-bar">
+    <div class="indicator mx-1">
+      <div class="dropdown dropdown-hover">
+        <button class="btn btn-square btn-ghost btn-sm">
+          <WindowIcon class="h-6 w-6"/>
+        </button>
+        <ul class="dropdown-content menu bg-base-100 rounded z-[1] shadow border p-1 border-base-200 -ml-1.5">
+          <li><a class="p-1" @click="onChangeDisplay('CARD')">
+            <Squares2X2Icon class="h-6 w-6"/>
+          </a></li>
+          <li><a class="p-1" @click="onChangeDisplay('MAGAZINE')">
+            <IdentificationIcon class="h-6 w-6"/>
+          </a></li>
+        </ul>
+      </div>
+    </div>
+  </teleport>
 </template>
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-facing-decorator';
@@ -63,23 +87,37 @@ import { NewsSearchRequest } from '@/techwatch/model/NewsSearchRequest.type';
 import { News } from '@/techwatch/model/News.type';
 import { NEWS_FILTER_FEED_MUTATION, NewsStore } from '@/common/model/store/NewsStore.type';
 import { Feed } from '@/techwatch/model/Feed.type';
-import { EnvelopeIcon, EnvelopeOpenIcon, PaperClipIcon, ShareIcon } from '@heroicons/vue/24/outline';
-import { FireIcon } from '@heroicons/vue/20/solid';
+import {
+  ArrowPathIcon,
+  EnvelopeIcon,
+  EnvelopeOpenIcon,
+  IdentificationIcon,
+  PaperClipIcon,
+  ShareIcon,
+  Squares2X2Icon,
+} from '@heroicons/vue/24/outline';
+import { FireIcon, WindowIcon } from '@heroicons/vue/20/solid';
 import { KeyboardController, listener, useKeyboardController } from '@/common/services/KeyboardController';
 import { ref } from 'vue';
 import { Ref, UnwrapRef } from '@vue/reactivity';
+import { useI18n } from 'vue-i18n';
+import { ViewMode, ViewModeStrings } from '@/common/model/NewsViewMode';
+import { UPDATE_SETTINGS_VIEW_MODE_MUTATION } from '@/security/store/UserConstants';
 
 @Component({
   name: 'NewsList',
   components: {
-    PaperClipIcon, EnvelopeIcon, EnvelopeOpenIcon, ShareIcon, FireIcon,
+    ArrowPathIcon,
+    PaperClipIcon, EnvelopeIcon, EnvelopeOpenIcon, ShareIcon, FireIcon, WindowIcon, Squares2X2Icon, IdentificationIcon,
     NewsCard,
   },
   setup() {
     const store = useStore();
     const newsList: Ref<UnwrapRef<HTMLElement>> = ref(HTMLElement.prototype);
+    const { t } = useI18n();
     return {
       store: store,
+      t: t,
       userStore: store.state.user,
       newsStore: store.state.news,
       activateOnScroll: useScrollingActivation(),
@@ -91,6 +129,7 @@ import { Ref, UnwrapRef } from '@vue/reactivity';
 })
 export default class NewsList extends Vue implements ScrollActivable, InfiniteScrollable {
   private readonly store;
+  private readonly t: unknown;
   private readonly userStore: UserState;
   private readonly newsStore: NewsStore;
   private readonly activateOnScroll: ScrollingActivationBehaviour;
@@ -103,6 +142,18 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
 
   get isAuthenticated(): boolean | undefined {
     return this.userStore.isAuthenticated;
+  }
+
+  get viewMode(): ViewMode {
+    return this.userStore.newsViewMode;
+  }
+
+  get displayAsMagazine(): boolean {
+    return this.userStore.newsViewMode === ViewMode.MAGAZINE;
+  }
+
+  get displayAsCard(): boolean {
+    return this.userStore.newsViewMode === ViewMode.CARD;
   }
 
   @Watch('isAuthenticated')
@@ -121,13 +172,15 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     this.keyboardController.register(
         listener('n', event => {
           event.preventDefault();
-          this.activateNewsCard(this.activeNews + 1);
-          this.scrollToActivateNews('center');
+          this.applyNewsAutoRead();
+          this.scrollToNews('start', this.activeNews + 1);
+          this.applyNewsCardActivation(this.activeNews + 1);
         }),
         listener('k', event => {
           event.preventDefault();
-          this.activateNewsCard(this.activeNews - 1);
-          this.scrollToActivateNews('center');
+          this.applyNewsAutoRead();
+          this.scrollToNews('start', this.activeNews - 1);
+          this.applyNewsCardActivation(this.activeNews - 1);
         }),
         listener('m', event => {
           event.preventDefault();
@@ -150,6 +203,118 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
         this.loadNextPage().pipe(take(1)).subscribe(el => this.observeFirst(el));
       }
     });
+  }
+
+  loadNextPage(): Observable<Element> {
+    const query = this.buildNewsQueryString();
+
+    const elements = new Subject<Element>();
+    let unreadCount = this.news.filter(n => !n.data.state.read).length;
+    const newsResponse = (this.isAuthenticated) ? newsService.getNews(query) : newsService.getAnonymousNews();
+    newsResponse.pipe(
+        switchMap(ns => {
+          this.store.commit(FILTER_MUTATION, ns.total + unreadCount);
+          return ns.data;
+        }),
+        map((ns: News[]) => ns.map(n => ({
+          data: n,
+          isActive: false,
+          keepMark: n.state?.keep || false,
+          sizes: n.imgm ? '(max-width: 1024px) 268px, 240px' : '',
+          srcset: n.imgm ? `${n.imgm} 268w, ${n.imgd} 240w` : '',
+        }) as NewsView)),
+        tap(ns => this.news.push(...ns)),
+    ).subscribe({
+      next: ns => {
+        this.$nextTick(() => {
+          ns.forEach(n => {
+            return elements.next(this.getRefElement(n.data.id));
+          });
+          elements.complete();
+        });
+      },
+      error: e => elements.next(e),
+    });
+    return elements.asObservable();
+  }
+
+  onClickNewActivate(idx: number): void {
+    this.applyNewsAutoRead();
+    this.applyNewsCardActivation(idx);
+  }
+
+  onScrollActivation(incr: number): Element {
+    this.applyNewsAutoRead();
+    switch (this.viewMode) {
+      case ViewMode.MAGAZINE: {
+        this.applyNewsCardActivation(this.activeNews + incr);
+        const newsView = this.news[this.activeNews];
+        if (newsView) {
+          return this.getRefElement(newsView.data.id);
+        } else {
+          return {} as Element;
+        }
+      }
+      case ViewMode.CARD: {
+        this.applyNewsCardActivation(this.activeNews + incr);
+        return {} as Element;
+      }
+      default:
+    }
+  }
+
+  toggleRead(idx: number): void {
+    this.markNewsRead(idx, !this.news[idx].data.state.read);
+    this.news[idx].keepMark = true;
+  }
+
+  getRefElement(ref: string): Element {
+    const vueRef: Vue[] | undefined = this.$refs[ref] as Vue[] | undefined;
+    if (vueRef === undefined) {
+      throw new Error(`Element with ref ${ref} not found !`);
+    }
+    return (vueRef)[0].$el;
+  }
+
+  beforeUnmount(): void {
+    this.keyboardController.purge();
+
+  }
+
+  unmounted(): void {
+    this.activateOnScroll.disconnect();
+    this.infiniteScroll.disconnect();
+    actionServiceUnregisterFunction();
+  }
+
+  private onChangeDisplay(viewMode: ViewModeStrings): void {
+    this.store.commit(UPDATE_SETTINGS_VIEW_MODE_MUTATION, ViewMode[viewMode]);
+    this.$refs['newsList'].focus();
+  }
+
+  private applyNewsAutoRead(): void {
+    if (this.activeNews >= 0) {
+      if (!this.news[this.activeNews].keepMark && this.userStore.autoread) {
+        this.markNewsRead(this.activeNews, true);
+      }
+    }
+  }
+
+  private applyNewsCardActivation(_idx: number): void {
+    if (this.activeNews >= 0 && this.activeNews < this.news.length) {
+      // Manage previous news
+      this.news[this.activeNews].isActive = false;
+    }
+
+    const idx = Math.max(-1, Math.min(_idx, this.news.length));
+    this.activeNews = idx;
+    if (idx >= this.news.length || idx < 0) {
+      // Stop if last news
+      return;
+    }
+
+    this.news[this.activeNews].isActive = true;
+    this.activateOnScroll.observe(this.getRefElement(this.news[this.activeNews].data.id));
   }
 
   private observeFirst(el: Element): void {
@@ -207,74 +372,6 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     return query;
   }
 
-  loadNextPage(): Observable<Element> {
-    const query = this.buildNewsQueryString();
-
-    const elements = new Subject<Element>();
-    let unreadCount = this.news.filter(n => !n.data.state.read).length;
-    const newsResponse = (this.isAuthenticated) ? newsService.getNews(query) : newsService.getAnonymousNews();
-    newsResponse.pipe(
-        switchMap(ns => {
-          this.store.commit(FILTER_MUTATION, ns.total + unreadCount);
-          return ns.data;
-        }),
-        map((ns: News[]) => ns.map(n => ({
-          data: n,
-          isActive: false,
-          keepMark: n.state?.keep || false,
-          sizes: n.imgm ? '(max-width: 1024px) 268px, 240px' : '',
-          srcset: n.imgm ? `${n.imgm} 268w, ${n.imgd} 240w` : '',
-        }) as NewsView)),
-        tap(ns => this.news.push(...ns)),
-    ).subscribe({
-      next: ns => {
-        this.$nextTick(() => {
-          ns.forEach(n => {
-            return elements.next(this.getRefElement(n.data.id));
-          });
-          elements.complete();
-        });
-      },
-      error: e => elements.next(e),
-    });
-    return elements.asObservable();
-  }
-
-  activateElement(incr: number): Element {
-    this.activateNewsCard(this.activeNews + incr);
-    const newsView = this.news[this.activeNews];
-    if (newsView) {
-      return this.getRefElement(newsView.data.id);
-    } else {
-      return {} as Element;
-    }
-  }
-
-  activateNewsCard(_idx: number): void {
-    if (this.activeNews >= 0 && this.activeNews < this.news.length) {
-      // Manage previous news
-      this.news[this.activeNews].isActive = false;
-      if (!this.news[this.activeNews].keepMark) {
-        this.markNewsRead(this.activeNews, true);
-      }
-    }
-
-    const idx = Math.max(-1, Math.min(_idx, this.news.length));
-    this.activeNews = idx;
-    if (idx >= this.news.length || idx < 0) {
-      // Stop if last news
-      return;
-    }
-
-    this.news[this.activeNews].isActive = true;
-    this.activateOnScroll.observe(this.getRefElement(this.news[this.activeNews].data.id));
-  }
-
-  toggleRead(idx: number): void {
-    this.markNewsRead(idx, !this.news[idx].data.state.read);
-    this.news[idx].keepMark = true;
-  }
-
   private markNewsRead(idx: number, mark: boolean) {
     if (!this.isAuthenticated) {
       return;
@@ -289,9 +386,15 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
 
     iif(() => mark,
         newsMark(target.data.id, Mark.READ).pipe(
-            tap(() => this.store.commit(DECREMENT_UNREAD_MUTATION))),
+            tap(() => {
+              this.news[idx].data.state.read = true;
+              this.store.commit(DECREMENT_UNREAD_MUTATION);
+            })),
         newsUnMark(target.data.id, Mark.READ).pipe(
-            tap(() => this.store.commit(INCREMENT_UNREAD_MUTATION))),
+            tap(() => {
+              this.news[idx].data.state.read = false;
+              this.store.commit(INCREMENT_UNREAD_MUTATION);
+            })),
     ).subscribe(state => {
       this.news[idx].data.state.read = state.read;
     });
@@ -351,40 +454,29 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
    *
    * @private
    */
-  private scrollToActivateNews(block: string = 'center') {
-    if (this.activeNews >= this.news.length - 2 || this.activeNews < 0) {
+  private scrollToNews(block: string = 'start', idx: number = this.activeNews) {
+    if (idx >= this.news.length - 2 || idx < 0) {
       // Stop if last news
       return;
     }
-    const current = this.news[this.activeNews];
+    const current = this.news[idx];
+
+    const refElement = this.getRefElement(current.data.id);
+    refElement.closest('main').addEventListener(
+        'scrollend',
+        () => this.activateOnScroll.restart(),
+        { once: true },
+    );
     this.$nextTick(() => {
-      this.getRefElement(current.data.id).scrollIntoView(
+      this.activateOnScroll.pause();
+      refElement.scrollIntoView(
           { block: block, behavior: 'smooth' } as ScrollIntoViewOptions);
     });
-  }
-
-  getRefElement(ref: string): Element {
-    const vueRef: Vue[] | undefined = this.$refs[ref] as Vue[] | undefined;
-    if (vueRef === undefined) {
-      throw new Error(`Element with ref ${ref} not found !`);
-    }
-    return (vueRef)[0].$el;
   }
 
   private onAddFilter(event: { type: string, entity: Feed }): void {
     this.store.commit(NEWS_FILTER_FEED_MUTATION, { id: event.entity._id, label: event.entity.name });
     actionServiceReload('news');
-  }
-
-  beforeUnmount(): void {
-    this.keyboardController.purge();
-
-  }
-
-  unmounted(): void {
-    this.activateOnScroll.disconnect();
-    this.infiniteScroll.disconnect();
-    actionServiceUnregisterFunction();
   }
 
 }

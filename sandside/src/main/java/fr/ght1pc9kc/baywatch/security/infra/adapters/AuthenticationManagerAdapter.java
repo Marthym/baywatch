@@ -1,35 +1,47 @@
 package fr.ght1pc9kc.baywatch.security.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.security.api.AuthenticationService;
-import fr.ght1pc9kc.baywatch.security.domain.ports.JwtTokenProvider;
-import fr.ght1pc9kc.baywatch.security.domain.AuthenticationServiceImpl;
-import lombok.experimental.Delegate;
+import fr.ght1pc9kc.baywatch.security.api.model.AuthenticationRequest;
+import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
+import fr.ght1pc9kc.baywatch.security.domain.ports.AuthenticationManagerPort;
+import fr.ght1pc9kc.baywatch.security.infra.model.BaywatchUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 @Component
-public class AuthenticationManagerAdapter implements ReactiveAuthenticationManager, AuthenticationService {
-
-    @Delegate
+public class AuthenticationManagerAdapter implements AuthenticationManagerPort, ReactiveAuthenticationManager {
     private final ReactiveAuthenticationManager delegate;
-
-    @Delegate
-    private final AuthenticationService delegateAuthService;
 
     @Autowired
     public AuthenticationManagerAdapter(
             @Qualifier("Baywatch") UserServiceAdapter userDetailsService,
-            JwtTokenProvider tokenProvider,
             PasswordEncoder passwordEncoder) {
         UserDetailsRepositoryReactiveAuthenticationManager authManager =
                 new UserDetailsRepositoryReactiveAuthenticationManager(userDetailsService);
         authManager.setPasswordEncoder(passwordEncoder);
         this.delegate = authManager;
-        this.delegateAuthService = new AuthenticationServiceImpl(tokenProvider, userDetailsService);
     }
 
+    @Override
+    public Mono<BaywatchAuthentication> authenticate(AuthenticationRequest request) {
+        return delegate.authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()))
+                .map(auth -> new BaywatchAuthentication(
+                        ((BaywatchUserDetails) auth.getPrincipal()).entity(),
+                        null,
+                        request.rememberMe(),
+                        AuthorityUtils.authorityListToSet(auth.getAuthorities())
+                ));
+    }
+
+    @Override
+    public Mono<Authentication> authenticate(Authentication authentication) {
+        return delegate.authenticate(authentication);
+    }
 }

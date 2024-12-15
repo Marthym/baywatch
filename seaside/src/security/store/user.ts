@@ -9,19 +9,27 @@ import {
     LOGOUT,
     OPEN_CREATE_ACCOUNT,
     UPDATE,
+    UPDATE_SETTINGS,
+    UPDATE_SETTINGS_VIEW_MODE,
 } from '@/security/store/UserConstants';
 import { GetterTree } from 'vuex';
+import { UserSettings } from '@/security/model/UserSettings.type';
+import { ViewMode } from '@/common/model/NewsViewMode';
 
 export type UserState = {
     user: User;
     isAuthenticated: boolean | undefined;
     isCreateAccountOpen: boolean;
+    autoread: boolean;
+    newsViewMode: ViewMode;
 }
 
 const state = (): UserState => ({
     user: ANONYMOUS,
     isAuthenticated: undefined,
     isCreateAccountOpen: false,
+    autoread: true,
+    newsViewMode: ViewMode.MAGAZINE,
 });
 
 // getters
@@ -59,6 +67,13 @@ const mutations = {
         st.user = payload;
         st.isAuthenticated = hasRole(st.user, UserRole.USER);
     },
+    [UPDATE_SETTINGS](st: UserState, payload: UserSettings): void {
+        st.autoread = payload.autoread;
+        st.newsViewMode = payload.newsViewMode;
+    },
+    [UPDATE_SETTINGS_VIEW_MODE](st: UserState, payload: ViewMode): void {
+        st.newsViewMode = payload;
+    },
 };
 
 const hasRole = (user: User, expectedRole: UserRole, entity?: string): boolean => {
@@ -85,7 +100,7 @@ const hasRole = (user: User, expectedRole: UserRole, entity?: string): boolean =
     return false;
 };
 
-export default {
+export const user = {
     namespaced: true,
     state,
     getters,

@@ -1,46 +1,53 @@
 <template>
-  <div class="md:btn-group mb-2">
-    <button v-if="actions.includes('a')" class="btn btn-sm mb-2 mr-2 md:m-0"
+  <div class="md:join mb-2">
+    <button v-if="actions.includes('a')" class="btn btn-sm join-item mb-2 mr-2 md:m-0 capitalize"
             @click.stop.prevent="$emit('add')">
       <PlusCircleIcon class="w-6 h-6 md:mr-2"/>
-      <span>Ajouter</span>
+      <span>{{ t('smarttable.actions.add') }}</span>
     </button>
-    <button v-if="actions.includes('i')" class="btn btn-sm btn-ghost mb-2 mr-2 md:m-0" @click="$emit('import')">
+    <button v-if="actions.includes('i')" class="btn btn-sm btn-ghost join-item mb-2 mr-2 md:m-0 capitalize"
+            @click="$emit('import')">
       <ArrowDownTrayIcon class="w-6 h-6 mr-2"/>
-      Importer
+      {{ t('smarttable.actions.import') }}
     </button>
-    <a v-if="actions.includes('e')" class="btn btn-sm btn-ghost mb-2 mr-2 md:m-0" @click="$emit('export')">
+    <a v-if="actions.includes('e')" class="btn btn-sm btn-ghost join-item mb-2 mr-2 md:m-0 capitalize"
+       @click="$emit('export')">
       <ArrowUpTrayIcon class="w-6 h-6 mr-2"/>
-      Exporter
+      {{ t('smarttable.actions.export') }}
     </a>
-    <button v-if="actions.includes('l')" class="btn btn-sm btn-warning"
+    <button v-if="actions.includes('l')" class="btn btn-sm btn-warning join-item capitalize"
             :disabled="selectedElements.length <= 0" @click.stop.prevent="$emit('leaveSelected', selectedElements)">
       <ArrowRightEndOnRectangleIcon class="h-6 w-6"/>
-      Leave
+      {{ t('smarttable.actions.leave') }}
     </button>
-    <button v-if="actions.includes('d') && isGlobalEditable" class="btn btn-sm btn-error mb-2 mr-2 md:m-0"
+    <button v-if="actions.includes('d') && isGlobalEditable" class="btn btn-sm btn-error join-item mb-2 mr-2 md:m-0 capitalize"
             :disabled="selectedElements.length <= 0" @click="$emit('deleteSelected', selectedElements)">
       <TrashIcon class="w-6 h-6"/>
-      Supprimer
+      {{ t('smarttable.actions.delete') }}
     </button>
   </div>
-  <table class="table w-full table-compact" aria-describedby="User List">
-    <thead>
+  <table class="table w-full table-compact" :aria-describedby="t('smarttable.aria.usersList')">
+    <thead class="whitespace-normal">
     <tr>
-      <th scope="col" class="w-1">
+      <th scope="col" class="w-1 pl-0 pr-0">
         <label v-if="isGlobalEditable">
           <input type="checkbox" class="checkbox" ref="globalCheck"
                  :checked="selectedElements.length > 0" @change="onSelectAll"/>
           <span class="checkbox-mark"></span>
         </label>
       </th>
-      <th v-for="column in _columns" scope="col">{{ column }}</th>
-      <th scope="col">
-        <div class="join justify-end" v-if="pagesNumber > 1">
-          <button v-for="i in pagesNumber" :key="i"
-                  :class="{'btn-active': activePage === i-1}" class="join-item btn btn-sm"
-                  v-on:click="loadPageByIndex(i-1).subscribe()">
-            {{ i }}
+      <th v-for="column in _columns" scope="col" class="capitalize">{{ column }}</th>
+      <th scope="col" class="text-right">
+        <div class="join" v-if="totalPage > 1">
+          <button class="btn btn-xs join-item hidden lg:inline" :disabled="activePage < 1"
+                  @click="$emit('navigate',activePage-1)">«
+          </button>
+          <select class="select select-xs focus:outline-none lg:join-item" @change="onSelectPage">
+            <option v-for="i in totalPage" :key="i" :selected="activePage === i-1">{{ i }}
+            </option>
+          </select>
+          <button class="btn btn-xs join-item hidden lg:inline" :disabled="activePage >= totalPage-1"
+                  @click="$emit('navigate',activePage+1)">»
           </button>
         </div>
       </th>
@@ -48,7 +55,7 @@
     </thead>
     <tbody>
     <tr v-for="(vElement, idx) in this.elements" :key="hashCode(JSON.stringify(vElement))">
-      <th scope="row" class="w-1">
+      <th scope="row" class="w-1 pl-0 pr-0">
         <label v-if="vElement.isEditable">
           <input type="checkbox" class="checkbox" v-model="vElement.isSelected">
           <span class="checkbox-mark"></span>
@@ -56,13 +63,13 @@
       </th>
       <slot :data="vElement.data"/>
       <td>
-        <div class="btn-group justify-end w-full">
+        <div class="btn-group text-right lg:whitespace-nowrap">
           <slot name="lineActions" :idx="idx"/>
-          <button v-if="!vElement.isEditable" class="btn btn-sm btn-square btn-ghost"
+          <button v-if="actions.includes('v')" class="btn btn-sm btn-square btn-ghost"
                   @click.stop.prevent="$emit('view', idx)">
             <EyeIcon class="h-6 w-6"/>
           </button>
-          <button v-if="vElement.isEditable" class="btn btn-sm btn-square btn-ghost"
+          <button v-if="actions.includes('u') && vElement.isEditable" class="btn btn-sm btn-square btn-ghost"
                   @click.stop.prevent="$emit('edit', idx)">
             <PencilIcon class="h-6 w-6"/>
           </button>
@@ -78,16 +85,21 @@
       </td>
     </tr>
     </tbody>
-    <tfoot>
+    <tfoot class="whitespace-normal">
     <tr>
       <th scope="col" class="w-1"></th>
-      <th v-for="column in _columns" scope="col">{{ column }}</th>
-      <th scope="col">
-        <div class="join justify-end" v-if="pagesNumber > 1">
-          <button v-for="i in pagesNumber" :key="i"
-                  :class="{'btn-active': activePage === i-1}" class="join-item btn btn-sm"
-                  v-on:click="loadPageByIndex(i-1).subscribe()">
-            {{ i }}
+      <th v-for="column in _columns" scope="col" class="capitalize">{{ column }}</th>
+      <th scope="col" class="text-right">
+        <div class="join" v-if="totalPage > 1">
+          <button class="btn btn-xs join-item hidden lg:inline" :disabled="activePage < 1"
+                  @click="$emit('navigate',activePage-1)">«
+          </button>
+          <select class="select select-xs focus:outline-none lg:join-item" @change="onSelectPage">
+            <option v-for="i in totalPage" :key="i" :selected="activePage === i-1">{{ i }}
+            </option>
+          </select>
+          <button class="btn btn-xs join-item hidden lg:inline" :disabled="activePage >= totalPage-1"
+                  @click="$emit('navigate',activePage+1)">»
           </button>
         </div>
       </th>
@@ -108,10 +120,21 @@ import {
   TrashIcon,
 } from '@heroicons/vue/24/outline';
 import { SmartTableView } from '@/common/components/smartTable/SmartTableView.interface';
-import { Observable } from 'rxjs';
+import { useI18n } from 'vue-i18n';
 
 /**
  * Table component with global and line actions
+ * <p>List of actions:</p>
+ * <ul>
+ *   <li><b>[letter: 'a', emit: 'add']</b>: it is possible to add elements</li>
+ *   <li><b>[letter: 'i', emit: 'import']</b>: it is possible to batch import elements</li>
+ *   <li><b>[letter: 'e', emit: 'export']</b>: it is possible to export the elements of the list</li>
+ *   <li><b>[letter: 'd', emit: 'deleteSelected', 'delete']</b>: It is possible to delete one element
+ *      or all selected elements</li>
+ *   <li><b>[letter: 'u', emit: 'edit']</b>: it is possible to update elements</li>
+ *   <li><b>[letter: 'v', emit: 'view']</b>: it is possible to view elements</li>
+ *   <li><b>[letter: 'l', emit: 'leave', 'leaveSelected']</b>: it is possible to leave one or all selected elements</li>
+ * </ul>
  * @requires ./SmartTableData.vue
  */
 @Component({
@@ -124,18 +147,20 @@ import { Observable } from 'rxjs';
     PlusCircleIcon,
     TrashIcon,
   },
-  emits: ['add', 'import', 'export', 'deleteSelected', 'delete', 'edit', 'view', 'leave', 'leaveSelected'],
+  emits: ['add', 'import', 'export', 'deleteSelected', 'delete', 'edit', 'view', 'leave', 'leaveSelected', 'navigate'],
   name: 'SmartTable',
+  setup() {
+    const { t } = useI18n();
+    return { t };
+  },
 })
 export default class SmartTable extends Vue {
+  private t;
   @Prop() private elements: SmartTableView<unknown>[];
   @Prop({ default: '' }) private columns: string;
   @Prop({ default: 'ad' }) private actions: string;
-  @Prop({ default: p => console.debug(`load page ${p}, not implemented`) })
-  private loadPageByIndex: (page: number) => Observable<SmartTableView<unknown>[]>;
-
-  private pagesNumber = 0;
-  private activePage = 0;
+  @Prop({ default: 0 }) private totalPage: number;
+  @Prop({ default: 0 }) private activePage: number;
 
   get _columns(): string[] {
     return this.columns.split('|');
@@ -156,6 +181,11 @@ export default class SmartTable extends Vue {
       this.$refs['globalCheck'].indeterminate = (selected.length > 0) && this.elements.find(t => !t.isSelected) !== undefined;
     }
     return selected;
+  }
+
+  private onSelectPage(event: InputEvent): void {
+    const target: HTMLSelectElement = event.target as HTMLSelectElement;
+    this.$emit('navigate', target.value - 1);
   }
 
   private onSelectAll(event: InputEvent): void {

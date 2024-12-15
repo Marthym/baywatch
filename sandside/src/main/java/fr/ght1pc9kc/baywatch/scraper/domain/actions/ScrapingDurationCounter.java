@@ -3,9 +3,10 @@ package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterGroup;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
-import fr.ght1pc9kc.baywatch.common.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.common.api.model.HeroIcons;
+import fr.ght1pc9kc.baywatch.scraper.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapResult;
+import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingEventType;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +15,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.Clock;
 import java.time.Duration;
-import java.util.Set;
+import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
@@ -83,7 +84,7 @@ public class ScrapingDurationCounter implements CounterProvider, ScrapingEventHa
     }
 
     @Override
-    public Set<String> eventTypes() {
-        return Set.of("FEED_SCRAPING");
+    public EnumSet<ScrapingEventType> eventTypes() {
+        return EnumSet.of(ScrapingEventType.FEED_SCRAPING);
     }
 }

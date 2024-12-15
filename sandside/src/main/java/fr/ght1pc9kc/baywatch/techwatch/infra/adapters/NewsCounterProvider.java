@@ -5,7 +5,7 @@ import fr.ght1pc9kc.baywatch.admin.api.model.CounterGroup;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
 import fr.ght1pc9kc.baywatch.common.api.model.HeroIcons;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
-import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.infra.persistence.NewsRepository;
 import fr.ght1pc9kc.juery.api.Pagination;
 import fr.ght1pc9kc.juery.api.pagination.Direction;

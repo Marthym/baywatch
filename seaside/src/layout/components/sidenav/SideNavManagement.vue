@@ -2,37 +2,37 @@
   <span class="mt-auto"></span>
   <ul class="menu -mx-4">
     <li v-if="user.isAuthenticated && store.getters['user/hasRoleAdmin']">
-      <router-link to="/admin" active-class="active" @click="sideNavToggle">
+      <router-link active-class="active" to="/admin" @click="sideNavToggle" class="capitalize">
         <AcademicCapIcon class="fill-current w-6 h-6 mr-2"/>
-        Administration
+        {{ t('aside.administration') }}
       </router-link>
     </li>
     <li v-if="user.isAuthenticated && store.getters['user/hasRoleUser']">
-      <router-link to="/teams" active-class="active" @click="sideNavToggle">
+      <router-link active-class="active" to="/teams" @click="sideNavToggle" class="capitalize">
         <UserGroupIcon class="fill-current w-6 h-6 mr-2"/>
-        Teams
+        {{ t('aside.teams') }}
       </router-link>
     </li>
     <li v-if="user.isAuthenticated && store.getters['user/hasRoleUser']">
-      <router-link to="/config" active-class="active" @click="sideNavToggle">
+      <router-link active-class="active" to="/config" @click="sideNavToggle" class="capitalize">
         <AdjustmentsVerticalIcon class="fill-current w-6 h-6 mr-2"/>
-        Configuration
+        {{ t('aside.configuration') }}
       </router-link>
     </li>
     <li>
       <a v-if="!user.isAuthenticated" @click.prevent.stop="onCreateAccountClick">
         <InboxArrowDownIcon class="fill-current h-6 w-6"/>
-        <span class="ml-2 capitalize font-medium">Create Account</span>
+        <span class="ml-2 capitalize font-medium">{{ t('aside.register') }}</span>
       </a>
     </li>
     <li class="text-primary">
       <a v-if="user.isAuthenticated" @click.stop="$emit('logout')">
         <ArrowRightStartOnRectangleIcon class="fill-current h-6 w-6"/>
-        <span class="ml-2 capitalize font-medium">log out</span>
+        <span class="ml-2 capitalize font-medium">{{ t('aside.logout') }}</span>
       </a>
-      <router-link to="/login" v-else>
+      <router-link v-else to="/login">
         <ArrowRightEndOnRectangleIcon class="fill-current h-6 w-6"/>
-        <span class="ml-2 capitalize font-medium">log in</span>
+        <span class="ml-2 capitalize font-medium">{{ t('aside.login') }}</span>
       </router-link>
     </li>
   </ul>
@@ -51,6 +51,7 @@ import {
   UserGroupIcon,
 } from '@heroicons/vue/20/solid';
 import { SidenavMutation } from '@/store/sidenav/SidenavMutation.enum';
+import { useI18n } from 'vue-i18n';
 
 @Component({
   name: 'SideNavManagement',
@@ -65,13 +66,16 @@ import { SidenavMutation } from '@/store/sidenav/SidenavMutation.enum';
   },
   setup() {
     const store = useStore();
+    const { t } = useI18n();
     return {
       store: store,
       user: store.state.user,
+      t: t,
     };
   },
 })
 export default class SideNavManagement extends Vue {
+  private t;
   private store;
   private user: UserState;
 

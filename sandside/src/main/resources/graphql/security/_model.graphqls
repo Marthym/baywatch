@@ -2,14 +2,33 @@ type User {
     _id: ID
     _createdAt: String
     _createdBy: String
+    _loginAt: String
+    _loginIP: String
     login: String
     name: String
     mail: String
     roles: [String]
 }
 
+enum NewsViewType {
+    CARD, MAGAZINE
+}
+type UserSettings {
+    _id: ID
+    preferredLocale: String
+    autoread: Boolean
+    newsViewMode: NewsViewType
+}
+
+input UserSettingsForm {
+    preferredLocale: String
+    autoread: Boolean
+    newsViewMode: NewsViewType
+}
+
 type Session {
     user: User
+    settings: UserSettings
     maxAge: Int
 }
 

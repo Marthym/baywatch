@@ -1,10 +1,7 @@
-import { map, switchMap, take } from 'rxjs/operators';
-import { HttpStatusError } from '@/common/errors/HttpStatusError';
+import { map, take } from 'rxjs/operators';
 import { Feed } from '@/configuration/model/Feed.type';
 import { Page } from '@/common/model/Page';
-import { from, Observable, of, throwError } from 'rxjs';
-import rest from '@/common/services/RestWrapper';
-import { OpPatch } from 'json-patch';
+import { Observable, of, throwError } from 'rxjs';
 import { AtomFeed, ScrapFeedHeaderResponse } from '@/configuration/model/GraphQLScraper.type';
 import { SearchFeedsRequest, SearchFeedsResponse } from '@/configuration/model/SearchFeedsResponse.type';
 import { send } from '@/common/services/GraphQLClient';
@@ -18,15 +15,9 @@ export class FeedService {
     query SearchFeedsQuery ($_p: Int = 0, $_pp: Int = ${FeedService.DEFAULT_PER_PAGE}, $_s: String = "name") {
         feedsSearch(_p: $_p, _pp: $_pp, _s: $_s) {
             totalCount
-            entities {_id name location tags}
-        }
-    }`;
-
-    private static readonly SCRAP_FEED_HEAD_REQUEST = `#graphql
-    query ScrapFeedHeader($link: URI!) {
-        scrapFeedHeader(link: $link) {
-            title
-            description
+            entities {_id name description location tags error {
+                level since message
+            }}
         }
     }`;
 
@@ -42,89 +33,28 @@ export class FeedService {
      * @return The {@link Feed} page corresponding to the options
      */
     public list(options: SearchFeedsRequest): Observable<Page<Feed>> {
-        const resolvedPage = (options._p > 0) ? options._p : 0;
+        const resolvedPage: number = (options._p && options._p > 0) ? options._p : 0;
         return send<SearchFeedsResponse>(FeedService.FEEDS_SEARCH_REQUEST, options).pipe(
             map(res => {
                 return {
                     currentPage: resolvedPage,
                     totalPage: Math.ceil(
-                        res.data.feedsSearch.totalCount / (options._pp | FeedService.DEFAULT_PER_PAGE)),
-                    data: of(res.data.feedsSearch.entities),
+                        res.data.feedsSearch.totalCount / (options._pp ?? FeedService.DEFAULT_PER_PAGE)),
+                    data: of(res.data.feedsSearch.entities).pipe(
+                        map(feeds => {
+                            feeds.forEach(feed => {
+                                if (!feed.icon) {
+                                    feed.icon = new URL(new URL(feed.location).origin + '/favicon.ico');
+                                }
+                                if (feed.error) {
+                                    feed.error.since = new Date(feed.error.since);
+                                }
+                            });
+                            return feeds;
+                        }),
+                    ),
                 };
             }),
-            take(1),
-        );
-    }
-
-    public add(feed: Feed): Observable<Feed> {
-        return rest.post('/feeds', feed).pipe(
-            switchMap(this.responseToFeed),
-            take(1),
-        );
-    }
-
-    public update(feed: Feed, urlChange: boolean = true): Observable<string> {
-        if (!urlChange) {
-            return rest.put(`/feeds/${feed._id}`, feed).pipe(
-                switchMap(this.responseToFeed),
-                map((updatedFeed: Feed) => updatedFeed._id),
-                take(1),
-            );
-        } else {
-            const jsonPatch: OpPatch[] = [];
-            jsonPatch.push({ op: 'remove', path: `/feeds/${feed._id}` });
-            jsonPatch.push({ op: 'add', path: '/feeds', value: feed });
-
-            return this.patch(jsonPatch).pipe(
-                map(updated => updated.pop()),
-            );
-        }
-    }
-
-    public remove(id: string): Observable<Feed> {
-        return rest.delete(`/feeds/${id}`).pipe(
-            switchMap(this.responseToFeed),
-            take(1),
-        );
-    }
-
-    public bulkRemove(ids: string[]): Observable<number> {
-        const jsonPatch: OpPatch[] = [];
-        ids.forEach(id => jsonPatch.push({ op: 'remove', path: `/feeds/${id}` }));
-        return this.patch(jsonPatch).pipe(
-            map(deleted => deleted.length),
-        );
-    }
-
-    private patch(payload: OpPatch[]): Observable<string[]> {
-        return rest.patch('/feeds', payload).pipe(
-            switchMap(this.responseToFeed),
-            take(1),
-        );
-    }
-
-    private responseToFeed(response: Response): Observable<any> {
-        if (response.ok) {
-            return from(response.json());
-        } else {
-            return from(response.json()).pipe(switchMap(j =>
-                throwError(() => new HttpStatusError(response.status, j.message))));
-        }
-    }
-
-    public fetchFeedInformation(link?: string): Observable<Feed> {
-        if (link === undefined) {
-            return throwError(() => new Error('Link is mandatory !'));
-        } else if (!URL_PATTERN.test(link)) {
-            return throwError(() => new Error('Argument link must be a valid URL !'));
-        }
-
-        return send<ScrapFeedHeaderResponse>(FeedService.SCRAP_FEED_HEAD_REQUEST, { link: link }).pipe(
-            map(data => data.data.scrapFeedHeader),
-            map((atom: AtomFeed) => ({
-                name: atom.title,
-                description: atom.description,
-            } as Feed)),
             take(1),
         );
     }
@@ -139,6 +69,81 @@ export class FeedService {
             take(1),
         );
     }
+}
+
+const FEED_UPDATE = `#graphql
+mutation FeedUpdate($id: ID, $name: String, $description: String, $tags: [String]) {
+    feedUpdate(id: $id, name: $name, description: $description, tags: $tags) {_id name}
+}`;
+
+export function feedUpdate(id: string, feed: Pick<Feed, 'name' | 'description' | 'tags'>): Observable<Feed> {
+    const { name, description, tags } = feed;
+    if (id === undefined) {
+        return throwError(() => new Error('Feed id is mandatory !'));
+    }
+
+    return send<{ feedUpdate: Feed }>(FEED_UPDATE, { id, name, description, tags }).pipe(
+        map(data => data.data.feedUpdate),
+        take(1),
+    );
+}
+
+const FEED_ADD_AND_SUBSCRIBE = `#graphql
+mutation FeedAddAndSubscribe($feed: FeedForm) {
+    feedAddAndSubscribe(feed: $feed) {_id name}
+}`;
+
+export function feedAddAndSubscribe(feed: Pick<Feed, 'name' | 'description' | 'tags' | 'location'>): Observable<Feed> {
+    const { name, description, tags, location } = feed;
+
+    return send<{ feedAddAndSubscribe: Feed }>(FEED_ADD_AND_SUBSCRIBE, {
+        feed: {
+            name,
+            description,
+            tags,
+            location,
+        },
+    }).pipe(
+        map(data => data.data.feedAddAndSubscribe),
+        take(1),
+    );
+}
+
+const FEED_DELETE = `#graphql
+mutation FeedDelete($ids: [ID]) {
+    feedDelete(ids: $ids) {_id name}
+}`;
+
+export function feedDelete(ids: string[]): Observable<Pick<Feed, '_id' | 'name'>[]> {
+    return send<{ feedDelete: Feed[] }>(FEED_DELETE, { ids }).pipe(
+        map(data => data.data.feedDelete),
+        take(1),
+    );
+}
+
+const SCRAP_FEED_HEAD_REQUEST = `#graphql
+query ScrapFeedHeader($link: URI!) {
+    scrapFeedHeader(link: $link) {
+        title
+        description
+    }
+}`;
+
+export function feedFetchInformation(link?: string): Observable<Feed> {
+    if (link === undefined) {
+        return throwError(() => new Error('Link is mandatory !'));
+    } else if (!URL_PATTERN.test(link)) {
+        return throwError(() => new Error('Argument link must be a valid URL !'));
+    }
+
+    return send<ScrapFeedHeaderResponse>(SCRAP_FEED_HEAD_REQUEST, { link: link }).pipe(
+        map(data => data.data.scrapFeedHeader),
+        map((atom: AtomFeed) => ({
+            name: atom.title,
+            description: atom.description,
+        } as Feed)),
+        take(1),
+    );
 }
 
 export default new FeedService();

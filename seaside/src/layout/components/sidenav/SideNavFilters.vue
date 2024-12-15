@@ -3,22 +3,22 @@
     <li>
       <div class="flex">
         <FunnelIcon class="w-6 h-6"/>
-        <span class="ml-2 capitalize font-medium">filters</span>
+        <span class="ml-2 capitalize font-medium">{{ t('sidenav.filters') }}</span>
       </div>
 
       <ul class="mt-2 ml-2">
         <li>
           <label class="label cursor-pointer py-1">
-            <span class="label-text">unread</span>
-            <input type="checkbox" class="toggle"
-                   @change="onChangeUnread" :checked="newsStore.unread">
+            <span class="label-text">{{ t('sidenav.filters.unread') }}</span>
+            <input :checked="newsStore.unread" class="toggle"
+                   type="checkbox" @change="onChangeUnread">
           </label>
         </li>
         <li>
           <label class="label cursor-pointer py-1">
-            <span class="label-text">popular</span>
-            <input type="checkbox" class="toggle"
-                   @change="onChangePopular" :checked="newsStore.popular">
+            <span class="label-text">{{ t('sidenav.filters.popular') }}</span>
+            <input :checked="newsStore.popular" class="toggle"
+                   type="checkbox" @change="onChangePopular">
           </label>
         </li>
       </ul>
@@ -26,12 +26,12 @@
     <li class="mt-2">
       <div class="flex">
         <TagIcon class="h-6 w-6"/>
-        <span class="ml-2 capitalize font-medium">tags</span>
+        <span class="ml-2 capitalize font-medium">{{ t('sidenav.tags') }}</span>
       </div>
 
       <ul class="flex flex-wrap list-none mt-4">
         <li v-for="tag in tags" v-bind:key="tag">
-          <button class="badge m-1" :class="{'badge-accent': newsStore.tags[0] && tag === newsStore.tags[0]}"
+          <button :class="{'badge-accent': newsStore.tags[0] && tag === newsStore.tags[0]}" class="badge m-1"
                   @click="selectTag">
             {{ tag }}
           </button>
@@ -50,7 +50,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
-import tagsService from '@/techwatch/services/TagsService';
+import { tagsListAll } from '@/techwatch/services/TagsService';
 import { actionServiceReload } from '@/common/services/ReloadActionService';
 import { Router, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
@@ -63,35 +63,39 @@ import {
   NewsStore,
 } from '@/common/model/store/NewsStore.type';
 import { FunnelIcon, TagIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { useI18n } from 'vue-i18n';
 
 @Component({
   name: 'SideNavFilters',
   components: { FunnelIcon, TagIcon, XMarkIcon },
   setup() {
     const store = useStore();
+    const { t } = useI18n();
     return {
       router: useRouter(),
       store: store,
       newsStore: store.state.news,
+      t: t,
     };
   },
 })
 export default class SideNavFilters extends Vue {
   private router: Router;
+  private t;
   private store;
   private newsStore: NewsStore;
   private tags: string[] = [];
 
+  get feedFilter(): FeedFilter | undefined {
+    return this.newsStore.feed;
+  }
+
   mounted(): void {
-    tagsService.list().subscribe({
+    tagsListAll().subscribe({
       next: tags => {
         this.tags = tags;
       },
     });
-  }
-
-  get feedFilter(): FeedFilter | undefined {
-    return this.newsStore.feed;
   }
 
   selectTag(event: MouseEvent): void {

@@ -5,7 +5,7 @@ import fr.ght1pc9kc.baywatch.admin.api.model.CounterGroup;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
 import fr.ght1pc9kc.baywatch.common.api.model.HeroIcons;
 import fr.ght1pc9kc.baywatch.security.infra.persistence.UserRepository;
-import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;

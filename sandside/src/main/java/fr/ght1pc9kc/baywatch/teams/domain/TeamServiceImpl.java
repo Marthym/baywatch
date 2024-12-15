@@ -14,7 +14,7 @@ import fr.ght1pc9kc.baywatch.teams.domain.model.PendingFor;
 import fr.ght1pc9kc.baywatch.teams.domain.ports.TeamAuthFacade;
 import fr.ght1pc9kc.baywatch.teams.domain.ports.TeamMemberPersistencePort;
 import fr.ght1pc9kc.baywatch.teams.domain.ports.TeamPersistencePort;
-import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;

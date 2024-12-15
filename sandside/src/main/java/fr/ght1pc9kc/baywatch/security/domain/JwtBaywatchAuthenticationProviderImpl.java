@@ -9,7 +9,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import fr.ght1pc9kc.baywatch.common.api.DefaultMeta;
+import fr.ght1pc9kc.baywatch.common.api.model.UserMeta;
 import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
@@ -30,7 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdAt;
+import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdAt;
 import static java.util.function.Predicate.not;
 
 @Slf4j
@@ -56,7 +56,7 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
     @Override
     public BaywatchAuthentication createToken(Entity<User> user, boolean remember, Collection<String> authorities) {
         List<String> auth = new ArrayList<>(authorities);
-        auth.addAll(user.self().roles.stream().map(RoleUtils::toSpringAuthority).toList());
+        auth.addAll(user.self().roles().stream().map(RoleUtils::toSpringAuthority).toList());
         String auths = String.join(",", auth);
 
         try {
@@ -68,9 +68,9 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
                     .issuer(ISSUER)
                     .issueTime(Date.from(now))
                     .expirationTime(Date.from(now.plus(validity)))
-                    .claim(LOGIN_KEY, user.self().login)
-                    .claim(NAME_KEY, user.self().name)
-                    .claim(MAIL_KEY, user.self().mail)
+                    .claim(LOGIN_KEY, user.self().login())
+                    .claim(NAME_KEY, user.self().name())
+                    .claim(MAIL_KEY, user.self().mail())
                     .claim(CREATED_AT_KEY, user.meta(createdAt, Instant.class).map(Date::from).orElse(null))
                     .claim(REMEMBER_ME_KEY, remember)
                     .claim(AUTHORITIES_KEY, auths)
@@ -117,7 +117,7 @@ public class JwtBaywatchAuthenticationProviderImpl implements JwtTokenProvider {
                             .mail(claims.getStringClaim(MAIL_KEY))
                             .roles(roles)
                             .build())
-                    .meta(DefaultMeta.createdAt, createdAt)
+                    .meta(UserMeta.createdAt, createdAt)
                     .withId(claims.getSubject());
 
             boolean rememberMe = Optional.ofNullable(claims.getBooleanClaim(REMEMBER_ME_KEY)).orElse(false);

@@ -1,6 +1,8 @@
 export const NAMESPACE = 'user';
 export const LOGOUT = 'logout';
 export const UPDATE = 'update';
+export const UPDATE_SETTINGS = 'updateSettings';
+export const UPDATE_SETTINGS_VIEW_MODE = 'updateSettingsViewMode';
 export const OPEN_CREATE_ACCOUNT = 'openCreateAccount';
 export const CLOSE_CREATE_ACCOUNT = 'closeCreateAccount';
 export const ADD_ROLE = 'addRole';
@@ -9,6 +11,8 @@ export const HAS_ROLE_MANAGER = 'hasRoleManager';
 export const HAS_ROLE_ADMIN = 'hasRoleAdmin';
 export const LOGOUT_MUTATION = `${NAMESPACE}/${LOGOUT}`;
 export const UPDATE_MUTATION = `${NAMESPACE}/${UPDATE}`;
+export const UPDATE_SETTINGS_MUTATION = `${NAMESPACE}/${UPDATE_SETTINGS}`;
+export const UPDATE_SETTINGS_VIEW_MODE_MUTATION = `${NAMESPACE}/${UPDATE_SETTINGS_VIEW_MODE}`;
 export const OPEN_CREATE_ACCOUNT_MUTATION = `${NAMESPACE}/${OPEN_CREATE_ACCOUNT}`;
 export const CLOSE_CREATE_ACCOUNT_MUTATION = `${NAMESPACE}/${CLOSE_CREATE_ACCOUNT}`;
 export const USER_ADD_ROLE_MUTATION = `${NAMESPACE}/${ADD_ROLE}`;

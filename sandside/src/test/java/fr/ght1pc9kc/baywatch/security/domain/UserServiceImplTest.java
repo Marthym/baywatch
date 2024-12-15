@@ -2,25 +2,26 @@ package fr.ght1pc9kc.baywatch.security.domain;
 
 import com.github.f4b6a3.ulid.Ulid;
 import com.github.f4b6a3.ulid.UlidFactory;
+import fr.ght1pc9kc.baywatch.common.api.model.ClientInfoContext;
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.PasswordService;
 import fr.ght1pc9kc.baywatch.security.api.model.PasswordEvaluation;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
-import fr.ght1pc9kc.baywatch.security.api.model.UpdatableUser;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.NotificationPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
-import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -28,16 +29,18 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.net.InetSocketAddress;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
-import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdAt;
-import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdBy;
+import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdAt;
+import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdBy;
+import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.loginAt;
+import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.loginIP;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -67,6 +70,9 @@ class UserServiceImplTest {
                 .filter(u -> u.id().equals(answer.getArgument(0, String.class)))
                 .findAny().map(Mono::just).orElseThrow()
         ).when(mockUserRepository).get(anyString());
+        doReturn(Mono.just(new ClientInfoContext(InetSocketAddress.createUnresolved("127.0.0.1", 80), "User Agent")))
+                .when(mockAuthFacade).getClientInfoContext();
+
         when(mockUserRepository.list(any())).thenReturn(Flux.just(UserSamples.LUKE, UserSamples.OBIWAN, UserSamples.YODA));
         doAnswer(answer -> Flux.fromIterable(answer.getArgument(0, Collection.class)))
                 .when(mockUserRepository).persist(anyCollection());
@@ -163,53 +169,81 @@ class UserServiceImplTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void should_update_other_user_as_admin() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
-        when(mockUserRepository.update(anyString(), any())).thenReturn(Mono.just(UserSamples.OBIWAN));
-        UpdatableUser obiChan = UserSamples.OBIWAN.self().updatable()
-                .name(Optional.of("Obi Chan"))
-                .build();
+        when(mockUserRepository.update(any())).thenReturn(Mono.just(UserSamples.OBIWAN));
+        Entity<User> obiChan = UserSamples.OBIWAN.convert(u -> u.toBuilder()
+                .name("Obi Chan")
+                .build());
 
-        Mono<Entity<User>> actual = tested.update(UserSamples.OBIWAN.id(), obiChan, "kenobi");
+        {
+            Mono<Entity<User>> actual = tested.update(obiChan, "kenobi");
 
-        StepVerifier.create(actual)
-                .assertNext(a -> Assertions.assertThat(a).isNotNull())
-                .verifyComplete();
+            StepVerifier.create(actual)
+                    .assertNext(a -> Assertions.assertThat(a).isNotNull())
+                    .verifyComplete();
+        }
+        {
+            ArgumentCaptor<Entity<User>> captor = ArgumentCaptor.forClass(Entity.class);
+            verify(mockUserRepository).update(captor.capture());
 
-        verify(mockUserRepository).update(UserSamples.OBIWAN.id(), obiChan);
+            Entity<User> actual = captor.getValue();
+            SoftAssertions.assertSoftly(soft -> {
+                soft.assertThat(actual.id()).isEqualTo(UserSamples.OBIWAN.id());
+                soft.assertThat(actual.meta(createdAt, Instant.class)).contains(Instant.parse("1970-01-01T00:00:00Z"));
+                soft.assertThat(actual.meta(loginAt, Instant.class)).isEmpty();
+                soft.assertThat(actual.meta(loginIP)).isEmpty();
+                soft.assertThat(actual.self().login()).isEqualTo("okenobi");
+            });
+        }
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void should_update_my_user() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
-        when(mockUserRepository.update(anyString(), any())).thenReturn(Mono.just(UserSamples.OBIWAN));
-        UpdatableUser obiChan = UserSamples.OBIWAN.self().updatable()
-                .name(Optional.of("Obi Chan"))
-                .build();
+        when(mockUserRepository.update(any())).thenReturn(Mono.just(UserSamples.OBIWAN));
+        {
+            Entity<User> obiChan = UserSamples.OBIWAN.convert(u -> u.toBuilder()
+                    .name("Obi Chan")
+                    .build());
 
-        Mono<Entity<User>> actual = tested.update(UserSamples.OBIWAN.id(), obiChan, UserSamples.OBIWAN.self().password);
+            Mono<Entity<User>> actual = tested.update(obiChan, UserSamples.OBIWAN.self().password());
 
-        StepVerifier.create(actual)
-                .assertNext(a -> Assertions.assertThat(a).isNotNull())
-                .verifyComplete();
+            StepVerifier.create(actual)
+                    .assertNext(a -> Assertions.assertThat(a).isNotNull())
+                    .verifyComplete();
+        }
+        {
+            ArgumentCaptor<Entity<User>> captor = ArgumentCaptor.forClass(Entity.class);
+            verify(mockUserRepository).update(captor.capture());
 
-        verify(mockUserRepository).update(UserSamples.OBIWAN.id(), obiChan);
+            Entity<User> actual = captor.getValue();
+            SoftAssertions.assertSoftly(soft -> {
+                soft.assertThat(actual.id()).isEqualTo(UserSamples.OBIWAN.id());
+                soft.assertThat(actual.meta(createdAt, Instant.class)).contains(Instant.parse("1970-01-01T00:00:00Z"));
+                soft.assertThat(actual.meta(loginAt, Instant.class)).contains(Instant.parse("2022-02-08T22:57:00Z"));
+                soft.assertThat(actual.meta(loginIP)).contains("127.0.0.1");
+                soft.assertThat(actual.self().login()).isEqualTo("okenobi");
+            });
+        }
     }
 
     @Test
     void should_fail_update_user_with_invalid_password() {
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
-        when(mockUserRepository.update(anyString(), any())).thenReturn(Mono.just(UserSamples.OBIWAN));
-        UpdatableUser obiChan = UserSamples.OBIWAN.self().updatable()
-                .name(Optional.of("Obi Chan"))
-                .build();
+        when(mockUserRepository.update(any())).thenReturn(Mono.just(UserSamples.OBIWAN));
+        Entity<User> obiChan = UserSamples.OBIWAN.convert(u -> u.toBuilder()
+                .name("Obi Chan")
+                .build());
 
-        Mono<Entity<User>> actual = tested.update(UserSamples.OBIWAN.id(), obiChan, "Invalid Password");
+        Mono<Entity<User>> actual = tested.update(obiChan, "Invalid Password");
 
         StepVerifier.create(actual)
                 .verifyError(UnauthorizedOperation.class);
 
-        verify(mockUserRepository, never()).update(UserSamples.OBIWAN.id(), obiChan);
+        verify(mockUserRepository, never()).update(obiChan);
     }
 
     @Test

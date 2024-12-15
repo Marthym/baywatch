@@ -1,8 +1,14 @@
 import { NavigationGuardWithThis, RouteRecordRaw } from 'vue-router';
-import { Store, useStore } from 'vuex';
-import { UserState } from '@/security/store/user';
+import { store } from '@/store';
+import { i18n } from '@/i18n';
+import { Session } from '@/security/model/Session';
+import { firstValueFrom } from 'rxjs';
 import { refresh } from '@/security/services/AuthenticationService';
-import { LOGOUT_MUTATION, UPDATE_MUTATION as USER_UPDATE_MUTATION } from '@/security/store/UserConstants';
+import {
+    LOGOUT_MUTATION as USER_LOGOUT_MUTATION,
+    UPDATE_MUTATION as USER_UPDATE_MUTATION,
+    UPDATE_SETTINGS_MUTATION as USER_UPDATE_SETTINGS_MUTATION,
+} from '@/security/store/UserConstants';
 
 const LoginPage = () => import('@/security/pages/LoginPage.vue');
 
@@ -10,28 +16,21 @@ export const routes: RouteRecordRaw[] = [
     { path: '/login', component: LoginPage, name: 'LoginPage' },
 ];
 
-function refreshSession(store: Store<UserState>): Promise<boolean> {
-    const isAuthenticated = useStore<UserState>().state.user.isAuthenticated;
-    if (isAuthenticated === undefined) {
-        return new Promise(resolve => {
-            refresh().subscribe({
-                next: session => {
-                    store.commit(USER_UPDATE_MUTATION, session.user);
-                    resolve(true);
-                },
-                error: () => {
-                    store.commit(LOGOUT_MUTATION);
-                    resolve(false);
-                },
-            });
-        });
-    } else {
-        return Promise.resolve(true);
-    }
-}
-
 export const requireAuthNavGuard: NavigationGuardWithThis<NavigationGuardWithThis<boolean>> = async to => {
-    const isAuthenticated = await refreshSession(useStore<UserState>());
+    if (store.state.user.isAuthenticated === undefined) {
+        try {
+            const session: Session = await firstValueFrom(refresh());
+
+            if (session.settings?.preferredLocale) {
+                i18n.global.locale.value = session.settings.preferredLocale;
+            }
+            store.commit(USER_UPDATE_MUTATION, session.user);
+            store.commit(USER_UPDATE_SETTINGS_MUTATION, session.settings);
+        } catch (err) {
+            store.commit(USER_LOGOUT_MUTATION);
+        }
+    }
+    const isAuthenticated = store.state.user.isAuthenticated;
     if (to.matched.some(record => record.meta.requiresAuth)) {
         if (!isAuthenticated) {
             return { name: 'LoginPage', query: { redirect: to.path } };

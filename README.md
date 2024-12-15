@@ -25,6 +25,14 @@ Baywatch has a multitude of features, the main ones being
   Baywatch users.
   This powerful search suggests news feeds based on what users have posted on the feeds,
   increasing the quality of the results.*
+* **Translated** \
+  *Baywatch is fully translated into English and French. The translation system makes it 
+  easy to add new translations.*
+* **Responsive** \
+  *Baywatch is fully responsive and you can use it from your preferred device.*
+* **Compatibility RSS / Atom** \
+  *Baywatch can scrape both RSS and Atom. Its scrapping engine is tolerant of formatting
+  deviations and even handles RDF and DCMI standards.*
 
 <img src="./.docs/baywatch-capture-01.webp" alt="Size Limit CLI" align="center" style="display: block; margin: auto; width: 80%" >
 
@@ -86,7 +94,7 @@ Baywatch is based on Springboot 3 and uses the Webflux model. Spring serves both
 and backend, but it is advisable to place them behind a proxy for caching purposes.
 
 In order to compile and run the Baywatch code, it is necessary to have installed versions 
-later than or equal to **Java 21**, **Node 18** and **Maven 3**.
+later than or equal to **Java 21**, **Node 20** and **Maven 3**.
 
 Find more informations in [CONTRIBUTING.md](./CONTRIBUTING.md). 
 Take a look on our [Code of Conduct](./CODE_OF_CONDUCT.md)
@@ -114,7 +122,7 @@ and DaisyUI as component framework.
 ### Build
 
 The complete build of the application (front and back) is done with the command:
-`mvn clean package jib:dockerBuil`.
+`mvn clean package jib:dockerBuild`.
 
 ## Links
 

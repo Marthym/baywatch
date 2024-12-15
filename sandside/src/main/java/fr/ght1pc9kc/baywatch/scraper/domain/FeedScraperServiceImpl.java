@@ -2,18 +2,20 @@ package fr.ght1pc9kc.baywatch.scraper.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.HttpHeaders;
 import fr.ght1pc9kc.baywatch.common.api.HttpStatusCodes;
-import fr.ght1pc9kc.baywatch.common.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;
 import fr.ght1pc9kc.baywatch.common.domain.Try;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperPlugin;
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
 import fr.ght1pc9kc.baywatch.scraper.api.RssAtomParser;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapEnrichmentService;
+import fr.ght1pc9kc.baywatch.scraper.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapResult;
+import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingEventType;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.FeedScrapingException;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.ScrapingException;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.ScrapingExceptionCode;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.ScraperMaintenancePort;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
@@ -82,7 +84,7 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
         this.maintenancePersistencePort = maintenancePersistencePort;
         this.feedParser = feedParser;
         this.scrapingHandlers = scrapingHandlers.stream()
-                .filter(e -> e.eventTypes().contains("FEED_SCRAPING")).toList();
+                .filter(e -> e.eventTypes().contains(ScrapingEventType.FEED_SCRAPING)).toList();
         this.plugins = plugins;
         this.scrapEnrichmentService = scrapEnrichmentService;
         this.http = webClient;
@@ -284,8 +286,10 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                 .acceptCharset(StandardCharsets.UTF_8)
                 .exchangeToFlux(response -> {
                     if (!response.statusCode().is2xxSuccessful()) {
-                        log.info("Host {} respond {}", link.getHost(), response.statusCode());
-                        return Flux.empty();
+                        return Flux.error(() -> new ScrapingException(
+                                ScrapingExceptionCode.fromHttpStatus(response.statusCode().value()),
+                                new IllegalArgumentException()
+                        ));
                     }
                     return this.xmlEventDecoder.decode(
                             response.bodyToFlux(DataBuffer.class),
@@ -295,7 +299,8 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                 .bufferUntil(feedParser.firstItemEvent())
                 .next()
                 .map(feedParser::readFeedProperties)
-                .flatMap(scrapEnrichmentService::applyFeedsFilters);
+                .flatMap(scrapEnrichmentService::applyFeedsFilters)
+                .onErrorMap(t -> new ScrapingException(ScrapingExceptionCode.PARSING, t));
     }
 
     private Mono<News> handleEnrichmentException(Try<News> news, Sinks.Many<ScrapingException> errors) {

@@ -48,19 +48,12 @@ public class URIScalar {
             public @NotNull URI parseValue(@NotNull Object input,
                                            @NotNull GraphQLContext graphQLContext,
                                            @NotNull Locale locale) throws CoercingParseValueException {
-                String urlStr;
                 if (input instanceof String) {
-                    urlStr = String.valueOf(input);
+                    return parseURL(String.valueOf(input));
                 } else {
-                    Optional<URI> url = toURI(input);
-                    if (url.isEmpty()) {
-                        throw new CoercingParseValueException(
-                                "Expected a 'URI' like object but was '" + input.getClass().getSimpleName() + "'."
-                        );
-                    }
-                    return url.get();
+                    return toURI(input).orElseThrow(() -> new CoercingParseValueException(
+                            "Expected a 'URI' like object but was '" + input.getClass().getSimpleName() + "'."));
                 }
-                return parseURL(urlStr);
             }
 
             @Override
@@ -80,8 +73,10 @@ public class URIScalar {
             public @NotNull Value<StringValue> valueToLiteral(@NotNull Object input,
                                                               @NotNull GraphQLContext graphQLContext,
                                                               @NotNull Locale locale) {
-                URI url = serialize(input, graphQLContext, locale);
-                return StringValue.newStringValue(url.toString()).build();
+                return StringValue.newStringValue(
+                                serialize(input, graphQLContext, locale)
+                                        .toString())
+                        .build();
             }
 
             private URI parseURL(String input) {

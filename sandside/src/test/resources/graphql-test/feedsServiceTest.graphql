@@ -21,3 +21,7 @@ query ScrapFeedHeader($link: URI!) {
 mutation FeedSubscription($feedId: ID) {
     subscribe(id: $feedId) {_id name}
 }
+
+mutation FeedAddAndSubscribe($feed: FeedForm) {
+    feedAddAndSubscribe(feed: $feed) {_id name}
+}

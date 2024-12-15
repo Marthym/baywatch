@@ -4,7 +4,6 @@ import fr.ght1pc9kc.baywatch.common.api.LocaleFacade;
 import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
 import fr.ght1pc9kc.baywatch.security.PasswordChecker;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.security.api.PasswordService;
 import fr.ght1pc9kc.baywatch.security.api.model.PasswordEvaluation;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.ports.PasswordStrengthChecker;
@@ -38,11 +37,11 @@ public class PasswordServiceImpl implements PasswordChecker {
 
     @Override
     public Mono<PasswordEvaluation> checkPasswordStrength(User user) {
-        List<String> dictionary = Stream.of(user.name, user.login, user.mail)
+        List<String> dictionary = Stream.of(user.name(), user.login(), user.mail())
                 .filter(not(Objects::isNull))
                 .toList();
         return localeFacade.getLocale()
-                .map(locale -> passwordChecker.estimate(user.password, locale, dictionary));
+                .map(locale -> passwordChecker.estimate(user.password(), locale, dictionary));
     }
 
     @Override

@@ -1,14 +1,13 @@
 package fr.ght1pc9kc.baywatch.techwatch.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
-import fr.ght1pc9kc.baywatch.common.api.model.FeedMeta;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.RoleUtils;
 import fr.ght1pc9kc.baywatch.techwatch.api.SystemMaintenanceService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
-import fr.ght1pc9kc.baywatch.techwatch.domain.model.QueryContext;
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
@@ -20,7 +19,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
-import java.util.Map;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.FEED_ID;
 

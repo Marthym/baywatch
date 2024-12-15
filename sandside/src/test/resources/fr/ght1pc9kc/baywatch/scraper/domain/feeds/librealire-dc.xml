@@ -1,0 +1,78 @@
+<?xml
+        version="1.0" encoding="utf-8"?>
+<rss version="2.0"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/"
+     xmlns:atom="http://www.w3.org/2005/Atom"
+>
+    <channel xml:lang="fr">
+        <title>Libre &#224; lire !</title>
+        <link>https://www.librealire.org/</link>
+        <description>Le groupe Transcriptions de l'April transforme en texte des enregistrements audio et vid&#233;o traitant du logiciel libre et de libert&#233;s informatiques en g&#233;n&#233;ral.</description>
+        <language>fr</language>
+        <generator>SPIP - www.spip.net</generator>
+        <atom:link href="https://www.librealire.org/spip.php?page=backend" rel="self" type="application/rss+xml" />
+        <image>
+            <title>Libre &#224; lire !</title>
+            <url>https://www.librealire.org/local/cache-vignettes/L144xH24/_librealire-logosite-a19f5.png?1694740641</url>
+            <link>https://www.librealire.org/</link>
+            <height>24</height>
+            <width>144</width>
+        </image>
+        <item xml:lang="fr">
+            <title>Focus sur &#034;L'&#233;mancipation num&#233;rique&#034; - Angie Gaudion</title>
+            <link>https://www.librealire.org/focus-sur-l-emancipation-numerique-angie-gaudion</link>
+            <guid isPermaLink="true">https://www.librealire.org/focus-sur-l-emancipation-numerique-angie-gaudion</guid>
+            <dc:date>2024-05-02T11:58:26Z</dc:date>
+            <dc:format>text/html</dc:format>
+            <dc:language>fr</dc:language>
+            <dc:subject>Angie Gaudion</dc:subject>
+            <dc:subject>CHATONS</dc:subject>
+            <dc:subject>RGPD</dc:subject>
+            <dc:subject>Framasoft - Collectivisons Internet / Convivialisons Internet</dc:subject>
+            <dc:subject>Conf&#233;rence</dc:subject>
+            <dc:subject>Vid&#233;o</dc:subject>
+            <description>
+                &lt;p&gt;Journaliste : Bonjour Angie. &lt;br class='autobr' /&gt;
+                Angie Gaudion : Salut. &lt;br class='autobr' /&gt;
+                Journaliste : Merci d'avoir accept&#233; cette invitation pour ce plateau t&#233;l&#233; au sein du Forum de l'ESS. &lt;br class='autobr' /&gt;
+                Angie Gaudion : Avec plaisir. &lt;br class='autobr' /&gt;
+                Journaliste : Tu es venue hier pour animer une conf&#233;rence. &lt;br class='autobr' /&gt;
+                Angie Gaudion : Je suis m&#234;me arriv&#233;e avant-hier ! &lt;br class='autobr' /&gt;
+                Journaliste : Tu es m&#234;me arriv&#233;e avant-hier. Je ne savais pas. &lt;br class='autobr' /&gt;
+                Angie Gaudion : J'ai fait tout le forum de a &#224; z, en entier. Je suis effectivement venue parce que j'animais un temps de pr&#233;sentation hier (...)&lt;/p&gt;
+
+
+                -
+                &lt;a href="https://www.librealire.org/-transcriptions-" rel="directory"&gt;Transcriptions&lt;/a&gt;
+
+                /
+                &lt;a href="https://www.librealire.org/+-angie-gaudion-+" rel="tag"&gt;Angie Gaudion&lt;/a&gt;,
+                &lt;a href="https://www.librealire.org/+-chatons-+" rel="tag"&gt;CHATONS&lt;/a&gt;,
+                &lt;a href="https://www.librealire.org/+-rgpd-+" rel="tag"&gt;RGPD&lt;/a&gt;,
+                &lt;a href="https://www.librealire.org/+-framasoft-collectivisons-internet-convivialisons-internet-+" rel="tag"&gt;Framasoft - Collectivisons Internet / Convivialisons Internet&lt;/a&gt;,
+                &lt;a href="https://www.librealire.org/+-conference-5-+" rel="tag"&gt;Conf&#233;rence&lt;/a&gt;,
+                &lt;a href="https://www.librealire.org/+-video-+" rel="tag"&gt;Vid&#233;o&lt;/a&gt;
+
+            </description>
+        </item>
+        <item xml:lang="fr">
+            <title>Bilan du mois d'avril 2024</title>
+            <link>https://www.librealire.org/bilan-du-mois-d-avril-2024</link>
+            <guid isPermaLink="true">https://www.librealire.org/bilan-du-mois-d-avril-2024</guid>
+            <dc:date>2024-05-02T09:03:39Z</dc:date>
+            <dc:format>text/html</dc:format>
+            <dc:language>fr</dc:language>
+            <description>
+                &lt;p&gt;Quinze transcriptions ont &#233;t&#233; publi&#233;es au mois d'avril 2024, ce qui correspond &#224; 14 heures et 54 minutes d'enregistrements audio ou de vid&#233;os. &lt;br class='autobr' /&gt;
+                &#171; Si on vous dit qu'on ne peut pas travailler enti&#232;rement sous logiciel libre en &#233;tablissement scolaire du second degr&#233;, ce n'est pas vrai ! R&#233;f&#233;rez-vous &#224; notre documentation ! On a prouv&#233; que &#231;a marche bien. Quand on a d&#233;marr&#233;, on nous disait que ce n'&#233;tait pas viable de faire ce qu'on fait maintenant depuis quatre ans. On a sous-titr&#233; le projet &#171; La preuve par (...)&lt;/p&gt;
+
+
+                -
+                &lt;a href="https://www.librealire.org/-actualites-" rel="directory"&gt;Actualit&#233;s&lt;/a&gt;
+
+
+            </description>
+        </item>
+    </channel>
+</rss>

@@ -11,6 +11,8 @@ import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Locale;
+
 @Slf4j
 @Configuration
 public class JacksonMappingConfiguration {
@@ -23,6 +25,7 @@ public class JacksonMappingConfiguration {
             builder.featuresToDisable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
             builder.filters(new SimpleFilterProvider().setFailOnUnknownId(false));
             builder.serializationInclusion(JsonInclude.Include.NON_NULL);
+            builder.serializerByType(Locale.class, new LocaleToLanguageTagSerializer());
             builder.mixIn(User.class, UserMixin.class);
         };
     }
