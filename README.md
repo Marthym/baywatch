@@ -44,10 +44,10 @@ just start a container :
 ```shell
 docker run --rm --name baywatch -d \
   -e BAYWATCH_HOME=/var/lib/baywatch \
-  -v /tmp/testbaywatch/:/var/lib/baywatch/.baywatch \ 
-  -v /tmp/testbaywatch/tmp:/tmp \ 
-  -p 8082:8081 --read-only \ 
-  marthym/baywatch:2.0.0-SNAPSHOT
+  -v /tmp/testbaywatch/:/var/lib/baywatch/.baywatch \
+  -v /tmp/testbaywatch/tmp:/tmp \
+  -p 8082:8081 --read-only \
+  ghcr.io/marthym/baywatch:2.2.0
 ```
 
 Baywatch will automatically create the SQLite database in `BAYWATCH_HOME` and need be able to
