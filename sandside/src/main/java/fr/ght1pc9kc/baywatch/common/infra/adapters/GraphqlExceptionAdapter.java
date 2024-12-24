@@ -17,39 +17,30 @@ import java.util.Map;
 public class GraphqlExceptionAdapter extends DataFetcherExceptionResolverAdapter {
     @Override
     protected GraphQLError resolveToSingleError(@NotNull Throwable ex, @NotNull DataFetchingEnvironment env) {
-        if (ex instanceof ConstraintViolationException cve) {
-            return GraphqlErrorBuilder.newError(env)
+        return switch (ex) {
+            case ConstraintViolationException cve -> GraphqlErrorBuilder.newError(env)
                     .errorType(ErrorType.ValidationError)
                     .message(cve.getLocalizedMessage())
                     .build();
-        }
-
-        if (ex instanceof UnauthorizedException uex) {
-            return GraphqlErrorBuilder.newError(env)
+            case UnauthorizedException uex -> GraphqlErrorBuilder.newError(env)
                     .errorType(ErrorType.OperationNotSupported)
                     .extensions(Map.of("classification", "FORBIDDEN"))
                     .message(uex.getLocalizedMessage())
                     .build();
-        }
-
-        if (ex instanceof IllegalArgumentException iaex) {
-            return GraphqlErrorBuilder.newError(env)
+            case IllegalArgumentException iaex -> GraphqlErrorBuilder.newError(env)
                     .errorType(ErrorType.ValidationError)
                     .extensions(Map.of("classification", "ValidationError"))
                     .message(iaex.getLocalizedMessage())
                     .build();
-        }
-
-        if (ex instanceof GraphqlErrorException gex) {
-            return GraphqlErrorBuilder.newError(env)
+            case GraphqlErrorException gex -> GraphqlErrorBuilder.newError(env)
                     .errorType(gex.getErrorType())
                     .extensions(gex.getExtensions())
                     .path(gex.getPath())
                     .locations(gex.getLocations())
                     .message(gex.getLocalizedMessage())
                     .build();
-        }
+            default -> null;
+        };
 
-        return null;
     }
 }
