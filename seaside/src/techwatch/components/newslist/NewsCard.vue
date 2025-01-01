@@ -4,7 +4,7 @@
         'scale-105': card.isActive && displayAsCard,
         'lg:flex-row mx-5': displayAsMagazine,
         'mx-0': displayAsMagazine && card.isActive,
-        'lg:max-w-72 lg:h-80 lg:flex-col': displayAsCard,
+        'max-w-full lg:max-w-72 lg:h-80 lg:flex-col': displayAsCard,
         'lg:h-56': !card.isActive,
         'opacity-30': card.data.state?.read && !card.isActive,
        }"
@@ -38,7 +38,7 @@
            @auxclick="$emit('clickTitle')"
            @click="$emit('clickTitle')">{{ card.data.title }}</a>
         <span :class="{'grow invisible truncate': displayAsCard}"
-              class="mt-2 text-base flex-grow max-h-80 overflow-hidden"
+              class="mt-2 text-base flex-grow max-h-80 break-words [word-break:break-word] overflow-hidden"
               v-html="card.data.description"></span>
 
         <div class="flex flex-row flex-wrap-reverse lg:justify-end text-xs mt-2">
