@@ -47,10 +47,8 @@ class ScraperExceptionResolverAdapterTest {
         GraphQLError actual = tested.resolveToSingleError(
                 new RuntimeException(),
                 dataFetchingEnvironment);
-        Assertions.assertThat(actual).isNotNull();
-        SoftAssertions.assertSoftly(softly -> {
-            softly.assertThat(actual.getMessage()).isEqualTo("Unknown internal error");
-            softly.assertThat(actual.getErrorType()).isEqualTo(ErrorType.INTERNAL_ERROR);
-        });
+        Assertions.assertThat(actual)
+                .describedAs("Should be null to allow other Exceptions resolver")
+                .isNull();
     }
 }

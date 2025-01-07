@@ -2,7 +2,7 @@
   <div ref="newsList" :class="{
     'max-w-5xl': displayAsMagazine,
     'max-w-7xl': displayAsCard,
-  }" class="max-w-7xl focus:outline-none flex flex-row flex-wrap gap-5">
+  }" class="focus:outline-none flex flex-row flex-wrap gap-5">
     <template v-for="(card, idx) in news" :key="card.data.id">
       <NewsCard :ref="card.data.id" :card="card" :view-mode="viewMode"
                 @activate="onClickNewActivate(idx)" @addFilter="onAddFilter" @clickTitle="markNewsRead(idx, true)">
@@ -43,7 +43,7 @@
   </div>
   <teleport v-if="isAuthenticated" :disabled="!isAuthenticated" to=".--js-right-nav-bar">
     <div class="indicator mx-1">
-      <div class="dropdown dropdown-hover">
+      <div class="dropdown dropdown-hover hidden lg:block">
         <button class="btn btn-square btn-ghost btn-sm">
           <WindowIcon class="h-6 w-6"/>
         </button>

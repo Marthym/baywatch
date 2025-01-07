@@ -8,6 +8,7 @@ import graphql.schema.DataFetchingEnvironment;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.graphql.execution.DataFetcherExceptionResolverAdapter;
 import org.springframework.graphql.execution.ErrorType;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -47,6 +48,13 @@ public class SecurityExceptionResolver extends DataFetcherExceptionResolverAdapt
                     .path(env.getExecutionStepInfo().getPath())
                     .location(env.getField().getSourceLocation())
                     .extensions(Map.of("properties", uce.getFields()))
+                    .build();
+
+            case AuthorizationDeniedException ade -> GraphQLError.newError()
+                    .errorType(ErrorType.UNAUTHORIZED)
+                    .message(ade.getLocalizedMessage())
+                    .path(env.getExecutionStepInfo().getPath())
+                    .location(env.getField().getSourceLocation())
                     .build();
 
             default -> null;

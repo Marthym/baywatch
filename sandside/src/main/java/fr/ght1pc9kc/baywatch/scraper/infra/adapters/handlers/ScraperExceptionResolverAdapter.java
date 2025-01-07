@@ -21,10 +21,7 @@ public class ScraperExceptionResolverAdapter extends DataFetcherExceptionResolve
                     .message(scrapingEx.getLocalizedMessage())
                     .extensions(Map.of("translation", scrapingEx.getTranslation().getCode()))
                     .build();
-            default -> GraphqlErrorBuilder.newError(env)
-                    .errorType(ErrorType.INTERNAL_ERROR)
-                    .message("Unknown internal error")
-                    .build();
+            default -> null;
         };
     }
 }
