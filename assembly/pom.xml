@@ -84,7 +84,7 @@
                 <configuration>
                     <from>
                         <image>
-                            bellsoft/liberica-runtime-container:jre-21.0.5_12-crac-slim-musl@sha256:0311a6f805bbbf0168e767f4bdc784b33844fbec5a1b85f2592fadb32d919c07
+                            eclipse-temurin:21.0.5_11-jre-alpine@sha256:41502ff7105c996a588c68647da859759b5fc457bca6f4bf3edbc59e3b75423c
                         </image>
                     </from>
                     <to>
