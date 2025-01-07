@@ -28,7 +28,7 @@
     </figure>
 
     <div :class="{ 'm-6': card.isActive, 'm-4': !card.isActive}" class="flex-grow">
-      <div class="flex flex-col h-full overflow-hidden">
+      <div class="flex flex-col h-full break-words [word-break:break-word] overflow-hidden">
         <a :class="{
               'text-xl': displayAsMagazine,
               'line-clamp-5': displayAsCard,
