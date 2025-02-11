@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.function.Predicate.not;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -87,8 +88,10 @@ public class OpenGraphFilter implements NewsFilter {
         }
         OpenGraph og = metas.og();
         if (nonNull(og) && !og.isEmpty()) {
-            raw = Optional.ofNullable(og.title()).map(raw::withTitle).orElse(raw);
-            raw = Optional.ofNullable(og.description()).map(raw::withDescription).orElse(raw);
+            raw = Optional.ofNullable(og.title()).filter(not(String::isBlank))
+                    .map(raw::withTitle).orElse(raw);
+            raw = Optional.ofNullable(og.description()).filter(not(String::isBlank))
+                    .map(raw::withDescription).orElse(raw);
             raw = Optional.ofNullable(og.image())
                     .filter(i -> SUPPORTED_SCHEMES.contains(i.getScheme()))
                     .map(raw::withImage).orElse(raw);
