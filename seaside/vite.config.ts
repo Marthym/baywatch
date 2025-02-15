@@ -1,18 +1,22 @@
-import {defineConfig} from 'vite'
-import vue from '@vitejs/plugin-vue'
-import {resolve} from 'path'
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import tailwindcss from '@tailwindcss/vite';
+import { resolve } from 'path';
 
 // https://vitejs.dev/config/
-export default defineConfig(({mode}) => ({
+export default defineConfig(({ mode }) => ({
     resolve: {
         alias: {
-            '@': resolve(__dirname, 'src')
-        }
+            '@': resolve(__dirname, 'src'),
+        },
     },
     define: {
         'process.env.NODE_ENV': JSON.stringify(mode),
     },
-    plugins: [vue()],
+    plugins: [
+        tailwindcss(),
+        vue(),
+    ],
     server: {
         port: 8080,
         cors: true,
@@ -36,8 +40,8 @@ export default defineConfig(({mode}) => ({
                 target: 'http://localhost:8082',
                 toProxy: true,
                 timeout: 0,
-                rewrite: (path) => path.replace(/^\/img/, '')
+                rewrite: (path) => path.replace(/^\/img/, ''),
             },
         },
-    }
+    },
 }));

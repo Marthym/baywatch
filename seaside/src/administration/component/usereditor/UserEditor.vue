@@ -1,5 +1,5 @@
 <template>
-  <div class="grid bg-base-200 bg-opacity-60 z-30 w-full h-full absolute top-0 left-0 overflow-hidden"
+  <div class="grid bg-base-200/60 z-30 w-full h-full absolute top-0 left-0 overflow-hidden"
        @click="opened = false">
     <Transition
         enter-active-class="lg:duration-300 ease-in-out"
@@ -61,7 +61,7 @@
                      @keyup="onFieldChange('password')"
                      @blur.stop="onBlurNewPassword">
               <button :class="{'input-error': errors.has('password')}"
-                      class="btn btn-neutral input input-bordered border-l-0 join-item focus:outline-none"
+                      class="btn btn-neutral input input-bordered border-l-0 join-item focus:outline-hidden"
                       @click.prevent.stop="visible.password = !visible.password">
                 <EyeIcon v-if="!visible.password" class="h-6 w-6 opacity-50"/>
                 <EyeSlashIcon v-else class="h-6 w-6 opacity-50"/>
@@ -87,7 +87,7 @@
                      @blur="onBlurConfirmPassword"
                      @change="onFieldChange('confirm')">
               <button :class="{'input-error': errors.has('confirm')}"
-                      class="btn btn-neutral input input-bordered border-l-0 join-item focus:outline-none"
+                      class="btn btn-neutral input input-bordered border-l-0 join-item focus:outline-hidden"
                       @click.prevent.stop="visible.confirm = !visible.confirm">
                 <EyeIcon v-if="!visible.confirm" class="h-6 w-6 opacity-50"/>
                 <EyeSlashIcon v-else class="h-6 w-6 opacity-50"/>

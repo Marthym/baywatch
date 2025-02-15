@@ -8,7 +8,7 @@
         'lg:h-56': !card.isActive,
         'opacity-30': card.data.state?.read && !card.isActive,
        }"
-       class="flex flex-col bg-base-100 shadow rounded-lg scroll-mt-12 w-full" @click="$emit('activate')">
+       class="flex flex-col bg-base-100 shadow-sm rounded-lg scroll-mt-12 w-full" @click="$emit('activate')">
 
     <figure class="flex-none">
       <img :alt="card.data.title"
@@ -27,7 +27,7 @@
       />
     </figure>
 
-    <div :class="{ 'm-6': card.isActive, 'm-4': !card.isActive}" class="flex-grow">
+    <div :class="{ 'm-6': card.isActive, 'm-4': !card.isActive}" class="grow">
       <div class="flex flex-col h-full break-words [word-break:break-word] overflow-hidden">
         <a :class="{
               'text-xl': displayAsMagazine,
@@ -38,7 +38,7 @@
            @auxclick="$emit('clickTitle')"
            @click="$emit('clickTitle')">{{ card.data.title }}</a>
         <span :class="{'grow invisible truncate': displayAsCard}"
-              class="mt-2 text-base flex-grow max-h-80 break-words [word-break:break-word] overflow-hidden"
+              class="mt-2 text-base grow max-h-80 break-words [word-break:break-word] overflow-hidden"
               v-html="card.data.description"></span>
 
         <div class="flex flex-row flex-wrap-reverse lg:justify-end text-xs mt-2">
@@ -47,7 +47,7 @@
           <span class="italic self-start lg:block">{{ publication }}</span>
           <div class="text-right lg:whitespace-nowrap order-last basis-full">
             <button v-for="f in card.data.feeds"
-                    class="badge badge-neutral badge-sm m-px rounded lg:whitespace-nowrap order-last basis-full"
+                    class="badge badge-neutral badge-sm m-px rounded-sm lg:whitespace-nowrap order-last basis-full"
                     @click.stop="$emit('addFilter', {type: 'feed', entity: f})">{{ f.name }}
             </button>
           </div>

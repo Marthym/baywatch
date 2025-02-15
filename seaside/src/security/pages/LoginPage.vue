@@ -1,5 +1,5 @@
 <template>
-  <div class="absolute inset-0 z-50 h-screen w-screen backdrop-filter bg-neutral lg:bg-opacity-90"
+  <div class="absolute inset-0 z-50 h-screen w-screen backdrop-filter bg-neutral lg:bg-neutral/90"
        @click.prevent="closeLoginWindow" @keydown.esc="closeLoginWindow">
     <div class="card bordered flex rounded-none overflow-hidden h-full
                 lg:rounded-lg lg:shadow-lg lg:h-fit lg:mt-8 mx-auto lg:card-side lg:max-w-4xl"

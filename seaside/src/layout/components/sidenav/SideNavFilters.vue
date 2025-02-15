@@ -37,7 +37,7 @@
           </button>
         </li>
         <li v-if="feedFilter" class="w-full">
-          <button class="badge gap-2 m-1 badge-accent rounded whitespace-nowrap"
+          <button class="badge gap-2 m-1 badge-accent rounded-sm whitespace-nowrap"
                   @click="resetFeedFilter()">
             <XMarkIcon class="inline-block w-4 h-4 stroke-2"/>
             {{ feedFilter.label }}

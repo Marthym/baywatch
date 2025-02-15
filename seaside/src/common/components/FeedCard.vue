@@ -18,7 +18,7 @@
   </div>
   <div v-if="!dense" :class="{'col-span-7': !dense}">
     <a class="link whitespace-normal break-all">{{ view.location }}</a><br>
-    <div v-for="tag in view.tags" class="badge mr-1 rounded">{{ tag }}</div>
+    <div v-for="tag in view.tags" class="badge mr-1 rounded-sm">{{ tag }}</div>
   </div>
   <div v-if="!dense && view.error" :class="{
           'col-span-2': !dense,
