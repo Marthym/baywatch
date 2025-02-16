@@ -1,6 +1,6 @@
 <template>
   <span class="mt-auto"></span>
-  <ul class="menu -mx-4">
+  <ul class="menu w-full">
     <li v-if="user.isAuthenticated && store.getters['user/hasRoleAdmin']">
       <router-link active-class="active" to="/admin" @click="sideNavToggle" class="capitalize">
         <AcademicCapIcon class="fill-current w-6 h-6 mr-2"/>

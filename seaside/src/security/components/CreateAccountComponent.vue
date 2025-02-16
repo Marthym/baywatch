@@ -47,7 +47,7 @@
                  :class="{'input-error': errors.has('password')}"
                  @keyup="onFieldChange('password')"
                  @blur.stop="onBlurNewPassword">
-          <button class="btn btn-neutral input input-bordered border-l-0 join-item focus:outline-none"
+          <button class="btn btn-neutral input input-bordered border-l-0 join-item focus:outline-hidden"
                   :class="{'input-error': errors.has('password')}"
                   @click="passwordVisible = !passwordVisible">
             <EyeIcon v-if="!passwordVisible" class="h-6 w-6 opacity-50"/>

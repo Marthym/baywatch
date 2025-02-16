@@ -10,13 +10,13 @@
       <router-link :to="newsToLink"
                    active-class="border-b-2 text-accent border-accent"
                    aria-label="display news list"
-                   class="py-2 font-medium capitalize focus:outline-none transition duration-500 ease-in-out">
+                   class="py-2 font-medium capitalize focus:outline-hidden transition duration-500 ease-in-out">
         <NewspaperIcon class="w-8 h-8 sm:w-6 sm:h-6 inline-block -mt-2"/>
         <span class="hidden sm:inline-block capitalize">{{ t('topnav.news') }}</span>
       </router-link>
       <router-link v-if="isAuthenticated" active-class="border-b-2 text-accent border-accent"
                    aria-label="display news list"
-                   class="py-2 ml-2 font-medium capitalize focus:outline-none transition duration-500 ease-in-out"
+                   class="py-2 ml-2 font-medium capitalize focus:outline-hidden transition duration-500 ease-in-out"
                    to="/clipped">
         <PaperClipIcon class="w-8 h-8 sm:w-6 sm:h-6 inline-block -mt-2"/>
         <span class="hidden sm:inline-block capitalize">{{ t('topnav.clipped') }}</span>

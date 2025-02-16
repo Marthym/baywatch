@@ -2,7 +2,7 @@
   <div ref="newsList" :class="{
     'max-w-5xl': displayAsMagazine,
     'max-w-7xl': displayAsCard,
-  }" class="focus:outline-none flex flex-row flex-wrap gap-5">
+  }" class="focus:outline-hidden flex flex-row flex-wrap gap-5">
     <template v-for="(card, idx) in news" :key="card.data.id">
       <NewsCard :ref="card.data.id" :card="card" :view-mode="viewMode"
                 @activate="onClickNewActivate(idx)" @addFilter="onAddFilter" @clickTitle="markNewsRead(idx, true)">
@@ -47,7 +47,7 @@
         <button class="btn btn-square btn-ghost btn-sm">
           <WindowIcon class="h-6 w-6"/>
         </button>
-        <ul class="dropdown-content menu bg-base-100 rounded z-[1] shadow border p-1 border-base-200 -ml-1.5">
+        <ul class="dropdown-content menu bg-base-100 rounded-sm z-[1] shadow-sm border p-1 border-base-200 -ml-1.5">
           <li><a class="p-1" @click="onChangeDisplay('CARD')">
             <Squares2X2Icon class="h-6 w-6"/>
           </a></li>

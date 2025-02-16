@@ -1,35 +1,31 @@
 <template>
-  <div class="absolute inset-0 z-50 h-screen w-screen backdrop-filter bg-neutral lg:bg-opacity-90"
+  <div class="absolute inset-0 z-50 h-screen w-screen backdrop-filter bg-neutral lg:bg-neutral/90"
        @click.prevent="closeLoginWindow" @keydown.esc="closeLoginWindow">
-    <div class="card bordered flex rounded-none overflow-hidden h-full
+    <div class="card card-side card-border flex rounded-none overflow-hidden h-full
                 lg:rounded-lg lg:shadow-lg lg:h-fit lg:mt-8 mx-auto lg:card-side lg:max-w-4xl"
          @click.stop>
-      <img alt="Baywatch" class="object-cover" src="/login.webp">
+      <figure class="w-1/3 skeleton text-transparent">
+        <img alt="Baywatch" class="object-cover" src="/login.webp">
+      </figure>
       <div class="card-body">
         <form @submit.prevent="onLogin">
-          <h2 class="card-title">{{ t('main.application') }}</h2>
-          <label class="form-control w-full">
-            <span class="label">
-              <span class="label-text">{{ t('login.username') }}</span>
-            </span>
+          <h2 class="card-title mb-2">{{ t('main.application') }}</h2>
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend">{{ t('login.username') }}</legend>
             <input ref="usrInput" v-model="username" :class="{'input-error': formValidation}"
                    :placeholder="t('login.username')"
-                   class="input input-bordered"
-                   type="text">
-          </label>
-          <label class="form-control w-full">
-            <span class="label">
-              <span class="label-text">{{ t('login.password') }}</span>
-              <span class="label-text-alt"><a class="label-text-alt" href="#" tabindex="-1">{{
-                  t('login.password.forget')
-                }}</a></span>
-            </span>
+                   class="input input-bordered w-full"
+                   type="text"/>
+          </fieldset>
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend">{{ t('login.password') }}</legend>
             <input v-model="password" :class="{'input-error': formValidation}" :placeholder="t('login.password')"
-                   class="input input-bordered"
+                   class="input input-bordered w-full"
                    type="password"
-                   @keyup="formValidation=false">
-          </label>
+                   @keyup="formValidation=false"/>
+          </fieldset>
           <button class="btn btn-primary w-full mt-8" type="submit">{{ t('login.login') }}</button>
+          <button class="btn btn-sm btn-link btn-neutral w-full">{{ t('login.password.forget') }}</button>
         </form>
       </div>
     </div>

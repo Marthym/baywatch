@@ -1,9 +1,25 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "daisyui";
+@plugin "daisyui/theme" {
+    name: "baywatch";
+    default: true;
+    --color-primary: #ff5555;
+    --color-primary-content: #ffeee9;
+    --color-secondary: #e5e7eb;
+    --color-accent: #1ad5ff;
+    --color-neutral: #374151;
+    --color-base-100: #4B5563;
+    --color-base-200: #1B263E;
+    --color-base-300: #111827;
+    --color-base-content: #d1d5db;
+    --color-info: #2094f3;
+    --color-success: #009485;
+    --color-warning: #ff9900;
+    --color-error: #d92b3a;
+}
 
 @layer components {
     .proposal-selected {
-        @apply bg-base-content bg-opacity-20;
+        @apply bg-base-content/20;
     }
 }

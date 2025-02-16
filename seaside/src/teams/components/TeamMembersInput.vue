@@ -16,7 +16,7 @@
                                v-model="newMember._user.login"
                                @keyup="debouncedOnUserKeyup"/>
                         <ul tabindex="0" v-if="dropdown.length > 0"
-                            class="dropdown-content menu shadow bg-neutral border-primary-content border border-opacity-20 w-full">
+                            class="dropdown-content menu shadow-sm bg-neutral border-primary-content/20 border w-full">
                             <li v-for="i in dropdown"><a @click="onUserDropdownClick(i)">{{ i.login }}</a></li>
                         </ul>
                     </div>
