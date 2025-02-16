@@ -8,15 +8,15 @@
 
       <ul class="mt-2 ml-2">
         <li>
-          <label class="label cursor-pointer py-1">
-            <span class="label-text">{{ t('sidenav.filters.unread') }}</span>
+          <label class="label py-1 w-full">
+            <span class="label-text w-full">{{ t('sidenav.filters.unread') }}</span>
             <input :checked="newsStore.unread" class="toggle"
                    type="checkbox" @change="onChangeUnread">
           </label>
         </li>
         <li>
-          <label class="label cursor-pointer py-1">
-            <span class="label-text">{{ t('sidenav.filters.popular') }}</span>
+          <label class="label py-1 w-full">
+            <span class="label-text w-full">{{ t('sidenav.filters.popular') }}</span>
             <input :checked="newsStore.popular" class="toggle"
                    type="checkbox" @change="onChangePopular">
           </label>
@@ -31,7 +31,7 @@
 
       <ul class="flex flex-wrap list-none mt-4">
         <li v-for="tag in tags" v-bind:key="tag">
-          <button :class="{'badge-accent': newsStore.tags[0] && tag === newsStore.tags[0]}" class="badge m-1"
+          <button :class="{'badge-accent': newsStore.tags[0] && tag === newsStore.tags[0]}" class="badge badge-sm m-1"
                   @click="selectTag">
             {{ tag }}
           </button>
