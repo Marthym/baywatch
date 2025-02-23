@@ -1,8 +1,12 @@
 @import "tailwindcss";
+
 @plugin "daisyui";
 @plugin "daisyui/theme" {
     name: "baywatch";
     default: true;
+    prefersdark: true;
+    color-scheme: dark;
+        
     --color-primary: #ff5555;
     --color-primary-content: #ffeee9;
     --color-secondary: #e5e7eb;
@@ -16,6 +20,7 @@
     --color-success: #009485;
     --color-warning: #ff9900;
     --color-error: #d92b3a;
+    --color-error-content: oklch(88% 0.062 18.334);
 }
 
 @layer components {

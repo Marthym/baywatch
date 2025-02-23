@@ -6,6 +6,7 @@ export const en_US = {
     'aside.register': 'Register',
     'aside.teams': 'teams',
     'dialog.cancel': 'cancel',
+    'error.server.unknown': 'Unknown server error !',
     'main.application': 'Baywatch',
     'sidenav.filters': 'filters',
     'sidenav.filters.popular': 'popular',

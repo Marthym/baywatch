@@ -1,6 +1,6 @@
 <template>
   <dialog class="modal bg-base-200/50 backdrop-blur-xs text-primary-content" v-if="isOpened"
-          :class="{'opacity-100 pointer-events-auto visible': isOpened}">
+          :class="{'opacity-100 pointer-events-auto visible': isOpened}" :open="isOpened">
     <div class="modal-box flex-col space-x-0 overflow-visible">
       <h3 class="font-bold text-lg -mt-2 mb-2">{{ title }}</h3>
       <slot></slot>
