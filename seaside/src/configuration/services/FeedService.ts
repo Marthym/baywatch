@@ -72,17 +72,17 @@ export class FeedService {
 }
 
 const FEED_UPDATE = `#graphql
-mutation FeedUpdate($id: ID, $name: String, $description: String, $tags: [String]) {
-    feedUpdate(id: $id, name: $name, description: $description, tags: $tags) {_id name}
+mutation FeedUpdate($id: ID, $name: String, $description: String, $icon: String, $tags: [String]) {
+    feedUpdate(id: $id, name: $name, description: $description, icon: $icon, tags: $tags) {_id name}
 }`;
 
-export function feedUpdate(id: string, feed: Pick<Feed, 'name' | 'description' | 'tags'>): Observable<Feed> {
-    const { name, description, tags } = feed;
+export function feedUpdate(id: string, feed: Pick<Feed, 'name' | 'description' | 'tags' | 'icon'>): Observable<Feed> {
+    const { name, description, tags, icon } = feed;
     if (id === undefined) {
         return throwError(() => new Error('Feed id is mandatory !'));
     }
 
-    return send<{ feedUpdate: Feed }>(FEED_UPDATE, { id, name, description, tags }).pipe(
+    return send<{ feedUpdate: Feed }>(FEED_UPDATE, { id, name, description, icon, tags }).pipe(
         map(data => data.data.feedUpdate),
         take(1),
     );
@@ -93,8 +93,8 @@ mutation FeedAddAndSubscribe($feed: FeedForm) {
     feedAddAndSubscribe(feed: $feed) {_id name}
 }`;
 
-export function feedAddAndSubscribe(feed: Pick<Feed, 'name' | 'description' | 'tags' | 'location'>): Observable<Feed> {
-    const { name, description, tags, location } = feed;
+export function feedAddAndSubscribe(feed: Pick<Feed, 'name' | 'description' | 'tags' | 'location' | 'icon'>): Observable<Feed> {
+    const { name, description, tags, location, icon } = feed;
 
     return send<{ feedAddAndSubscribe: Feed }>(FEED_ADD_AND_SUBSCRIBE, {
         feed: {
@@ -102,6 +102,7 @@ export function feedAddAndSubscribe(feed: Pick<Feed, 'name' | 'description' | 't
             description,
             tags,
             location,
+            icon,
         },
     }).pipe(
         map(data => data.data.feedAddAndSubscribe),
@@ -126,6 +127,7 @@ query ScrapFeedHeader($link: URI!) {
     scrapFeedHeader(link: $link) {
         title
         description
+        icon
     }
 }`;
 
@@ -141,6 +143,7 @@ export function feedFetchInformation(link?: string): Observable<Feed> {
         map((atom: AtomFeed) => ({
             name: atom.title,
             description: atom.description,
+            icon: atom.icon,
         } as Feed)),
         take(1),
     );
