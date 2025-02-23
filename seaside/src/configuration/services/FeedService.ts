@@ -15,15 +15,10 @@ export class FeedService {
     query SearchFeedsQuery ($_p: Int = 0, $_pp: Int = ${FeedService.DEFAULT_PER_PAGE}, $_s: String = "name") {
         feedsSearch(_p: $_p, _pp: $_pp, _s: $_s) {
             totalCount
-            entities {_id name description location tags error {
+            entities {_id name description location icon tags error {
                 level since message
             }}
         }
-    }`;
-
-    private static readonly FEED_SUBSCRIBE = `#graphql
-    mutation Subscription($feedId: ID) {
-        subscribe(id: $feedId) {_id name}
     }`;
 
     /**
@@ -43,9 +38,6 @@ export class FeedService {
                     data: of(res.data.feedsSearch.entities).pipe(
                         map(feeds => {
                             feeds.forEach(feed => {
-                                if (!feed.icon) {
-                                    feed.icon = new URL(new URL(feed.location).origin + '/favicon.ico');
-                                }
                                 if (feed.error) {
                                     feed.error.since = new Date(feed.error.since);
                                 }
@@ -58,6 +50,11 @@ export class FeedService {
             take(1),
         );
     }
+
+    private static readonly FEED_SUBSCRIBE = `#graphql
+    mutation Subscription($feedId: ID) {
+        subscribe(id: $feedId) {_id name}
+    }`;
 
     public subscribe(id: string): Observable<Feed> {
         if (id === undefined) {
