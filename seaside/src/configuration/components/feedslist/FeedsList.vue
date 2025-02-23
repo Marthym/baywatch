@@ -100,7 +100,7 @@ export default class FeedsList extends Vue {
           return feedPage.data;
         }),
         map(fs => fs.map(f =>
-            this.modelToView({ icon: new URL(new URL(f.location).origin + '/favicon.ico'), ...f }))),
+            this.modelToView({ icon: new URL(window.location.origin + '/favicon.ico'), ...f }))),
         tap(fs => this.feeds = fs),
     );
   }
