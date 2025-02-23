@@ -116,11 +116,14 @@ public class GraphQLFeedsController {
         }
 
         URI uri = URI.create(feedForm.location());
+        URI icon = URI.create(feedForm.icon());
         Set<String> tags = Optional.ofNullable(feedForm.tags()).map(Set::copyOf).orElseGet(Set::of);
         var entity = Entity.identify(WebFeed.builder()
                         .location(uri)
                         .tags(tags)
                         .name(feedForm.name())
+                        .description(feedForm.description())
+                        .icon(icon)
                         .build())
                 .withId(Hasher.identify(uri));
         return feedService.addAndSubscribe(Collections.singleton(entity)).next();

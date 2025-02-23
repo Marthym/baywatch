@@ -9,6 +9,7 @@ public record FeedForm(
         @NotBlank String name,
         @NotBlank @URL String location,
         String description,
+        @URL String icon,
         Set<String> tags
 ) {
 }

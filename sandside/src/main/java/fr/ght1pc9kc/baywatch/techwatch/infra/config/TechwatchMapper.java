@@ -53,12 +53,16 @@ public interface TechwatchMapper {
         String lastETag = (r.indexOf(FEEDS.FEED_LAST_ETAG) >= 0 && r.get(FEEDS.FEED_LAST_ETAG) != null)
                 ? r.get(FEEDS.FEED_LAST_ETAG) : null;
 
+        URI icon = (r.indexOf(FEEDS.FEED_ICON) >= 0 && r.get(FEEDS.FEED_ICON) != null)
+                ? URI.create(r.get(FEEDS.FEED_ICON)) : URI.create("/favicon.ico");
+
         assert lastPublication != null : "Last publication date cannot be null !";
 
         WebFeed webFeed = WebFeed.builder()
                 .name(name)
                 .description(r.get(FEEDS.FEED_DESCRIPTION))
                 .location(URI.create(r.get(FEEDS.FEED_URL)))
+                .icon(icon)
                 .tags(tags)
                 .build();
 
