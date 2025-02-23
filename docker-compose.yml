@@ -63,7 +63,7 @@ services:
       IMGPROXY_PRESETS: |
         desktop=resize:fill:240:238/ex:1/gravity:ce,
         mobile=resize:fill:268:96/ex:1/gravity:sm,
-        icon=resize:fill:32:32/ex:1/gravity:sm
+        icon=resize:fit:32:32
       IMGPROXY_SALT: "c20a3becb08164a79bffa4"
     ports:
       - "8082:8080"

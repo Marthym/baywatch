@@ -40,7 +40,7 @@ export default defineConfig(({ mode }) => ({
                 target: 'http://localhost:8082',
                 toProxy: true,
                 timeout: 0,
-                rewrite: (path) => path.replace(/^\/img/, ''),
+                // rewrite: (path) => path.replace(/^\/img/, ''),
             },
         },
     },
