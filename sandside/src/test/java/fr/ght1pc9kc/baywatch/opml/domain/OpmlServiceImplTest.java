@@ -5,7 +5,7 @@ import fr.ght1pc9kc.baywatch.opml.api.OpmlService;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.infra.adapters.SpringAuthenticationContext;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
-import fr.ght1pc9kc.baywatch.techwatch.infra.persistence.FeedRepository;
+import fr.ght1pc9kc.baywatch.techwatch.infra.adapters.persistence.FeedRepository;
 import fr.ght1pc9kc.baywatch.tests.samples.FeedSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.entity.api.Entity;

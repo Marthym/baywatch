@@ -55,6 +55,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
     private static final String ITEM = "item";
     private static final String LAST_BUILD_DATE = "lastBuildDate";
     private static final String LINK = "link";
+    private static final String ICON = "icon";
     private static final String MANAGING_EDITOR = "managingEditor";
     private static final String NAME = "name";
     private static final String PUB_DATE = "pubDate";
@@ -104,6 +105,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
         String description = null;
         String author = null;
         URI link = null;
+        URI icon = null;
         Instant updated = null;
 
         int deepLevel = -1;
@@ -124,6 +126,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
                             description = tmpDescr;
                     }
                     case LINK -> link = onFeedLink(link, deepLevel, events, idx);
+                    case ICON -> icon = onFeedLink(link, deepLevel, events, idx);
                     case NAME, MANAGING_EDITOR -> author = Optional.ofNullable(author)
                             .map(a -> readElementText(events, idx) + " " + a)
                             .orElse(readElementText(events, idx));
@@ -148,7 +151,7 @@ public final class RssAtomParserImpl implements RssAtomParser {
             updated = clock.instant();
         }
         return new AtomFeed(Optional.ofNullable(link).map(Hasher::identify).orElse(null),
-                title, description, author, link, updated);
+                title, description, author, link, icon, updated);
     }
 
     private static URI onFeedLink(URI old, int deepLevel, List<XMLEvent> events, int idx) {

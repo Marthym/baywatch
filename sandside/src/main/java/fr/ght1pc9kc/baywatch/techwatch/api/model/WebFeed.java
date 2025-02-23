@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.With;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.net.URI;
@@ -22,6 +23,7 @@ public record WebFeed(
         @With String name,
         @With String description,
         @NonNull URI location,
+        @Nullable URI icon,
         @NonNull @Unmodifiable @Singular Set<String> tags
 ) {
 }

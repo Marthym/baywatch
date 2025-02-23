@@ -139,10 +139,12 @@ public class GraphQLFeedsController {
     @MutationMapping
     @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
     public Mono<Entity<WebFeed>> feedUpdate(
-            @Argument String id, @Argument String name, @Argument String description, @Argument Collection<String> tags) {
+            @Argument String id, @Argument String name, @Argument String description, @Argument String icon, @Argument Collection<String> tags) {
         Set<String> tagsSet = Optional.ofNullable(tags).map(Set::copyOf).orElse(Set.of());
         return feedService.get(id)
-                .map(feed -> List.of(feed.convert(e -> e.toBuilder().name(name).description(description).tags(tagsSet).build())))
+                .map(feed -> List.of(feed.convert(e -> e.toBuilder()
+                        .name(name).description(description).icon(URI.create(icon)).tags(tagsSet)
+                        .build())))
                 .flatMapMany(feedService::subscribe)
                 .next();
     }

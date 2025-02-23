@@ -1,9 +1,12 @@
 package fr.ght1pc9kc.baywatch.scraper.infra.config;
 
 import fr.ght1pc9kc.baywatch.scraper.api.NewsFilter;
+import fr.ght1pc9kc.baywatch.scraper.domain.filters.FaviconFeedFilter;
 import fr.ght1pc9kc.baywatch.scraper.domain.filters.OpenGraphFilter;
 import fr.ght1pc9kc.baywatch.scraper.domain.filters.RedditNewsFilter;
 import fr.ght1pc9kc.baywatch.scraper.domain.filters.SanitizerFilter;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.FeedsFilter;
+import fr.ght1pc9kc.baywatch.scraper.domain.ports.LinkCheckPort;
 import fr.ght1pc9kc.scraphead.core.HeadScraper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -37,5 +40,11 @@ public class ScraperConfiguration {
     @Order(4)
     public NewsFilter newsSanitizer() {
         return new SanitizerFilter();
+    }
+
+    @Bean
+    @Order(5)
+    public FeedsFilter faviconFeedsFilter(LinkCheckPort linkCheckAdapter, HeadScraper headScraper) {
+        return new FaviconFeedFilter(headScraper, linkCheckAdapter);
     }
 }

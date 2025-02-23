@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.techwatch.infra.adapters;
+package fr.ght1pc9kc.baywatch.techwatch.infra.adapters.services;
 
 import fr.ght1pc9kc.baywatch.scraper.api.FeedScraperService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;

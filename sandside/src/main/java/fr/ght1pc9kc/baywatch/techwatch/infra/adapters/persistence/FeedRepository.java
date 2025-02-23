@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
+package fr.ght1pc9kc.baywatch.techwatch.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;

@@ -16,6 +16,7 @@ import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HexFormat;
+import java.util.Optional;
 import java.util.Set;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.ETag;
@@ -23,6 +24,7 @@ import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.createdBy;
 import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.updated;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
+import static java.util.Objects.nonNull;
 
 @Mapper(componentModel = "spring",
         imports = {URI.class, Set.class, Hasher.class, ByteBuffer.class, HexFormat.class, Instant.class})
@@ -73,12 +75,16 @@ public interface TechwatchMapper {
         feed.meta(updated, Instant.class).map(DateUtils::toLocalDateTime)
                 .ifPresent(feedsRecord::setFeedLastWatch);
         feed.meta(ETag).ifPresent(feedsRecord::setFeedLastEtag);
-        if (feed.self().name() != null) {
+        if (nonNull(feed.self().name())) {
             feedsRecord.setFeedName(feed.self().name());
         }
-        if (feed.self().description() != null) {
+        if (nonNull(feed.self().description())) {
             feedsRecord.setFeedDescription(feed.self().description());
         }
+        Optional.ofNullable(feed.self().icon())
+                .map(URI::toString)
+                .ifPresent(feedsRecord::setFeedIcon);
+
         feedsRecord.setFeedUrl(feed.self().location().toString());
 
         return feedsRecord;

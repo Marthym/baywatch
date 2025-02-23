@@ -4,6 +4,7 @@ type AtomFeed {
     description: String,
     author: String,
     link: URI!
+    icon: URI!
 }
 
 type AtomEntry {

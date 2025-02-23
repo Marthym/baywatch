@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.scraper.domain.filters;
 
+import fr.ght1pc9kc.baywatch.scraper.infra.adapters.LinkCheckAdapter;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,7 @@ class ImageLinkValidationFilterTest {
     @Test
     void should_validate_link_successfully() {
         ImageLinkValidationFilter tested = new ImageLinkValidationFilter(
-                WebClient.builder().exchangeFunction(new SuccessExchangeFunction()).build());
+                new LinkCheckAdapter(WebClient.builder().exchangeFunction(new SuccessExchangeFunction()).build()));
 
         RawNews rawNews = RawNews.builder().id("0").link(URI.create("https://www.jedi.com/"))
                 .image(URI.create("https://www.jedi.com/")).build();
@@ -33,7 +34,7 @@ class ImageLinkValidationFilterTest {
     @Test
     void should_validate_link_with_query_parameters() {
         ImageLinkValidationFilter tested = new ImageLinkValidationFilter(
-                WebClient.builder().exchangeFunction(new SuccessExchangeFunction()).build());
+                new LinkCheckAdapter(WebClient.builder().exchangeFunction(new SuccessExchangeFunction()).build()));
 
         RawNews rawNews = RawNews.builder().id("0").link(URI.create("https://www.jedi.com/"))
                 .image(URI.create("https://www.jedi.com/image.jpg?w=42")).build();
@@ -46,7 +47,7 @@ class ImageLinkValidationFilterTest {
     @Test
     void should_validate_link_with_illegal_scheme() {
         ImageLinkValidationFilter tested = new ImageLinkValidationFilter(
-                WebClient.builder().exchangeFunction(new SuccessExchangeFunction()).build());
+                new LinkCheckAdapter(WebClient.builder().exchangeFunction(new SuccessExchangeFunction()).build()));
 
         RawNews rawNews = RawNews.builder().id("0").link(URI.create("https://www.jedi.com/"))
                 .image(URI.create("file://www.jedi.com/")).build();
@@ -68,7 +69,7 @@ class ImageLinkValidationFilterTest {
     @Test
     void should_validate_link_redirection() {
         ImageLinkValidationFilter tested = new ImageLinkValidationFilter(
-                WebClient.builder().exchangeFunction(new RedirectExchangeFunction()).build());
+                new LinkCheckAdapter(WebClient.builder().exchangeFunction(new RedirectExchangeFunction()).build()));
 
         RawNews rawNews = RawNews.builder().id("0").link(URI.create("https://www.jedi.com/"))
                 .image(URI.create("https://www.jedi.com/")).build();
@@ -90,7 +91,7 @@ class ImageLinkValidationFilterTest {
     @Test
     void should_validate_link_error() {
         ImageLinkValidationFilter tested = new ImageLinkValidationFilter(
-                WebClient.builder().exchangeFunction(new ErrorExchangeFunction()).build());
+                new LinkCheckAdapter(WebClient.builder().exchangeFunction(new ErrorExchangeFunction()).build()));
 
         RawNews rawNews = RawNews.builder().id("0").link(URI.create("https://www.jedi.com/"))
                 .image(URI.create("https://www.jedi.com/")).build();
