@@ -54,7 +54,7 @@ public class FeedServiceImpl implements FeedService {
         this.propertiesVisitor = propertiesVisitor;
         this.proxyficator = (nonNull(imageProxyService))
                 ? original -> original.convert(
-                we -> we.toBuilder().icon(imageProxyService.proxify(we.icon(), ImagePresets.MOBILE)).build())
+                we -> we.toBuilder().icon(imageProxyService.proxify(we.icon(), ImagePresets.ICON)).build())
                 : UnaryOperator.identity();
     }
 

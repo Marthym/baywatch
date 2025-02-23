@@ -54,7 +54,7 @@ public interface TechwatchMapper {
                 ? r.get(FEEDS.FEED_LAST_ETAG) : null;
 
         URI icon = (r.indexOf(FEEDS.FEED_ICON) >= 0 && r.get(FEEDS.FEED_ICON) != null)
-                ? URI.create(r.get(FEEDS.FEED_ICON)) : URI.create("/favicon.ico");
+                ? URI.create(r.get(FEEDS.FEED_ICON)) : null;
 
         assert lastPublication != null : "Last publication date cannot be null !";
 

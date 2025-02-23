@@ -32,6 +32,9 @@ public class AtomFeedReducer {
         if (rightSelf.link() != null) {
             atomFeedBuilder.link(rightSelf.link());
         }
+        if (rightSelf.icon() != null) {
+            atomFeedBuilder.icon(rightSelf.icon());
+        }
         if (rightSelf.updated() != null) {
             atomFeedBuilder.updated(rightSelf.updated());
         }
