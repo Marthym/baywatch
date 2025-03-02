@@ -42,14 +42,14 @@ class PersistErrorsHandlerTest {
         Mono<Void> step = tested.after(new ScrapResult(1, List.of(
                 new FeedScrapingException(new AtomFeed(
                         "42", "Obiwan Kenobi", null, null,
-                        URI.create("https://jedi.com/"), null),
+                        URI.create("https://jedi.com/"), null, null),
                         new RuntimeException("test")),
                 new FeedScrapingException(new AtomFeed(
                         "42", "Obiwan Kenobi", null, null,
-                        URI.create("https://jedi.com/"), null),
+                        URI.create("https://jedi.com/"), null, null),
                         new RuntimeException("404 Not found")),
                 new FeedScrapingException(new AtomFeed(
-                        "41", "Obiwan Kenobi", null, null, null, null),
+                        "41", "Obiwan Kenobi", null, null, null, null, null),
                         new IllegalArgumentException("test")),
                 new NewsScrapingException(new AtomEntry(
                         "66", "Kylo Ren", null, null, null,

@@ -43,10 +43,11 @@
         <nbvcxz.version>1.5.1</nbvcxz.version>
         <nimbus-jose-jwt.version>10.0.1</nimbus-jose-jwt.version>
         <noexception.version>1.9.1</noexception.version>
-        <scraphead.version>1.4.1</scraphead.version>
+        <scraphead.version>1.4.2</scraphead.version>
         <testy-box.version>1.7.2</testy-box.version>
         <ulid-creator.version>5.2.3</ulid-creator.version>
         <unbescape.version>1.1.6.RELEASE</unbescape.version>
+        <lombok.version>1.18.36</lombok.version>
 
         <exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>

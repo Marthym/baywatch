@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.techwatch.infra.persistence;
+package fr.ght1pc9kc.baywatch.techwatch.infra.adapters.persistence;
 
 import com.machinezoo.noexception.Exceptions;
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;

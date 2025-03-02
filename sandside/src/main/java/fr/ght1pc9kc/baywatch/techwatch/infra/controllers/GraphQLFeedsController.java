@@ -43,6 +43,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Controller
 @RequiredArgsConstructor
@@ -116,11 +117,14 @@ public class GraphQLFeedsController {
         }
 
         URI uri = URI.create(feedForm.location());
+        URI icon = (nonNull(feedForm.icon())) ? URI.create(feedForm.icon()) : null;
         Set<String> tags = Optional.ofNullable(feedForm.tags()).map(Set::copyOf).orElseGet(Set::of);
         var entity = Entity.identify(WebFeed.builder()
                         .location(uri)
                         .tags(tags)
                         .name(feedForm.name())
+                        .description(feedForm.description())
+                        .icon(icon)
                         .build())
                 .withId(Hasher.identify(uri));
         return feedService.addAndSubscribe(Collections.singleton(entity)).next();
@@ -139,10 +143,12 @@ public class GraphQLFeedsController {
     @MutationMapping
     @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
     public Mono<Entity<WebFeed>> feedUpdate(
-            @Argument String id, @Argument String name, @Argument String description, @Argument Collection<String> tags) {
+            @Argument String id, @Argument String name, @Argument String description, @Argument String icon, @Argument Collection<String> tags) {
         Set<String> tagsSet = Optional.ofNullable(tags).map(Set::copyOf).orElse(Set.of());
         return feedService.get(id)
-                .map(feed -> List.of(feed.convert(e -> e.toBuilder().name(name).description(description).tags(tagsSet).build())))
+                .map(feed -> List.of(feed.convert(e -> e.toBuilder()
+                        .name(name).description(description).icon(URI.create(icon)).tags(tagsSet)
+                        .build())))
                 .flatMapMany(feedService::subscribe)
                 .next();
     }

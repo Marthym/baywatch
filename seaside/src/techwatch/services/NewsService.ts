@@ -10,6 +10,7 @@ import { NewsSearchRequest } from '@/techwatch/model/NewsSearchRequest.type';
 import { SandSideError } from '@/common/errors/SandSideError';
 import { GraphqlResponse } from '@/common/model/GraphqlResponse.type';
 import { send } from '@/common/services/GraphQLClient';
+import { NewsSearchResponse } from '@/techwatch/model/NewsSearchResponse.type';
 
 export function newsMark(id: string, mark: Mark): Observable<NewsState> {
     return rest.put(`/news/${id}/mark/${mark}`).pipe(
@@ -71,7 +72,7 @@ export class NewsService {
     }`;
 
     getAnonymousNews(): Observable<Infinite<News>> {
-        return send(NewsService.NEWS_SEARCH_ANONYMOUS_REQUEST).pipe(
+        return send<NewsSearchResponse>(NewsService.NEWS_SEARCH_ANONYMOUS_REQUEST).pipe(
             map(response => NewsService.graphResponseToInfinite(response)),
             take(1),
         );
@@ -87,16 +88,16 @@ export class NewsService {
         if (page > 0) {
             query._p = page;
         }
-        return send(NewsService.NEWS_SEARCH_REQUEST, query).pipe(
+        return send<NewsSearchResponse>(NewsService.NEWS_SEARCH_REQUEST, query).pipe(
             map(response => NewsService.graphResponseToInfinite(response)),
             take(1),
         );
     }
 
-    private static graphResponseToInfinite<G, T>(response: GraphqlResponse<G>): Infinite<T> {
-        if (!response.errors || response.errors.length === 0) {
+    private static graphResponseToInfinite(response: GraphqlResponse<NewsSearchResponse>): Infinite<News> {
+        if (response.data.newsSearch && (!response.errors || response.errors.length === 0)) {
             const totalCount: number = response.data.newsSearch.totalCount || -1;
-            const data: Observable<T[]> = of(response.data.newsSearch.entities as T[]);
+            const data: Observable<News[]> = of(response.data.newsSearch.entities);
             return {
                 total: totalCount,
                 data: data,

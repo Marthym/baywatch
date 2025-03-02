@@ -4,7 +4,7 @@ import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.techwatch.api.PopularNewsService;
 import fr.ght1pc9kc.baywatch.techwatch.domain.PopularNewsServiceImpl;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.TeamServicePort;
-import fr.ght1pc9kc.baywatch.techwatch.infra.persistence.StateRepository;
+import fr.ght1pc9kc.baywatch.techwatch.infra.adapters.persistence.StateRepository;
 import lombok.experimental.Delegate;
 import org.springframework.stereotype.Service;
 

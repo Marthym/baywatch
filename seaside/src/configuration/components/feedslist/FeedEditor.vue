@@ -16,23 +16,28 @@
               <ArrowPathIcon class="h-6 w-6"/>
             </button>
           </span>
-          <span class="label">
-            <span class="label-text-alt"/>
-            <span class="label-text-alt text-error-content first-letter:capitalize">{{ errors.location }}</span>
-          </span>
+          <div class="label-text-alt w-full text-right text-error-content h-5 first-letter:capitalize">
+            {{ errors.location }}
+          </div>
         </label>
-        <label class="label -mt-6" for="feedName">
+        <label class="label -mt-4" for="feedName">
           <span class="label-text capitalize">{{ t('config.feeds.editor.form.name') }}</span>
         </label>
         <input id="feedName" v-model="feed.name" :class="{'input-error': errors.name}"
                :placeholder="t('config.feeds.editor.form.name.placeholder')"
-               class="input input-bordered placeholder:capitalize"
+               class="input input-bordered placeholder:capitalize w-full"
                type="text">
 
         <label class="label" for="feedDescription">
           <span class="label-text capitalize">{{ t('config.feeds.editor.form.description') }}</span>
         </label>
-        <textarea id="feedDescription" v-model="feed.description" class="textarea textarea-bordered italic" rows="3"/>
+        <div class="flex h-24">
+          <textarea id="feedDescription" v-model="feed.description" class="textarea textarea-bordered italic w-full"
+                    rows="3"/>
+          <figure v-if="feed.icon" class="w-16 max-h-full mx-2">
+            <img :alt="feed.name + ' icon'" :src="feed.icon" class="w-16 object-cover truncate text-transparent"/>
+          </figure>
+        </div>
 
         <TagInput v-model="feed.tags" :available-tags-handler="() => listAvailableTags()"/>
       </fieldset>
@@ -40,8 +45,8 @@
     </form>
     <template v-slot:actions>
       <button class="btn capitalize" @click.stop="resetAndCloseModal">{{ t('dialog.cancel') }}</button>
-      <button class="btn btn-primary capitalize"
-              :disabled="Object.entries(errors).length > 0"
+      <button :disabled="Object.entries(errors).length > 0"
+              class="btn btn-primary capitalize"
               @click="onSaveFeed">{{
           t('config.feeds.editor.form.action.submit')
         }}
@@ -110,7 +115,7 @@ export default class FeedEditor extends Vue {
       this.errors.name = this.t('config.feeds.messages.nameMandatory');
     }
     if (!URL_PATTERN.test(this.feed.location)) {
-      this.errors.location = this.t('config.feeds.messages.locationMustBeURL');;
+      this.errors.location = this.t('config.feeds.messages.locationMustBeURL');
     }
     if (Object.entries(this.errors).length === 0) {
       this.subject?.next(this.feed);
@@ -120,7 +125,7 @@ export default class FeedEditor extends Vue {
 
   private onUriBlur(): void {
     if (!URL_PATTERN.test(this.feed.location)) {
-      this.errors.location = this.t('config.feeds.messages.locationMustBeURL');;
+      this.errors.location = this.t('config.feeds.messages.locationMustBeURL');
       return;
     } else {
       delete this.errors.location;
@@ -130,9 +135,9 @@ export default class FeedEditor extends Vue {
       next: f => Object.assign(this.feed, { ...f, url: this.feed.location }),
       complete: () => this.isFormLock = false,
       error: err => {
-        this.errors.location = this.t(err.code);
         this.isFormLock = false;
-      }
+        this.errors.location = this.t(err.code ?? 'error.server.unknown');
+      },
     });
   }
 

@@ -6,7 +6,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.PopularNewsService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Popularity;
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.TeamServicePort;
-import fr.ght1pc9kc.baywatch.techwatch.infra.persistence.StateRepository;
+import fr.ght1pc9kc.baywatch.techwatch.infra.adapters.persistence.StateRepository;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.Pagination;

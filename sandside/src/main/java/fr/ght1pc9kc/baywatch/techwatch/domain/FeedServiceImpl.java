@@ -5,6 +5,8 @@ import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.techwatch.api.FeedService;
+import fr.ght1pc9kc.baywatch.techwatch.api.ImageProxyService;
+import fr.ght1pc9kc.baywatch.techwatch.api.model.ImagePresets;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.ScraperServicePort;
@@ -13,7 +15,7 @@ import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.api.filter.CriteriaVisitor;
-import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.NO_ONE;
 import static fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException.AUTHENTICATION_NOT_FOUND;
@@ -32,7 +35,6 @@ import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.createdBy;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
-@RequiredArgsConstructor
 public class FeedServiceImpl implements FeedService {
     private static final Set<String> ALLOWED_PROTOCOL = Set.of("http", "https");
 
@@ -41,6 +43,20 @@ public class FeedServiceImpl implements FeedService {
     private final ScraperServicePort scraperService;
     private final AuthenticationFacade authFacade;
     private final CriteriaVisitor<List<String>> propertiesVisitor;
+    private final UnaryOperator<Entity<WebFeed>> proxyficator;
+
+    public FeedServiceImpl(
+            FeedPersistencePort feedRepository, ScraperServicePort scraperService, AuthenticationFacade authFacade,
+            CriteriaVisitor<List<String>> propertiesVisitor, @Nullable ImageProxyService imageProxyService) {
+        this.feedRepository = feedRepository;
+        this.scraperService = scraperService;
+        this.authFacade = authFacade;
+        this.propertiesVisitor = propertiesVisitor;
+        this.proxyficator = (nonNull(imageProxyService))
+                ? original -> original.convert(
+                we -> we.toBuilder().icon(imageProxyService.proxify(we.icon(), ImagePresets.ICON)).build())
+                : UnaryOperator.identity();
+    }
 
     @Override
     public Mono<Entity<WebFeed>> get(String id) {
@@ -86,7 +102,9 @@ public class FeedServiceImpl implements FeedService {
                             .map(eProps -> Map.entry(eProps.id(), eProps.self()))
                             .collectMap(Map.Entry::getKey, Map.Entry::getValue)
                             .flatMapMany(allProps -> overrideCustomizedFeedProperties(allProps, rawWebFeeds));
-                });
+                })
+                .map(proxyficator)
+                ;
     }
 
     private Flux<Entity<WebFeed>> overrideCustomizedFeedProperties(
@@ -183,6 +201,10 @@ public class FeedServiceImpl implements FeedService {
             feedBuilder.description(feed.description());
             isSame = false;
         }
+        if (nonNull(feed.icon()) && !feed.icon().equals(rawFeed.self().icon())) {
+            feedBuilder.icon(feed.icon());
+            isSame = false;
+        }
         if (!feed.tags().equals(rawFeed.self().tags())) {
             feedBuilder.tags(feed.tags());
             isSame = false;
@@ -209,6 +231,7 @@ public class FeedServiceImpl implements FeedService {
                     WebFeed newf = t.getT2();
                     return oldf.convert(e -> e.toBuilder()
                             .description(newf.description())
+                            .icon(newf.icon())
                             .build());
                 }).collectList();
     }

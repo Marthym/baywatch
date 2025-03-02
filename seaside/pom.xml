@@ -98,7 +98,7 @@
                 <executions>
                     <execution>
                         <id>NPM Install</id>
-                        <phase>generate-resources</phase>
+                        <phase>process-resources</phase>
                         <configuration>
                             <executable>yarn</executable>
                             <arguments>
@@ -112,7 +112,7 @@
                     </execution>
                     <execution>
                         <id>Vite build</id>
-                        <phase>generate-resources</phase>
+                        <phase>compile</phase>
                         <configuration>
                             <executable>yarn</executable>
                             <arguments>
@@ -125,7 +125,7 @@
                     </execution>
                     <execution>
                         <id>Vitest Coverage</id>
-                        <phase>generate-resources</phase>
+                        <phase>test</phase>
                         <configuration>
                             <executable>yarn</executable>
                             <arguments>

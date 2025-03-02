@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ScrapingLoggerHandlerTest {
     private final ListAppender<ILoggingEvent> mockLogAppender = new ListAppender<>();
     private ScrapingLoggerHandler tested;
-    private Logger logger = (Logger) LoggerFactory.getLogger(ScrapingLoggerHandler.class);
+    private final Logger logger = (Logger) LoggerFactory.getLogger(ScrapingLoggerHandler.class);
     private Level originalLevel;
 
     @BeforeEach

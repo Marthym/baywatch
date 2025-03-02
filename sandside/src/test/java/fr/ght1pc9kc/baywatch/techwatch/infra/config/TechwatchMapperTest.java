@@ -49,14 +49,16 @@ class TechwatchMapperTest {
     @Test
     void should_map_AtomFeed_to_Feed() {
         Assertions.assertThat(tested.getFeedFromAtom(new AtomFeed(null,
-                "Jedi Channel", "May the force be with you",
-                "Obiwan Kenobi", URI.create("https://jedi.com/feed/"), Instant.parse("2024-02-25T17:11:42Z")))
+                "Jedi Channel", "May the force be with you", "Obiwan Kenobi",
+                URI.create("https://jedi.com/feed/"), URI.create("https://jedi.com/favicon.ico"),
+                Instant.parse("2024-02-25T17:11:42Z")))
         ).isEqualTo(WebFeed.builder()
                 .name("Jedi Channel")
                 .tags(Set.of())
                 .name("Jedi Channel")
                 .description("May the force be with you")
                 .location(URI.create("https://jedi.com/feed/"))
+                .icon(URI.create("https://jedi.com/favicon.ico"))
                 .build());
     }
 }

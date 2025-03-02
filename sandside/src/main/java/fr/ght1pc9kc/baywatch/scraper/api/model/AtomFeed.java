@@ -15,6 +15,7 @@ import java.time.Instant;
  * @param author      Names one author of the feed.
  * @param link        Identifies a related Web page. The type of relation is defined by the rel attribute.
  *                    A feed is limited to one alternate per type and hreflang.
+ * @param icon        The URL of the favicon of the server
  * @param updated     Indicates the last time the feed was modified in a significant way.
  */
 @Builder(toBuilder = true)
@@ -24,6 +25,7 @@ public record AtomFeed(
         @Nullable String description,
         @Nullable String author,
         @Nullable URI link,
+        @Nullable URI icon,
         @Nullable Instant updated
 ) {
     public static AtomFeed of(String id, URI link) {

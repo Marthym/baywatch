@@ -6,6 +6,7 @@ import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.techwatch.api.FeedService;
+import fr.ght1pc9kc.baywatch.techwatch.api.ImageProxyService;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.WebFeed;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.FeedPersistencePort;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.ScraperServicePort;
@@ -50,6 +51,7 @@ class FeedServiceImplTest {
 
     private final FeedPersistencePort mockFeedRepository = mock(FeedPersistencePort.class);
     private final AuthenticationFacade mockAuthFacade = mock(AuthenticationFacade.class);
+    private final ImageProxyService mockImageProxyService = mock(ImageProxyService.class);
 
     private FeedService tested;
 
@@ -76,7 +78,7 @@ class FeedServiceImplTest {
         ScraperServicePort mockScraperService = mock(ScraperServicePort.class);
         when(mockScraperService.fetchFeedData(any())).thenReturn(Mono.just(FeedSamples.JEDI.self()));
         tested = new FeedServiceImpl(mockFeedRepository, mockScraperService, mockAuthFacade, new ListPropertiesCriteriaVisitor() {
-        });
+        }, mockImageProxyService);
     }
 
     @Test
