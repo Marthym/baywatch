@@ -17,7 +17,7 @@ describe('ChangePasswordModal', () => {
         expect(modalWrapper.isVisible()).toBe(false);
 
         await wrapper.setProps({ isOpen: true });
-        expect(modalWrapper.isVisible()).toBe(false);
+        expect(modalWrapper.isVisible()).toBe(true);
         expect(modalWrapper.find('button').exists()).toBe(true);
     });
 });
