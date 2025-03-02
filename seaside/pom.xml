@@ -98,7 +98,7 @@
                 <executions>
                     <execution>
                         <id>NPM Install</id>
-                        <phase>process-resources</phase>
+                        <phase>generate-resources</phase>
                         <configuration>
                             <executable>yarn</executable>
                             <arguments>
@@ -112,7 +112,7 @@
                     </execution>
                     <execution>
                         <id>Vite build</id>
-                        <phase>compile</phase>
+                        <phase>generate-resources</phase>
                         <configuration>
                             <executable>yarn</executable>
                             <arguments>
