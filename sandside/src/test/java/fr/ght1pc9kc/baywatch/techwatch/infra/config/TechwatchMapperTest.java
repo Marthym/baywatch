@@ -58,6 +58,7 @@ class TechwatchMapperTest {
                 .name("Jedi Channel")
                 .description("May the force be with you")
                 .location(URI.create("https://jedi.com/feed/"))
+                .icon(URI.create("https://jedi.com/favicon.ico"))
                 .build());
     }
 }

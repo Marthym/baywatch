@@ -108,11 +108,21 @@ class GraphQLFeedsControllerTest {
                 .variable("feed", null)
                 .execute().errors().expect(ex -> ex.getErrorType() == ErrorType.INTERNAL_ERROR);
 
+        gqlClient.documentName("feedsServiceTest")
+                .operationName("FeedAddAndSubscribe")
+                .variable("feed", Map.of(
+                        "name", "Jedi.com",
+                        "location", "https://jedi.com/atom.xml",
+                        "description", "Jedi News Feed",
+                        "tags", List.of("light", "good")))
+                .execute().path("feedAddAndSubscribe").hasValue();
+
         GraphQlTester.Response executed = gqlClient.documentName("feedsServiceTest")
                 .operationName("FeedAddAndSubscribe")
                 .variable("feed", Map.of(
                         "name", "Jedi.com",
                         "location", "https://jedi.com/atom.xml",
+                        "icon", "https://jedi.com/favicon.png",
                         "description", "Jedi News Feed",
                         "tags", List.of("light", "good")))
                 .execute();
@@ -120,6 +130,7 @@ class GraphQLFeedsControllerTest {
         Object response = executed.path("feedAddAndSubscribe")
                 .entity(Object.class)
                 .get();
+
         String actual = objectMapper.writeValueAsString(response);
         Assertions.assertThat(actual).isNotBlank();
         assertThatJson(actual)

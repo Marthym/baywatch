@@ -43,6 +43,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Controller
 @RequiredArgsConstructor
@@ -116,7 +117,7 @@ public class GraphQLFeedsController {
         }
 
         URI uri = URI.create(feedForm.location());
-        URI icon = URI.create(feedForm.icon());
+        URI icon = (nonNull(feedForm.icon())) ? URI.create(feedForm.icon()) : null;
         Set<String> tags = Optional.ofNullable(feedForm.tags()).map(Set::copyOf).orElseGet(Set::of);
         var entity = Entity.identify(WebFeed.builder()
                         .location(uri)
