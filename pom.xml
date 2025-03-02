@@ -144,7 +144,8 @@
                 <sonar.exclusions>
                     **/*.html,
                     **/locales/**,
-                    **/dist/**
+                    **/dist/**,
+                    seaside/src/assets/styles/index.css
                 </sonar.exclusions>
                 <sonar.java.binaries>${project.build.directory}/classes</sonar.java.binaries>
                 <sonar.java.libraries>${project.build.directory}/dependency</sonar.java.libraries>
