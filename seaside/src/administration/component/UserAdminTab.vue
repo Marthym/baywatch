@@ -1,5 +1,5 @@
 <template>
-  <div class="overflow-x-auto mt-4">
+  <div class="overflow-x-auto">
     <div class="md:join mb-2">
       <button class="btn btn-sm mb-2 mr-2 join-item md:m-0 capitalize" @click.prevent="onUserAdd()">
         <PlusCircleIcon class="w-6 h-6 md:mr-2"/>
