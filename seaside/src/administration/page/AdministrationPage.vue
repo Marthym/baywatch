@@ -1,5 +1,5 @@
 <template>
-  <nav class="tabs tabs-boxed place-content-start" role="navigation">
+  <nav class="tabs tabs-border place-content-start" role="navigation">
     <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/admin/users">
       {{ t('admin.tab.users') }}
     </router-link>
@@ -10,7 +10,7 @@
       {{ t('admin.tab.stats') }}
     </router-link>
   </nav>
-  <router-view></router-view>
+  <router-view class="mt-5"></router-view>
 </template>
 
 <script lang="ts">

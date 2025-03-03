@@ -1,5 +1,5 @@
 <template>
-  <div class="m-2">
+  <div>
     <!-- Avatar and name box -->
     <div class="flex">
       <div class="avatar">

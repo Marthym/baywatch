@@ -36,7 +36,7 @@
       <!-- Refresh Icon -->
       <div class="indicator mx-1">
                 <span v-if="statistics.updated > 0"
-                      class="indicator-item badge badge-xs badge-accent text-2xs animate-pulse"></span>
+                      class="indicator-item status status-accent animate-pulse"></span>
         <button class="btn btn-square btn-ghost btn-sm" @click="reload()">
           <ArrowPathIcon class="h-6 w-6"/>
         </button>

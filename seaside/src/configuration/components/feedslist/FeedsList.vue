@@ -1,5 +1,5 @@
 <template>
-  <div class="overflow-x-auto mt-5">
+  <div class="overflow-x-auto">
     <SmartTable :active-page="activePage" :columns="t('config.feeds.table.headers')" :elements="feeds"
                 :total-page="pagesNumber"
                 actions="avieud"

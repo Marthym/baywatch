@@ -1,6 +1,6 @@
 <template>
-  <div class="flex justify-center flex-wrap">
-    <div v-for="counter in counters" class="stat bg-secondary-content rounded-xl shadow-sm m-2 grow w-fit">
+  <div class="flex justify-center flex-wrap stats">
+    <div v-for="counter in counters" class="stat bg-base-300/60 rounded-xl shadow m-2 grow w-fit">
       <div v-if="counter.icon" class="stat-figure text-secondary">
         <component :is="iconToComponent(counter.icon)" class="inline-block w-10 h-10"/>
       </div>

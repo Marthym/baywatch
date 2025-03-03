@@ -1,10 +1,10 @@
 <template>
-  <nav class="tabs tabs-boxed place-content-start" role="tablist">
+  <nav class="tabs tabs-border place-content-start" role="tablist">
     <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/config/feeds">{{ t('config.tab.feeds') }}</router-link>
     <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/config/profile">{{ t('config.tab.profile') }}</router-link>
     <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/config/settings">{{ t('config.tab.settings') }}</router-link>
   </nav>
-  <router-view></router-view>
+  <router-view class="mt-5"></router-view>
 </template>
 
 <script lang="ts">

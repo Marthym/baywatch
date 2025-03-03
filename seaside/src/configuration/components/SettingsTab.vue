@@ -1,6 +1,6 @@
 <template>
-  <div class="m-2">
-    <div class="form-control w-full max-w-lg mt-6">
+  <div>
+    <div class="form-control w-full max-w-lg">
       <div class="label">
         <span class="label-text first-letter:capitalize">{{ t('config.settings.form.preferredLocale') }}</span>
       </div>
