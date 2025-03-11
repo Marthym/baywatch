@@ -61,9 +61,9 @@ class NotifyServiceImplTest {
         List<Throwable> errorsObiwan = new CopyOnWriteArrayList<>();
         List<Throwable> errorsLuke = new CopyOnWriteArrayList<>();
 
-        Disposable disposableObiwan = tested.subscribe().subscribe(
+        Disposable disposableObiwan = tested.getUserNotificationsFlux().subscribe(
                 actualObiwan::add, errorsObiwan::add);
-        Disposable disposableLuke = tested.subscribe().subscribe(
+        Disposable disposableLuke = tested.getUserNotificationsFlux().subscribe(
                 actualLuke::add, errorsLuke::add);
 
         ServerEvent eventBroadcast = tested.broadcast(EventType.NEWS_UPDATE, 42);
@@ -94,7 +94,7 @@ class NotifyServiceImplTest {
     void should_broadcast_notification_without_subscriber() {
         tested.broadcast(EventType.NEWS_UPDATE, Mono.just(42));
         tested.close();
-        StepVerifier.create(tested.subscribe()).verifyError();
+        StepVerifier.create(tested.getUserNotificationsFlux()).verifyError();
     }
 
     @Test
@@ -103,7 +103,7 @@ class NotifyServiceImplTest {
 
         List<ServerEvent> actualObiwan = new CopyOnWriteArrayList<>();
         List<Throwable> errorsObiwan = new CopyOnWriteArrayList<>();
-        Disposable disposable = tested.subscribe().subscribe(
+        Disposable disposable = tested.getUserNotificationsFlux().subscribe(
                 actualObiwan::add, errorsObiwan::add);
 
         ServerEvent eventUser = tested.send(UserSamples.OBIWAN.id(), EventType.USER_NOTIFICATION, "I'm your father");
@@ -126,7 +126,7 @@ class NotifyServiceImplTest {
 
         List<ServerEvent> actualObiwan = new CopyOnWriteArrayList<>();
         List<Throwable> errorsObiwan = new CopyOnWriteArrayList<>();
-        Disposable disposable = tested.subscribe().subscribe(
+        Disposable disposable = tested.getUserNotificationsFlux().subscribe(
                 actualObiwan::add, errorsObiwan::add);
 
         tested.close();

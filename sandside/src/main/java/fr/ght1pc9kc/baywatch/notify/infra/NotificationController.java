@@ -1,13 +1,13 @@
 package fr.ght1pc9kc.baywatch.notify.infra;
 
 import fr.ght1pc9kc.baywatch.notify.api.NotifyManager;
-import fr.ght1pc9kc.baywatch.notify.api.model.BasicEvent;
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
-import fr.ght1pc9kc.baywatch.notify.api.model.ReactiveEvent;
-import fr.ght1pc9kc.baywatch.notify.api.model.ServerEventVisitor;
+import fr.ght1pc9kc.baywatch.notify.api.model.Severity;
+import fr.ght1pc9kc.baywatch.notify.api.model.UserNotification;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,24 +28,9 @@ public class NotificationController {
     private final NotifyManager notifyManager;
     private final AuthenticationFacade facade;
 
-    @GetMapping
-    public Flux<ServerSentEvent<Object>> sse() {
-        return notifyManager.subscribe().flatMap(evt ->
-                evt.accept(new ServerEventVisitor<Mono<?>>() {
-                            @Override
-                            public <T> Mono<T> visit(BasicEvent<T> event) {
-                                return Mono.just(event.message());
-                            }
-
-                            @Override
-                            public <T> Mono<T> visit(ReactiveEvent<T> event) {
-                                return event.message();
-                            }
-                        })
-                        .map(msg -> ServerSentEvent.builder()
-                                .id(evt.id())
-                                .event(evt.type().getName()).data(msg)
-                                .build()));
+    @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ServerSentEvent<?>> sse() {
+        return Flux.create(notifyManager::subscribe);
     }
 
     @DeleteMapping
@@ -61,7 +46,12 @@ public class NotificationController {
     public Mono<Void> test(@RequestParam("msg") String msg) {
         return facade.getConnectedUser().map(user -> {
             notifyManager.broadcast(EventType.NEWS_UPDATE, "UPDATE " + msg);
-            notifyManager.send(user.id(), EventType.USER_NOTIFICATION, "PERSO " + msg);
+            notifyManager.send(user.id(), EventType.USER_NOTIFICATION, UserNotification.builder()
+                    .code(UserNotification.CODE_OK)
+                    .severity(Severity.info)
+                    .message("PERSO " + msg)
+                    .delay(1000)
+                    .build());
             return user;
         }).then();
     }

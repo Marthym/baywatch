@@ -47,7 +47,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                                 .contextWrite(authFacade.withAuthentication(u)))
                         .toList()).then())
                 .subscribe();
-        log.atDebug().log("Subscribe to user update");
+        log.atDebug().log("Subscribed to user update");
     }
 
     @Override

@@ -1,8 +1,8 @@
 package fr.ght1pc9kc.baywatch.notify.api;
 
-import fr.ght1pc9kc.baywatch.notify.api.model.ServerEvent;
+import org.springframework.http.codec.ServerSentEvent;
 import reactor.core.Disposable;
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 
 /**
@@ -11,10 +11,8 @@ import reactor.core.publisher.Mono;
 public interface NotifyManager extends NotifyService {
     /**
      * This allows Service or whatever to subscribe to notifications
-     *
-     * @return The notification flux
      */
-    Flux<ServerEvent> subscribe();
+    void subscribe(FluxSink<ServerSentEvent<?>> sink);
 
     /**
      * Allow unsubscribing to notifications flux. This will make a {@link Disposable#dispose()}
