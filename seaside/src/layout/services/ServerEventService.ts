@@ -1,7 +1,3 @@
-import { Observable, of } from 'rxjs';
-import rest from '@/common/services/RestWrapper';
-import { catchError, map, take, tap } from 'rxjs/operators';
-
 let source: EventSource | null = null;
 
 let listeners: EventListener[] = [];
@@ -27,20 +23,12 @@ export function unregisterNotificationListener(eventType: string, listener: Even
     }
 }
 
-export function closeNotificationListeners(): Observable<undefined> {
+export function closeNotificationListeners(): void {
     listeners.splice(0, listeners.length);
     if (source) {
-        console.info(`Close SSE !`);
+        console.debug(`Try closing SSE ...`);
+        source.addEventListener('close', () => console.info('SSE Connection closed'));
         source.close();
         source = null;
     }
-    return rest.delete('/sse').pipe(
-        take(1),
-        tap(_x => console.debug(`SSE disconnected.`)),
-        catchError(e => {
-            console.debug(e.message);
-            return of(undefined);
-        }),
-        map(_x => undefined),
-    );
 }
