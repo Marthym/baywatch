@@ -8,10 +8,8 @@ import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,14 +29,6 @@ public class NotificationController {
     @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<?>> sse() {
         return Flux.create(notifyManager::subscribe);
-    }
-
-    @DeleteMapping
-    public Mono<ResponseEntity<Object>> disposeSse() {
-        return notifyManager.unsubscribe()
-                .map(ignore -> ResponseEntity.noContent().build())
-                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
-
     }
 
     @GetMapping("/test")

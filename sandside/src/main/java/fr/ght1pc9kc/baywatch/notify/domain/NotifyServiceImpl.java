@@ -90,9 +90,9 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
                                             cache.invalidate(u.id());
                                         }
                                     })
-                                    .doOnSubscribe(ignore -> log.atDebug()
-                                            .addArgument(u.id())
-                                            .log("Subscribe for {}"))
+                                    .doOnSubscribe(ignore ->
+                                            log.atDebug().addArgument(u.id()).log("Subscribe for {}"))
+                                    
                                     .flatMap(evt -> switch (evt) {
                                         case BasicEvent<?> basic -> Mono.just(ServerSentEvent.builder()
                                                 .id(basic.id())
@@ -115,17 +115,6 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
                 .id(ulidFactory.create().toString())
                 .event(EventType.PING.getName())
                 .build());
-    }
-
-    @Override
-    public Mono<Boolean> unsubscribe() {
-        return authFacade.getConnectedUser()
-                .filter(u -> cache.asMap().containsKey(u.id()))
-                .map(u -> {
-                    log.atDebug().addArgument(u.id()).log("Dispose SSE Subscription for {}");
-                    cache.invalidate(u.id());
-                    return true;
-                });
     }
 
     @Override
