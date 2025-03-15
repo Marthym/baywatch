@@ -2,7 +2,6 @@ package fr.ght1pc9kc.baywatch.notify.domain;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyManager;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
 import fr.ght1pc9kc.baywatch.notify.api.model.BasicEvent;
@@ -30,28 +29,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdAt;
 import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.createdBy;
 
 @Slf4j
 public class NotifyServiceImpl implements NotifyService, NotifyManager {
-    private static final String PREFIX = "EV";
-
     private final AuthenticationFacade authFacade;
     private final NotificationPersistencePort notificationPersistence;
 
     private final Sinks.Many<ServerEvent> multicast;
     private final Cache<String, Tuple2<Sinks.Many<ServerEvent>, List<Disposable>>> cache;
+    private final Supplier<String> eventIdGenerator;
     private final Clock clock;
-    private final UlidFactory ulidFactory = UlidFactory.newMonotonicInstance();
 
     public NotifyServiceImpl(
             AuthenticationFacade authenticationFacade, NotificationPersistencePort notificationPersistence,
-            Clock clock) {
+            Supplier<String> eventIdGenerator, Clock clock) {
         this.notificationPersistence = notificationPersistence;
         this.authFacade = authenticationFacade;
         this.multicast = Sinks.many().multicast().directBestEffort();
+        this.eventIdGenerator = eventIdGenerator;
         this.clock = clock;
         this.cache = Caffeine.newBuilder()
                 .expireAfterAccess(Duration.ofDays(1))
@@ -60,6 +59,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
                     if (sink != null) {
                         log.atTrace().addArgument(key).log("Remove {} from the cache");
                         sink.getT1().tryEmitComplete();
+                        sink.getT2().forEach(Disposable::dispose);
                     }
                 })
                 .build();
@@ -92,7 +92,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
                                     })
                                     .doOnSubscribe(ignore ->
                                             log.atDebug().addArgument(u.id()).log("Subscribe for {}"))
-                                    
+
                                     .flatMap(evt -> switch (evt) {
                                         case BasicEvent<?> basic -> Mono.just(ServerSentEvent.builder()
                                                 .id(basic.id())
@@ -112,7 +112,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
 
         sseSink.onCancel(mainDisposable);
         sseSink.next(ServerSentEvent.builder()
-                .id(ulidFactory.create().toString())
+                .id(eventIdGenerator.get())
                 .event(EventType.PING.getName())
                 .build());
     }
@@ -128,7 +128,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
 
     @Override
     public <T> BasicEvent<T> send(String userId, EventType type, T data) {
-        BasicEvent<T> event = new BasicEvent<>(PREFIX + ulidFactory.create().toString(), type, data);
+        BasicEvent<T> event = new BasicEvent<>(eventIdGenerator.get(), type, data);
         Optional.ofNullable(cache.getIfPresent(userId))
                 .ifPresentOrElse(
                         sk -> emit(sk.getT1(), event),
@@ -142,7 +142,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
 
     @Override
     public <T> ReactiveEvent<T> send(String userId, EventType type, Mono<T> data) {
-        ReactiveEvent<T> event = new ReactiveEvent<>(PREFIX + ulidFactory.create().toString(), type, data);
+        ReactiveEvent<T> event = new ReactiveEvent<>(eventIdGenerator.get(), type, data);
         Optional.ofNullable(cache.getIfPresent(userId))
                 .ifPresentOrElse(
                         sk -> emit(sk.getT1(), event),
@@ -156,14 +156,14 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
 
     @Override
     public <T> BasicEvent<T> broadcast(EventType type, T data) {
-        BasicEvent<T> event = new BasicEvent<>(PREFIX + ulidFactory.create().toString(), type, data);
+        BasicEvent<T> event = new BasicEvent<>(eventIdGenerator.get(), type, data);
         emit(this.multicast, event);
         return event;
     }
 
     @Override
     public <T> ReactiveEvent<T> broadcast(EventType type, Mono<T> data) {
-        ReactiveEvent<T> event = new ReactiveEvent<>(PREFIX + ulidFactory.create().toString(), type, data);
+        ReactiveEvent<T> event = new ReactiveEvent<>(eventIdGenerator.get(), type, data);
         emit(this.multicast, event);
         return event;
     }
