@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.notify.infra.adapters;
 
+import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.admin.api.model.Counter;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterGroup;
 import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
@@ -22,12 +23,14 @@ import java.time.Clock;
 @Slf4j
 @Service
 public class NotifyServiceAdapter implements NotifyService, NotifyManager, CounterProvider {
+    private final UlidFactory ulidFactory = UlidFactory.newMonotonicInstance();
     @Delegate
     private final NotifyServiceImpl delegate;
 
     public NotifyServiceAdapter(
             AuthenticationFacade authFacade, NotificationPersistencePort notificationPersistence, MeterRegistry registry) {
-        this.delegate = new NotifyServiceImpl(authFacade, notificationPersistence, Clock.systemUTC());
+        this.delegate = new NotifyServiceImpl(authFacade, notificationPersistence,
+                () -> ulidFactory.create().toString(), Clock.systemUTC());
 
         Gauge.builder("bw.session_count", delegate::countCacheEntries)
                 .baseUnit("gauge")

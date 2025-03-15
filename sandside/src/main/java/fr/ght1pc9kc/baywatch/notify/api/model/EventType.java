@@ -4,9 +4,11 @@ import lombok.Getter;
 
 @Getter
 public enum EventType {
+    NEWS_ADD("newsAdd"),
     NEWS_UPDATE("newsUpdate"),
+    PING("ping"),
     USER_NOTIFICATION("userNotification"),
-    NEWS_ADD("newsAdd");
+    ;
 
     private final String name;
 

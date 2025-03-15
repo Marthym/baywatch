@@ -1,0 +1,18 @@
+### Login
+
+GRAPHQL http://{{host}}/api/g
+
+mutation Login($username:String!,$password:String!){
+    login(username:$username,password:$password){
+        _id login name roles mail
+    }
+}
+
+{
+  "username": "{{login}}",
+  "password": "{{password}}"
+}
+
+###
+GET http://{{host}}/api/sse/test
+X-Token: {{$auth.token()}}
