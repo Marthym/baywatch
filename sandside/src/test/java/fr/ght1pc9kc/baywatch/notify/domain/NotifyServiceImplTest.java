@@ -35,9 +35,9 @@ import static org.mockito.Mockito.when;
 class NotifyServiceImplTest {
 
     private static final String TEST_EVENT_ID = "ULID-01";
-    private static final ServerSentEvent<?> PING_EVENT = ServerSentEvent.builder()
+    private static final ServerSentEvent<?> OPEN_EVENT = ServerSentEvent.builder()
             .id(TEST_EVENT_ID)
-            .event(EventType.PING.getName())
+            .event(EventType.OPEN.getName())
             .build();
 
     private final AuthenticationFacade authFacadeMock = mock(AuthenticationFacade.class);
@@ -87,12 +87,12 @@ class NotifyServiceImplTest {
         tested.broadcast(EventType.NEWS_UPDATE, 66);
         tested.close();
 
-        assertThat(actualObiwan).containsExactly(PING_EVENT,
+        assertThat(actualObiwan).containsExactly(OPEN_EVENT,
                 ServerSentEvent.builder()
                         .id(TEST_EVENT_ID)
                         .event(EventType.NEWS_UPDATE.getName())
                         .data(42).build());
-        assertThat(actualLuke).containsExactly(PING_EVENT,
+        assertThat(actualLuke).containsExactly(OPEN_EVENT,
                 ServerSentEvent.builder()
                         .id(TEST_EVENT_ID)
                         .event(EventType.NEWS_UPDATE.getName())
@@ -134,7 +134,7 @@ class NotifyServiceImplTest {
         disposable.dispose();
         tested.close();
 
-        assertThat(actualObiwan).containsExactly(PING_EVENT, ServerSentEvent.builder()
+        assertThat(actualObiwan).containsExactly(OPEN_EVENT, ServerSentEvent.builder()
                 .id(TEST_EVENT_ID)
                 .event(EventType.USER_NOTIFICATION.getName())
                 .data("I'm your father").build());
@@ -162,7 +162,7 @@ class NotifyServiceImplTest {
         assertThat(actualObiwan).containsExactly(ServerSentEvent.builder()
                 .id(event.id())
                 .event(EventType.USER_NOTIFICATION.getName())
-                .data("I'm your father").build(), PING_EVENT);
+                .data("I'm your father").build(), OPEN_EVENT);
         assertThat(errorsObiwan).isEmpty();
 
         Awaitility.await("Await until disposed").atMost(Duration.ofSeconds(5)).until(disposable::isDisposed);
