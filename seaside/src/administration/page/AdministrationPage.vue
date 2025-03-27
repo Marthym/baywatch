@@ -10,7 +10,7 @@
       {{ t('admin.tab.stats') }}
     </router-link>
   </nav>
-  <router-view class="mt-5"></router-view>
+  <div class="mt-5"><router-view></router-view></div>
 </template>
 
 <script lang="ts">
