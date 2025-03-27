@@ -6,6 +6,7 @@ import lombok.Getter;
 public enum EventType {
     NEWS_ADD("newsAdd"),
     NEWS_UPDATE("newsUpdate"),
+    OPEN("open"),
     PING("ping"),
     USER_NOTIFICATION("userNotification"),
     ;

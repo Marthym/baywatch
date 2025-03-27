@@ -20,13 +20,9 @@ import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.core.publisher.Sinks.EmitResult;
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 import java.time.Clock;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -40,7 +36,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
     private final NotificationPersistencePort notificationPersistence;
 
     private final Sinks.Many<ServerEvent> multicast;
-    private final Cache<String, Tuple2<Sinks.Many<ServerEvent>, List<Disposable>>> cache;
+    private final Cache<String, Sinks.Many<ServerEvent>> cache;
     private final Supplier<String> eventIdGenerator;
     private final Clock clock;
 
@@ -55,38 +51,38 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         this.cache = Caffeine.newBuilder()
                 .expireAfterAccess(Duration.ofDays(1))
                 .maximumSize(10_000)
-                .<String, Tuple2<Sinks.Many<ServerEvent>, List<Disposable>>>removalListener((key, sink, cause) -> {
+                .<String, Sinks.Many<ServerEvent>>removalListener((key, sink, cause) -> {
                     if (sink != null) {
                         log.atTrace().addArgument(key).log("Remove {} from the cache");
-                        sink.getT1().tryEmitComplete();
-                        sink.getT2().forEach(Disposable::dispose);
+                        if (sink.currentSubscriberCount() > 0) {
+                            sink.tryEmitComplete();
+                        }
                     }
                 })
                 .build();
     }
 
     @Override
+    @SuppressWarnings("CallingSubscribeInNonBlockingScope")
     public void subscribe(FluxSink<ServerSentEvent<?>> sseSink) {
         if (multicast.isScanAvailable() && Boolean.TRUE.equals(multicast.scan(Scannable.Attr.TERMINATED))) {
             sseSink.error(new IllegalStateException("Publisher was closed !"));
         }
         Disposable mainDisposable = authFacade.getConnectedUser().flatMapMany(u -> {
-                            var sinkAndDisposables = Objects.requireNonNull(cache.get(u.id(), id -> {
-                                Sinks.Many<ServerEvent> sink = Sinks.many().multicast().onBackpressureBuffer();
-                                List<Disposable> disposables = new ArrayList<>(2);
-                                disposables.add(this.multicast.asFlux().subscribe(sink::tryEmitNext));
-                                disposables.add(notificationPersistence.consume(u.id()).subscribe(sink::tryEmitNext));
-                                return Tuples.of(sink, disposables);
-                            }));
-                            return sinkAndDisposables
-                                    .getT1().asFlux()
-                                    .doOnCancel(() -> {
+                            var personalSink = Objects.requireNonNull(cache.get(u.id(), id ->
+                                    Sinks.many().multicast().onBackpressureBuffer()));
+                            Disposable disposableBroadcast = this.multicast.asFlux().subscribe(personalSink::tryEmitNext);
+                            Disposable disposablePersistence = notificationPersistence.consume(u.id()).subscribe(personalSink::tryEmitNext);
+                            return personalSink
+                                    .asFlux()
+                                    .doFinally(signal -> {
                                         log.atDebug()
                                                 .addArgument(u.id())
-                                                .addArgument(sinkAndDisposables.getT1().currentSubscriberCount())
+                                                .addArgument(personalSink.currentSubscriberCount())
                                                 .log("Cancel notification for {}, {}");
-                                        if (sinkAndDisposables.getT1().currentSubscriberCount() <= 1) {
-                                            sinkAndDisposables.getT2().forEach(Disposable::dispose);
+                                        if (personalSink.currentSubscriberCount() <= 0) {
+                                            disposableBroadcast.dispose();
+                                            disposablePersistence.dispose();
                                             cache.invalidate(u.id());
                                         }
                                     })
@@ -113,7 +109,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         sseSink.onCancel(mainDisposable);
         sseSink.next(ServerSentEvent.builder()
                 .id(eventIdGenerator.get())
-                .event(EventType.PING.getName())
+                .event(EventType.OPEN.getName())
                 .build());
     }
 
@@ -131,7 +127,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         BasicEvent<T> event = new BasicEvent<>(eventIdGenerator.get(), type, data);
         Optional.ofNullable(cache.getIfPresent(userId))
                 .ifPresentOrElse(
-                        sk -> emit(sk.getT1(), event),
+                        sk -> emit(sk, event),
                         () -> notificationPersistence.persist(Entity.identify(event)
                                 .meta(createdBy, userId)
                                 .meta(createdAt, clock.instant())
@@ -145,7 +141,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         ReactiveEvent<T> event = new ReactiveEvent<>(eventIdGenerator.get(), type, data);
         Optional.ofNullable(cache.getIfPresent(userId))
                 .ifPresentOrElse(
-                        sk -> emit(sk.getT1(), event),
+                        sk -> emit(sk, event),
                         () -> notificationPersistence.persist(Entity.identify(event)
                                 .meta(createdBy, userId)
                                 .meta(createdAt, clock.instant())
