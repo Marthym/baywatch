@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.admin.domain;
+package fr.ght1pc9kc.baywatch.admin.domain.services;
 
 import fr.ght1pc9kc.baywatch.admin.api.StatisticsService;
 import fr.ght1pc9kc.baywatch.admin.api.model.Counter;

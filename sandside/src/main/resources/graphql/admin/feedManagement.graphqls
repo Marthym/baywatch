@@ -1,0 +1,32 @@
+type RawFeed {
+    name: String
+    description: String
+    url: URI
+    icon: URI
+    lastWatch: String
+    lastETag: String
+}
+
+type input RawFeedForm {
+    _id: ID
+    name: String
+    description: String
+    url: URI
+    icon: URI
+    lastWatch: String
+    lastETag: String
+}
+
+extend type Query {
+    administrationExternalServerFind(
+        _p: Int, _pp: Int, _from: Int, _to: Int, _s: String
+        _id: [ID], name: String, url: String
+    ): [RawFeed],
+    administrationExternalServerGet(_id: ID): RawFeed,
+}
+
+extend type Mutation {
+    administrationExternalServerUpdate(_id: ID, extServer: RawFeedForm): RawFeed,
+    administrationExternalServerCreate(extServer: RawFeedForm): RawFeed,
+    administrationExternalServerDelete(_id: [ID]): Void,
+}
