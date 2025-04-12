@@ -28,6 +28,8 @@ public interface FeedManagementService {
      */
     Flux<Entity<RawFeed>> find(PageRequest pageRequest);
 
+    Mono<Integer> count(PageRequest pageRequest);
+
     /**
      * Create a new raw feed
      *

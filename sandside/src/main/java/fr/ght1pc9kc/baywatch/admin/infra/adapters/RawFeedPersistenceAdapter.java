@@ -29,6 +29,11 @@ public class RawFeedPersistenceAdapter implements RawFeedPersistencePort {
     }
 
     @Override
+    public Mono<Integer> count(QueryContext qCtx) {
+        return feedRepository.count(qCtx);
+    }
+
+    @Override
     public Flux<Entity<RawFeed>> update(Collection<Entity<RawFeed>> toUpdate) {
         return Flux.fromIterable(toUpdate)
                 .map(mapper::toWebFeed).collectList()

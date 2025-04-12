@@ -1,4 +1,5 @@
 type RawFeed {
+    _id: String
     name: String
     description: String
     url: URI
@@ -7,7 +8,7 @@ type RawFeed {
     lastETag: String
 }
 
-type input RawFeedForm {
+input RawFeedForm {
     _id: ID
     name: String
     description: String
@@ -17,16 +18,21 @@ type input RawFeedForm {
     lastETag: String
 }
 
+type SearchRawFeedsResponse {
+    entities: [RawFeed]
+    totalCount: Int
+}
+
 extend type Query {
-    administrationExternalServerFind(
+    adminRawFeedFind(
         _p: Int, _pp: Int, _from: Int, _to: Int, _s: String
         _id: [ID], name: String, url: String
-    ): [RawFeed],
-    administrationExternalServerGet(_id: ID): RawFeed,
+    ): SearchRawFeedsResponse,
+    adminRawFeedGet(_id: ID): RawFeed,
 }
 
 extend type Mutation {
-    administrationExternalServerUpdate(_id: ID, extServer: RawFeedForm): RawFeed,
-    administrationExternalServerCreate(extServer: RawFeedForm): RawFeed,
-    administrationExternalServerDelete(_id: [ID]): Void,
+    adminRawFeedUpdate(_id: ID, extServer: RawFeedForm): RawFeed,
+    adminRawFeedCreate(extServer: RawFeedForm): RawFeed,
+    adminRawFeedDelete(_id: [ID]): Void,
 }

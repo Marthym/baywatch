@@ -11,6 +11,8 @@ import java.util.Collection;
 public interface RawFeedPersistencePort {
     Flux<Entity<RawFeed>> list(QueryContext qCtx);
 
+    Mono<Integer> count(QueryContext qCtx);
+
     Flux<Entity<RawFeed>> update(Collection<Entity<RawFeed>> toUpdate);
 
     Flux<Entity<RawFeed>> persist(Collection<Entity<RawFeed>> toPersist);

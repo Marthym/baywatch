@@ -31,6 +31,11 @@ public class FeedManagementServiceImpl implements FeedManagementService {
     }
 
     @Override
+    public Mono<Integer> count(PageRequest pageRequest) {
+        return persistencePort.count(QueryContext.all(pageRequest.filter()));
+    }
+
+    @Override
     public Mono<Entity<RawFeed>> create(RawFeed rawFeed) {
         Entity<RawFeed> toBePersisted = Entity.identify(rawFeed)
                 .withId(Hasher.identify(rawFeed.url()));
