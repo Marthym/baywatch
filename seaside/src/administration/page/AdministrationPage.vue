@@ -3,6 +3,9 @@
     <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/admin/users">
       {{ t('admin.tab.users') }}
     </router-link>
+    <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/admin/feeds">
+      {{ t('admin.tab.feeds') }}
+    </router-link>
     <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/admin/config">
       {{ t('admin.tab.config') }}
     </router-link>
