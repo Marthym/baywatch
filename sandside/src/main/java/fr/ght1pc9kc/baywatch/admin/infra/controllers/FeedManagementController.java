@@ -27,7 +27,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -71,9 +70,8 @@ public class FeedManagementController {
     }
 
     @SchemaMapping(typeName = "SearchRawFeedsResponse")
-    public Flux<Map<String, Object>> entities(Page<Entity<RawFeed>> searchRawFeedsResponse) {
-        return Optional.ofNullable(searchRawFeedsResponse.getBody()).orElse(Flux.empty())
-                .map(mapper::convertValue);
+    public Flux<Entity<RawFeed>> entities(Page<Entity<RawFeed>> searchRawFeedsResponse) {
+        return Optional.ofNullable(searchRawFeedsResponse.getBody()).orElse(Flux.empty());
     }
 
     @SchemaMapping(typeName = "SearchRawFeedsResponse")

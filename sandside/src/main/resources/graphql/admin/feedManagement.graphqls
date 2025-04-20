@@ -6,6 +6,7 @@ type RawFeed {
     icon: URI
     lastWatch: String
     lastETag: String
+    error: ScrapingError
 }
 
 input RawFeedForm {

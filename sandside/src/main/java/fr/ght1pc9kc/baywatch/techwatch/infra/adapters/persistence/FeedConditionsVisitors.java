@@ -16,7 +16,23 @@ public class FeedConditionsVisitors {
             EntitiesProperties.ID, Tables.FEEDS.FEED_ID));
 
     private static final JooqConditionVisitor FEED_USERS_ID_VISITOR = new JooqConditionVisitor(
-            Map.of(EntitiesProperties.FEED_ID, Tables.FEEDS_USERS.FEUS_FEED_ID));
+            Map.of(
+                    EntitiesProperties.ID, Tables.FEEDS_USERS.FEUS_FEED_ID,
+                    EntitiesProperties.FEED_ID, Tables.FEEDS_USERS.FEUS_FEED_ID,
+                    EntitiesProperties.USER_ID, Tables.FEEDS_USERS.FEUS_USER_ID
+            ));
+
+    public static final JooqConditionVisitor FEED_USERS_PROPERTIES_VISITOR = new JooqConditionVisitor(
+            Map.of(
+                    EntitiesProperties.ID, Tables.FEEDS_USERS_PROPERTIES.FUPR_FEED_ID,
+                    EntitiesProperties.USER_ID, Tables.FEEDS_USERS_PROPERTIES.FUPR_USER_ID
+            ));
+
+    public static final JooqConditionVisitor FEED_ERRORS_VISITOR = new JooqConditionVisitor(
+            Map.of(
+                    EntitiesProperties.ID, Tables.FEEDS_ERRORS.FEER_FEED_ID,
+                    EntitiesProperties.FEED_ID, Tables.FEEDS_ERRORS.FEER_FEED_ID
+            ));
 
     private static final JooqConditionVisitor FEED_USERS_HAVING_VISITOR = new JooqConditionVisitor(
             Map.of(EntitiesProperties.COUNT, DSL.count(FEEDS_USERS.FEUS_USER_ID)));

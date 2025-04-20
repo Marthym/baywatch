@@ -48,9 +48,11 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.TAGS;
 import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.createdBy;
 import static fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers.FEEDS_PROPERTIES_MAPPING;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
+import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsErrors.FEEDS_ERRORS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsersProperties.FEEDS_USERS_PROPERTIES;
-import static fr.ght1pc9kc.baywatch.dsl.tables.NewsFeeds.NEWS_FEEDS;
+import static fr.ght1pc9kc.baywatch.techwatch.infra.adapters.persistence.FeedConditionsVisitors.FEED_ERRORS_VISITOR;
+import static fr.ght1pc9kc.baywatch.techwatch.infra.adapters.persistence.FeedConditionsVisitors.FEED_USERS_PROPERTIES_VISITOR;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 
@@ -102,12 +104,14 @@ public class FeedRepository implements FeedPersistencePort {
         query.addOrderBy(FEEDS_USERS_PROPERTIES.FUPR_USER_ID, FEEDS_USERS_PROPERTIES.FUPR_FEED_ID);
 
         return Flux.<FeedsUsersPropertiesRecord>create(sink -> {
+                    //noinspection resource
                     Cursor<FeedsUsersPropertiesRecord> cursor = query.fetchLazy();
                     sink.onRequest(n -> {
                         Result<FeedsUsersPropertiesRecord> rs = cursor.fetchNext((int) n);
                         rs.forEach(sink::next);
                         if (rs.size() < n) {
                             sink.complete();
+                            cursor.close();
                         }
                     });
                 })
@@ -268,26 +272,31 @@ public class FeedRepository implements FeedPersistencePort {
     @Override
     public Mono<FeedDeletedResult> delete(QueryContext qCtx) {
         Condition feedsUsersConditions = qCtx.filter().accept(FeedConditionsVisitors.feedUserIdVisitor());
-        final Optional<Query> deleteUserLinkQuery;
+
         if (DSL.noCondition().equals(feedsUsersConditions)) {
-            deleteUserLinkQuery = Optional.empty();
-        } else {
-            var query = dsl.deleteQuery(FEEDS_USERS);
-            query.addConditions(feedsUsersConditions);
-            if (qCtx.isScoped()) {
-                query.addConditions(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId()));
-            }
-            deleteUserLinkQuery = Optional.of(query);
+            return Mono.error(() -> new IllegalArgumentException("No feed user condition"));
+        }
+        var deleteUserLinkQuery = dsl.deleteQuery(FEEDS_USERS);
+        deleteUserLinkQuery.addConditions(feedsUsersConditions);
+        if (qCtx.isScoped()) {
+            deleteUserLinkQuery.addConditions(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId()));
         }
 
-        Condition newsFeedConditions = qCtx.filter().accept(FeedConditionsVisitors.newsFeedIdVisitor());
-        final Optional<Query> deleteNewsFeedQuery;
-        if (DSL.noCondition().equals(newsFeedConditions)) {
-            deleteNewsFeedQuery = Optional.empty();
-        } else {
-            deleteNewsFeedQuery = Optional.of(dsl.deleteFrom(NEWS_FEEDS).where(newsFeedConditions)
-                    .and(NEWS_FEEDS.NEFE_FEED_ID.notIn(
-                            dsl.select(FEEDS_USERS.FEUS_FEED_ID).from(FEEDS_USERS).where(feedsUsersConditions))));
+        Condition feedErrorsConditions = qCtx.filter().accept(FEED_ERRORS_VISITOR);
+        if (DSL.noCondition().equals(feedErrorsConditions)) {
+            return Mono.error(() -> new IllegalArgumentException("No feed errors condition"));
+        }
+        var deleteFeedsErrorsQuery = dsl.deleteQuery(FEEDS_ERRORS);
+        deleteFeedsErrorsQuery.addConditions(feedErrorsConditions);
+
+        Condition feedUsersPropertiesConditions = qCtx.filter().accept(FEED_USERS_PROPERTIES_VISITOR);
+        if (DSL.noCondition().equals(feedUsersPropertiesConditions)) {
+            return Mono.error(() -> new IllegalArgumentException("No feed user properties condition"));
+        }
+        var deletePropertiesQuery = dsl.deleteQuery(FEEDS_USERS_PROPERTIES);
+        deletePropertiesQuery.addConditions(feedUsersPropertiesConditions);
+        if (qCtx.isScoped()) {
+            deletePropertiesQuery.addConditions(FEEDS_USERS_PROPERTIES.FUPR_USER_ID.eq(qCtx.userId()));
         }
 
         Condition feedsConditions = qCtx.filter().accept(FeedConditionsVisitors.feedIdVisitor());
@@ -303,8 +312,9 @@ public class FeedRepository implements FeedPersistencePort {
 
         return Mono.fromCallable(() ->
                 dsl.transactionResult(tx -> {
-                    int unsubscribed = deleteUserLinkQuery.map(q -> tx.dsl().execute(q)).orElse(0);
-                    deleteNewsFeedQuery.ifPresent(q -> tx.dsl().execute(q));
+                    tx.dsl().execute(deletePropertiesQuery);
+                    tx.dsl().execute(deleteFeedsErrorsQuery);
+                    int unsubscribed = tx.dsl().execute(deleteUserLinkQuery);
                     int purged = deleteFeedQuery.map(q -> tx.dsl().execute(q)).orElse(0);
                     return new FeedDeletedResult(unsubscribed, purged);
                 }));

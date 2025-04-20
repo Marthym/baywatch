@@ -6,15 +6,12 @@ import fr.ght1pc9kc.baywatch.admin.infra.mappers.RawFeedMapper;
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.infra.adapters.persistence.FeedRepository;
 import fr.ght1pc9kc.entity.api.Entity;
-import fr.ght1pc9kc.juery.api.Criteria;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
-
-import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 
 @Repository
 @RequiredArgsConstructor
@@ -50,8 +47,7 @@ public class RawFeedPersistenceAdapter implements RawFeedPersistencePort {
     }
 
     @Override
-    public Mono<Void> delete(Collection<String> toDelete) {
-        return feedRepository.delete(QueryContext.first(Criteria.property(ID).in(toDelete)))
-                .then();
+    public Mono<Void> delete(QueryContext qCtx) {
+        return feedRepository.delete(qCtx).then();
     }
 }

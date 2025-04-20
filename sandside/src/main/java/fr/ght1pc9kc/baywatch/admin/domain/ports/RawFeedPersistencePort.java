@@ -17,5 +17,5 @@ public interface RawFeedPersistencePort {
 
     Flux<Entity<RawFeed>> persist(Collection<Entity<RawFeed>> toPersist);
 
-    Mono<Void> delete(Collection<String> toDelete);
+    Mono<Void> delete(QueryContext qCtx);
 }
