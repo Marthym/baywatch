@@ -155,10 +155,9 @@ public class NewsRepository implements NewsPersistencePort {
                     final SelectQuery<Record> query = buildSelectQuery(List.of(NEWS.NEWS_ID), qCtx, txDsl);
                     String[] newsIds = query.fetchArray(NEWS.NEWS_ID);
 
-                    Condition conditions = NEWS.NEWS_ID.in(newsIds);
-                    txDsl.deleteFrom(NEWS_FEEDS).where(conditions).execute();
-                    txDsl.deleteFrom(NEWS_USER_STATE).where(conditions).execute();
-                    return txDsl.deleteFrom(NEWS).where(conditions).execute();
+                    txDsl.deleteFrom(NEWS_FEEDS).where(NEWS_FEEDS.NEFE_NEWS_ID.in(newsIds)).execute();
+                    txDsl.deleteFrom(NEWS_USER_STATE).where(NEWS_USER_STATE.NURS_NEWS_ID.in(newsIds)).execute();
+                    return txDsl.deleteFrom(NEWS).where(NEWS.NEWS_ID.in(newsIds)).execute();
                 })).subscribeOn(databaseScheduler);
     }
 

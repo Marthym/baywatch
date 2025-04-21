@@ -12,6 +12,7 @@ import fr.ght1pc9kc.baywatch.techwatch.infra.config.TechwatchMapper;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedDeletedResult;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.FeedProperties;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;
+import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsErrorsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsUsersPropertiesRecordSample;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsUsersRecordSample;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.NewsRecordSamples;
@@ -62,6 +63,7 @@ class FeedRepositoryTest {
     private static final WithSampleDataLoaded wSamples = WithSampleDataLoaded.builder(wDslContext)
             .createTablesIfNotExists()
             .addDataset(FeedRecordSamples.SAMPLE)
+            .addDataset(FeedsErrorsRecordSamples.SAMPLE)
             .addDataset(UsersRecordSamples.SAMPLE)
             .addDataset(UsersRolesSamples.SAMPLE)
             .addDataset(NewsRecordSamples.SAMPLE)

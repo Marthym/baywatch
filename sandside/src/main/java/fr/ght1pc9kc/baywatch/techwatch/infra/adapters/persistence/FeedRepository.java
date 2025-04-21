@@ -271,16 +271,16 @@ public class FeedRepository implements FeedPersistencePort {
      */
     @Override
     public Mono<FeedDeletedResult> delete(QueryContext qCtx) {
-        Condition feedsUsersConditions = qCtx.filter().accept(FeedConditionsVisitors.feedUserIdVisitor());
-
-        if (DSL.noCondition().equals(feedsUsersConditions)) {
+        List<Condition> feedsUsersConditions = new ArrayList<>(2);
+        feedsUsersConditions.add(qCtx.filter().accept(FeedConditionsVisitors.feedUserIdVisitor()));
+        if (qCtx.isScoped()) {
+            feedsUsersConditions.add(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId()));
+        }
+        if (DSL.noCondition().equals(DSL.and(feedsUsersConditions))) {
             return Mono.error(() -> new IllegalArgumentException("No feed user condition"));
         }
         var deleteUserLinkQuery = dsl.deleteQuery(FEEDS_USERS);
         deleteUserLinkQuery.addConditions(feedsUsersConditions);
-        if (qCtx.isScoped()) {
-            deleteUserLinkQuery.addConditions(FEEDS_USERS.FEUS_USER_ID.eq(qCtx.userId()));
-        }
 
         Condition feedErrorsConditions = qCtx.filter().accept(FEED_ERRORS_VISITOR);
         if (DSL.noCondition().equals(feedErrorsConditions)) {
@@ -289,15 +289,16 @@ public class FeedRepository implements FeedPersistencePort {
         var deleteFeedsErrorsQuery = dsl.deleteQuery(FEEDS_ERRORS);
         deleteFeedsErrorsQuery.addConditions(feedErrorsConditions);
 
-        Condition feedUsersPropertiesConditions = qCtx.filter().accept(FEED_USERS_PROPERTIES_VISITOR);
-        if (DSL.noCondition().equals(feedUsersPropertiesConditions)) {
+        List<Condition> feedUsersPropertiesConditions = new ArrayList<>(2);
+        feedUsersPropertiesConditions.add(qCtx.filter().accept(FEED_USERS_PROPERTIES_VISITOR));
+        if (qCtx.isScoped()) {
+            feedUsersPropertiesConditions.add(FEEDS_USERS_PROPERTIES.FUPR_USER_ID.eq(qCtx.userId()));
+        }
+        if (DSL.noCondition().equals(DSL.and(feedUsersPropertiesConditions))) {
             return Mono.error(() -> new IllegalArgumentException("No feed user properties condition"));
         }
         var deletePropertiesQuery = dsl.deleteQuery(FEEDS_USERS_PROPERTIES);
         deletePropertiesQuery.addConditions(feedUsersPropertiesConditions);
-        if (qCtx.isScoped()) {
-            deletePropertiesQuery.addConditions(FEEDS_USERS_PROPERTIES.FUPR_USER_ID.eq(qCtx.userId()));
-        }
 
         Condition feedsConditions = qCtx.filter().accept(FeedConditionsVisitors.feedIdVisitor());
         final Optional<Query> deleteFeedQuery;

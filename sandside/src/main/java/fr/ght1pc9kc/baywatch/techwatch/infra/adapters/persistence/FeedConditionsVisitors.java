@@ -25,6 +25,7 @@ public class FeedConditionsVisitors {
     public static final JooqConditionVisitor FEED_USERS_PROPERTIES_VISITOR = new JooqConditionVisitor(
             Map.of(
                     EntitiesProperties.ID, Tables.FEEDS_USERS_PROPERTIES.FUPR_FEED_ID,
+                    EntitiesProperties.FEED_ID, Tables.FEEDS_USERS_PROPERTIES.FUPR_FEED_ID,
                     EntitiesProperties.USER_ID, Tables.FEEDS_USERS_PROPERTIES.FUPR_USER_ID
             ));
 
