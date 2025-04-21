@@ -221,6 +221,14 @@ class FeedRepositoryTest {
     }
 
     @Test
+    void should_fail_to_delete_feed_without_conditions() {
+        StepVerifier.create(tested.delete(QueryContext.all(Criteria.property("unknown").eq("nothing"))))
+                .verifyError(IllegalArgumentException.class);
+        StepVerifier.create(tested.delete(QueryContext.all(Criteria.property("userId").eq("okenobi"))))
+                .verifyError(IllegalArgumentException.class);
+    }
+
+    @Test
     void should_delete_without_filter() {
         Mono<FeedDeletedResult> actual = tested.delete(QueryContext.builder()
                 .filter(Criteria.property(FEED_ID).in("1", "2"))

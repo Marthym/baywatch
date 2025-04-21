@@ -53,7 +53,6 @@ public interface RawFeedMapper {
         Field[] fields = pojo.getClass().getDeclaredFields();
 
         for (Field field : fields) {
-            field.setAccessible(true);
             Exceptions.silence().get(Exceptions.sneak().supplier(() -> field.get(pojo)))
                     .ifPresent(value -> map.put(field.getName(), value));
         }

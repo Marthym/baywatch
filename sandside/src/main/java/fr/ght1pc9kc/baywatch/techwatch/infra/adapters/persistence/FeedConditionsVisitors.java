@@ -38,9 +38,6 @@ public class FeedConditionsVisitors {
     private static final JooqConditionVisitor FEED_USERS_HAVING_VISITOR = new JooqConditionVisitor(
             Map.of(EntitiesProperties.COUNT, DSL.count(FEEDS_USERS.FEUS_USER_ID)));
 
-    private static final JooqConditionVisitor NEWS_FEED_ID_VISITOR = new JooqConditionVisitor(Map.of(
-            EntitiesProperties.ID, Tables.NEWS_FEEDS.NEFE_FEED_ID));
-
     public static JooqConditionVisitor feedIdVisitor() {
         return FEED_ID_VISITOR;
     }
@@ -51,10 +48,6 @@ public class FeedConditionsVisitors {
 
     public static JooqConditionVisitor feedUserHavingVisitor() {
         return FEED_USERS_HAVING_VISITOR;
-    }
-
-    public static JooqConditionVisitor newsFeedIdVisitor() {
-        return NEWS_FEED_ID_VISITOR;
     }
 
 }

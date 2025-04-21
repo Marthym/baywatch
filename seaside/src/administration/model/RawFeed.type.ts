@@ -1,3 +1,5 @@
+import { ScrapingError } from '@/administration/model/ScraperError';
+
 export type RawFeed = {
     _id: string
     name: string
@@ -6,4 +8,5 @@ export type RawFeed = {
     description: string
     lastETag: string
     lastWatch: Date
+    error: ScrapingError
 }

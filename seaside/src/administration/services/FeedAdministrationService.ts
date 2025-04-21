@@ -1,4 +1,4 @@
-import { Observable, of } from 'rxjs';
+import { Observable, of, switchMap } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { send } from '@/common/services/GraphQLClient';
 import { Page } from '@/common/model/Page';
@@ -25,7 +25,9 @@ query AdminRawFeedFind($_p: Int, $_pp: Int, $_from: Int, $_to: Int, $_s: String
         _p: $_p, _pp: $_pp, _from: $_from, _to: $_to, _s: $_s
         _id: $_id, name: $name, url: $url) {
         totalCount entities {
-            _id name url icon description lastETag lastWatch
+            _id name url icon description lastETag lastWatch error {
+                level since message
+            }
         }
     }
 }`;
@@ -45,6 +47,21 @@ export function adminFeedFind(options: FindRawFeedsRequest): Observable<Page<Raw
                 data: of(res.data.adminRawFeedFind.entities),
             };
         }),
+        take(1),
+    );
+}
+
+const ADMIN_RAW_FEED_DELETE = `#graphql
+mutation AdminRawFeedDelete($_id: [ID]) {
+    adminRawFeedDelete(_id: $_id)
+}`;
+
+export function adminRawFeedDelete(ids: string[]): Observable<void> {
+    const variables = {
+        _id: ids,
+    };
+    return send<{ adminRawFeedDelete: {} }>(ADMIN_RAW_FEED_DELETE, variables).pipe(
+        switchMap(res => of(undefined)),
         take(1),
     );
 }

@@ -8,7 +8,8 @@ import AlertDialog from "@/common/components/alertdialog/AlertDialog.vue";
 import {Observable, Subject} from "rxjs";
 import {reactive} from "vue";
 
-const $dialog: IAlertDialog = reactive({
+const $dialog = reactive<IAlertDialog>({
+    response: undefined,
     isFired: false,
     message: "",
     alertType: AlertType.INFO,

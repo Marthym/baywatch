@@ -1,0 +1,27 @@
+query AdminRawFeedGet ($_id: ID) {
+    adminRawFeedGet(_id: $_id) {
+        _id name
+    }
+}
+
+query SearchFeedsQuery ($_p: Int = 0, $_pp: Int = 20, $_s: String = "name") {
+    feedsSearch(_p: $_p, _pp: $_pp, _s: $_s) {
+        totalCount
+        entities {_id name location tags}
+    }
+}
+
+query ScrapFeedHeader($link: URI!) {
+    scrapFeedHeader(link: $link) {
+        title
+        description
+    }
+}
+
+mutation FeedSubscription($feedId: ID) {
+    subscribe(id: $feedId) {_id name}
+}
+
+mutation FeedAddAndSubscribe($feed: FeedForm) {
+    feedAddAndSubscribe(feed: $feed) {_id name}
+}
