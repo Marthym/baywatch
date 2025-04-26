@@ -51,6 +51,22 @@ export function adminFeedFind(options: FindRawFeedsRequest): Observable<Page<Raw
     );
 }
 
+const ADMIN_RAW_FEED_GET = `#graphql
+query AdminRawFeedGet($_id: ID) {
+    adminRawFeedGet(_id: $_id) {
+        _id name url icon description lastETag lastWatch error {
+            level since message
+        }
+    }
+}`;
+
+export function adminRawFeedGet(id: string): Observable<RawFeed> {
+    return send<{ adminRawFeedGet: RawFeed }>(ADMIN_RAW_FEED_GET, { _id: id }).pipe(
+        map(res => res.data.adminRawFeedGet),
+        take(1),
+    );
+}
+
 const ADMIN_RAW_FEED_DELETE = `#graphql
 mutation AdminRawFeedDelete($_id: [ID]) {
     adminRawFeedDelete(_id: $_id)
@@ -62,6 +78,43 @@ export function adminRawFeedDelete(ids: string[]): Observable<void> {
     };
     return send<{ adminRawFeedDelete: {} }>(ADMIN_RAW_FEED_DELETE, variables).pipe(
         switchMap(res => of(undefined)),
+        take(1),
+    );
+}
+
+const ADMIN_RAW_FEED_UPDATE = `#graphql
+mutation AdminRawFeedUpdate($_id: ID!, $rawFeed: RawFeedForm) {
+    adminRawFeedUpdate(_id: $_id, rawFeed: $rawFeed) {
+        _id name url icon description lastETag lastWatch error {
+            level since message
+        }
+    }
+}`;
+
+export function adminFeedUpdate(id: string, feed: RawFeed): Observable<RawFeed> {
+    const variables = {
+        _id: id,
+        rawFeed: feed,
+    };
+    return send<{ adminRawFeedUpdate: RawFeed }>(ADMIN_RAW_FEED_UPDATE, variables).pipe(
+        map(res => res.data.adminRawFeedUpdate),
+        take(1),
+    );
+}
+
+const ADMIN_RAW_FEED_CREATE = `#graphql
+mutation AdminRawFeedUpdate($rawFeed: RawFeedForm) {
+    adminRawFeedCreate(rawFeed: $rawFeed) {
+        _id name url icon description lastETag lastWatch error {
+            level since message
+        }
+    }
+}`;
+
+export function adminRawFeedCreate(feed: RawFeed): Observable<RawFeed> {
+    const variables = { rawFeed: feed };
+    return send<{ adminRawFeedCreate: RawFeed }>(ADMIN_RAW_FEED_CREATE, variables).pipe(
+        map(res => res.data.adminRawFeedCreate),
         take(1),
     );
 }

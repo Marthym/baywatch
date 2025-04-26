@@ -7,7 +7,6 @@ import fr.ght1pc9kc.baywatch.admin.infra.model.AdminRawFeedForm;
 import fr.ght1pc9kc.baywatch.admin.infra.model.AdminRawFeedRequest;
 import fr.ght1pc9kc.baywatch.common.infra.model.Page;
 import fr.ght1pc9kc.entity.api.Entity;
-import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.basic.QueryStringParser;
 import graphql.GraphQLError;
@@ -50,7 +49,7 @@ public class FeedManagementController {
 
     @QueryMapping
     public Mono<Entity<RawFeed>> adminRawFeedGet(@Argument("_id") String id) {
-        return feedManagementService.find(PageRequest.one(Criteria.property("_id").eq(id))).next();
+        return feedManagementService.get(id);
     }
 
     @MutationMapping

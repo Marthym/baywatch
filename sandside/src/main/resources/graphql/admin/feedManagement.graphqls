@@ -33,7 +33,7 @@ extend type Query {
 }
 
 extend type Mutation {
-    adminRawFeedUpdate(_id: ID, extServer: RawFeedForm): RawFeed,
-    adminRawFeedCreate(extServer: RawFeedForm): RawFeed,
+    adminRawFeedUpdate(_id: ID!, rawFeed: RawFeedForm): RawFeed,
+    adminRawFeedCreate(rawFeed: RawFeedForm): RawFeed,
     adminRawFeedDelete(_id: [ID]): Void,
 }

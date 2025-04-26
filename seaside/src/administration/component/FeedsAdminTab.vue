@@ -40,7 +40,8 @@
       </button>
       <div v-else class="size-10">&nbsp;</div>
       <div class="join">
-        <button class="btn btn-square join-item">
+        <button class="btn btn-square join-item"
+                @click.stop.prevent="router.push(`/admin/feeds/${feed._id}`)">
           <PencilSquareIcon class="size-6"/>
         </button>
         <button class="btn btn-square join-item"
@@ -58,18 +59,31 @@
       </div>
     </li>
   </ul>
+
+  <teleport v-if="route.params.id" to="body">
+    <router-view :id="route.params.id"
+                 @delete="onDeleteEvent"
+                 @leave="router.push('/admin/feeds')"
+                 @save="onSaveEvent"/>
+  </teleport>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
 import { RawFeed } from '@/administration/model/RawFeed.type';
-import { adminFeedFind, adminRawFeedDelete } from '@/administration/services/FeedAdministrationService';
+import {
+  adminFeedFind,
+  adminFeedUpdate,
+  adminRawFeedCreate,
+  adminRawFeedDelete,
+} from '@/administration/services/FeedAdministrationService';
 import { switchMap } from 'rxjs';
 import { filter, map, tap } from 'rxjs/operators';
 import { useI18n } from 'vue-i18n';
 import { ExclamationTriangleIcon, PencilSquareIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import { AlertResponse, AlertType } from '@/common/components/alertdialog/AlertDialog.types';
 import notificationService from '@/services/notification/NotificationService';
+import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-router';
 
 type RawFeedView = RawFeed & {
   errorDisplay: boolean
@@ -79,15 +93,47 @@ type RawFeedView = RawFeed & {
   components: { ExclamationTriangleIcon, PencilSquareIcon, TrashIcon },
   setup() {
     const { d, t } = useI18n();
-    return { d, t };
+    const route = useRoute();
+    const router = useRouter();
+    return { d, t, route, router };
   },
 })
 export default class FeedsAdminTab extends Vue {
-  private d!;
-  private t!;
+  private readonly route!: RouteLocationNormalizedLoaded;
+  private readonly router!: Router;
+  private readonly d!;
+  private readonly t!;
   private feeds: RawFeedView[] = [];
   private activePage = -1;
   private totalPages = 0;
+
+  public onDeleteEvent(id: number): void {
+    this.onDeleteRawFeeds([id]);
+  }
+
+  public onSaveEvent(feed: RawFeed): void {
+    if (feed._id) {
+      adminFeedUpdate(feed._id, feed).subscribe({
+        next: () => {
+          notificationService.pushSimpleOk(this.t('admin.feeds.messages.feedUpdatedSuccessfully'));
+          this.loadNextPage();
+        },
+        error: () => {
+          notificationService.pushSimpleError(this.t('admin.feeds.messages.feedUpdateFailed'));
+        },
+      });
+    } else {
+      adminRawFeedCreate(feed).subscribe({
+        next: () => {
+          notificationService.pushSimpleOk(this.t('admin.feeds.messages.feedCreatedSuccessfully'));
+          this.loadNextPage();
+        },
+        error: () => {
+          notificationService.pushSimpleError(this.t('admin.feeds.messages.feedCreationFailed'));
+        },
+      });
+    }
+  }
 
   public mounted(): void {
     this.loadNextPage();
@@ -135,7 +181,7 @@ export default class FeedsAdminTab extends Vue {
           return this.loadNextPage();
         }),
     ).subscribe({
-      next: feeds =>
+      next: () =>
           notificationService.pushSimpleOk(this.t('admin.feeds.messages.feedDeletedSuccessfully', ids.length)),
       error: () =>
           notificationService.pushSimpleError(this.t('admin.feeds.messages.feedDeletionFailed')),
