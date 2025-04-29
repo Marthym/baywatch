@@ -54,12 +54,12 @@ public class FeedManagementController {
 
     @MutationMapping
     public Mono<Entity<RawFeed>> adminRawFeedUpdate(
-            @Argument("_id") String id, @Argument("extServer") AdminRawFeedForm extServer) {
+            @Argument("_id") String id, @Argument("rawFeed") AdminRawFeedForm extServer) {
         return feedManagementService.update(id, mapper.toRawFeed(extServer));
     }
 
     @MutationMapping
-    public Mono<Entity<RawFeed>> adminRawFeedCreate(@Argument("extServer") AdminRawFeedForm extServer) {
+    public Mono<Entity<RawFeed>> adminRawFeedCreate(@Argument("rawFeed") AdminRawFeedForm extServer) {
         return feedManagementService.create(mapper.toRawFeed(extServer));
     }
 

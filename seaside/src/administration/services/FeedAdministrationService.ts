@@ -1,9 +1,10 @@
-import { Observable, of, switchMap } from 'rxjs';
+import { Observable, of, switchMap, throwError } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { send } from '@/common/services/GraphQLClient';
 import { Page } from '@/common/model/Page';
 import { SearchRequest } from '@/common/model/SearchRequest.type';
 import { RawFeed } from '@/administration/model/RawFeed.type';
+import { URL_PATTERN } from '@/common/services/RegexPattern';
 
 const DEFAULT_PER_PAGE = 20;
 export type FindRawFeedsRequest = SearchRequest & {
@@ -115,6 +116,39 @@ export function adminRawFeedCreate(feed: RawFeed): Observable<RawFeed> {
     const variables = { rawFeed: feed };
     return send<{ adminRawFeedCreate: RawFeed }>(ADMIN_RAW_FEED_CREATE, variables).pipe(
         map(res => res.data.adminRawFeedCreate),
+        take(1),
+    );
+}
+
+const SCRAP_FEED_HEAD_REQUEST = `#graphql
+query ScrapFeedHeader($link: URI!) {
+    scrapFeedHeader(link: $link) {
+        title description icon link
+    }
+}`;
+
+type AtomFeed = {
+    title: string
+    description: string
+    icon: string
+    link: string
+}
+
+export function adminRawFeedScrap(link: string): Observable<RawFeed> {
+    if (link === undefined) {
+        return throwError(() => new Error('Link is mandatory !'));
+    } else if (!URL_PATTERN.test(link)) {
+        return throwError(() => new Error('Argument link must be a valid URL !'));
+    }
+
+    return send<{ scrapFeedHeader: AtomFeed }>(SCRAP_FEED_HEAD_REQUEST, { link: link }).pipe(
+        map(data => data.data.scrapFeedHeader),
+        map((atom: AtomFeed) => ({
+            name: atom.title,
+            description: atom.description,
+            icon: atom.icon,
+            url: atom.link,
+        } as RawFeed)),
         take(1),
     );
 }

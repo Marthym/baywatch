@@ -6,7 +6,8 @@
         <legend class="fieldset-legend">Location</legend>
         <div class="join">
           <input v-model="feed.url" class="input join-item w-full" placeholder="Feed URL: https://..." type="text"/>
-          <button class="btn btn-secondary join-item">
+          <button class="btn btn-secondary join-item"
+                  @click.prevent.stop="onFeedScrapping(feed.url)">
             <ArrowPathIcon class="size-6 text-secondary-content"/>
           </button>
         </div>
@@ -50,7 +51,7 @@ import CurtainModal from '@/common/components/CurtainModal.vue';
 import throttle from 'lodash/throttle';
 import TeamMembersInput from '@/teams/components/TeamMembersInput.vue';
 import { useI18n } from 'vue-i18n';
-import { adminRawFeedGet } from '@/administration/services/FeedAdministrationService';
+import { adminRawFeedGet, adminRawFeedScrap } from '@/administration/services/FeedAdministrationService';
 import { RawFeed } from '@/administration/model/RawFeed.type';
 import { ArrowPathIcon } from '@heroicons/vue/24/outline';
 
@@ -76,7 +77,7 @@ export default class AdminFeedEditor extends Vue {
   private payload: CloseEvent = {
     updated: false,
   };
-  private throttledOnSave: () => void;
+  private throttledOnSave: () => void = this.onSave;
 
   private mounted(): void {
     adminRawFeedGet(this.id).subscribe({
@@ -104,6 +105,17 @@ export default class AdminFeedEditor extends Vue {
 
   private close(): void {
     this.$emit(CLOSE_EVENT, this.payload);
+  }
+
+  private onFeedScrapping(url: string): void {
+    adminRawFeedScrap(url).subscribe({
+      next: value => {
+        this.feed = Object.assign(this.feed, value);
+      },
+      error: err => {
+        this.errors.set('url', err.message);
+      },
+    });
   }
 }
 

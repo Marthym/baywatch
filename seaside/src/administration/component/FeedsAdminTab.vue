@@ -16,7 +16,7 @@
 
     <li v-for="(feed, index) in feeds" class="list-row">
       <div>
-        <img :alt="feed.name.at(0)?.toLowerCase()"
+        <img :alt="feed.name?.at(0)?.toLowerCase()"
              :src="feed.icon"
              class="size-10 rounded-box font-bold bg-neutral text-center align-middle leading-10"/>
       </div>
@@ -116,6 +116,8 @@ export default class FeedsAdminTab extends Vue {
       adminFeedUpdate(feed._id, feed).subscribe({
         next: () => {
           notificationService.pushSimpleOk(this.t('admin.feeds.messages.feedUpdatedSuccessfully'));
+          this.router.push('/admin/feeds');
+          this.activePage -= 1;
           this.loadNextPage();
         },
         error: () => {
@@ -126,6 +128,8 @@ export default class FeedsAdminTab extends Vue {
       adminRawFeedCreate(feed).subscribe({
         next: () => {
           notificationService.pushSimpleOk(this.t('admin.feeds.messages.feedCreatedSuccessfully'));
+          this.router.push('/admin/feeds');
+          this.activePage -= 1;
           this.loadNextPage();
         },
         error: () => {
