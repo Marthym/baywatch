@@ -16,6 +16,8 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.Objects.nonNull;
+
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface RawFeedMapper {
@@ -53,8 +55,20 @@ public interface RawFeedMapper {
         Field[] fields = pojo.getClass().getDeclaredFields();
 
         for (Field field : fields) {
-            Exceptions.silence().get(Exceptions.sneak().supplier(() -> field.get(pojo)))
-                    .ifPresent(value -> map.put(field.getName(), value));
+            boolean canAccess = field.canAccess(pojo);
+            Exceptions.silence().run(Exceptions.sneak().runnable(() -> {
+                if (!canAccess) {
+                    field.setAccessible(true);
+                }
+
+                Object value = field.get(pojo);
+                if (nonNull(value)) {
+                    map.put(field.getName(), value);
+                }
+            }));
+            if (!canAccess) {
+                field.setAccessible(false);
+            }
         }
 
         return Map.copyOf(map);
