@@ -1,0 +1,39 @@
+type RawFeed {
+    _id: String
+    name: String
+    description: String
+    url: URI
+    icon: URI
+    lastWatch: String
+    lastETag: String
+    error: ScrapingError
+}
+
+input RawFeedForm {
+    _id: ID
+    name: String
+    description: String
+    url: URI
+    icon: URI
+    lastWatch: String
+    lastETag: String
+}
+
+type SearchRawFeedsResponse {
+    entities: [RawFeed]
+    totalCount: Int
+}
+
+extend type Query {
+    adminRawFeedFind(
+        _p: Int, _pp: Int, _from: Int, _to: Int, _s: String
+        _id: [ID], name: String, url: String
+    ): SearchRawFeedsResponse,
+    adminRawFeedGet(_id: ID): RawFeed,
+}
+
+extend type Mutation {
+    adminRawFeedUpdate(_id: ID!, rawFeed: RawFeedForm): RawFeed,
+    adminRawFeedCreate(rawFeed: RawFeedForm): RawFeed,
+    adminRawFeedDelete(_id: [ID]): Void,
+}

@@ -11,6 +11,7 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.NewsRecord;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.Flags;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
+import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.basic.common.lang3.StringUtils;
 import fr.ght1pc9kc.juery.basic.filter.ListPropertiesCriteriaVisitor;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
@@ -69,6 +70,7 @@ public class NewsRepository implements NewsPersistencePort {
     }
 
     @Override
+    @SuppressWarnings("BlockingMethodInNonBlockingContext")
     public Flux<News> list(QueryContext qCtx) {
         final Select<Record> query = buildSelectQuery(List.of(NEWS.fields()), qCtx, dsl);
 
@@ -88,8 +90,10 @@ public class NewsRepository implements NewsPersistencePort {
     }
 
     @Override
+    @SuppressWarnings("BlockingMethodInNonBlockingContext")
     public Flux<String> listId(QueryContext qCtx) {
-        final Select<Record> query = buildSelectQuery(List.of(NEWS.NEWS_ID), qCtx, dsl);
+        final SelectQuery<Record> query = buildSelectQuery(List.of(NEWS.NEWS_ID), qCtx, dsl);
+
 
         return Flux.<String>create(sink -> {
             Cursor<Record> cursor = query.fetchLazy();
@@ -106,6 +110,7 @@ public class NewsRepository implements NewsPersistencePort {
     }
 
     @Override
+    @SuppressWarnings("BlockingMethodInNonBlockingContext")
     public Mono<Integer> persist(Collection<News> toCreate) {
         List<NewsRecord> records = toCreate.stream()
                 .map(baywatchMapper::newsToNewsRecord)
@@ -142,18 +147,28 @@ public class NewsRepository implements NewsPersistencePort {
                 });
     }
 
-    @Override
-    public Mono<Integer> delete(Collection<String> ids) {
+    @SuppressWarnings("BlockingMethodInNonBlockingContext")
+    public Mono<Integer> delete(QueryContext qCtx) {
         return Mono.fromCallable(() ->
                 dsl.transactionResult(tx -> {
                     DSLContext txDsl = tx.dsl();
-                    txDsl.deleteFrom(NEWS_FEEDS).where(NEWS_FEEDS.NEFE_NEWS_ID.in(ids)).execute();
-                    txDsl.deleteFrom(NEWS_USER_STATE).where(NEWS_USER_STATE.NURS_NEWS_ID.in(ids)).execute();
-                    return txDsl.deleteFrom(NEWS).where(NEWS.NEWS_ID.in(ids)).execute();
+                    final SelectQuery<Record> query = buildSelectQuery(List.of(NEWS.NEWS_ID), qCtx, txDsl);
+                    String[] newsIds = query.fetchArray(NEWS.NEWS_ID);
+
+                    txDsl.deleteFrom(NEWS_FEEDS).where(NEWS_FEEDS.NEFE_NEWS_ID.in(newsIds)).execute();
+                    txDsl.deleteFrom(NEWS_USER_STATE).where(NEWS_USER_STATE.NURS_NEWS_ID.in(newsIds)).execute();
+                    return txDsl.deleteFrom(NEWS).where(NEWS.NEWS_ID.in(newsIds)).execute();
                 })).subscribeOn(databaseScheduler);
     }
 
     @Override
+    public Mono<Integer> delete(Collection<String> ids) {
+        QueryContext qCtx = QueryContext.all(Criteria.property(EntitiesProperties.ID).in(ids));
+        return delete(qCtx);
+    }
+
+    @Override
+    @SuppressWarnings("BlockingMethodInNonBlockingContext")
     public Mono<Integer> count(QueryContext qCtx) {
         SelectQuery<Record> select = buildSelectQuery(List.of(NEWS.NEWS_ID), qCtx, dsl);
         return Mono.fromCallable(() -> dsl.fetchCount(select))

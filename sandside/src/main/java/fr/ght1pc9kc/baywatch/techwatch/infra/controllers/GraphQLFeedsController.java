@@ -54,8 +54,8 @@ public class GraphQLFeedsController {
 
     @QueryMapping
     public Mono<Entity<WebFeed>> getFeed(@Argument("id") String id) {
-        return feedService.get(id)
-                .onErrorMap(BadRequestCriteria.class, e -> new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
+        return feedService.get(id).onErrorMap(BadRequestCriteria.class, e ->
+                new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
     }
 
     @QueryMapping

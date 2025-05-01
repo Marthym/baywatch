@@ -41,7 +41,7 @@ class ScrapingErrorsControllerTest {
                         .withId("f9e2eaaa42d9fe9e558a9b8ef1bf366f190aacaa83bad2641ee106e9041096e4")
         )).when(mockScrapingErrorService).list(anyCollection());
 
-        StepVerifier.create(tested.errors(List.of(Entity.identify(FeedSamples.JEDI.self())
+        StepVerifier.create(tested.feedsErrors(List.of(Entity.identify(FeedSamples.JEDI.self())
                         .withId("f9e2eaaa42d9fe9e558a9b8ef1bf366f190aacaa83bad2641ee106e9041096e4")
                 )))
                 .assertNext(actual -> SoftAssertions.assertSoftly(softly -> {
@@ -50,7 +50,7 @@ class ScrapingErrorsControllerTest {
                 }))
                 .verifyComplete();
 
-        StepVerifier.create(tested.errors(List.of()))
+        StepVerifier.create(tested.feedsErrors(List.of()))
                 .assertNext(actual -> Assertions.assertThat(actual).isNotNull().isEmpty())
                 .verifyComplete();
     }
