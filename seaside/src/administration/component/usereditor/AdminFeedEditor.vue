@@ -35,7 +35,20 @@
           </figure>
         </div>
       </div>
-      <div class="text-right">
+      <fieldset v-if="feed.error" class="fieldset bg-base-200 border-base-300 rounded-box border p-4">
+        <legend class="fieldset-legend">Errors</legend>
+        <div>
+          <ExclamationTriangleIcon :class="{
+            'text-error-content': feed.error.level == 'SEVERE',
+            'text-warning': feed.error.level == 'WARNING'
+          }" class="size-6 inline"/>
+          {{ feed.error.level }}
+          <p>{{ feed.error.message }}</p>
+          <p>Depuis: {{ feed.error.since }}</p>
+          <p>Dernier: {{ feed.error.lastTime }}</p>
+        </div>
+      </fieldset>
+      <div class="text-right mt-4">
         <button class="btn btn-sm mx-1" @click.stop="curtainModal.close()">Cancel</button>
         <button class="btn btn-sm btn-primary mx-1" @click.stop="throttledOnSave">
           Save
@@ -53,24 +66,26 @@ import TeamMembersInput from '@/teams/components/TeamMembersInput.vue';
 import { useI18n } from 'vue-i18n';
 import { adminRawFeedGet, adminRawFeedScrap } from '@/administration/services/FeedAdministrationService';
 import { RawFeed } from '@/administration/model/RawFeed.type';
-import { ArrowPathIcon } from '@heroicons/vue/24/outline';
+import { ArrowPathIcon, ExclamationTriangleIcon } from '@heroicons/vue/24/outline';
+import { map } from 'rxjs/operators';
 
 const CLOSE_EVENT = 'close';
 const SAVE_EVENT = 'save';
 
 @Component({
   name: 'TeamEditor',
-  components: { CurtainModal, TeamMembersInput, ArrowPathIcon },
+  components: { ExclamationTriangleIcon, CurtainModal, TeamMembersInput, ArrowPathIcon },
   emits: [CLOSE_EVENT, SAVE_EVENT],
   setup() {
-    const { t } = useI18n();
-    return { t };
+    const { t, d } = useI18n();
+    return { t, d };
   },
 })
 export default class AdminFeedEditor extends Vue {
   @Prop() private readonly id!: string;
 
-  private readonly t!: (key: string, ...params: unknown[]) => string;
+  private readonly t!;
+  private readonly d!;
 
   private feed: RawFeed = {} as RawFeed;
   private errors: Map<string, string> = new Map<string, string>();
@@ -80,7 +95,20 @@ export default class AdminFeedEditor extends Vue {
   private throttledOnSave: () => void = this.onSave;
 
   private mounted(): void {
-    adminRawFeedGet(this.id).subscribe({
+    adminRawFeedGet(this.id).pipe(
+        map((feed: RawFeed) => {
+          if (feed.lastWatch) {
+            feed.lastWatch = this.d(new Date(feed.lastWatch));
+          }
+          if (feed.error?.lastTime) {
+            feed.error.lastTime = this.d(new Date(feed.error.lastTime));
+          }
+          if (feed.error?.since) {
+            feed.error.since = this.d(new Date(feed.error.since));
+          }
+          return { ...feed, errorDisplay: false } as RawFeed;
+        }),
+    ).subscribe({
       next: value => Object.assign(this.feed, value),
     });
   }
