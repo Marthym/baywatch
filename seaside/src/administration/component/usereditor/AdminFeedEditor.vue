@@ -3,40 +3,46 @@
     <h2 class="font-sans text-xl border-b border-accent/40 pb-2 w-full">{{ t('admin.feed.editor.title') }}</h2>
     <div class="m-4">
       <fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4">
-        <legend class="fieldset-legend">Location</legend>
+        <legend class="fieldset-legend">{{ t('admin.feed.editor.location') }}</legend>
         <div class="join">
-          <input v-model="feed.url" class="input join-item w-full" placeholder="Feed URL: https://..." type="text"/>
+          <input v-model="feed.url" :placeholder="t('admin.feed.editor.location.placeholder')"
+                 class="input join-item w-full"
+                 type="text"/>
           <button class="btn btn-secondary join-item"
                   @click.prevent.stop="onFeedScrapping(feed.url)">
             <ArrowPathIcon class="size-6 text-secondary-content"/>
           </button>
         </div>
+        <p class="label text-error-content">{{ errors.get('url') }}&nbsp;</p>
       </fieldset>
       <div class="flex flex-row gap-4">
         <div class="basis-1/2">
           <fieldset class="fieldset">
-            <legend class="fieldset-legend">Feed Name</legend>
-            <input v-model="feed.name" class="input w-full" placeholder="Enter the feed name" type="text"/>
+            <legend class="fieldset-legend">{{ t('admin.feed.editor.name') }}</legend>
+            <input v-model="feed.name" :placeholder="t('admin.feed.editor.name.placeholder')" class="input w-full"
+                   type="text"/>
           </fieldset>
           <fieldset class="fieldset">
-            <legend class="fieldset-legend">Description</legend>
-            <textarea v-model="feed.description" class="textarea h-24 w-full"
-                      placeholder="Enter a short description"></textarea>
-            <p class="label">Optional</p>
+            <legend class="fieldset-legend">{{ t('admin.feed.editor.description') }}</legend>
+            <textarea v-model="feed.description" :placeholder="t('admin.feed.editor.description.placeholder')"
+                      class="textarea h-24 w-full"></textarea>
+            <p class="label">{{ t('input.optional') }}</p>
           </fieldset>
         </div>
         <div class="basis-1/2">
           <fieldset class="fieldset">
-            <legend class="fieldset-legend">Feed icon</legend>
-            <input v-model="feed.icon" class="input w-full" placeholder="https://..." type="url"/>
+            <legend class="fieldset-legend">{{ t('admin.feed.editor.icon') }}</legend>
+            <input v-model="feed.icon" :placeholder="t('admin.feed.editor.icon.placeholder')" class="input w-full"
+                   type="url"/>
           </fieldset>
           <figure v-if="feed.icon" class="h-24 max-w-full mt-8">
-            <img :alt="feed.name + ' icon'" :src="feed.icon" class="h-24 object-cover truncate text-transparent"/>
+            <img :alt="feed.name + t('admin.feed.editor.icon')" :src="feed.icon"
+                 class="h-24 object-cover truncate text-transparent"/>
           </figure>
         </div>
       </div>
       <fieldset v-if="feed.error" class="fieldset bg-base-200 border-base-300 rounded-box border p-4">
-        <legend class="fieldset-legend">Errors</legend>
+        <legend class="fieldset-legend">{{ t('admin.feed.editor.errors') }}</legend>
         <div>
           <ExclamationTriangleIcon :class="{
             'text-error-content': feed.error.level == 'SEVERE',
@@ -44,14 +50,14 @@
           }" class="size-6 inline"/>
           {{ feed.error.level }}
           <p>{{ feed.error.message }}</p>
-          <p>Depuis: {{ feed.error.since }}</p>
-          <p>Dernier: {{ feed.error.lastTime }}</p>
+          <p>{{ t('admin.feed.editor.errors.since') }} {{ feed.error.since }}</p>
+          <p>{{ t('admin.feed.editor.errors.last') }} {{ feed.error.lastTime }}</p>
         </div>
       </fieldset>
       <div class="text-right mt-4">
-        <button class="btn btn-sm mx-1" @click.stop="curtainModal.close()">Cancel</button>
-        <button class="btn btn-sm btn-primary mx-1" @click.stop="throttledOnSave">
-          Save
+        <button class="btn btn-sm mx-1 capitalize" @click.stop="curtainModal.close()">{{ t('dialog.cancel') }}</button>
+        <button class="btn btn-sm btn-primary mx-1 capitalize" @click.stop="throttledOnSave">
+          {{ t('dialog.save') }}
         </button>
       </div>
     </div>
@@ -73,7 +79,7 @@ const CLOSE_EVENT = 'close';
 const SAVE_EVENT = 'save';
 
 @Component({
-  name: 'TeamEditor',
+  name: 'AdminFeedEditor',
   components: { ExclamationTriangleIcon, CurtainModal, TeamMembersInput, ArrowPathIcon },
   emits: [CLOSE_EVENT, SAVE_EVENT],
   setup() {

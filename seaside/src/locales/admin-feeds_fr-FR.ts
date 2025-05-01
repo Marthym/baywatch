@@ -8,4 +8,5 @@ export const fr_FR = {
     'admin.feeds.messages.feedDeletedSuccessfully': 'Flux {feed} supprimé avec succès ! ' +
         '| {n} flux supprimés avec succès !',
     'admin.feeds.messages.feedDeletionFailed': 'Une erreur s’est produite lors de la suppression de flux !',
+    'admin.feeds.tab.feeds.list': 'Liste des flux',
 };

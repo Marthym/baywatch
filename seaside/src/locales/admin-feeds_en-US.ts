@@ -8,5 +8,5 @@ export const en_US = {
     'admin.feeds.messages.feedDeletedSuccessfully': 'Feed {feed} successfully deleted!' +
         '| {n} feeds successfully deleted!',
     'admin.feeds.messages.feedDeletionFailed': 'An error occurred while deleting the feed(s)!',
-
+    'admin.feeds.tab.feeds.list': 'Feed list',
 };
