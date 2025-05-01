@@ -8,5 +8,5 @@ export type RawFeed = {
     description: string
     lastETag: string
     lastWatch: Date
-    error: ScrapingError
+    error?: ScrapingError
 }

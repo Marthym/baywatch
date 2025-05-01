@@ -4,6 +4,8 @@ import { createI18n } from 'vue-i18n';
 import { of } from 'rxjs';
 import FeedsAdminTab from '@/administration/component/FeedsAdminTab.vue';
 import { adminFeedFind } from '@/administration/services/FeedAdministrationService';
+import { createRouter, createWebHashHistory } from 'vue-router';
+import AdminFeedEditor from '@/administration/component/usereditor/AdminFeedEditor.vue';
 
 vi.mock('@/administration/services/FeedAdministrationService', () => {
     return {
@@ -17,12 +19,27 @@ describe('FeedsAdminTab', () => {
         const i18n = createI18n({
             legacy: false,
             missingWarn: false,
-            messages: { 'en': {} },
+            messages: {
+                'en': {
+                    'admin.feeds.tab.feeds.list': 'Liste des feeds',
+                },
+            },
+        });
+
+        const router = createRouter({
+            history: createWebHashHistory(),
+            routes: [
+                {
+                    path: '/feeds', component: FeedsAdminTab, name: 'admin-feeds', children: [
+                        { path: ':id', component: AdminFeedEditor, name: 'admin-feed-editor' },
+                    ],
+                },
+            ],
         });
 
         const wrapper = mount(FeedsAdminTab, {
             global: {
-                plugins: [i18n],
+                plugins: [i18n, router],
             },
         });
         expect(wrapper.find('ul').exists()).toBe(true);
