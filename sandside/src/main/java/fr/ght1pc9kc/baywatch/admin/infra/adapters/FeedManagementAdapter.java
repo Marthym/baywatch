@@ -13,7 +13,9 @@ public class FeedManagementAdapter implements FeedManagementService {
     @Delegate
     private final FeedManagementService delegate;
 
-    public FeedManagementAdapter(RawFeedPersistencePort feedRepository, RawNewsPersistenceAdapter newsRepository) {
-        this.delegate = new FeedManagementServiceImpl(feedRepository, newsRepository);
+    public FeedManagementAdapter(
+            RawFeedPersistencePort feedRepository, RawNewsPersistenceAdapter newsRepository,
+            AdministrationProxifierAdapter administrationProxifierAdapter) {
+        this.delegate = new FeedManagementServiceImpl(feedRepository, newsRepository, administrationProxifierAdapter);
     }
 }

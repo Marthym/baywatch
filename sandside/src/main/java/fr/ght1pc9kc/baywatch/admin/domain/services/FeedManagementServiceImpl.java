@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.admin.domain.services;
 
 import fr.ght1pc9kc.baywatch.admin.api.FeedManagementService;
 import fr.ght1pc9kc.baywatch.admin.api.model.RawFeed;
+import fr.ght1pc9kc.baywatch.admin.domain.ports.AdministrationProxifierPort;
 import fr.ght1pc9kc.baywatch.admin.domain.ports.RawFeedPersistencePort;
 import fr.ght1pc9kc.baywatch.admin.domain.ports.RawNewsPersistencePort;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
@@ -24,6 +25,7 @@ import static java.util.Objects.isNull;
 public class FeedManagementServiceImpl implements FeedManagementService {
     private final RawFeedPersistencePort feedsPersistencePort;
     private final RawNewsPersistencePort newsPersistencePort;
+    private final AdministrationProxifierPort administrationProxifierPort;
 
     @Override
     public Mono<Entity<RawFeed>> get(String id) {
@@ -32,7 +34,8 @@ public class FeedManagementServiceImpl implements FeedManagementService {
 
     @Override
     public Flux<Entity<RawFeed>> find(PageRequest pageRequest) {
-        return feedsPersistencePort.list(QueryContext.from(pageRequest));
+        return feedsPersistencePort.list(QueryContext.from(pageRequest))
+                .map(administrationProxifierPort::proxifyRawFeed);
     }
 
     @Override
