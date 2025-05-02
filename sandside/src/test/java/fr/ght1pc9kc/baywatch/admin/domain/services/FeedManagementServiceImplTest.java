@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.admin.domain.services;
 import fr.ght1pc9kc.baywatch.admin.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.admin.domain.ports.RawFeedPersistencePort;
 import fr.ght1pc9kc.baywatch.admin.domain.ports.RawNewsPersistencePort;
+import fr.ght1pc9kc.baywatch.admin.infra.adapters.AdministrationProxifierAdapter;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.entity.api.Entity;
@@ -44,7 +45,7 @@ class FeedManagementServiceImplTest {
         doReturn(Mono.empty()).when(newsPersistencePort).delete(any(QueryContext.class));
         doReturn(Mono.empty()).when(feedPersistencePort).delete(any(QueryContext.class));
 
-        tested = new FeedManagementServiceImpl(feedPersistencePort, newsPersistencePort);
+        tested = new FeedManagementServiceImpl(feedPersistencePort, newsPersistencePort, new AdministrationProxifierAdapter(null));
     }
 
     @Test
