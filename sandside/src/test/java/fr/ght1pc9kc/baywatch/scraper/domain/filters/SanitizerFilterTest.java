@@ -54,4 +54,29 @@ class SanitizerFilterTest {
                         .endsWith("sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, co</b>"))
                 .verifyComplete();
     }
+
+    @Test
+    void should_sanitize_description_with_code() {
+        RawNews raw = RawNews.builder().id("0").link(URI.create("https://www.jedi.com/"))
+                .description("""
+                        Necesito ayuda con un código HTML, no logro hacer que el .sidebar quede a la izquierda del
+                        container verde como en la imagen adjunta.
+                        &amp;lt;code&amp;gt;&amp;lt;!DOCTYPE html&amp;gt; &amp;lt;html lang=&amp;quot;es&amp;quot;&amp;gt;
+                        &amp;lt;head&amp;gt; &amp;lt;meta charset=&amp;quot;UTF-8&amp;quot;&amp;gt; &amp;lt;title&amp;gt;
+                        Recreación de Página&amp;lt;/title&amp;gt; &amp;lt;style&amp;gt; body { margin: 0;
+                        font-family: Arial, sans-serif; background-color: #d3d3d3; padding-top: 4%; padding-left: 10%;
+                        padding-bottom: 10%; padding-right: 10%; } .navbar { background-color: #444; color: white;
+                        display: flex; justify-content: space-around; padding: 15px 0; } .navbar a { color: white;
+                        text-decoration: none; padding: 8px 15px; } .sidebar { position: fixed; width: 5%; height: 30%;
+                        background-color: #ccc; display: flex; flex-direction: column; align-items: center;
+                        padding-top: 1%; border-top-right-radius: 5%; border-bottom-right-radius: 5%; borde&amp;lt;/code&amp;gt;
+                        """)
+                .build();
+
+        StepVerifier.create(tested.filter(raw))
+                .assertNext(actual -> Assertions.assertThat(actual.description()).startsWith(
+                        "Necesito ayuda con un código HTML, no logro hacer que el .sidebar quede a la izquierda del " +
+                                "container verde como en la imagen adjunta. &lt;code&gt;&lt;!DOCTYPE html&gt;"))
+                .verifyComplete();
+    }
 }

@@ -12,7 +12,6 @@ import org.owasp.html.HtmlSanitizer;
 import org.owasp.html.HtmlStreamEventReceiver;
 import org.owasp.html.HtmlStreamRenderer;
 import org.owasp.html.Sanitizers;
-import org.springframework.web.util.HtmlUtils;
 import org.unbescape.html.HtmlEscape;
 import reactor.core.publisher.Mono;
 
@@ -52,10 +51,10 @@ public class SanitizerFilter implements NewsFilter, FeedsFilter {
         StringBuilder htmlBuilder = new StringBuilder();
         HtmlStreamRenderer htmlRenderer = HtmlStreamRenderer.create(htmlBuilder, invalid ->
                 log.atTrace().addArgument(invalid).setMessage("Invalid tag detected in description {}").log());
-        HtmlSanitizer.sanitize(HtmlUtils.htmlUnescape(htmlEllipsed), DESCRIPTION_POLICY.apply(htmlRenderer));
+        HtmlSanitizer.sanitize(HtmlEscape.unescapeHtml(htmlEllipsed), DESCRIPTION_POLICY.apply(htmlRenderer));
         String saneHtml = htmlBuilder.toString();
 
-        return StringUtils.normalizeSpace(HtmlEscape.unescapeHtml(saneHtml));
+        return StringUtils.normalizeSpace(saneHtml);
     }
 
     private static String sanitizePlainText(final String text) {
@@ -67,9 +66,9 @@ public class SanitizerFilter implements NewsFilter, FeedsFilter {
         StringBuilder txtBuilder = new StringBuilder();
         HtmlStreamRenderer txtRenderer = HtmlStreamRenderer.create(txtBuilder, invalid ->
                 log.atTrace().setMessage("Invalid tag detected in title {}").addArgument(invalid).log());
-        HtmlSanitizer.sanitize(HtmlUtils.htmlUnescape(txtEllipsed), TITLE_POLICY.apply(txtRenderer));
+        HtmlSanitizer.sanitize(HtmlEscape.unescapeHtml(txtEllipsed), TITLE_POLICY.apply(txtRenderer));
         String saneText = txtBuilder.toString();
 
-        return StringUtils.normalizeSpace(HtmlEscape.unescapeHtml(saneText));
+        return StringUtils.normalizeSpace(saneText);
     }
 }
