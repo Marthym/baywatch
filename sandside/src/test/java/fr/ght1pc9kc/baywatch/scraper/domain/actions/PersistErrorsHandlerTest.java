@@ -6,6 +6,7 @@ import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapResult;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.FeedScrapingException;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.NewsScrapingException;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.ScrapingExceptionCode;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,14 +44,18 @@ class PersistErrorsHandlerTest {
                 new FeedScrapingException(new AtomFeed(
                         "42", "Obiwan Kenobi", null, null,
                         URI.create("https://jedi.com/"), null, null),
-                        new RuntimeException("test")),
+                        ScrapingExceptionCode.DEFAULT, new RuntimeException("test")),
                 new FeedScrapingException(new AtomFeed(
                         "42", "Obiwan Kenobi", null, null,
                         URI.create("https://jedi.com/"), null, null),
-                        new RuntimeException("404 Not found")),
+                        ScrapingExceptionCode.NOT_FOUND, new RuntimeException("404 Not found")),
                 new FeedScrapingException(new AtomFeed(
                         "41", "Obiwan Kenobi", null, null, null, null, null),
-                        new IllegalArgumentException("test")),
+                        ScrapingExceptionCode.UNAVAILABLE, new IllegalArgumentException("test")),
+                new FeedScrapingException(new AtomFeed(
+                        "41", "Obiwan Kenobi", null, null,
+                        URI.create("https://jedi.com/"), null, null),
+                        ScrapingExceptionCode.GONE, new RuntimeException(new NoSuchElementException(new IllegalArgumentException("521 Gone")))),
                 new NewsScrapingException(new AtomEntry(
                         "66", "Kylo Ren", null, null, null,
                         URI.create("https://jedi.com/"), Set.of()),
@@ -59,8 +64,8 @@ class PersistErrorsHandlerTest {
 
         StepVerifier.create(step).verifyComplete();
 
-        verify(mockScrapingErrorsService).persist(assertArg(actual -> Assertions.assertThat(actual).hasSize(2)));
-        verify(mockScrapingErrorsService).purge(assertArg(actual -> Assertions.assertThat(actual).hasSize(2)));
+        verify(mockScrapingErrorsService).persist(assertArg(actual -> Assertions.assertThat(actual).hasSize(3)));
+        verify(mockScrapingErrorsService).purge(assertArg(actual -> Assertions.assertThat(actual).hasSize(3)));
     }
 
     @Test
