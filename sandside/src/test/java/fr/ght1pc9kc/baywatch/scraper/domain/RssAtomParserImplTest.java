@@ -4,6 +4,7 @@ import fr.ght1pc9kc.baywatch.scraper.api.model.AtomFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.tests.samples.FeedSamples;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -160,7 +161,12 @@ class RssAtomParserImplTest {
                     "<p>Matrix-Synapse est un service de messagerie décentralisé et interopérable avec d'autres " +
                     "messageries. Je l'utilise à titre personnel et dans le cadre d'une association. Il livre un service " +
                     "que je considère sensible, c'est pourquoi les différentes instances sont hébergées sur des infras " +
-                    "que je gère.</p>"
+                    "que je gère.</p>",
+            "feeds/entry_with_encoded_char.xml, " +
+                    "Ubuntu va adopter \"sudo\" en Rust, " +
+                    "https://www.linuxtricks.fr/news/10-logiciels-libres/566-ubuntu-va-adopter-sudo-en-rust/, " +
+                    "2025-05-06T13:59:56Z, " +
+                    "&lt;p>&lt;a href=\"https://www.journalduhacker.net/s/hnqfoi/ubuntu_va_adopter_sudo_en_rust\">Comments&lt;/a>&lt;/p>"
     })
     void should_read_rss_item(String inputFileName, String expectedTitle, String expectedUrl, String expectedPubDate, String expectedDescription) {
         List<XMLEvent> xmlEvents = resourceToEventList(inputFileName);
@@ -168,12 +174,12 @@ class RssAtomParserImplTest {
         ScrapedFeed sampleFeed = new ScrapedFeed(FeedSamples.JEDI.id(), FeedSamples.JEDI.self().location(),
                 Instant.parse("2024-02-25T17:15:42Z"), null);
         StepVerifier.create(tested.readEntryEvents(xmlEvents, sampleFeed))
-                .assertNext(actual -> Assertions.assertAll(
-                        () -> assertThat(actual).extracting(RawNews::title).isEqualTo(expectedTitle),
-                        () -> assertThat(actual).extracting(RawNews::link).isEqualTo(URI.create(expectedUrl)),
-                        () -> assertThat(actual).extracting(RawNews::publication).isEqualTo(Instant.parse(expectedPubDate)),
-                        () -> assertThat(actual).extracting(RawNews::description).asString().startsWith(expectedDescription)
-                )).verifyComplete();
+                .assertNext(actual -> SoftAssertions.assertSoftly(softly -> {
+                    softly.assertThat(actual).extracting(RawNews::title).isEqualTo(expectedTitle);
+                    softly.assertThat(actual).extracting(RawNews::link).isEqualTo(URI.create(expectedUrl));
+                    softly.assertThat(actual).extracting(RawNews::publication).isEqualTo(Instant.parse(expectedPubDate));
+                    softly.assertThat(actual).extracting(RawNews::description).asString().startsWith(expectedDescription);
+                })).verifyComplete();
     }
 
     @Test

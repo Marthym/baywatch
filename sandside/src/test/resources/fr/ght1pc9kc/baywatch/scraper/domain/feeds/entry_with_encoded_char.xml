@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+    <channel>
+        <title>Journal du hacker</title>
+        <description></description>
+        <link>https://www.journalduhacker.net/</link>
+        <item>
+            <title>Ubuntu va adopter &#34;sudo&#34; en Rust</title>
+            <link>https://www.linuxtricks.fr/news/10-logiciels-libres/566-ubuntu-va-adopter-sudo-en-rust/</link>
+            <guid isPermaLink="false">https://www.journalduhacker.net/s/hnqfoi</guid>
+            <author>Adrien_D</author>
+            <pubDate>Tue, 06 May 2025 15:59:56 +0200</pubDate>
+            <comments>https://www.journalduhacker.net/s/hnqfoi/ubuntu_va_adopter_sudo_en_rust</comments>
+            <description>
+
+                &#60;p&#62;&#60;a href=&#34;https://www.journalduhacker.net/s/hnqfoi/ubuntu_va_adopter_sudo_en_rust&#34;&#62;Comments&#60;/a&#62;&#60;/p&#62;
+            </description>
+            <category>ubuntu</category>
+            <category>sécurité</category>
+        </item>
+    </channel>
+</rss>

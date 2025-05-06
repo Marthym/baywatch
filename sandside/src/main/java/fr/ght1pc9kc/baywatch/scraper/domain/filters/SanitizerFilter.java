@@ -62,13 +62,14 @@ public class SanitizerFilter implements NewsFilter, FeedsFilter {
             return text;
         }
 
-        String txtEllipsed = text.substring(0, Math.min(PLAIN_TEXT_MAX_LENGTH, text.length()));
+        String txtEllipsed = HtmlEscape.unescapeHtml(text.substring(0, Math.min(PLAIN_TEXT_MAX_LENGTH, text.length())));
         StringBuilder txtBuilder = new StringBuilder();
         HtmlStreamRenderer txtRenderer = HtmlStreamRenderer.create(txtBuilder, invalid ->
                 log.atTrace().setMessage("Invalid tag detected in title {}").addArgument(invalid).log());
-        HtmlSanitizer.sanitize(HtmlEscape.unescapeHtml(txtEllipsed), TITLE_POLICY.apply(txtRenderer));
+        HtmlSanitizer.sanitize(txtEllipsed, TITLE_POLICY.apply(txtRenderer));
         String saneText = txtBuilder.toString();
 
-        return StringUtils.normalizeSpace(saneText);
+        return StringUtils.normalizeSpace(
+                HtmlEscape.unescapeHtml(saneText));
     }
 }

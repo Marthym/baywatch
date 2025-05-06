@@ -35,6 +35,18 @@ class SanitizerFilterTest {
     }
 
     @Test
+    void should_sanitize_news_title_with_encoded_characters() {
+        RawNews raw = RawNews.builder().id("0").link(URI.create("https://www.jedi.com/"))
+                .title("Ubuntu va adopter &#34;sudo&#34; en Rust")
+                .build();
+
+        StepVerifier.create(tested.filter(raw))
+                .assertNext(actual -> Assertions.assertThat(actual.title()).isEqualTo(
+                        "Ubuntu va adopter \"sudo\" en Rust"))
+                .verifyComplete();
+    }
+
+    @Test
     void should_sanitize_news_description() {
         RawNews raw = RawNews.builder().id("0").link(URI.create("https://www.jedi.com/"))
                 .description(LOREM_IPSUM + LOREM_H1 + LOREM_A + "<b>" + LOREM_IPSUM
