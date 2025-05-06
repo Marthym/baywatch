@@ -7,8 +7,8 @@ import lombok.Getter;
 public final class FeedScrapingException extends ScrapingException {
     private final transient AtomFeed entity;
 
-    public FeedScrapingException(AtomFeed entity, Throwable cause) {
-        super((cause != null) ? cause.getLocalizedMessage() : "null", cause);
+    public FeedScrapingException(AtomFeed entity, ScrapingExceptionCode code, Throwable cause) {
+        super(code, cause);
         this.entity = entity;
     }
 }

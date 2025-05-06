@@ -53,9 +53,13 @@
     <li class="p-4 pb-2 text-xs opacity-60 tracking-wide flex flex-row">
       <div class="grow">{{ t('admin.feeds.tab.feeds.list') }}</div>
       <div class="join">
-        <button :disabled="activePage === 0" class="join-item btn btn-sm">«</button>
+        <button :disabled="activePage === 0" class="join-item btn btn-sm"
+                @click.prevent.stop="loadPreviousPage">«
+        </button>
         <button class="join-item btn btn-sm capitalize">{{ t('pagination.page') }} {{ activePage + 1 }}</button>
-        <button :disabled="activePage === totalPages" class="join-item btn btn-sm">»</button>
+        <button :disabled="activePage === totalPages" class="join-item btn btn-sm"
+                @click.prevent.stop="loadNextPage">»
+        </button>
       </div>
     </li>
   </ul>

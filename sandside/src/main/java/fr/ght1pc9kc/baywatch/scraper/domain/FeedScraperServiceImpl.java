@@ -163,7 +163,9 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                 .map(hp -> hp.uriModifier(feed.link())).orElse(feed.link());
 
         if (!SUPPORTED_SCHEMES.contains(feedUrl.getScheme())) {
-            errors.tryEmitNext(new FeedScrapingException(AtomFeed.of(feed.id(), feed.link()),
+            errors.tryEmitNext(new FeedScrapingException(
+                    AtomFeed.of(feed.id(), feed.link()),
+                    ScrapingExceptionCode.UNSUPPORTED,
                     new IllegalArgumentException("Unsupported scheme for " + feedUrl + " !")));
             log.warn("Unsupported scheme for {} !", feedUrl);
             return Flux.empty();
@@ -191,6 +193,7 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                     if (!response.statusCode().is2xxSuccessful() && response.statusCode().value() != HttpStatusCodes.NOT_MODIFIED) {
                         errors.tryEmitNext(new FeedScrapingException(
                                 AtomFeed.of(feed.id(), feed.link()),
+                                ScrapingExceptionCode.NOT_FOUND,
                                 new IllegalArgumentException("Bad response status " + response.statusCode())
                         ));
                         return response.releaseBody()
@@ -213,7 +216,8 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                                     response.bodyToFlux(DataBuffer.class).switchOnFirst(this::cleanupStreamStart),
                                     ResolvableType.NONE, null, null)
                             .onErrorResume(RuntimeException.class, t -> {
-                                errors.tryEmitNext(new FeedScrapingException(AtomFeed.of(feed.id(), feed.link()), t));
+                                errors.tryEmitNext(new FeedScrapingException(AtomFeed.of(feed.id(), feed.link()),
+                                        ScrapingExceptionCode.PARSING, t));
                                 return response.releaseBody().thenReturn(XMLEventFactory.newDefaultFactory().createEndDocument());
                             });
                 })
@@ -221,9 +225,14 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
 
                 .bufferUntil(feedParser.itemEndEvent())
                 .switchOnFirst((first, others) -> {
-                    if (!first.hasValue()) {
+                    if (first.hasError()) {
+                        errors.tryEmitNext(new FeedScrapingException(
+                                AtomFeed.of(feed.id(), feed.link()), ScrapingExceptionCode.UNAVAILABLE, first.getThrowable()));
+                        return Flux.empty();
+                    } else if (!first.hasValue()) {
                         return others.take(0).thenMany(Flux.empty());
                     }
+
                     AtomFeed atomFeed = feedParser.readFeedProperties(first.get()).toBuilder()
                             .id(feed.id())
                             .link(feedUrl)
@@ -247,7 +256,8 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                         .build())
 
                 .onErrorResume(e -> {
-                    errors.tryEmitNext(new FeedScrapingException(AtomFeed.of(feed.id(), feed.link()), e));
+                    errors.tryEmitNext(new FeedScrapingException(AtomFeed.of(feed.id(), feed.link()),
+                            ScrapingExceptionCode.DEFAULT, e));
                     return Flux.empty();
                 })
                 .doFinally(s -> log.atDebug().addArgument(feed.link())

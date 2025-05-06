@@ -10,6 +10,7 @@ import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapResult;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.FeedScrapingException;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.NewsScrapingException;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.ScrapingException;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.ScrapingExceptionCode;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,7 +58,7 @@ class ScrapingLoggerHandlerTest {
                 "66", "Kylo Ren", null, null, null,
                 URI.create("https://jedi.com/news"), Set.of());
         ScrapResult scrapResult = new ScrapResult(3, List.of(
-                new FeedScrapingException(atomFeed, new IllegalArgumentException("Feed Error")),
+                new FeedScrapingException(atomFeed, ScrapingExceptionCode.DEFAULT, new IllegalArgumentException("Feed Error")),
                 new NewsScrapingException(atomEntry, new IllegalArgumentException("News error")),
                 new ScrapingException("simple", new IllegalArgumentException("simple"))
         ));
@@ -66,7 +67,7 @@ class ScrapingLoggerHandlerTest {
 
         assertThat(mockLogAppender.list).extracting(ILoggingEvent::getFormattedMessage).containsExactly(
                 "Scraping finished, 3 news inserted, 3 error(s).",
-                "https://jedi.com/feed => class fr.ght1pc9kc.baywatch.scraper.domain.model.ex.FeedScrapingException: Feed Error",
+                "https://jedi.com/feed => class fr.ght1pc9kc.baywatch.scraper.domain.model.ex.FeedScrapingException: Unknown error from feed scraping",
                 "STACKTRACE",
                 "https://jedi.com/news => class fr.ght1pc9kc.baywatch.scraper.domain.model.ex.NewsScrapingException: News error",
                 "STACKTRACE",
