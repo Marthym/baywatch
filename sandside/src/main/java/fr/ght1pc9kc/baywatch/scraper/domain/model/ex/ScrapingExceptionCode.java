@@ -11,6 +11,7 @@ public enum ScrapingExceptionCode {
     NOT_FOUND("sandside.scraping.notFound", "Feed not found."),
     NEED_ACCOUNT("sandside.scraping.needAccount", "Feed expect credentials to be read"),
     UNSUPPORTED("sandside.scraping.unsupported", "Feed format unknown and not supported."),
+    TIMEOUT("sandside.scraping.timeout", "Server timeout."),
     GONE("sandside.scraping.gone", "Feed is gone for ever, you can remove it !"),
     UNAVAILABLE("sandside.scraping.unavailable", "Feed unavailable"),
     DONE("sandside.scraping.done", "Feed server is done"),
@@ -25,6 +26,7 @@ public enum ScrapingExceptionCode {
             case 403 -> NEED_ACCOUNT;
             case 404 -> NOT_FOUND;
             case 406 -> UNSUPPORTED;
+            case 408 -> TIMEOUT;
             case 410 -> GONE;
             case 500 -> UNAVAILABLE;
             case 521 -> DONE;

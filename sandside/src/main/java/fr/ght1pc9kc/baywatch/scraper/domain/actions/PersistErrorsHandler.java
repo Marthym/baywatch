@@ -71,10 +71,18 @@ public class PersistErrorsHandler implements ScrapingEventHandler, CounterProvid
                     return 0;
 
                 } else if (SSLHandshakeException.class.isAssignableFrom(current.getClass()) ||
-                        current.getClass().getSimpleName().contains("SearchDomainUnknownHostException")) {
+                        "SearchDomainUnknownHostException".equals(current.getClass().getSimpleName())) {
                     return 500;
 
-                } else if (IllegalArgumentException.class.isAssignableFrom(current.getClass())) {
+                } else if ("ConnectTimeoutException".equals(current.getClass().getSimpleName()) ||
+                        "ReadTimeoutException".equals(current.getClass().getSimpleName())) {
+                    return 408;
+
+                } else if ("DecodingException".equals(current.getClass().getSimpleName())) {
+                    return 599;
+
+                } else if (IllegalArgumentException.class.isAssignableFrom(current.getClass()) ||
+                        IllegalStateException.class.isAssignableFrom(current.getClass())) {
                     String extractedNumber = current.getLocalizedMessage().replaceAll("\\D", "");
                     int status = (!extractedNumber.isEmpty()) ? Integer.parseInt(extractedNumber) : 200;
                     return Math.clamp(status, 200, 599);
