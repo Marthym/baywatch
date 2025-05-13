@@ -44,7 +44,7 @@ class PersistErrorsHandlerTest {
                 new FeedScrapingException(new AtomFeed(
                         "42", "Obiwan Kenobi", null, null,
                         URI.create("https://jedi.com/"), null, null),
-                        ScrapingExceptionCode.DEFAULT, new RuntimeException("test")),
+                        ScrapingExceptionCode.UNKNOWN, new RuntimeException("test")),
                 new FeedScrapingException(new AtomFeed(
                         "42", "Obiwan Kenobi", null, null,
                         URI.create("https://jedi.com/"), null, null),

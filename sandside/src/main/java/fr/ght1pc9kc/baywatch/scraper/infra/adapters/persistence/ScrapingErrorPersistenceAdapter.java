@@ -48,7 +48,7 @@ public class ScrapingErrorPersistenceAdapter implements ScrapingErrorPersistence
             FeedsErrorsRecord feedErrorRecord = mapper.getFeedErrorRecord(error);
             FeedsErrorsRecord feedErrorsUpdateRecord = FEEDS_ERRORS.newRecord();
             feedErrorsUpdateRecord.from(feedErrorRecord,
-                    FEEDS_ERRORS.FEER_LAST_STATUS, FEEDS_ERRORS.FEER_LAST_LABEL, FEEDS_ERRORS.FEER_LAST_TIME);
+                    FEEDS_ERRORS.FEER_CODE, FEEDS_ERRORS.FEER_LAST_TIME);
             inserts.add(dsl.insertInto(FEEDS_ERRORS).set(feedErrorRecord)
                     .onDuplicateKeyUpdate()
                     .set(feedErrorsUpdateRecord));
@@ -61,6 +61,7 @@ public class ScrapingErrorPersistenceAdapter implements ScrapingErrorPersistence
     }
 
     @Override
+    @SuppressWarnings("resource")
     public Flux<Entity<ScrapingError>> list(QueryContext query) {
         Condition conditions = query.filter().accept(JOOQ_CONDITION_VISITOR);
         SelectQuery<FeedsErrorsRecord> select = dsl.selectQuery(FEEDS_ERRORS);
@@ -73,6 +74,7 @@ public class ScrapingErrorPersistenceAdapter implements ScrapingErrorPersistence
                         rs.forEach(sink::next);
                         if (rs.size() < n) {
                             sink.complete();
+                            cursor.close();
                         }
                     });
                 }).limitRate(Integer.MAX_VALUE - 1)

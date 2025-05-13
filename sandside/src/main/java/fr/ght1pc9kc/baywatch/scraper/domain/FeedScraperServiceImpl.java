@@ -38,6 +38,7 @@ import reactor.core.publisher.Signal;
 import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Scheduler;
 
+import javax.net.ssl.SSLHandshakeException;
 import javax.xml.stream.XMLEventFactory;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -55,6 +56,8 @@ import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.ETag;
 import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.updated;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Slf4j
 public final class FeedScraperServiceImpl implements FeedScraperService {
@@ -193,7 +196,7 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                     if (!response.statusCode().is2xxSuccessful() && response.statusCode().value() != HttpStatusCodes.NOT_MODIFIED) {
                         errors.tryEmitNext(new FeedScrapingException(
                                 AtomFeed.of(feed.id(), feed.link()),
-                                ScrapingExceptionCode.NOT_FOUND,
+                                ScrapingExceptionCode.fromHttpStatus(response.statusCode().value()),
                                 new IllegalArgumentException("Bad response status " + response.statusCode())
                         ));
                         return response.releaseBody()
@@ -218,7 +221,9 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                             .onErrorResume(RuntimeException.class, t -> {
                                 errors.tryEmitNext(new FeedScrapingException(AtomFeed.of(feed.id(), feed.link()),
                                         ScrapingExceptionCode.PARSING, t));
-                                return response.releaseBody().thenReturn(XMLEventFactory.newDefaultFactory().createEndDocument());
+                                return response.releaseBody()
+                                        .onErrorResume(ignore -> Mono.empty())
+                                        .thenReturn(XMLEventFactory.newDefaultFactory().createEndDocument());
                             });
                 })
                 .doFirst(() -> log.trace("Receiving event from {}...", feedHost))
@@ -227,7 +232,7 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
                 .switchOnFirst((first, others) -> {
                     if (first.hasError()) {
                         errors.tryEmitNext(new FeedScrapingException(
-                                AtomFeed.of(feed.id(), feed.link()), ScrapingExceptionCode.UNAVAILABLE, first.getThrowable()));
+                                AtomFeed.of(feed.id(), feed.link()), fromThrowable(first.getThrowable()), first.getThrowable()));
                         return Flux.empty();
                     } else if (!first.hasValue()) {
                         return others.take(0).thenMany(Flux.empty());
@@ -257,11 +262,55 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
 
                 .onErrorResume(e -> {
                     errors.tryEmitNext(new FeedScrapingException(AtomFeed.of(feed.id(), feed.link()),
-                            ScrapingExceptionCode.DEFAULT, e));
+                            fromThrowable(e), e));
                     return Flux.empty();
                 })
                 .doFinally(s -> log.atDebug().addArgument(feed.link())
                         .log("Finish reading feed {}"));
+    }
+
+    private ScrapingExceptionCode fromThrowable(Throwable t) {
+        try {
+            Throwable current = t;
+
+            while (true) {
+                if (isNull(current)) {
+                    return ScrapingExceptionCode.UNKNOWN;
+
+                } else if (SSLHandshakeException.class.isAssignableFrom(current.getClass()) ||
+                        "SearchDomainUnknownHostException".equals(current.getClass().getSimpleName()) ||
+                        ("WebClientRequestException".equals(current.getClass().getSimpleName())
+                                && nonNull(current.getMessage())
+                                && current.getMessage().contains("recvAddress"))
+                ) {
+                    return ScrapingExceptionCode.GONE;
+
+                } else if ("ConnectException".equals(current.getClass().getSimpleName())
+                        && nonNull(current.getMessage())
+                        && current.getMessage().contains("finishConnect")) {
+                    return ScrapingExceptionCode.NEED_ACCOUNT;
+
+                } else if ("ConnectTimeoutException".equals(current.getClass().getSimpleName()) ||
+                        "ReadTimeoutException".equals(current.getClass().getSimpleName())) {
+                    return ScrapingExceptionCode.TIMEOUT;
+
+                } else if ("DecodingException".equals(current.getClass().getSimpleName())) {
+                    return ScrapingExceptionCode.PARSING;
+
+                } else if (IllegalArgumentException.class.isAssignableFrom(current.getClass()) ||
+                        IllegalStateException.class.isAssignableFrom(current.getClass())) {
+                    String extractedNumber = current.getLocalizedMessage().replaceAll("\\D", "");
+                    int status = (!extractedNumber.isEmpty()) ? Integer.parseInt(extractedNumber) : 200;
+                    return ScrapingExceptionCode.fromHttpStatus(status);
+
+                } else {
+                    current = current.getCause();
+                }
+            }
+
+        } catch (Exception ignore) {
+            return ScrapingExceptionCode.UNKNOWN;
+        }
     }
 
     private Flux<DataBuffer> cleanupStreamStart(Signal<? extends DataBuffer> signal, Flux<DataBuffer> source) {

@@ -32,13 +32,12 @@ class ScraperExceptionResolverAdapterTest {
     @Test
     void should_resolve_scraping_exception() {
         GraphQLError actual = tested.resolveToSingleError(
-                new ScrapingException(ScrapingExceptionCode.DEFAULT, new RuntimeException()),
+                new ScrapingException(ScrapingExceptionCode.UNKNOWN, new RuntimeException()),
                 dataFetchingEnvironment);
         Assertions.assertThat(actual).isNotNull();
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(actual.getErrorType()).isEqualTo(ErrorType.BAD_REQUEST);
-            softly.assertThat(actual.getMessage()).isEqualTo(ScrapingExceptionCode.DEFAULT.getDefaultMessage());
-            softly.assertThat(actual.getExtensions().get("translation")).isEqualTo(ScrapingExceptionCode.DEFAULT.getCode());
+            softly.assertThat(actual.getExtensions().get("translation")).isEqualTo(ScrapingExceptionCode.UNKNOWN.getMessageKey());
         });
     }
 

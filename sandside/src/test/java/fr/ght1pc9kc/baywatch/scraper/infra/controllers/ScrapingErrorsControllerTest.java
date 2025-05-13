@@ -14,9 +14,7 @@ import reactor.test.StepVerifier;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.logging.Level;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -35,7 +33,7 @@ class ScrapingErrorsControllerTest {
     @Test
     void should_get_errors_from_feeds() {
         Instant since = Instant.parse("2024-05-05T12:42:02Z");
-        ScrapingError expected = new ScrapingError(404, since, since, "Not found");
+        ScrapingError expected = new ScrapingError(ScrapingExceptionCode.NOT_FOUND, since, since);
         doReturn(Flux.just(
                 Entity.identify(expected)
                         .withId("f9e2eaaa42d9fe9e558a9b8ef1bf366f190aacaa83bad2641ee106e9041096e4")
@@ -56,23 +54,12 @@ class ScrapingErrorsControllerTest {
     }
 
     @Test
-    void should_compute_error_level() {
-        doReturn(Level.WARNING).when(mockScrapingErrorService).level(any(ScrapingError.class));
-        Instant since = Instant.parse("2024-05-05T12:42:02Z");
-        ScrapingError sample = new ScrapingError(404, since, since, "Not found");
-
-        StepVerifier.create(tested.computeErrorLevel(sample))
-                .assertNext(actual -> Assertions.assertThat(actual).isEqualTo(Level.WARNING.toString()))
-                .verifyComplete();
-    }
-
-    @Test
     void should_filter_error_message() {
         Instant since = Instant.parse("2024-05-05T12:42:02Z");
-        ScrapingError sample = new ScrapingError(404, since, since, "Secret error message");
+        ScrapingError sample = new ScrapingError(ScrapingExceptionCode.NOT_FOUND, since, since);
 
         StepVerifier.create(tested.filterErrorMessage(sample))
-                .assertNext(actual -> Assertions.assertThat(actual).isEqualTo(ScrapingExceptionCode.NOT_FOUND.getDefaultMessage()))
+                .assertNext(actual -> Assertions.assertThat(actual).isEqualTo(ScrapingExceptionCode.NOT_FOUND.getMessageKey()))
                 .verifyComplete();
     }
 }

@@ -2,7 +2,6 @@ package fr.ght1pc9kc.baywatch.scraper.infra.controllers;
 
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapingErrorsService;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingError;
-import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.ScrapingExceptionCode;
 import fr.ght1pc9kc.entity.api.Entity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.BatchMapping;
@@ -48,6 +47,6 @@ public class ScrapingErrorsController {
 
     @SchemaMapping(typeName = "ScrapingError", field = "message")
     public Mono<String> filterErrorMessage(ScrapingError error) {
-        return Mono.just(ScrapingExceptionCode.fromHttpStatus(error.code()).getDefaultMessage());
+        return Mono.just(error.code().getMessageKey());
     }
 }
