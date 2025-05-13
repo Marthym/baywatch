@@ -30,7 +30,7 @@
         <div>{{ feed.lastWatch }}</div>
         <div class="text-xs">{{ feed.lastETag }}</div>
       </div>
-      <button v-if="feed.error" :class="{'tooltip': feed.errorDisplay}" :data-tip="feed.error?.message"
+      <button v-if="feed.error" :class="{'tooltip': feed.errorDisplay}" :data-tip="t(feed.error?.message)"
               class="btn btn-square btn-ghost"
               @click.prevent.stop="feed.errorDisplay = !feed.errorDisplay">
         <ExclamationTriangleIcon :class="{

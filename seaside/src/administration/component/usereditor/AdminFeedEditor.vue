@@ -49,7 +49,7 @@
             'text-warning': feed.error.level == 'WARNING'
           }" class="size-6 inline"/>
           {{ feed.error.level }}
-          <p>{{ feed.error.message }}</p>
+          <p>{{ t(feed.error.message) }}</p>
           <p>{{ t('admin.feed.editor.errors.since') }} {{ feed.error.since }}</p>
           <p>{{ t('admin.feed.editor.errors.last') }} {{ feed.error.lastTime }}</p>
         </div>

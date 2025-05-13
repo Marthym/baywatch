@@ -1,7 +1,9 @@
 import { en_US as admin_en_US } from '@/locales/admin_en-US';
+import { backend_scraping_en_US } from '@/locales/backend/scraping_en-US';
 
 export const en_US = {
     ...admin_en_US,
+    ...backend_scraping_en_US,
     'admin.feeds.confirm.feedsDeletion': 'Permanently delete the feed "{feed}" from the database ?' +
         '| Delete the {n} selected feeds from the database ?',
     'admin.feeds.info.deletionMustContainsOneID': 'You must select at least one feed to delete!',
