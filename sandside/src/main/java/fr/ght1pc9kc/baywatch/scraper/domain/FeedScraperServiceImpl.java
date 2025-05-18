@@ -271,46 +271,71 @@ public final class FeedScraperServiceImpl implements FeedScraperService {
 
     private ScrapingExceptionCode fromThrowable(Throwable t) {
         try {
-            Throwable current = t;
-
-            while (true) {
-                if (isNull(current)) {
-                    return ScrapingExceptionCode.UNKNOWN;
-
-                } else if (SSLHandshakeException.class.isAssignableFrom(current.getClass()) ||
-                        "SearchDomainUnknownHostException".equals(current.getClass().getSimpleName()) ||
-                        ("WebClientRequestException".equals(current.getClass().getSimpleName())
-                                && nonNull(current.getMessage())
-                                && current.getMessage().contains("recvAddress"))
-                ) {
-                    return ScrapingExceptionCode.GONE;
-
-                } else if ("ConnectException".equals(current.getClass().getSimpleName())
-                        && nonNull(current.getMessage())
-                        && current.getMessage().contains("finishConnect")) {
-                    return ScrapingExceptionCode.NEED_ACCOUNT;
-
-                } else if ("ConnectTimeoutException".equals(current.getClass().getSimpleName()) ||
-                        "ReadTimeoutException".equals(current.getClass().getSimpleName())) {
-                    return ScrapingExceptionCode.TIMEOUT;
-
-                } else if ("DecodingException".equals(current.getClass().getSimpleName())) {
-                    return ScrapingExceptionCode.PARSING;
-
-                } else if (IllegalArgumentException.class.isAssignableFrom(current.getClass()) ||
-                        IllegalStateException.class.isAssignableFrom(current.getClass())) {
-                    String extractedNumber = current.getLocalizedMessage().replaceAll("\\D", "");
-                    int status = (!extractedNumber.isEmpty()) ? Integer.parseInt(extractedNumber) : 200;
-                    return ScrapingExceptionCode.fromHttpStatus(status);
-
-                } else {
-                    current = current.getCause();
-                }
+            if (isNull(t)) {
+                return ScrapingExceptionCode.UNKNOWN;
             }
+
+            Throwable current = t;
+            while (nonNull(current)) {
+                Optional<ScrapingExceptionCode> code = mapThrowableToCode(current);
+                if (code.isPresent()) {
+                    return code.get();
+                }
+                current = current.getCause();
+            }
+            return ScrapingExceptionCode.UNKNOWN;
 
         } catch (Exception ignore) {
             return ScrapingExceptionCode.UNKNOWN;
         }
+    }
+
+    private Optional<ScrapingExceptionCode> mapThrowableToCode(Throwable throwable) {
+        String className = throwable.getClass().getSimpleName();
+        String message = throwable.getMessage();
+
+        if (throwable instanceof SSLHandshakeException ||
+                "SearchDomainUnknownHostException".equals(className) ||
+                ("WebClientRequestException".equals(className) && message != null && message.contains("recvAddress"))) {
+            return Optional.of(ScrapingExceptionCode.GONE);
+        }
+
+        if ("ConnectException".equals(className) &&
+                message != null && message.contains("finishConnect")) {
+            return Optional.of(ScrapingExceptionCode.NEED_ACCOUNT);
+        }
+
+        if ("ConnectTimeoutException".equals(className) || "ReadTimeoutException".equals(className)) {
+            return Optional.of(ScrapingExceptionCode.TIMEOUT);
+        }
+
+        if ("DecodingException".equals(className)) {
+            return Optional.of(ScrapingExceptionCode.PARSING);
+        }
+
+        if (throwable instanceof IllegalArgumentException || throwable instanceof IllegalStateException) {
+            return extractStatusCodeFromMessage(message);
+        }
+
+        return Optional.empty();
+    }
+
+    private Optional<ScrapingExceptionCode> extractStatusCodeFromMessage(String message) {
+        if (message == null) {
+            return Optional.of(ScrapingExceptionCode.UNKNOWN);
+        }
+
+        String extractedNumber = message.replaceAll("\\D", "");
+        if (!extractedNumber.isEmpty()) {
+            try {
+                return Optional.of(ScrapingExceptionCode.fromHttpStatus(Integer.parseInt(extractedNumber)));
+            } catch (NumberFormatException ignore) {
+                log.atDebug()
+                        .addArgument(message)
+                        .log("Unable to parse status code from message {}");
+            }
+        }
+        return Optional.of(ScrapingExceptionCode.UNKNOWN);
     }
 
     private Flux<DataBuffer> cleanupStreamStart(Signal<? extends DataBuffer> signal, Flux<DataBuffer> source) {

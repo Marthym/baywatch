@@ -5,7 +5,7 @@ import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsErrorsRecord;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingError;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.ScrapingErrorPersistencePort;
-import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperMapper;
+import fr.ght1pc9kc.baywatch.scraper.infra.mappers.ScraperMapper;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;

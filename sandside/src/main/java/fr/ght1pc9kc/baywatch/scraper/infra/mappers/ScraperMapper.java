@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.scraper.infra.config;
+package fr.ght1pc9kc.baywatch.scraper.infra.mappers;
 
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.common.domain.DateUtils;

@@ -10,13 +10,17 @@ import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapResult;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ScrapedFeed;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.FeedScrapingException;
 import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.NewsScrapingException;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.ScrapingExceptionCode;
 import fr.ght1pc9kc.baywatch.scraper.domain.ports.ScraperMaintenancePort;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import org.assertj.core.api.Assertions;
-import org.jetbrains.annotations.NotNull;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentMatchers;
 import org.mockito.stubbing.Answer;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -33,6 +37,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 
+import javax.net.ssl.SSLHandshakeException;
 import javax.xml.stream.events.XMLEvent;
 import java.net.URI;
 import java.time.Clock;
@@ -45,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
@@ -52,15 +58,15 @@ import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class FeedScraperServiceTest {
-
-    static final Period SCRAPER_RETENTION_PERIOD = Period.ofDays(30);
+    private static final Pattern FEED_PATTERN = Pattern.compile("/feeds/.*\\.xml");
+    private static final Pattern ERROR_PATTERN = Pattern.compile("/error/darth-vader.xml");
+    private static final Period SCRAPER_RETENTION_PERIOD = Period.ofDays(30);
 
     private final ScrapEnrichmentService mockScrapEnrichmentService = mock(ScrapEnrichmentService.class);
 
@@ -155,7 +161,6 @@ class FeedScraperServiceTest {
 
     @Test
     void should_fail_enrichment_without_fail_scraping() {
-        reset(mockExchangeFunction);
         when(mockScrapEnrichmentService.applyNewsFilters(any(News.class)))
                 .thenAnswer(((Answer<Mono<Try<News>>>) answer -> Mono.just(Try.fail(new NewsScrapingException(
                         new AtomEntry(
@@ -220,6 +225,67 @@ class FeedScraperServiceTest {
         verify(maintenancePersistencePort, never()).newsLoad(anyCollection());
     }
 
+    @ParameterizedTest
+    @MethodSource("should_parse_exception_on_scraping_parameters")
+    void should_parse_exception_on_scraping(Exception exceptionClass, ScrapingExceptionCode expectedTranslationCode) {
+        when(mockExchangeFunction.exchange(any(ClientRequest.class)))
+                .thenReturn(Mono.error(exceptionClass));
+
+        StepVerifier.create(tested.scrap(SCRAPER_RETENTION_PERIOD))
+                .assertNext(next -> SoftAssertions.assertSoftly(softly -> {
+                    softly.assertThat(next.inserted()).isZero();
+                    softly.assertThat(next.errors()).hasSize(2);
+                    softly.assertThat(next.errors().getFirst().getTranslation())
+                            .isEqualTo(expectedTranslationCode);
+                })).verifyComplete();
+    }
+
+    public static Stream<Arguments> should_parse_exception_on_scraping_parameters() {
+        final class SearchDomainUnknownHostException extends RuntimeException {
+            public SearchDomainUnknownHostException(String message) {
+                super(message);
+            }
+        }
+        final class WebClientRequestException extends RuntimeException {
+            public WebClientRequestException(String message) {
+                super(message);
+            }
+        }
+        final class ConnectException extends RuntimeException {
+            public ConnectException(String message) {
+                super(message);
+            }
+        }
+        final class ConnectTimeoutException extends RuntimeException {
+            public ConnectTimeoutException(String message) {
+                super(message);
+            }
+        }
+        final class ReadTimeoutException extends RuntimeException {
+            public ReadTimeoutException(String message) {
+                super(message);
+            }
+        }
+        final class DecodingException extends RuntimeException {
+            public DecodingException(String message) {
+                super(message);
+            }
+        }
+        return Stream.of(
+                Arguments.of(new SSLHandshakeException("Dummy"), ScrapingExceptionCode.GONE),
+                Arguments.of(new SearchDomainUnknownHostException("Dummy"), ScrapingExceptionCode.GONE),
+                Arguments.of(new WebClientRequestException("obiwan recvAddress Kenoby"), ScrapingExceptionCode.GONE),
+                Arguments.of(new ConnectException("obiwan finishConnect Kenoby"), ScrapingExceptionCode.NEED_ACCOUNT),
+                Arguments.of(new ConnectTimeoutException("Dummy"), ScrapingExceptionCode.TIMEOUT),
+                Arguments.of(new ReadTimeoutException("Dummy"), ScrapingExceptionCode.TIMEOUT),
+                Arguments.of(new DecodingException("Dummy"), ScrapingExceptionCode.PARSING),
+                Arguments.of(new IllegalArgumentException("Obiwan 403 Kenobi"), ScrapingExceptionCode.NEED_ACCOUNT),
+                Arguments.of(new IllegalArgumentException(), ScrapingExceptionCode.UNKNOWN),
+                Arguments.of(new IllegalStateException("Illegal without number"), ScrapingExceptionCode.UNKNOWN),
+                Arguments.of(new RuntimeException("Unknown exception case"), ScrapingExceptionCode.UNKNOWN)
+        );
+    }
+
     @BeforeEach
     void setUp() {
         maintenancePersistencePort = mock(ScraperMaintenancePort.class);
@@ -227,7 +293,24 @@ class FeedScraperServiceTest {
                 .delayElements(Duration.ofMillis(200)));  // Delay avoid Awaitility start polling after the and of scraping
         when(maintenancePersistencePort.newsLoad(anyCollection())).thenReturn(Mono.just(1));
 
-        mockExchangeFunction = spy(new MockExchangeFunction());
+        mockExchangeFunction = mock(ExchangeFunction.class);
+        when(mockExchangeFunction.exchange(any(ClientRequest.class))).thenAnswer(answer -> {
+            ClientRequest request = answer.getArgument(0, ClientRequest.class);
+            if (FEED_PATTERN.matcher(request.url().getPath()).matches()) {
+                return Mono.just(ClientResponse.create(HttpStatus.OK)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_ATOM_XML_VALUE)
+                        .body(DataBufferUtils.readInputStream(
+                                () -> FeedScraperServiceTest.class.getResourceAsStream(request.url().getPath().replaceFirst("/", "")),
+                                new DefaultDataBufferFactory(), 512)
+                        ).build());
+            } else if (ERROR_PATTERN.matcher(request.url().getPath()).matches()) {
+                return Mono.just(ClientResponse.create(HttpStatus.NOT_FOUND).build());
+
+            }
+
+            return Mono.just(ClientResponse.create(HttpStatus.INTERNAL_SERVER_ERROR).build());
+        });
+
         WebClient mockWebClient = WebClient.builder().exchangeFunction(mockExchangeFunction).build();
 
         URI springUri = URI.create("https://www.jedi.com/feeds/spring-blog.xml");
@@ -292,24 +375,4 @@ class FeedScraperServiceTest {
         tested.setClock(Clock.fixed(Instant.parse("2022-04-30T12:35:41Z"), ZoneOffset.UTC));
     }
 
-    public static final class MockExchangeFunction implements ExchangeFunction {
-        private static final Pattern FEED_PATTERN = Pattern.compile("/feeds/.*\\.xml");
-        private static final Pattern ERROR_PATTERN = Pattern.compile("/error/darth-vader.xml");
-
-        @Override
-        public @NotNull Mono<ClientResponse> exchange(@NotNull ClientRequest request) {
-            if (FEED_PATTERN.matcher(request.url().getPath()).matches()) {
-                return Mono.just(ClientResponse.create(HttpStatus.OK)
-                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_ATOM_XML_VALUE)
-                        .body(DataBufferUtils.readInputStream(
-                                () -> FeedScraperServiceTest.class.getResourceAsStream(request.url().getPath().replaceFirst("/", "")),
-                                new DefaultDataBufferFactory(), 512)
-                        ).build());
-            } else if (ERROR_PATTERN.matcher(request.url().getPath()).matches()) {
-                return Mono.just(ClientResponse.create(HttpStatus.NOT_FOUND).build());
-            }
-
-            return Mono.just(ClientResponse.create(HttpStatus.INTERNAL_SERVER_ERROR).build());
-        }
-    }
 }
