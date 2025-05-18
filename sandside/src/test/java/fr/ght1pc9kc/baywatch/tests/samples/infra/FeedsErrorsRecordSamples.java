@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.tests.samples.infra;
 
 import fr.ght1pc9kc.baywatch.dsl.tables.FeedsErrors;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsErrorsRecord;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.ScrapingExceptionCode;
 import fr.ght1pc9kc.baywatch.tests.samples.FeedSamples;
 import fr.ght1pc9kc.testy.jooq.model.RelationalDataSet;
 
@@ -17,14 +18,12 @@ public class FeedsErrorsRecordSamples implements RelationalDataSet<FeedsErrorsRe
                 FeedsErrors.FEEDS_ERRORS.newRecord()
                         .setFeerFeedId(FeedSamples.JEDI.id())
                         .setFeerSince(LocalDateTime.parse("2024-03-30T12:42:24"))
-                        .setFeerLastLabel("Not Found")
-                        .setFeerLastStatus(404)
+                        .setFeerCode(ScrapingExceptionCode.NOT_FOUND.name())
                         .setFeerLastTime(LocalDateTime.parse("2024-03-30T13:12:24")),
                 FeedsErrors.FEEDS_ERRORS.newRecord()
                         .setFeerFeedId(FeedSamples.SITH.id())
                         .setFeerSince(LocalDateTime.parse("2024-03-30T12:42:24"))
-                        .setFeerLastLabel("Not Found")
-                        .setFeerLastStatus(404)
+                        .setFeerCode(ScrapingExceptionCode.NOT_FOUND.name())
                         .setFeerLastTime(LocalDateTime.parse("2024-03-30T13:12:24"))
         );
     }

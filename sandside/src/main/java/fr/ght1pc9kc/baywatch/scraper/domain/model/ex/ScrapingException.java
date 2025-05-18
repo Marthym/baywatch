@@ -8,11 +8,11 @@ public sealed class ScrapingException extends RuntimeException permits FeedScrap
 
     public ScrapingException(String message, Throwable cause) {
         super(message, cause);
-        this.translation = ScrapingExceptionCode.DEFAULT;
+        this.translation = ScrapingExceptionCode.UNKNOWN;
     }
 
     public ScrapingException(ScrapingExceptionCode code, Throwable cause) {
-        super(code.getDefaultMessage(), cause);
+        super(code.getMessageKey(), cause);
         this.translation = code;
     }
 }

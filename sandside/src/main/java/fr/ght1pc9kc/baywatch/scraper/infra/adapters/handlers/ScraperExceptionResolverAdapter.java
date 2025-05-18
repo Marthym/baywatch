@@ -19,7 +19,7 @@ public class ScraperExceptionResolverAdapter extends DataFetcherExceptionResolve
             case ScrapingException scrapingEx -> GraphqlErrorBuilder.newError(env)
                     .errorType(ErrorType.BAD_REQUEST)
                     .message(scrapingEx.getLocalizedMessage())
-                    .extensions(Map.of("translation", scrapingEx.getTranslation().getCode()))
+                    .extensions(Map.of("translation", scrapingEx.getTranslation().getMessageKey()))
                     .build();
             default -> null;
         };

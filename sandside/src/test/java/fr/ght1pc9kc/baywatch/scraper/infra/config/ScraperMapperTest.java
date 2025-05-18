@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.scraper.infra.config;
 
 import fr.ght1pc9kc.baywatch.scraper.api.model.AtomEntry;
+import fr.ght1pc9kc.baywatch.scraper.infra.mappers.ScraperMapper;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.News;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.RawNews;
 import fr.ght1pc9kc.baywatch.techwatch.api.model.State;

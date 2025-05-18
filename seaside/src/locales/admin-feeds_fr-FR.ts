@@ -1,7 +1,9 @@
 import { fr_FR as admin_fr_FR } from '@/locales/admin_fr-FR';
+import { backend_scraping_fr_FR } from '@/locales/backend/scraping_fr-FR';
 
 export const fr_FR = {
     ...admin_fr_FR,
+    ...backend_scraping_fr_FR,
     'admin.feeds.confirm.feedsDeletion': 'Supprimer le flux "{feed}" de la base de données définitivement ?' +
         '| Supprimer les {n} flux sélectionnés de la base de données ?',
     'admin.feeds.info.deletionMustContainsOneID': 'Vous devez sélectionner au moins un flux à supprimer !',

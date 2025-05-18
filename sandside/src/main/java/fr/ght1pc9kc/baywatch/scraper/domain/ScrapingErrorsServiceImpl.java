@@ -52,7 +52,7 @@ public class ScrapingErrorsServiceImpl implements ScrapingErrorsService {
 
     @Override
     public Level level(ScrapingError error) {
-        if (error.code() > 499 || error.since().isBefore(clock.instant().minus(Duration.ofDays(90)))) {
+        if (error.code().getLevel() == Level.SEVERE || error.since().isBefore(clock.instant().minus(Duration.ofDays(90)))) {
             return Level.SEVERE;
         } else {
             return Level.WARNING;

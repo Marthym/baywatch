@@ -1,7 +1,9 @@
 import { fr_FR as admin_fr_FR } from '@/locales/admin_fr-FR';
+import { backend_scraping_fr_FR } from '@/locales/backend/scraping_fr-FR';
 
 export const fr_FR = {
     ...admin_fr_FR,
+    ...backend_scraping_fr_FR,
     'admin.feed.editor.description': 'Description',
     'admin.feed.editor.description.placeholder': 'Saisir une description courte',
     'admin.feed.editor.errors': 'Erreurs',

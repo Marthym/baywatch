@@ -3,8 +3,9 @@ package fr.ght1pc9kc.baywatch.scraper.infra.adapters;
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.dsl.tables.FeedsErrors;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingError;
+import fr.ght1pc9kc.baywatch.scraper.domain.model.ex.ScrapingExceptionCode;
 import fr.ght1pc9kc.baywatch.scraper.infra.adapters.persistence.ScrapingErrorPersistenceAdapter;
-import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperMapper;
+import fr.ght1pc9kc.baywatch.scraper.infra.mappers.ScraperMapper;
 import fr.ght1pc9kc.baywatch.tests.samples.FeedSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedsErrorsRecordSamples;
 import fr.ght1pc9kc.entity.api.Entity;
@@ -54,8 +55,8 @@ class ScrapingErrorPersistenceAdapterTest {
     void should_persist_feed_scraping_errors(DSLContext dsl) {
         Instant now = Instant.parse("2024-04-01T15:10:42Z");
         List<Entity<ScrapingError>> toPersist = List.of(
-                Entity.identify(new ScrapingError(403, now, now, "Forbidden")).withId(FeedSamples.JEDI.id()),
-                Entity.identify(new ScrapingError(403, now, now, "Forbidden")).withId(FeedSamples.UNSECURE_PROTOCOL.id())
+                Entity.identify(new ScrapingError(ScrapingExceptionCode.NEED_ACCOUNT, now, now)).withId(FeedSamples.JEDI.id()),
+                Entity.identify(new ScrapingError(ScrapingExceptionCode.NEED_ACCOUNT, now, now)).withId(FeedSamples.UNSECURE_PROTOCOL.id())
         );
 
         int count = dsl.fetchCount(FeedsErrors.FEEDS_ERRORS);
@@ -64,13 +65,13 @@ class ScrapingErrorPersistenceAdapterTest {
         StepVerifier.create(tested.persist(toPersist))
                 .assertNext(jedi -> SoftAssertions.assertSoftly(softly -> {
                     softly.assertThat(jedi.id()).isEqualTo(FeedSamples.JEDI.id());
-                    softly.assertThat(jedi.self().code()).isEqualTo(403);
+                    softly.assertThat(jedi.self().code()).isEqualTo(ScrapingExceptionCode.NEED_ACCOUNT);
                     softly.assertThat(jedi.self().since()).isEqualTo(Instant.parse("2024-03-30T12:42:24Z"));
                     softly.assertThat(jedi.self().lastTime()).isEqualTo(now);
                 }))
                 .assertNext(second -> SoftAssertions.assertSoftly(softly -> {
                     softly.assertThat(second.id()).isEqualTo(FeedSamples.UNSECURE_PROTOCOL.id());
-                    softly.assertThat(second.self().code()).isEqualTo(403);
+                    softly.assertThat(second.self().code()).isEqualTo(ScrapingExceptionCode.NEED_ACCOUNT);
                     softly.assertThat(second.self().since()).isEqualTo(now);
                     softly.assertThat(second.self().lastTime()).isEqualTo(now);
                 }))
@@ -89,13 +90,13 @@ class ScrapingErrorPersistenceAdapterTest {
         StepVerifier.create(tested.list(QueryContext.all(Criteria.none())))
                 .assertNext(jedi -> SoftAssertions.assertSoftly(softly -> {
                     softly.assertThat(jedi.id()).isEqualTo(FeedSamples.JEDI.id());
-                    softly.assertThat(jedi.self().code()).isEqualTo(404);
+                    softly.assertThat(jedi.self().code()).isEqualTo(ScrapingExceptionCode.NOT_FOUND);
                     softly.assertThat(jedi.self().since()).isEqualTo(since);
                     softly.assertThat(jedi.self().lastTime()).isEqualTo(last);
                 }))
                 .assertNext(second -> SoftAssertions.assertSoftly(softly -> {
                     softly.assertThat(second.id()).isEqualTo(FeedSamples.SITH.id());
-                    softly.assertThat(second.self().code()).isEqualTo(404);
+                    softly.assertThat(second.self().code()).isEqualTo(ScrapingExceptionCode.NOT_FOUND);
                     softly.assertThat(second.self().since()).isEqualTo(since);
                     softly.assertThat(second.self().lastTime()).isEqualTo(last);
                 }))
