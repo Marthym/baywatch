@@ -8,12 +8,10 @@ import jakarta.annotation.PreDestroy;
 import lombok.SneakyThrows;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@ConditionalOnProperty(name = "baywatch.indexer.enable", havingValue = "true")
 public class FeedIndexerServiceAdapter implements FeedIndexerService {
     @Delegate
     private final FeedIndexerServiceImpl delegate;

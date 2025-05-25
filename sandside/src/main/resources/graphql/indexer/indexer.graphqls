@@ -10,3 +10,7 @@ type IndexEntry {
 extend type Query {
     searchIndex(q: String): [IndexEntry]
 }
+
+extend type Mutation {
+    indexerBuildFeedIndex: Void
+}

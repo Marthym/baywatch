@@ -13,12 +13,12 @@ import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 
 /**
- * Facade used to obtain the connected user.
+ * Facade used to get the connected user.
  */
 public interface AuthenticationFacade {
 
     /**
-     * Obtain the connected user.
+     * Get the connected user.
      *
      * @return The connected user.
      */
@@ -37,7 +37,8 @@ public interface AuthenticationFacade {
     static Context withSystemAuthentication() {
         Entity<User> principal = RoleUtils.getSystemUser();
         Authentication authentication = new PreAuthenticatedAuthenticationToken(principal, null,
-                AuthorityUtils.createAuthorityList(Role.SYSTEM.name()));
+
+                AuthorityUtils.createAuthorityList("ROLE_" + Role.SYSTEM.name()));
         return ReactiveSecurityContextHolder.withAuthentication(authentication);
     }
 }

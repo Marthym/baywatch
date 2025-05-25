@@ -8,7 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 @Service
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'SYSTEM')")
 public class FeedManagementAdapter implements FeedManagementService {
     @Delegate
     private final FeedManagementService delegate;

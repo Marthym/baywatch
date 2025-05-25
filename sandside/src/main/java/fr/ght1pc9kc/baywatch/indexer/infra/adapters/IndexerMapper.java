@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.indexer.infra.adapters;
 
+import fr.ght1pc9kc.baywatch.admin.api.model.RawFeed;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.indexer.domain.model.IndexableFeed;
 import fr.ght1pc9kc.baywatch.indexer.domain.model.IndexableFeedEntry;
@@ -20,6 +21,16 @@ public interface IndexerMapper {
     default IndexableFeed getIndexableFromFeed(Entity<WebFeed> rf) {
         return new IndexableFeed(rf.id(), rf.self().name(), rf.self().description(),
                 rf.self().location().toString(), null, List.copyOf(rf.self().tags()));
+    }
+
+    default IndexableFeed toIndexableFeed(Entity<RawFeed> rawFeedEntity) {
+        return new IndexableFeed(
+                rawFeedEntity.id(),
+                rawFeedEntity.self().name(),
+                rawFeedEntity.self().description(),
+                rawFeedEntity.self().url().toString(),
+                null, List.of()
+        );
     }
 
     IndexableFeedEntry getIndexableFromEntry(RawNews rn);

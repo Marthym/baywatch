@@ -8,7 +8,7 @@
       <env name="BAYWATCH_IMGPROXY_SALT" value="c20a3becb08164a79bffa4" />
       <env name="BAYWATCH_IMGPROXY_SIGNKEY" value="ad27d1a476e2d0f6326c76f275ed" />
       <env name="BAYWATCH_INDEXER_ENABLE" value="true" />
-      <env name="BAYWATCH_SCRAPER_ENABLE" value="false" />
+      <env name="BAYWATCH_SCRAPER_ENABLE" value="true" />
       <env name="CONSOLE_LOG_PATTERN" value="%clr(%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd'T'HH:mm:ss.SSSXXX}}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(---){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}" />
       <env name="SPRING_THREADS_VIRTUAL_ENABLED" value="true" />
     </envs>
