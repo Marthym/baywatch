@@ -46,6 +46,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         .map(u -> userService.update(u)
                                 .contextWrite(authFacade.withAuthentication(u)))
                         .toList()).then())
+                .onErrorResume(e -> {
+                    log.atWarn()
+                            .addArgument(e.getClass())
+                            .addArgument(e.getLocalizedMessage())
+                            .log("Error while updating user -> {}: {}");
+                    return Mono.empty().then();
+                })
                 .subscribe();
         log.atDebug().log("Subscribed to user update");
     }
