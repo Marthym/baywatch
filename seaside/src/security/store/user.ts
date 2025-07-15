@@ -2,12 +2,10 @@ import { ANONYMOUS, User } from '@/security/model/User';
 import { UserRole } from '@/security/model/UserRole.enum';
 import {
     ADD_ROLE,
-    CLOSE_CREATE_ACCOUNT,
     HAS_ROLE_ADMIN,
     HAS_ROLE_MANAGER,
     HAS_ROLE_USER,
     LOGOUT,
-    OPEN_CREATE_ACCOUNT,
     UPDATE,
     UPDATE_SETTINGS,
     UPDATE_SETTINGS_VIEW_MODE,
@@ -19,7 +17,6 @@ import { ViewMode } from '@/common/model/NewsViewMode';
 export type UserState = {
     user: User;
     isAuthenticated: boolean | undefined;
-    isCreateAccountOpen: boolean;
     autoread: boolean;
     newsViewMode: ViewMode;
 }
@@ -27,7 +24,6 @@ export type UserState = {
 const state = (): UserState => ({
     user: ANONYMOUS,
     isAuthenticated: undefined,
-    isCreateAccountOpen: false,
     autoread: true,
     newsViewMode: ViewMode.MAGAZINE,
 });
@@ -53,15 +49,9 @@ const mutations = {
     [ADD_ROLE](st: UserState, payload: string): void {
         st.user.roles.push(payload);
     },
-    [CLOSE_CREATE_ACCOUNT](st: UserState): void {
-        st.isCreateAccountOpen = false;
-    },
     [LOGOUT](st: UserState): void {
         st.user = ANONYMOUS;
         st.isAuthenticated = false;
-    },
-    [OPEN_CREATE_ACCOUNT](st: UserState): void {
-        st.isCreateAccountOpen = true;
     },
     [UPDATE](st: UserState, payload: User): void {
         st.user = payload;

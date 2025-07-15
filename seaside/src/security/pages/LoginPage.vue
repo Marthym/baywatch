@@ -61,11 +61,11 @@ import { UserState } from '@/security/store/user';
 export default class LoginPage extends Vue {
   public username = '';
   public password = '';
-  private t;
-  private locale;
+  private readonly store!: Store<UserState>;
+  private readonly router!: Router;
+  private readonly t;
+  private readonly locale;
   private formValidation = false;
-  private store!: Store<UserState>;
-  private router!: Router;
 
   mounted(): void {
     (this.$refs.usrInput as HTMLElement).focus();

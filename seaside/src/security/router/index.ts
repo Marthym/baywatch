@@ -11,9 +11,11 @@ import {
 } from '@/security/store/UserConstants';
 
 const LoginPage = () => import('@/security/pages/LoginPage.vue');
+const CreateAccountComponent = () => import('@/security/components/CreateAccountComponent.vue');
 
 export const routes: RouteRecordRaw[] = [
     { path: '/login', component: LoginPage, name: 'LoginPage' },
+    { path: '/register', component: CreateAccountComponent, name: 'security-register' },
 ];
 
 export const requireAuthNavGuard: NavigationGuardWithThis<NavigationGuardWithThis<boolean>> = async to => {

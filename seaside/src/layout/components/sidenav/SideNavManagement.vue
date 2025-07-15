@@ -2,28 +2,28 @@
   <span class="mt-auto"></span>
   <ul class="menu w-full">
     <li v-if="user.isAuthenticated && store.getters['user/hasRoleAdmin']">
-      <router-link active-class="active" to="/admin" @click="sideNavToggle" class="capitalize">
+      <router-link active-class="active" class="capitalize" to="/admin" @click="sideNavToggle">
         <AcademicCapIcon class="fill-current w-6 h-6 mr-2"/>
         {{ t('aside.administration') }}
       </router-link>
     </li>
     <li v-if="user.isAuthenticated && store.getters['user/hasRoleUser']">
-      <router-link active-class="active" to="/teams" @click="sideNavToggle" class="capitalize">
+      <router-link active-class="active" class="capitalize" to="/teams" @click="sideNavToggle">
         <UserGroupIcon class="fill-current w-6 h-6 mr-2"/>
         {{ t('aside.teams') }}
       </router-link>
     </li>
     <li v-if="user.isAuthenticated && store.getters['user/hasRoleUser']">
-      <router-link active-class="active" to="/config" @click="sideNavToggle" class="capitalize">
+      <router-link active-class="active" class="capitalize" to="/config" @click="sideNavToggle">
         <AdjustmentsVerticalIcon class="fill-current w-6 h-6 mr-2"/>
         {{ t('aside.configuration') }}
       </router-link>
     </li>
     <li>
-      <a v-if="!user.isAuthenticated" @click.prevent.stop="onCreateAccountClick">
+      <router-link v-if="!user.isAuthenticated" to="/register">
         <InboxArrowDownIcon class="fill-current h-6 w-6"/>
         <span class="ml-2 capitalize font-medium">{{ t('aside.register') }}</span>
-      </a>
+      </router-link>
     </li>
     <li class="text-primary">
       <a v-if="user.isAuthenticated" @click.stop="$emit('logout')">
@@ -36,6 +36,9 @@
       </router-link>
     </li>
   </ul>
+  <teleport v-if="route.params.id" to="body">
+    <router-view :id="route.params.id"/>
+  </teleport>
 </template>
 
 <script lang="ts">
@@ -52,6 +55,7 @@ import {
 } from '@heroicons/vue/20/solid';
 import { SidenavMutation } from '@/store/sidenav/SidenavMutation.enum';
 import { useI18n } from 'vue-i18n';
+import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-router';
 
 @Component({
   name: 'SideNavManagement',
@@ -66,25 +70,27 @@ import { useI18n } from 'vue-i18n';
   },
   setup() {
     const store = useStore();
+    const router = useRouter();
+    const route = useRoute();
     const { t } = useI18n();
     return {
       store: store,
+      router: router,
+      route: route,
       user: store.state.user,
       t: t,
     };
   },
 })
 export default class SideNavManagement extends Vue {
-  private t;
-  private store;
+  private readonly t;
+  private readonly store;
+  private readonly router!: Router;
+  private readonly route!: RouteLocationNormalizedLoaded;
   private user: UserState;
 
   public sideNavToggle(): void {
     this.store.commit(SidenavMutation.TOGGLE);
-  }
-
-  public onCreateAccountClick(): void {
-    this.store.commit(SidenavMutation.OPEN_CREATE_ACCOUNT_MUTATION);
   }
 }
 </script>
