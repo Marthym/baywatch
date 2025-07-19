@@ -1,9 +1,10 @@
 export const en_US = {
-    'security.register.login': 'login',
-    'security.register.username': 'username',
-    'security.register.mail': 'mail',
-    'security.register.password': 'mot de passe',
-    'security.register.confirmation': 'confirmer le mot de passe',
-    'security.register.generate': 'generate',
+    'security.register.confirmation': 'confirm password',
     'security.register.dialog.register': 'register',
+    'security.register.generate': 'generate',
+    'security.register.login': 'login',
+    'security.register.mail': 'mail',
+    'security.register.password': 'password',
+    'security.register.title': 'Register a new account',
+    'security.register.username': 'username',
 }
