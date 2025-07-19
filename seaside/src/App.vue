@@ -12,7 +12,6 @@
       </main>
     </div>
   </div>
-  <create-account-component v-if="store.state.user.isCreateAccountOpen"/>
 </template>
 
 <script lang="ts">
@@ -28,13 +27,10 @@ import notificationService from '@/services/notification/NotificationService';
 import { Store, useStore } from 'vuex';
 import { UPDATE_MUTATION as STATS_UPDATE_MUTATION } from '@/techwatch/store/statistics/StatisticsConstants';
 import { HAS_ROLE_USER_GETTER } from '@/security/store/UserConstants';
-import { defineAsyncComponent } from 'vue';
 
-const CreateAccountComponent = defineAsyncComponent(() => import('@/security/components/CreateAccountComponent.vue'));
 
 @Component({
   components: {
-    CreateAccountComponent,
     NotificationArea,
     TopNavigationBar,
     SideNav,

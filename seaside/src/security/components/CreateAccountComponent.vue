@@ -1,77 +1,60 @@
 <template>
-  <curtain-modal @leave="close()" v-slot="curtainModal">
-    <h2 class="font-sans text-xl border-b border-accent/40 pb-2">Create new account</h2>
+  <curtain-modal v-slot="curtainModal" @leave="close()">
+    <h2 class="font-sans text-xl border-b border-accent/40 pb-2">{{ t('security.register.title') }}</h2>
     <div class="m-4 max-w-lg">
-      <label class="label">
-        <span class="label-text">Login</span>
-      </label>
-      <input v-model="account.login" type="text" placeholder="login"
-             class="input input-bordered w-full"
-             :class="{'input-error': errors.has('login')}"
-             @change="onFieldChange('login')">
-      <label class="label -mt-1">
-        <span class="label-text-alt">&nbsp;</span>
-        <span v-if="errors.has('login')" class="label-text-alt">{{ errors.get('login') }}</span>
-      </label>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend capitalize">{{ t('security.register.login') }}</legend>
+        <input v-model="account.login" :class="{'input-error': errors.has('login')}" class="input w-full" type="text"/>
+        <p class="label">{{ errors.get('login') }}&nbsp;</p>
+      </fieldset>
 
-      <label class="label -mt-6">
-        <span class="label-text">Username</span>
-      </label>
-      <input v-model="account.name" type="text" placeholder="User Name"
-             class="input input-bordered w-full"
-             :class="{'input-error': errors.has('name')}" @change="onFieldChange('name')">
-      <label class="label -mt-1">
-        <span class="label-text-alt">&nbsp;</span>
-        <span v-if="errors.has('name')" class="label-text-alt">{{ errors.get('name') }}</span>
-      </label>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend capitalize">{{ t('security.register.username') }}</legend>
+        <input v-model="account.name" :class="{'input-error': errors.has('name')}" class="input w-full" type="text"/>
+        <p class="label">{{ errors.get('name') }}&nbsp;</p>
+      </fieldset>
 
-      <label class="label -mt-6">
-        <span class="label-text">Mail</span>
-      </label>
-      <input v-model="account.mail" type="email" placeholder="okenobi@ght1pc9kc.fr"
-             class="input input-bordered w-full"
-             :class="{'input-error': errors.has('mail')}" @change="onFieldChange('mail')">
-      <label class="label -mt-1">
-        <span class="label-text-alt">&nbsp;</span>
-        <span v-if="errors.has('mail')" class="label-text-alt">{{ errors.get('mail') }}</span>
-      </label>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend capitalize">{{ t('security.register.mail') }}</legend>
+        <input v-model="account.mail" :class="{'input-error': errors.has('mail')}" class="input w-full" type="email"/>
+        <p class="label">{{ errors.get('mail') }}&nbsp;</p>
+      </fieldset>
 
-      <label class="label">
-        <span class="label-text">Password</span>
-      </label>
-      <div class="tooltip-error tooltip-bottom w-full" :data-tip="errors.get('password')"
-           :class="{'tooltip tooltip-open': errors.has('password')}">
-        <div class="join w-full">
-          <input v-model="account.password" :type="passwordVisible?'text':'password'"
-                 class="input input-bordered join-item w-full"
-                 :class="{'input-error': errors.has('password')}"
+      <fieldset class="fieldset w-full">
+        <legend class="fieldset-legend capitalize">{{ t('security.register.password') }}</legend>
+        <div class="join">
+          <input v-model="account.password" :class="{'input-error': errors.has('password')}"
+                 :type="passwordVisible?'text':'password'" class="join-item input border-r-0 w-full"
                  @keyup="onFieldChange('password')"
-                 @blur.stop="onBlurNewPassword">
-          <button class="btn btn-neutral input input-bordered border-l-0 join-item focus:outline-hidden"
-                  :class="{'input-error': errors.has('password')}"
-                  @click="passwordVisible = !passwordVisible">
+                 @blur.stop="onBlurNewPassword"/>
+          <button :class="{'input-error': errors.has('password')}"
+                  class="btn btn-neutral input input-bordered border-x-0 join-item max-w-fit focus:outline-hidden"
+                  @click.prevent.stop="passwordVisible = !passwordVisible">
             <EyeIcon v-if="!passwordVisible" class="h-6 w-6 opacity-50"/>
             <EyeSlashIcon v-else class="h-6 w-6 opacity-50"/>
           </button>
-          <button class="btn join-item" @click.stop="onPasswordGenerate">Generate</button>
+          <button class="btn join-item" @click.prevent.stop="onPasswordGenerate">
+            {{ t('security.register.generate') }}
+          </button>
         </div>
-      </div>
+        <p class="label">{{ errors.get('password') }}&nbsp;</p>
+      </fieldset>
 
-      <label class="label">
-        <span class="label-text">Password Confirmation</span>
-      </label>
-      <input v-model="passwordConfirm" type="password" class="input input-bordered w-full"
-             :class="{'input-error': errors.has('passwordConfirm')}"
-             @change="onFieldChange('passwordConfirm')"
-             @blur="onBlurConfirmPassword">
-      <label class="label -mt-1">
-        <span class="label-text-alt">&nbsp;</span>
-        <span v-if="errors.has('passwordConfirm')" class="label-text-alt">{{ errors.get('passwordConfirm') }}</span>
-      </label>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend capitalize">{{ t('security.register.confirmation') }}</legend>
+        <input v-model="passwordConfirm" :class="{'input-error': errors.has('passwordConfirm')}"
+               class="input w-full" type="password"
+               @blur="onBlurConfirmPassword"
+               @change="onFieldChange('passwordConfirm')"/>
+        <p class="label">{{ errors.get('confirmation') }}&nbsp;</p>
+      </fieldset>
 
       <div class="text-right">
-        <button class="btn btn-sm mx-1" @click.stop="curtainModal.close()">Cancel</button>
-        <button class="btn btn-sm btn-primary mx-1" @click.stop="onRegisterClick(curtainModal)">Register</button>
+        <button class="btn mx-1 capitalize" @click.stop="curtainModal.close()">{{ t('dialog.cancel') }}</button>
+        <button class="btn btn-primary capitalize mx-1" @click.stop="onRegisterClick(curtainModal)">{{
+            t('security.register.dialog.register')
+          }}
+        </button>
       </div>
     </div>
   </curtain-modal>
@@ -80,14 +63,13 @@
 import { Component, Vue } from 'vue-facing-decorator';
 import CurtainModal, { CurtainModalSlot } from '@/common/components/CurtainModal.vue';
 import { User } from '@/security/model/User';
-import { Store, useStore } from 'vuex';
-import { UserState } from '@/security/store/user';
-import { CLOSE_CREATE_ACCOUNT_MUTATION } from '@/security/store/UserConstants';
 import { passwordAnonymousCheckStrength, passwordGenerate } from '@/security/services/PasswordService';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/solid';
 import { userCreate } from '@/security/services/UserService';
 import notificationService from '@/services/notification/NotificationService';
 import { MAIL_PATTERN } from '@/common/services/RegexPattern';
+import { useI18n } from 'vue-i18n';
+import { Router, useRouter } from 'vue-router';
 
 const CLOSE_EVENT: string = 'close';
 
@@ -95,13 +77,17 @@ const CLOSE_EVENT: string = 'close';
   emits: [CLOSE_EVENT],
   components: { CurtainModal, EyeIcon, EyeSlashIcon },
   setup() {
+    const { t } = useI18n();
+    const router = useRouter();
     return {
-      userStore: useStore(),
+      t: t,
+      router: router,
     };
   },
 })
 export default class CreateAccountComponent extends Vue {
-  private readonly userStore: Store<UserState>;
+  private readonly router!: Router;
+  private readonly t!;
   private errors: Map<string, string> = new Map<string, string>([]);
 
   private account: User = { roles: [] } as User;
@@ -156,7 +142,7 @@ export default class CreateAccountComponent extends Vue {
   }
 
   private close(): void {
-    this.userStore.commit(CLOSE_CREATE_ACCOUNT_MUTATION);
+    this.router.push('/');
   }
 
   private onRegisterClick(curtainModal: CurtainModalSlot): void {
