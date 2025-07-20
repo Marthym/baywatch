@@ -129,7 +129,7 @@ public class FeedRepository implements FeedPersistencePort {
     }
 
     public Mono<Void> setFeedProperties(String userId, Collection<Entity<WebFeed>> feeds) {
-        var records = new ArrayList<FeedsUsersPropertiesRecord>();
+        var records = new ArrayList<FeedsUsersPropertiesRecord>(feeds.size());
         List<String> feedsIds = feeds.stream().map(Entity::id).distinct().toList();
         for (Entity<WebFeed> feed : feeds) {
             if (nonNull(feed.self())) {

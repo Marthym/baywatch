@@ -7,7 +7,7 @@ const DEFAUTL_DELAY = 5000;
 
 export class NotificationService {
     private readonly defaultDelay: number;
-    private notifs: Notification[] = [];
+    private readonly notifs: Notification[] = [];
     private listeners: NotificationListener[] = [];
     private timeout?: number;
 
