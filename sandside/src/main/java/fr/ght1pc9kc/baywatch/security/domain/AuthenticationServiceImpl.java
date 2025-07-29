@@ -9,11 +9,15 @@ import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthenticationManagerPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.JwtTokenProvider;
+import fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort;
 import fr.ght1pc9kc.entity.api.Entity;
+import fr.ght1pc9kc.juery.api.Criteria;
+import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -24,6 +28,8 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 
+import static fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort.MailTemplate.PASSWORD_RESET;
+
 @Slf4j
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -31,6 +37,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final JwtTokenProvider tokenProvider;
     private final UserService userService;
     private final AuthenticationFacade authFacade;
+    private final MailSenderPort mailSenderPort;
 
     private final Sinks.Many<Entity<User>> toUpdate = Sinks.many().unicast().onBackpressureBuffer();
 
@@ -80,5 +87,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                             .addArgument(auth.user().self().login())
                             .log("Refresh {} successful");
                 });
+    }
+
+    @Override
+    public Mono<Void> askPasswordReset(@NotNull String email) {
+        return userService.list(PageRequest.one(Criteria.property("name").eq(email)))
+                .switchIfEmpty(userService.list(PageRequest.one(Criteria.property("mail").eq(email))))
+                .next()
+                .flatMap(user -> mailSenderPort.send(PASSWORD_RESET, user.self().mail())
+                        .thenEmpty(Mono.fromRunnable(() ->
+                                log.atInfo().addArgument(user.self().login()).log("Send password reset to {} successful"))));
     }
 }
