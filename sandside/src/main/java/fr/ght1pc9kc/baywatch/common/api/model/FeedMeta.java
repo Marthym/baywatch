@@ -8,9 +8,11 @@ import java.time.Instant;
 @RequiredArgsConstructor
 @SuppressWarnings("java:S115")
 public enum FeedMeta implements TypedMeta {
-    ETag(String.class),
     createdBy(String.class),
-    updated(Instant.class);
+    ETag(String.class),
+    updated(Instant.class),
+    visible(Boolean.class),
+    ;
 
     private final Class<?> type;
 

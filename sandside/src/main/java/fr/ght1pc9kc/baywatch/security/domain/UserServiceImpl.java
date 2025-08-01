@@ -15,8 +15,10 @@ import fr.ght1pc9kc.baywatch.security.domain.exceptions.ConstraintViolationPersi
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UserCreateException;
+import fr.ght1pc9kc.baywatch.security.domain.model.PersonalFeed;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.NotificationPort;
+import fr.ght1pc9kc.baywatch.security.domain.ports.TechwatchModulePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -54,6 +56,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
 
     private final UserPersistencePort userRepository;
     private final AuthorizationPersistencePort authorizationRepository;
+    private final TechwatchModulePort techwatchModulePort;
     private final NotificationPort notificationPort;
     private final AuthenticationFacade authFacade;
     private final PasswordService passwordService;
@@ -107,6 +110,10 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
 
                 .flatMap(entity -> userRepository.persist(List.of(entity)).single())
                 .flatMap(ignore -> grants(userId, user.roles()))
+                .flatMap(createdUser ->
+                        techwatchModulePort.addAndSubscribePersonalFeed(PersonalFeed.of(createdUser))
+                                .contextWrite(authFacade.withAuthentication(createdUser))
+                                .thenReturn(createdUser))
                 .onErrorMap(ConstraintViolationPersistenceException.class, e ->
                         new UserCreateException(
                                 String.format("Unable to create User, %s unavailable !", e.getPropertyField()),

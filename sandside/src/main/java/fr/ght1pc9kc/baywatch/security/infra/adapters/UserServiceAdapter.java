@@ -10,6 +10,7 @@ import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.domain.UserServiceImpl;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.NotificationPort;
+import fr.ght1pc9kc.baywatch.security.domain.ports.TechwatchModulePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.security.infra.model.BaywatchUserDetails;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -44,11 +45,12 @@ public class UserServiceAdapter implements AuthorizationService, UserService, Re
     @Autowired
     public UserServiceAdapter(UserPersistencePort userPersistencePort,
                               AuthorizationPersistencePort authorizationRepository,
+                              TechwatchModulePort techwatchModulePort,
                               NotificationPort notificationPort,
                               AuthenticationFacade authFacade,
                               PasswordService passwordService) {
         this.delegate = new UserServiceImpl(
-                userPersistencePort, authorizationRepository, notificationPort, authFacade, passwordService,
+                userPersistencePort, authorizationRepository, techwatchModulePort, notificationPort, authFacade, passwordService,
                 Clock.systemUTC(), UlidFactory.newMonotonicInstance());
         this.delegateA = (UserServiceImpl) this.delegate;
     }
