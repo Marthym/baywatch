@@ -4,19 +4,22 @@
     <div class="m-4 max-w-lg">
       <fieldset class="fieldset">
         <legend class="fieldset-legend capitalize">{{ t('security.register.login') }}</legend>
-        <input v-model="account.login" :class="{'input-error': errors.has('login')}" class="input w-full" type="text"/>
+        <input v-model="account.login" :class="{'input-error': errors.has('login')}" class="input w-full" type="text"
+          @change="errors.delete('login')"/>
         <p class="label">{{ errors.get('login') }}&nbsp;</p>
       </fieldset>
 
       <fieldset class="fieldset">
         <legend class="fieldset-legend capitalize">{{ t('security.register.username') }}</legend>
-        <input v-model="account.name" :class="{'input-error': errors.has('name')}" class="input w-full" type="text"/>
+        <input v-model="account.name" :class="{'input-error': errors.has('name')}" class="input w-full" type="text"
+               @change="errors.delete('name')"/>
         <p class="label">{{ errors.get('name') }}&nbsp;</p>
       </fieldset>
 
       <fieldset class="fieldset">
         <legend class="fieldset-legend capitalize">{{ t('security.register.mail') }}</legend>
-        <input v-model="account.mail" :class="{'input-error': errors.has('mail')}" class="input w-full" type="email"/>
+        <input v-model="account.mail" :class="{'input-error': errors.has('mail')}" class="input w-full" type="email"
+               @change="errors.delete('mail')"/>
         <p class="label">{{ errors.get('mail') }}&nbsp;</p>
       </fieldset>
 
