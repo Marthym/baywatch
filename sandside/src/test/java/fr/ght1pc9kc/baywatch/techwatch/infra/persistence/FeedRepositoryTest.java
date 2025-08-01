@@ -129,7 +129,7 @@ class FeedRepositoryTest {
                 .meta(updated, Instant.EPOCH)
                 .withId(reference);
 
-        StepVerifier.create(tested.persist(Collections.singleton(expected)))
+        StepVerifier.create(tested.persist(List.of(expected)))
                 .assertNext(actual -> assertThat(actual).isEqualTo(expected))
                 .verifyComplete();
 

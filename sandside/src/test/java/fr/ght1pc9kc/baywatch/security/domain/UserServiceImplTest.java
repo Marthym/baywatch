@@ -13,8 +13,10 @@ import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
+import fr.ght1pc9kc.baywatch.security.domain.model.PersonalFeed;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.NotificationPort;
+import fr.ght1pc9kc.baywatch.security.domain.ports.TechwatchModulePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.entity.api.Entity;
@@ -25,6 +27,10 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -41,15 +47,14 @@ import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdAt;
 import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdBy;
 import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.loginAt;
 import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.loginIP;
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -58,14 +63,25 @@ class UserServiceImplTest {
     private final UserPersistencePort mockUserRepository = mock(UserPersistencePort.class);
     private final AuthorizationPersistencePort mockAuthorizationRepository = mock(AuthorizationPersistencePort.class);
     private final AuthenticationFacade mockAuthFacade = mock(AuthenticationFacade.class);
-    private final UlidFactory mockUlidFactory = spy(UlidFactory.newMonotonicInstance());
+    private final UlidFactory mockUlidFactory = mock(UlidFactory.class);
     private final NotificationPort mockNotificationPort = mock(NotificationPort.class);
+    private final TechwatchModulePort mockTechwatchModulePort = mock(TechwatchModulePort.class);
 
     private UserServiceImpl tested;
 
     @BeforeEach
+    @SuppressWarnings("unchecked")
     void setUp() {
+        when(mockUlidFactory.create()).thenReturn(Ulid.from("01EAWYQD0927XW36X4Z0000000"));
         when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.YODA));
+        when(mockAuthFacade.withAuthentication(any())).thenAnswer(a -> {
+            Entity<User> user = (Entity<User>) a.getArgument(0, Entity.class);
+            Authentication authentication = new PreAuthenticatedAuthenticationToken(user, null,
+                    AuthorityUtils.createAuthorityList(user.self().roles().stream()
+                            .map(Permission::toString)
+                            .toArray(String[]::new)));
+            return ReactiveSecurityContextHolder.withAuthentication(authentication);
+        });
         doAnswer(answer -> Stream.of(UserSamples.LUKE, UserSamples.YODA, UserSamples.OBIWAN)
                 .filter(u -> u.id().equals(answer.getArgument(0, String.class)))
                 .findAny().map(Mono::just).orElseThrow()
@@ -88,8 +104,14 @@ class UserServiceImplTest {
         doAnswer(a -> a.getArgument(0).equals(a.getArgument(1))).when(mockPasswordService).matches(anyString(), anyString());
         doReturn(Mono.just(new PasswordEvaluation(true, 65d, "ok")))
                 .when(mockPasswordService).checkPasswordStrength(any(User.class));
-        tested = new UserServiceImpl(mockUserRepository, mockAuthorizationRepository, mockNotificationPort,
-                mockAuthFacade, mockPasswordService, Clock.fixed(CURRENT, ZoneOffset.UTC), mockUlidFactory);
+
+        when(mockTechwatchModulePort.addAndSubscribePersonalFeed(any())).thenReturn(Mono.empty().then());
+        when(mockTechwatchModulePort.unsubscribePersonalFeed(any())).thenReturn(Mono.empty().then());
+        when(mockTechwatchModulePort.deletePersonalFeed(any())).thenReturn(Mono.empty().then());
+
+        tested = new UserServiceImpl(mockUserRepository, mockAuthorizationRepository, mockTechwatchModulePort,
+                mockNotificationPort, mockAuthFacade, mockPasswordService,
+                Clock.fixed(CURRENT, ZoneOffset.UTC), mockUlidFactory);
     }
 
     @Test
@@ -128,14 +150,22 @@ class UserServiceImplTest {
         ArgumentCaptor<List<Entity<User>>> actuals = ArgumentCaptor.forClass(List.class);
         verify(mockUserRepository).persist(actuals.capture());
 
-        Entity<User> actual = actuals.getValue().getFirst();
-        assertAll(
-                () -> Assertions.assertThat(actual.id()).isNotBlank(),
-                () -> Assertions.assertThat(actual.meta(createdBy)).isPresent().contains(actual.id()),
-                () -> Assertions.assertThat(actual.meta(createdAt, Instant.class))
-                        .isPresent().contains(CURRENT),
-                () -> Assertions.assertThat(actual.self()).isEqualTo(UserSamples.OBIWAN.self())
-        );
+        SoftAssertions.assertSoftly(softly -> {
+            Entity<User> actual = actuals.getValue().getFirst();
+            softly.assertThat(actual.id()).isNotBlank();
+            softly.assertThat(actual.meta(createdBy)).isPresent().contains("US01EAWYQD0927XW36X4Z0000000");
+            softly.assertThat(actual.meta(createdAt, Instant.class)).isPresent().contains(CURRENT);
+            softly.assertThat(actual.self()).isEqualTo(UserSamples.OBIWAN.self());
+        });
+
+        ArgumentCaptor<PersonalFeed> personalFeedCaptor = ArgumentCaptor.forClass(PersonalFeed.class);
+        verify(mockTechwatchModulePort).addAndSubscribePersonalFeed(personalFeedCaptor.capture());
+        SoftAssertions.assertSoftly(softly -> {
+            PersonalFeed actual = personalFeedCaptor.getValue();
+            softly.assertThat(actual.id()).isEqualTo("US01EAWYQD0927XW36X4Z0000000");
+            softly.assertThat(actual.icon())
+                    .hasToString("https://www.gravatar.com/avatar/1a06a15b937d2a5ebeb93846cc83669b?s=96&d=retro");
+        });
     }
 
     @Test
@@ -159,13 +189,22 @@ class UserServiceImplTest {
         ArgumentCaptor<List<Entity<User>>> users = ArgumentCaptor.forClass(List.class);
         verify(mockUserRepository).persist(users.capture());
 
-        Entity<User> actual = users.getValue().getFirst();
-        assertAll(
-                () -> Assertions.assertThat(actual.id()).isNotBlank(),
-                () -> Assertions.assertThat(actual.meta(createdBy)).isPresent().contains(UserSamples.YODA.id()),
-                () -> Assertions.assertThat(actual.meta(createdAt, Instant.class)).isPresent().contains(CURRENT),
-                () -> Assertions.assertThat(actual.self()).isEqualTo(UserSamples.OBIWAN.self())
-        );
+        SoftAssertions.assertSoftly(softly -> {
+            Entity<User> actual = users.getValue().getFirst();
+            softly.assertThat(actual.id()).isNotBlank();
+            softly.assertThat(actual.meta(createdBy)).isPresent().contains(UserSamples.YODA.id());
+            softly.assertThat(actual.meta(createdAt, Instant.class)).isPresent().contains(CURRENT);
+            softly.assertThat(actual.self()).isEqualTo(UserSamples.OBIWAN.self());
+        });
+
+        ArgumentCaptor<PersonalFeed> personalFeedCaptor = ArgumentCaptor.forClass(PersonalFeed.class);
+        verify(mockTechwatchModulePort).addAndSubscribePersonalFeed(personalFeedCaptor.capture());
+        SoftAssertions.assertSoftly(softly -> {
+            PersonalFeed actual = personalFeedCaptor.getValue();
+            softly.assertThat(actual.id()).isEqualTo(UserSamples.OBIWAN.id());
+            softly.assertThat(actual.icon())
+                    .hasToString("https://www.gravatar.com/avatar/1a06a15b937d2a5ebeb93846cc83669b?s=96&d=retro");
+        });
     }
 
     @Test
@@ -265,6 +304,9 @@ class UserServiceImplTest {
         Assertions.assertThat(selected.getValue())
                 .isEqualTo(QueryContext.all(Criteria.property(EntitiesProperties.ID).in(UserSamples.OBIWAN.id())));
         Assertions.assertThat(deleted.getValue()).isEqualTo(List.of(UserSamples.OBIWAN.id()));
+
+        verify(mockTechwatchModulePort).unsubscribePersonalFeed(eq(UserSamples.OBIWAN));
+        verify(mockTechwatchModulePort).deletePersonalFeed(eq(UserSamples.OBIWAN));
     }
 
     @Test

@@ -109,8 +109,8 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                                 .meta(createdBy, currentUserId)
                                 .withId(userId)))
 
-                .flatMap(entity -> userRepository.persist(List.of(entity)).single())
-                .flatMap(ignore -> grants(userId, user.roles()))
+                .flatMap(createdUser -> userRepository.persist(List.of(createdUser)).single())
+                .flatMap(createdUser -> grants(userId, user.roles()).thenReturn(createdUser))
                 .flatMap(createdUser ->
                         techwatchModulePort.addAndSubscribePersonalFeed(PersonalFeed.of(createdUser))
                                 .contextWrite(authFacade.withAuthentication(createdUser))

@@ -80,7 +80,9 @@ public interface TechwatchMapper {
         feed.meta(updated, Instant.class).map(DateUtils::toLocalDateTime)
                 .ifPresent(feedsRecord::setFeedLastWatch);
         feed.meta(ETag).ifPresent(feedsRecord::setFeedLastEtag);
-        feed.meta(visible, Boolean.class).ifPresent(feedsRecord::setFeedVisible);
+        feed.meta(visible, Boolean.class).ifPresentOrElse(
+                feedsRecord::setFeedVisible,
+                () -> feedsRecord.setFeedVisible(true));
         if (nonNull(feed.self().name())) {
             feedsRecord.setFeedName(feed.self().name());
         }

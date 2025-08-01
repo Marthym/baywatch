@@ -23,7 +23,8 @@ public class FeedRecordSamples implements RelationalDataSet<FeedsRecord> {
             .setFeedName("Jedi")
             .setFeedUrl(JEDI_BASE_URI.toString())
             .setFeedDescription("Feed description")
-            .setFeedLastWatch(LocalDateTime.parse("2020-12-11T15:12:42"));
+            .setFeedLastWatch(LocalDateTime.parse("2020-12-11T15:12:42"))
+            .setFeedVisible(true);
 
     public static final List<FeedsRecord> FEEDS_RECORDS = List.of(
             JEDI,
