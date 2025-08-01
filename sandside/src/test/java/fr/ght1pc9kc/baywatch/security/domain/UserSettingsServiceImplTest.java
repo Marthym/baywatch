@@ -11,6 +11,7 @@ import fr.ght1pc9kc.baywatch.security.domain.ports.UserSettingsPersistencePort;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.entity.api.Entity;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
@@ -23,14 +24,15 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class UserSettingsServiceImplTest {
+    private final UserSettingsPersistencePort mockPersistence = mock(UserSettingsPersistencePort.class);
     private UserSettingsService tested;
     private AuthenticationFacade mockAuthentication;
 
     @BeforeEach
     void setUp() {
-        UserSettingsPersistencePort mockPersistence = mock(UserSettingsPersistencePort.class);
         doReturn(Mono.just(Entity.identify(new UserSettings(Locale.FRENCH, true, NewsViewType.MAGAZINE)).withId(UserSamples.LUKE.id())))
                 .when(mockPersistence).get(anyString());
 
@@ -40,7 +42,7 @@ class UserSettingsServiceImplTest {
         }).when(mockPersistence).persist(anyString(), any(UserSettings.class));
 
         mockAuthentication = mock(AuthenticationFacade.class);
-        ClientLocalePort mockLocale = () -> Mono.just(Locale.FRANCE);
+        ClientLocalePort mockLocale = () -> Mono.just(Locale.FRENCH);
         tested = new UserSettingsServiceImpl(mockPersistence, mockAuthentication, mockLocale);
     }
 
@@ -50,6 +52,19 @@ class UserSettingsServiceImplTest {
 
         StepVerifier.create(tested.get(UserSamples.LUKE.id()))
                 .assertNext(actual -> Assertions.assertThat(actual.id()).isEqualTo(UserSamples.LUKE.id()))
+                .verifyComplete();
+    }
+
+    @Test
+    void should_get_user_default_settings() {
+        when(mockPersistence.get(anyString())).thenReturn(Mono.empty());
+        when(mockAuthentication.getConnectedUser()).thenReturn(Mono.just(UserSamples.LUKE));
+
+        StepVerifier.create(tested.get(UserSamples.LUKE.id()))
+                .assertNext(actual -> SoftAssertions.assertSoftly(softly -> {
+                    softly.assertThat(actual.id()).isEqualTo(UserSamples.LUKE.id());
+                    softly.assertThat(actual.self().preferredLocale()).isEqualTo(Locale.FRANCE);
+                }))
                 .verifyComplete();
     }
 
