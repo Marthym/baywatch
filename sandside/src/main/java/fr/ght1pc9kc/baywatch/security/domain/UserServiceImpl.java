@@ -39,6 +39,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.NO_ONE;
+import static fr.ght1pc9kc.baywatch.common.api.model.BaywatchLogsMarkers.AUDIT;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ROLES;
 import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdAt;
@@ -176,15 +177,31 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
 
     @Override
     public Flux<Entity<User>> delete(Collection<String> ids) {
-        return authorizeSelfData(ids)
-                .flatMapMany(u -> userRepository.list(QueryContext.all(Criteria.property(ID).in(ids))))
-                .switchIfEmpty(Flux.error(new NoSuchElementException(String.format("Unable to find users %s :", ids))))
-                .collectList()
-                .flatMapMany(users -> Flux.fromIterable(users)
-                        .map(Entity::id)
+        return authorizeSelfData(ids).flatMapMany(operator ->
+                userRepository.list(QueryContext.all(Criteria.property(ID).in(ids)))
+                        .switchIfEmpty(Flux.error(new NoSuchElementException(String.format("Unable to find users %s :", ids))))
                         .collectList()
-                        .flatMap(userRepository::delete)
-                        .thenMany(Flux.fromIterable(users)));
+                        .flatMapMany(users -> Flux.fromIterable(users)
+                                .map(Entity::id)
+                                .collectList()
+                                .flatMap(userRepository::delete)
+                                .thenMany(Flux.fromIterable(users)))
+                        .flatMap(user -> techwatchModulePort.unsubscribePersonalFeed(user)
+                                .contextWrite(authFacade.withAuthentication(user))
+                                .thenReturn(user))
+                        .flatMap(user -> techwatchModulePort.deletePersonalFeed(user)
+                                .contextWrite(AuthenticationFacade.withSystemAuthentication())
+                                .thenReturn(user))
+
+                        .doOnNext(user -> log.atWarn().addMarker(AUDIT)
+                                .addKeyValue("operator", operator.id())
+                                .addKeyValue("type", "User")
+                                .addKeyValue("action", "delete")
+                                .addKeyValue("id", user.id())
+                                .addArgument(user.self().login())
+                                .addArgument(operator.self().login())
+                                .log("Deleted user {} by {}"))
+        );
     }
 
     @Override
