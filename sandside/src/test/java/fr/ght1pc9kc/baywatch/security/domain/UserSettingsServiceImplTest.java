@@ -6,6 +6,7 @@ import fr.ght1pc9kc.baywatch.security.api.UserSettingsService;
 import fr.ght1pc9kc.baywatch.security.api.model.NewsViewType;
 import fr.ght1pc9kc.baywatch.security.api.model.UserSettings;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
+import fr.ght1pc9kc.baywatch.security.domain.ports.ClientLocalePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserSettingsPersistencePort;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.entity.api.Entity;
@@ -39,7 +40,8 @@ class UserSettingsServiceImplTest {
         }).when(mockPersistence).persist(anyString(), any(UserSettings.class));
 
         mockAuthentication = mock(AuthenticationFacade.class);
-        tested = new UserSettingsServiceImpl(mockPersistence, mockAuthentication);
+        ClientLocalePort mockLocale = () -> Mono.just(Locale.FRANCE);
+        tested = new UserSettingsServiceImpl(mockPersistence, mockAuthentication, mockLocale);
     }
 
     @Test
