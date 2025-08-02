@@ -19,6 +19,7 @@ public record PersonalFeed(
     public static PersonalFeed of(Entity<User> user) {
         URI icon;
         try {
+            @SuppressWarnings("java:S4790")
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             md5.update(user.self().mail().getBytes());
             String gravatar = HexFormat.of().formatHex(md5.digest());

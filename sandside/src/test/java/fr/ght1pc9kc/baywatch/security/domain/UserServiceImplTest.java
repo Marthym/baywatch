@@ -50,7 +50,6 @@ import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.loginIP;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -305,8 +304,8 @@ class UserServiceImplTest {
                 .isEqualTo(QueryContext.all(Criteria.property(EntitiesProperties.ID).in(UserSamples.OBIWAN.id())));
         Assertions.assertThat(deleted.getValue()).isEqualTo(List.of(UserSamples.OBIWAN.id()));
 
-        verify(mockTechwatchModulePort).unsubscribePersonalFeed(eq(UserSamples.OBIWAN));
-        verify(mockTechwatchModulePort).deletePersonalFeed(eq(UserSamples.OBIWAN));
+        verify(mockTechwatchModulePort).unsubscribePersonalFeed(UserSamples.OBIWAN);
+        verify(mockTechwatchModulePort).deletePersonalFeed(UserSamples.OBIWAN);
     }
 
     @Test

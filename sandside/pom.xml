@@ -299,7 +299,7 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-            <plugin> <!-- Only present in order to create target dir for flyway -->
+            <plugin> <!-- Only present to create target dir for flyway -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
