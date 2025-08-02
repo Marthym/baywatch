@@ -185,4 +185,94 @@ class FeedServiceImplTest {
                 .verifyError(IllegalArgumentException.class);
 
     }
+
+    @Test
+    void should_count_feeds_for_authenticated_user() {
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
+        StepVerifier.create(tested.count(PageRequest.all()))
+                .expectNext(42)
+                .verifyComplete();
+
+        verify(mockFeedRepository, times(1)).count(any(QueryContext.class));
+    }
+
+    @Test
+    void should_count_feeds_for_anonymous_user() {
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.empty());
+        StepVerifier.create(tested.count(PageRequest.all()))
+                .expectNext(42)
+                .verifyComplete();
+
+        verify(mockFeedRepository, times(1)).count(any(QueryContext.class));
+    }
+
+    @Test
+    void should_fail_to_count_feeds_if_unauthenticated_user() {
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.error(new UnauthenticatedUser("User must be authenticated")));
+
+        StepVerifier.create(tested.count(PageRequest.all()))
+                .expectNext(42)
+                .verifyComplete(); // Should handle error and fallback as anonymous
+
+        verify(mockFeedRepository, times(1)).count(any(QueryContext.class));
+    }
+
+    @Test
+    void should_add_and_subscribe_feeds() {
+        Entity<WebFeed> jediFeed = BAYWATCH_MAPPER.recordToFeed(FeedRecordSamples.JEDI);
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
+        when(mockFeedRepository.persist(anyCollection())).thenReturn(Flux.just(jediFeed));
+        when(mockFeedRepository.persistUserRelation(anyString(), anyCollection())).thenReturn(Flux.just(jediFeed));
+
+        StepVerifier.create(tested.addAndSubscribe(List.of(jediFeed)))
+                .expectNextCount(1)
+                .verifyComplete();
+
+        verify(mockFeedRepository).persist(anyCollection());
+        verify(mockFeedRepository).persistUserRelation(anyString(), anyCollection());
+    }
+
+    @Test
+    void should_unsubscribe_feeds() {
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
+        when(mockFeedRepository.deleteUserRelations(anyString(), anyCollection())).thenReturn(Mono.empty());
+        when(mockFeedRepository.deleteFeedProperties(anyString(), anyCollection())).thenReturn(Mono.empty());
+
+        StepVerifier.create(tested.unsubscribe(List.of("42")))
+                .expectNext(1)
+                .verifyComplete();
+
+        verify(mockFeedRepository).deleteUserRelations(anyString(), anyCollection());
+        verify(mockFeedRepository).deleteFeedProperties(anyString(), anyCollection());
+    }
+
+    @Test
+    void should_fail_to_unsubscribe_if_unauthenticated() {
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.empty());
+
+        StepVerifier.create(tested.unsubscribe(List.of("42")))
+                .verifyError(UnauthenticatedUser.class);
+
+        verify(mockFeedRepository, times(0)).deleteUserRelations(anyString(), anyCollection());
+        verify(mockFeedRepository, times(0)).deleteFeedProperties(anyString(), anyCollection());
+    }
+
+    @Test
+    void should_override_feed_properties_when_none_found() {
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
+        Entity<WebFeed> jediFeed = BAYWATCH_MAPPER.recordToFeed(FeedRecordSamples.JEDI);
+        Entity<WebFeed> overrideJediFeed = jediFeed.convert(original -> original.toBuilder()
+                .name(original.name() + "-overridden")
+                .description(original.description() + "-overridden")
+                .icon(URI.create("http://www.jedi.light/overridden.png"))
+                .tags(List.of("override", "jedi"))
+                .build());
+
+        StepVerifier.create(tested.addAndSubscribe(List.of(overrideJediFeed)))
+                .expectNextCount(1)
+                .verifyComplete();
+
+        verify(mockFeedRepository).setFeedProperties(eq(UsersRecordSamples.OKENOBI.getUserId()), anyCollection());
+    }
+
 }

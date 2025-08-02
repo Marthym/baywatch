@@ -32,6 +32,7 @@ import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.NO_ONE;
 import static fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException.AUTHENTICATION_NOT_FOUND;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.createdBy;
+import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.visible;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -224,7 +225,9 @@ public class FeedServiceImpl implements FeedService {
     private Mono<? extends Collection<Entity<WebFeed>>> completeFeedData(Collection<Entity<WebFeed>> feeds) {
         return Flux.fromIterable(feeds)
                 .parallel(4)
-                .flatMap(f -> scraperService.fetchFeedData(f.self().location()).map(a -> Tuples.of(f, a)))
+                .flatMap(f -> (f.meta(visible, Boolean.class).orElse(true))
+                        ? scraperService.fetchFeedData(f.self().location()).map(a -> Tuples.of(f, a))
+                        : Mono.just(Tuples.of(f, f.self())))
                 .sequential()
                 .map(t -> {
                     Entity<WebFeed> oldf = t.getT1();

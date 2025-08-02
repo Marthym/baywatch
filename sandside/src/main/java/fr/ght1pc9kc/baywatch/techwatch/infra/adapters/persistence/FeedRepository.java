@@ -356,6 +356,7 @@ public class FeedRepository implements FeedPersistencePort {
         select.addSelect(FEEDS.fields());
         select.addFrom(FEEDS);
         select.addConditions(conditions);
+        select.addConditions(FEEDS.FEED_VISIBLE.isTrue());
 
         if (qCtx.isScoped()) {
             if (filterProperties.contains(TAGS)) {

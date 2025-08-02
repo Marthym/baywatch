@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.tests.samples.infra;
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
+import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.testy.jooq.model.RelationalDataSet;
 
 import java.net.URI;
@@ -23,7 +24,20 @@ public class FeedRecordSamples implements RelationalDataSet<FeedsRecord> {
             .setFeedName("Jedi")
             .setFeedUrl(JEDI_BASE_URI.toString())
             .setFeedDescription("Feed description")
-            .setFeedLastWatch(LocalDateTime.parse("2020-12-11T15:12:42"));
+            .setFeedLastWatch(LocalDateTime.parse("2020-12-11T15:12:42"))
+            .setFeedVisible(true);
+    public static final FeedsRecord OBIWAN_PERSONAL = FEEDS.newRecord()
+            .setFeedId(UserSamples.OBIWAN.id())
+            .setFeedName(UserSamples.OBIWAN.self().name())
+            .setFeedUrl("https://localhost/" + UserSamples.OBIWAN.id())
+            .setFeedDescription("Obiwan personal Feed")
+            .setFeedVisible(false);
+    public static final FeedsRecord LUKE_PERSONAL = FEEDS.newRecord()
+            .setFeedId(UserSamples.LUKE.id())
+            .setFeedName(UserSamples.LUKE.self().name())
+            .setFeedUrl("https://localhost/" + UserSamples.LUKE.id())
+            .setFeedDescription("Luke personal Feed")
+            .setFeedVisible(false);
 
     public static final List<FeedsRecord> FEEDS_RECORDS = List.of(
             JEDI,
@@ -31,7 +45,8 @@ public class FeedRecordSamples implements RelationalDataSet<FeedsRecord> {
             JEDI.copy().setFeedId(Hasher.identify(JEDI_BASE_URI.resolve("02"))).setFeedUrl(JEDI.getFeedUrl() + "02"),
             JEDI.copy().setFeedId(Hasher.identify(JEDI_BASE_URI.resolve("03"))).setFeedUrl(JEDI.getFeedUrl() + "03"),
             JEDI.copy().setFeedId(Hasher.identify(JEDI_BASE_URI.resolve("04"))).setFeedUrl(JEDI.getFeedUrl() + "04"),
-            JEDI.copy().setFeedId(Hasher.identify(JEDI_BASE_URI.resolve("05"))).setFeedUrl(JEDI.getFeedUrl() + "05")
+            JEDI.copy().setFeedId(Hasher.identify(JEDI_BASE_URI.resolve("05"))).setFeedUrl(JEDI.getFeedUrl() + "05"),
+            OBIWAN_PERSONAL, LUKE_PERSONAL
     );
 
     @Override

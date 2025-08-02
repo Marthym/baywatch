@@ -22,6 +22,7 @@ import java.util.Set;
 import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.ETag;
 import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.createdBy;
 import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.updated;
+import static fr.ght1pc9kc.baywatch.common.api.model.FeedMeta.visible;
 import static fr.ght1pc9kc.baywatch.dsl.tables.Feeds.FEEDS;
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 import static java.util.Objects.nonNull;
@@ -79,6 +80,9 @@ public interface TechwatchMapper {
         feed.meta(updated, Instant.class).map(DateUtils::toLocalDateTime)
                 .ifPresent(feedsRecord::setFeedLastWatch);
         feed.meta(ETag).ifPresent(feedsRecord::setFeedLastEtag);
+        feed.meta(visible, Boolean.class).ifPresentOrElse(
+                feedsRecord::setFeedVisible,
+                () -> feedsRecord.setFeedVisible(true));
         if (nonNull(feed.self().name())) {
             feedsRecord.setFeedName(feed.self().name());
         }

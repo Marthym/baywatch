@@ -73,7 +73,6 @@ class FeedRepositoryTest {
             .build();
 
     @RegisterExtension
-    @SuppressWarnings("unused")
     static ChainedExtension chain = ChainedExtension.outer(wDs)
             .append(wDslContext)
             .append(wSamples)
@@ -107,14 +106,18 @@ class FeedRepositoryTest {
     void should_list_all_feeds(WithSampleDataLoaded.Tracker dbTracker) {
         dbTracker.skipNextSampleLoad();
         List<Entity<WebFeed>> actuals = tested.list().collectList().block();
-        assertThat(actuals).isNotEmpty();
+        assertThat(actuals).isNotEmpty()
+                .describedAs("Must contain only visible feeds")
+                .hasSize((int) FeedRecordSamples.SAMPLE.records().stream()
+                        .filter(FeedsRecord::getFeedVisible).count());
     }
 
     @Test
     void should_manage_backpressure(WithSampleDataLoaded.Tracker dbTracker) {
         dbTracker.skipNextSampleLoad();
         List<Entity<WebFeed>> actuals = tested.list().limitRate(2).collectList().block();
-        assertThat(actuals).hasSize(FeedRecordSamples.SAMPLE.records().size());
+        assertThat(actuals).hasSize((int) FeedRecordSamples.SAMPLE.records().stream()
+                .filter(FeedsRecord::getFeedVisible).count());
     }
 
     @Test
@@ -129,7 +132,7 @@ class FeedRepositoryTest {
                 .meta(updated, Instant.EPOCH)
                 .withId(reference);
 
-        StepVerifier.create(tested.persist(Collections.singleton(expected)))
+        StepVerifier.create(tested.persist(List.of(expected)))
                 .assertNext(actual -> assertThat(actual).isEqualTo(expected))
                 .verifyComplete();
 
@@ -269,8 +272,8 @@ class FeedRepositoryTest {
     void should_list_orphan_feed(WithSampleDataLoaded.Tracker tracker) {
         tracker.skipNextSampleLoad();
         List<Entity<WebFeed>> actuals = tested.list(QueryContext.all(Criteria.property(COUNT).eq(0))).collectList().block();
-        assertThat(actuals).extracting(Entity::id).containsExactly(
-                FeedRecordSamples.FEEDS_RECORDS.getLast().getFeedId());
+        assertThat(actuals).extracting(Entity::id).containsExactly(FeedRecordSamples.FEEDS_RECORDS.stream()
+                .filter(FeedsRecord::getFeedVisible).toList().getLast().getFeedId());
     }
 
     @Test

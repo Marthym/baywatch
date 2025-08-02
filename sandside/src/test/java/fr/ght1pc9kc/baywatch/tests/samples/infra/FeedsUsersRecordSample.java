@@ -5,9 +5,8 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.FeedsUsersRecord;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
 import fr.ght1pc9kc.testy.jooq.model.RelationalDataSet;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
 
@@ -17,19 +16,36 @@ public class FeedsUsersRecordSample implements RelationalDataSet<FeedsUsersRecor
     public static final List<FeedsUsersRecord> FEEDS_USERS_RECORDS;
 
     static {
-        // -1 allow to keep one orphan feed for tests
-        FEEDS_USERS_RECORDS = Stream.concat(IntStream.range(0, FeedRecordSamples.FEEDS_RECORDS.size() - 1)
-                .mapToObj(f -> {
-                    FeedsRecord feed = FeedRecordSamples.FEEDS_RECORDS.get(f);
-                    List<UsersRecord> users = UsersRecordSamples.SAMPLE.records();
-                    return FEEDS_USERS.newRecord()
-                            .setFeusFeedId(feed.getFeedId())
-                            .setFeusUserId(users.get(f % users.size()).getUserId());
-                }), Stream.of( // Link the first FEED to Obiwan AND Luke
+        ArrayList<FeedsUsersRecord> records = new ArrayList<>(FeedRecordSamples.FEEDS_RECORDS.size());
+        int f = 0;
+        for (FeedsRecord feedsRecord : FeedRecordSamples.FEEDS_RECORDS) {
+            if (!feedsRecord.getFeedVisible()) {
+                continue;
+            }
+            List<UsersRecord> users = UsersRecordSamples.SAMPLE.records();
+            records.add(FEEDS_USERS.newRecord()
+                    .setFeusFeedId(feedsRecord.getFeedId())
+                    .setFeusUserId(users.get(f % users.size()).getUserId()));
+            ++f;
+        }
+        // allow keeping one orphan feed for tests
+        records.removeLast();
+
+        records.addAll(List.of(
+                // Link the first FEED to Obiwan AND Luke
                 FEEDS_USERS.newRecord()
                         .setFeusFeedId(FeedRecordSamples.FEEDS_RECORDS.get(1).getFeedId())
-                        .setFeusUserId(UsersRecordSamples.SAMPLE.records().get(0).getUserId())
-        )).toList();
+                        .setFeusUserId(UsersRecordSamples.SAMPLE.records().getFirst().getUserId()),
+                // Link the personal feeds
+                FEEDS_USERS.newRecord()
+                        .setFeusFeedId(FeedRecordSamples.OBIWAN_PERSONAL.getFeedId())
+                        .setFeusUserId(FeedRecordSamples.OBIWAN_PERSONAL.getFeedId()),
+                FEEDS_USERS.newRecord()
+                        .setFeusFeedId(FeedRecordSamples.LUKE_PERSONAL.getFeedId())
+                        .setFeusUserId(FeedRecordSamples.LUKE_PERSONAL.getFeedId())
+        ));
+
+        FEEDS_USERS_RECORDS = List.copyOf(records);
     }
 
     @Override

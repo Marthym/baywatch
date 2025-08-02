@@ -15,8 +15,10 @@ import fr.ght1pc9kc.baywatch.security.domain.exceptions.ConstraintViolationPersi
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UserCreateException;
+import fr.ght1pc9kc.baywatch.security.domain.model.PersonalFeed;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.NotificationPort;
+import fr.ght1pc9kc.baywatch.security.domain.ports.TechwatchModulePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -37,6 +39,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.NO_ONE;
+import static fr.ght1pc9kc.baywatch.common.api.model.BaywatchLogsMarkers.AUDIT;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ROLES;
 import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdAt;
@@ -54,6 +57,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
 
     private final UserPersistencePort userRepository;
     private final AuthorizationPersistencePort authorizationRepository;
+    private final TechwatchModulePort techwatchModulePort;
     private final NotificationPort notificationPort;
     private final AuthenticationFacade authFacade;
     private final PasswordService passwordService;
@@ -105,8 +109,12 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                                 .meta(createdBy, currentUserId)
                                 .withId(userId)))
 
-                .flatMap(entity -> userRepository.persist(List.of(entity)).single())
-                .flatMap(ignore -> grants(userId, user.roles()))
+                .flatMap(createdUser -> userRepository.persist(List.of(createdUser)).single())
+                .flatMap(createdUser -> grants(userId, user.roles()).thenReturn(createdUser))
+                .flatMap(createdUser ->
+                        techwatchModulePort.addAndSubscribePersonalFeed(PersonalFeed.of(createdUser))
+                                .contextWrite(authFacade.withAuthentication(createdUser))
+                                .thenReturn(createdUser))
                 .onErrorMap(ConstraintViolationPersistenceException.class, e ->
                         new UserCreateException(
                                 String.format("Unable to create User, %s unavailable !", e.getPropertyField()),
@@ -169,15 +177,31 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
 
     @Override
     public Flux<Entity<User>> delete(Collection<String> ids) {
-        return authorizeSelfData(ids)
-                .flatMapMany(u -> userRepository.list(QueryContext.all(Criteria.property(ID).in(ids))))
-                .switchIfEmpty(Flux.error(new NoSuchElementException(String.format("Unable to find users %s :", ids))))
-                .collectList()
-                .flatMapMany(users -> Flux.fromIterable(users)
-                        .map(Entity::id)
+        return authorizeSelfData(ids).flatMapMany(operator ->
+                userRepository.list(QueryContext.all(Criteria.property(ID).in(ids)))
+                        .switchIfEmpty(Flux.error(new NoSuchElementException(String.format("Unable to find users %s :", ids))))
                         .collectList()
-                        .flatMap(userRepository::delete)
-                        .thenMany(Flux.fromIterable(users)));
+                        .flatMapMany(users -> Flux.fromIterable(users)
+                                .map(Entity::id)
+                                .collectList()
+                                .flatMap(userRepository::delete)
+                                .thenMany(Flux.fromIterable(users)))
+                        .flatMap(user -> techwatchModulePort.unsubscribePersonalFeed(user)
+                                .contextWrite(authFacade.withAuthentication(user))
+                                .thenReturn(user))
+                        .flatMap(user -> techwatchModulePort.deletePersonalFeed(user)
+                                .contextWrite(AuthenticationFacade.withSystemAuthentication())
+                                .thenReturn(user))
+
+                        .doOnNext(user -> log.atWarn().addMarker(AUDIT)
+                                .addKeyValue("operator", operator.id())
+                                .addKeyValue("type", "User")
+                                .addKeyValue("action", "delete")
+                                .addKeyValue("id", user.id())
+                                .addArgument(user.self().login())
+                                .addArgument(operator.self().login())
+                                .log("Deleted user {} by {}"))
+        );
     }
 
     @Override
