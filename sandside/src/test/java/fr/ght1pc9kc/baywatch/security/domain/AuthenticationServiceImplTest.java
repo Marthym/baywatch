@@ -8,6 +8,7 @@ import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthenticationManagerPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.JwtTokenProvider;
+import fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.entity.api.Entity;
 import org.assertj.core.api.Assertions;
@@ -64,7 +65,9 @@ class AuthenticationServiceImplTest {
         when(userServiceMock.get(anyString())).thenReturn(Mono.just(user));
 
         AuthenticationFacade authenticationFacadeMock = mock(AuthenticationFacade.class);
-        tested = new AuthenticationServiceImpl(authenticationManagerPortMock, tokenProviderMock, userServiceMock, authenticationFacadeMock);
+        MailSenderPort mockMailSenderPort = mock(MailSenderPort.class);
+        tested = new AuthenticationServiceImpl(
+                authenticationManagerPortMock, tokenProviderMock, userServiceMock, authenticationFacadeMock, mockMailSenderPort);
     }
 
     @Test

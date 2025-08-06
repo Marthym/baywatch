@@ -1,5 +1,8 @@
 package fr.ght1pc9kc.baywatch.security.domain;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import fr.ght1pc9kc.baywatch.common.api.model.TemplateVariable;
 import fr.ght1pc9kc.baywatch.common.api.model.UserMeta;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationService;
@@ -22,17 +25,27 @@ import org.jetbrains.annotations.VisibleForTesting;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuple3;
+import reactor.util.function.Tuples;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HexFormat;
+import java.util.Map;
 
 import static fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort.MailTemplateType.PASSWORD_RESET;
 
 @Slf4j
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
+    private static final SecureRandom RANDOM = new SecureRandom();
     private final AuthenticationManagerPort authenticationManagerPort;
     private final JwtTokenProvider tokenProvider;
     private final UserService userService;
@@ -40,6 +53,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final MailSenderPort mailSenderPort;
 
     private final Sinks.Many<Entity<User>> toUpdate = Sinks.many().unicast().onBackpressureBuffer();
+    private final Cache<@NotNull String, Entity<User>> resetPasswordRequests = Caffeine.newBuilder()
+            .expireAfterWrite(Duration.ofMinutes(15))
+            .build();
 
     @Setter(value = AccessLevel.PACKAGE, onMethod = @__(@VisibleForTesting))
     private Clock clock = Clock.systemUTC();
@@ -94,8 +110,45 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return userService.list(PageRequest.one(Criteria.property("name").eq(email)))
                 .switchIfEmpty(userService.list(PageRequest.one(Criteria.property("mail").eq(email))))
                 .next()
-                .flatMap(user -> mailSenderPort.send(PASSWORD_RESET, user.self().mail())
-                        .thenEmpty(Mono.fromRunnable(() ->
-                                log.atInfo().addArgument(user.self().login()).log("Send password reset to {} successful"))));
+                .map(this::generateToken)
+                .map(this::saveTokenInCache)
+                .flatMap(this::sendPasswordResetMail)
+                .doOnSuccess(user -> log.atInfo()
+                        .addArgument(user.self().login())
+                        .log("Send password reset to {} successful"))
+                .then();
+    }
+
+    private Tuple3<Entity<User>, String, String> generateToken(Entity<User> user) {
+        try {
+            byte[] tokenBytes = new byte[16];
+            RANDOM.nextBytes(tokenBytes);
+            String token = HexFormat.of().formatHex(tokenBytes);
+
+            byte[] keyBytes = new byte[16];
+            RANDOM.nextBytes(keyBytes);
+            String key = HexFormat.of().formatHex(keyBytes);
+
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            String dataToSign = token + key;
+            byte[] signatureBytes = digest.digest(dataToSign.getBytes());
+            String signature = HexFormat.of().formatHex(signatureBytes);
+
+            return Tuples.of(user, token + signature.substring(0, 8), key);
+        } catch (NoSuchAlgorithmException e) {
+            throw new SecurityException("Unable to generate reset password token", e);
+        }
+    }
+
+    private Tuple2<Entity<User>, String> saveTokenInCache(Tuple3<Entity<User>, String, String> tuple) {
+        Entity<User> userEntity = tuple.getT1().withMeta(UserMeta.secretKey, tuple.getT3());
+        resetPasswordRequests.put(tuple.getT2(), userEntity);
+        return Tuples.of(userEntity, tuple.getT2());
+    }
+
+    private Mono<Entity<User>> sendPasswordResetMail(Tuple2<Entity<User>, String> tuple) {
+        Entity<User> user = tuple.getT1();
+        EnumMap<TemplateVariable, String> variables = new EnumMap<>(Map.of(TemplateVariable.TOKEN, tuple.getT2()));
+        return mailSenderPort.send(PASSWORD_RESET, user.self().mail(), variables).thenReturn(user);
     }
 }

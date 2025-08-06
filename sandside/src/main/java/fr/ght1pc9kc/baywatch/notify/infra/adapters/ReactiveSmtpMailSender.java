@@ -75,7 +75,6 @@ public class ReactiveSmtpMailSender {
      *                           <li><strong>535</strong>: Authentication credentials invalid, can't be recovered</li>
      *                       </ul>
      */
-    @Override
     public Mono<Try<Void>> sendMail(Mail mail) {
         try {
             MimeMessage message = mailSender.createMimeMessage();

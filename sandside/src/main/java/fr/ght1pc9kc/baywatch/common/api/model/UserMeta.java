@@ -11,7 +11,15 @@ public enum UserMeta implements TypedMeta {
     createdAt(Instant.class),
     createdBy(String.class),
     loginAt(Instant.class),
-    loginIP(String.class);
+    /**
+     * Current or last IP used to login
+     */
+    loginIP(String.class),
+    /**
+     * Secret key used to sign communication token
+     */
+    secretKey(String.class),
+    ;
 
     private final Class<?> type;
 
