@@ -5,6 +5,7 @@ import fr.ght1pc9kc.baywatch.dsl.tables.Notifications;
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.model.ServerEvent;
 import fr.ght1pc9kc.baywatch.notify.domain.ports.NotificationPersistencePort;
+import fr.ght1pc9kc.baywatch.notify.infra.persistence.NotificationPersistenceAdapter;
 import fr.ght1pc9kc.baywatch.notify.infra.samples.NotificationsRecordSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;

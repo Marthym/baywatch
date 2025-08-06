@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.notify.infra;
+package fr.ght1pc9kc.baywatch.notify.infra.controllers;
 
 import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.security.api.model.User;

@@ -7,7 +7,7 @@ import fr.ght1pc9kc.baywatch.admin.api.model.CounterProvider;
 import fr.ght1pc9kc.baywatch.common.api.model.HeroIcons;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyManager;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
-import fr.ght1pc9kc.baywatch.notify.domain.NotifyServiceImpl;
+import fr.ght1pc9kc.baywatch.notify.domain.services.NotifyServiceImpl;
 import fr.ght1pc9kc.baywatch.notify.domain.ports.NotificationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import io.micrometer.core.instrument.Gauge;

@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.security.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.notify.api.MailSender;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationService;
 import fr.ght1pc9kc.baywatch.security.api.UserService;

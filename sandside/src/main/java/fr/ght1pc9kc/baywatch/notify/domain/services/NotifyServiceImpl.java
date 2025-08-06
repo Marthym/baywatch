@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.notify.domain;
+package fr.ght1pc9kc.baywatch.notify.domain.services;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;

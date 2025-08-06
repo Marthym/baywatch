@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.notify.infra;
+package fr.ght1pc9kc.baywatch.notify.infra.controllers;
 
 import fr.ght1pc9kc.baywatch.notify.api.NotifyManager;
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;

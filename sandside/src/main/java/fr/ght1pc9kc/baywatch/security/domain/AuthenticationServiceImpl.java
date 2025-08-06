@@ -28,7 +28,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 
-import static fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort.MailTemplate.PASSWORD_RESET;
+import static fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort.MailTemplateType.PASSWORD_RESET;
 
 @Slf4j
 @RequiredArgsConstructor
