@@ -141,6 +141,11 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>${apache-commons-text.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.machinezoo.noexception</groupId>
             <artifactId>noexception</artifactId>
             <version>${noexception.version}</version>
