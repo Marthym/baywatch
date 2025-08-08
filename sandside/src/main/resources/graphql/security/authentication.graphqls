@@ -5,6 +5,7 @@ extend type Mutation {
 }
 
 extend type Query {
+    askForPasswordReset(identifier: String): Void
     currentUser: User
 }
 

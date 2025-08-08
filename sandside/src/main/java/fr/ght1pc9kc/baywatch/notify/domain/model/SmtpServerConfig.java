@@ -7,6 +7,7 @@ import java.util.Objects;
 public record SmtpServerConfig(
         @NotNull String server,
         int port,
+        String from,
         boolean secure,
         String username,
         String password,

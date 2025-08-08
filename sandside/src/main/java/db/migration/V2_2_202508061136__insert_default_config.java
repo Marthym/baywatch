@@ -33,6 +33,7 @@ public class V2_2_202508061136__insert_default_config extends BaseJavaMigration 
         if (nonNull(bwMailSmtpHost)) {
             requireNonNull(env.get("BW_MAIL_SMTP_USERNAME"), "BW_MAIL_SMTP_USERNAME is required");
             requireNonNull(env.get("BW_MAIL_SMTP_PASSWORD"), "BW_MAIL_SMTP_PASSWORD is required");
+            requireNonNull(env.get("BW_MAIL_SMTP_FROM"), "BW_MAIL_SMTP_FROM is required");
         }
 
         var records = List.of(
@@ -41,29 +42,33 @@ public class V2_2_202508061136__insert_default_config extends BaseJavaMigration 
                         .setConfName("mail.smtp.host")
                         .setConfValue(bwMailSmtpHost),
                 CONFIGURATION.newRecord()
-                        .setConfId(ulidFactory.create().toString())
+                        .setConfId(CONFIGURATION_PREFIX + ulidFactory.create().toString())
                         .setConfName("mail.smtp.port")
                         .setConfValue(env.getOrDefault("BW_MAIL_SMTP_PORT", "587")),
                 CONFIGURATION.newRecord()
-                        .setConfId(ulidFactory.create().toString())
+                        .setConfId(CONFIGURATION_PREFIX + ulidFactory.create().toString())
                         .setConfName("mail.smtp.secure")
                         .setConfValue(env.getOrDefault("BW_MAIL_SMTP_SECURE", "true")),
                 CONFIGURATION.newRecord()
-                        .setConfId(ulidFactory.create().toString())
+                        .setConfId(CONFIGURATION_PREFIX + ulidFactory.create().toString())
                         .setConfName("mail.smtp.username")
                         .setConfValue(env.get("BW_MAIL_SMTP_USERNAME")),
                 CONFIGURATION.newRecord()
-                        .setConfId(ulidFactory.create().toString())
+                        .setConfId(CONFIGURATION_PREFIX + ulidFactory.create().toString())
                         .setConfName("mail.smtp.password")
                         .setConfValue(env.get("BW_MAIL_SMTP_PASSWORD")),
                 CONFIGURATION.newRecord()
-                        .setConfId(ulidFactory.create().toString())
+                        .setConfId(CONFIGURATION_PREFIX + ulidFactory.create().toString())
                         .setConfName("mail.smtp.cipher")
                         .setConfValue(env.getOrDefault("BW_MAIL_SMTP_CIPHER", "SSLv3")),
                 CONFIGURATION.newRecord()
-                        .setConfId(ulidFactory.create().toString())
+                        .setConfId(CONFIGURATION_PREFIX + ulidFactory.create().toString())
                         .setConfName("mail.smtp.requireTls")
-                        .setConfValue(env.getOrDefault("BW_MAIL_SMTP_REQUIRE_TLS", "true"))
+                        .setConfValue(env.getOrDefault("BW_MAIL_SMTP_REQUIRE_TLS", "true")),
+                CONFIGURATION.newRecord()
+                        .setConfId(CONFIGURATION_PREFIX + ulidFactory.create().toString())
+                        .setConfName("mail.smtp.from")
+                        .setConfValue(env.get("BW_MAIL_SMTP_FROM"))
         );
 
         dsl.batchInsert(records).execute();

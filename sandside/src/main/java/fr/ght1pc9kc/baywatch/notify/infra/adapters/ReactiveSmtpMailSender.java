@@ -35,11 +35,11 @@ public class ReactiveSmtpMailSender {
     private final Scheduler mailScheduler;
     private final MeterRegistry meterRegistry;
 
-    public ReactiveSmtpMailSender(String id, SmtpServerConfig config, String defaultFrom, Scheduler mailScheduler, MeterRegistry meterRegistry) {
-        this(id, config, defaultFrom, mailScheduler, JavaMailSenderImpl::new, meterRegistry);
+    public ReactiveSmtpMailSender(String id, SmtpServerConfig config, Scheduler mailScheduler, MeterRegistry meterRegistry) {
+        this(id, config, mailScheduler, JavaMailSenderImpl::new, meterRegistry);
     }
 
-    public ReactiveSmtpMailSender(String id, SmtpServerConfig config, String defaultFrom, Scheduler mailScheduler,
+    public ReactiveSmtpMailSender(String id, SmtpServerConfig config, Scheduler mailScheduler,
                                   Supplier<JavaMailSenderImpl> javaMailSenderFactory, MeterRegistry meterRegistry) {
         this.id = id;
         this.mailScheduler = mailScheduler;
@@ -55,7 +55,7 @@ public class ReactiveSmtpMailSender {
         Properties props = this.mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", config.secure());
-        props.put("mail.smtp.from", defaultFrom);
+        props.put("mail.smtp.from", config.from());
         props.put("mail.smtp.starttls.enable", config.requireTls());
         props.put("mail.smtp.starttls.required", config.requireTls());
         props.put("mail.debug", "false");

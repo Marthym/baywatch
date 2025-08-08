@@ -82,12 +82,13 @@ Baywatch offers many configuration parameters, almost all of which are not manda
 | BAYWATCH_TOKEN_VALIDITY        | The time the JWToken is valid                           | X        | 1h            |
 | **Mail Server Config**         |                                                         |          |               |
 | BW_MAIL_SMTP_HOST              | SMTP server host name                                   | X        |               |
+| BW_MAIL_SMTP_FROM              | The email address from which emails will be sent        | if host  |               |
+| BW_MAIL_SMTP_USERNAME          | The SMTP server username                                | if host  |               |
+| BW_MAIL_SMTP_PASSWORD          | The SMTP server username password                       | if host  |               |
+| BW_MAIL_SMTP_CIPHER            | The cipher algorithm used                               | X        | SSLv3         |
 | BW_MAIL_SMTP_PORT              | SMTP server port                                        | X        | 587           |
+| BW_MAIL_SMTP_REQUIRE_TLS       | Is TLS required                                         | X        | true          |
 | BW_MAIL_SMTP_SECURE            | SMTP Require secure connection                          | X        | true          |
-| BW_MAIL_SMTP_USERNAME          | The time the JWToken is valid                           | if host  |               |
-| BW_MAIL_SMTP_PASSWORD          | The time the JWToken is valid                           | if host  |               |
-| BW_MAIL_SMTP_CIPHER            | The time the JWToken is valid                           | X        | SSLv3         |
-| BW_MAIL_SMTP_REQUIRE_TLS       | The time the JWToken is valid                           | X        | true          |
 
 ### Docker compose
 
