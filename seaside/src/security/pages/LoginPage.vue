@@ -45,7 +45,6 @@ import { Component, Vue } from 'vue-facing-decorator';
 import { Store, useStore } from 'vuex';
 import { UPDATE_MUTATION, UPDATE_SETTINGS_MUTATION } from '@/security/store/UserConstants';
 
-import authenticationService from '@/security/services/AuthenticationService';
 import notificationService from '@/services/notification/NotificationService';
 import { RouteLocation, Router, useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
@@ -53,6 +52,7 @@ import { switchMap } from 'rxjs';
 import { userSettingsGet } from '@/security/services/UserSettingsService';
 import { map } from 'rxjs/operators';
 import { UserState } from '@/security/store/user';
+import { authenticationLogin } from '@/security/services/AuthenticationService';
 
 @Component({
   name: 'LoginPage',
@@ -87,7 +87,7 @@ export default class LoginPage extends Vue {
 
   onLogin(): void {
     if (this.username !== '' && this.password !== '') {
-      authenticationService.login(this.username, this.password).pipe(
+      authenticationLogin(this.username, this.password).pipe(
           switchMap(user => userSettingsGet(user._id).pipe(map(settings => ({ user, settings })))),
       ).subscribe({
         next: authent => {

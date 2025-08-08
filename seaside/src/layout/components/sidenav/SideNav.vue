@@ -27,7 +27,7 @@ import { UserState } from '@/security/store/user';
 import { useStore } from 'vuex';
 import { Router, useRouter } from 'vue-router';
 import { closeNotificationListeners } from '@/layout/services/ServerEventService';
-import authenticationService from '@/security/services/AuthenticationService';
+import { authenticationLogout } from '@/security/services/AuthenticationService';
 
 @Component({
   name: 'SideNav',
@@ -58,7 +58,7 @@ export default class SideNav extends Vue {
 
   logoutUser(): void {
     closeNotificationListeners();
-    authenticationService.logout().subscribe(() => {
+    authenticationLogout().subscribe(() => {
       this.store.commit(LOGOUT_MUTATION);
       this.router.go(0);
     });

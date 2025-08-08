@@ -55,7 +55,7 @@ import {
 } from '@heroicons/vue/20/solid';
 import { SidenavMutation } from '@/store/sidenav/SidenavMutation.enum';
 import { useI18n } from 'vue-i18n';
-import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-router';
+import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
 
 @Component({
   name: 'SideNavManagement',
@@ -70,12 +70,10 @@ import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-
   },
   setup() {
     const store = useStore();
-    const router = useRouter();
     const route = useRoute();
     const { t } = useI18n();
     return {
       store: store,
-      router: router,
       route: route,
       user: store.state.user,
       t: t,
@@ -85,7 +83,6 @@ import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-
 export default class SideNavManagement extends Vue {
   private readonly t;
   private readonly store;
-  private readonly router!: Router;
   private readonly route!: RouteLocationNormalizedLoaded;
   private user: UserState;
 
