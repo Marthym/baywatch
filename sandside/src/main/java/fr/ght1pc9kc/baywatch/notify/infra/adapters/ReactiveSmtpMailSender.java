@@ -2,7 +2,7 @@ package fr.ght1pc9kc.baywatch.notify.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.common.domain.Try;
 import fr.ght1pc9kc.baywatch.notify.domain.model.Mail;
-import fr.ght1pc9kc.baywatch.notify.domain.model.SmtpException;
+import fr.ght1pc9kc.baywatch.notify.domain.exceptions.SmtpException;
 import fr.ght1pc9kc.baywatch.notify.domain.model.SmtpServerConfig;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.mail.MessagingException;

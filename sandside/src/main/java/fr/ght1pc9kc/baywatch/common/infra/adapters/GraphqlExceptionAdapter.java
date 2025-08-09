@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.common.infra.adapters;
 
+import fr.ght1pc9kc.baywatch.common.api.exceptions.TranslatableException;
 import fr.ght1pc9kc.baywatch.common.api.exceptions.UnauthorizedException;
 import graphql.ErrorType;
 import graphql.GraphQLError;
@@ -15,6 +16,10 @@ import java.util.Map;
 
 @Component
 public class GraphqlExceptionAdapter extends DataFetcherExceptionResolverAdapter {
+
+    private static final String EXT_CLASSIFICATION = "classification";
+    private static final String EXT_TRANSLATION = "translation";
+
     @Override
     protected GraphQLError resolveToSingleError(@NotNull Throwable ex, @NotNull DataFetchingEnvironment env) {
         return switch (ex) {
@@ -24,14 +29,21 @@ public class GraphqlExceptionAdapter extends DataFetcherExceptionResolverAdapter
                     .build();
             case UnauthorizedException uex -> GraphqlErrorBuilder.newError(env)
                     .errorType(ErrorType.OperationNotSupported)
-                    .extensions(Map.of("classification", "FORBIDDEN"))
+                    .extensions(Map.of(EXT_CLASSIFICATION, "FORBIDDEN"))
                     .message(uex.getLocalizedMessage())
                     .build();
             case IllegalArgumentException iaex -> GraphqlErrorBuilder.newError(env)
                     .errorType(ErrorType.ValidationError)
-                    .extensions(Map.of("classification", "ValidationError"))
+                    .extensions(Map.of(EXT_CLASSIFICATION, "ValidationError"))
                     .message(iaex.getLocalizedMessage())
                     .build();
+            case TranslatableException tlx -> GraphQLError.newError()
+                    .errorType(ErrorType.ExecutionAborted)
+                    .message(tlx.getLocalizedMessage())
+                    .extensions(Map.of(
+                            EXT_TRANSLATION, tlx.getTranslationKey(),
+                            EXT_CLASSIFICATION, tlx.classification())
+                    ).build();
             case GraphqlErrorException gex -> GraphqlErrorBuilder.newError(env)
                     .errorType(gex.getErrorType())
                     .extensions(gex.getExtensions())

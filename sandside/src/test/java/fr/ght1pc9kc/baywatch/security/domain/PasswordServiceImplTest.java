@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.domain;
 
-import fr.ght1pc9kc.baywatch.common.api.LocaleFacade;
+import fr.ght1pc9kc.baywatch.common.api.ClientInfoFacade;
 import fr.ght1pc9kc.baywatch.security.PasswordChecker;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
@@ -27,10 +27,10 @@ class PasswordServiceImplTest {
     void setUp() {
         AuthenticationFacade authenticationFacade = mock(AuthenticationFacade.class);
         when(authenticationFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
-        LocaleFacade localeFacade = mock(LocaleFacade.class);
-        when(localeFacade.getLocale()).thenReturn(Mono.just(Locale.ENGLISH));
+        ClientInfoFacade clientInfoFacade = mock(ClientInfoFacade.class);
+        when(clientInfoFacade.getLocale()).thenReturn(Mono.just(Locale.ENGLISH));
 
-        tested = new PasswordServiceImpl(authenticationFacade, new PasswordCheckerNbvcxz(), localeFacade);
+        tested = new PasswordServiceImpl(authenticationFacade, new PasswordCheckerNbvcxz(), clientInfoFacade);
     }
 
     @ParameterizedTest

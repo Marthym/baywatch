@@ -1,6 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.infra.adapters;
 
-import fr.ght1pc9kc.baywatch.common.api.LocaleFacade;
+import fr.ght1pc9kc.baywatch.common.api.ClientInfoFacade;
 import fr.ght1pc9kc.baywatch.security.PasswordChecker;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.PasswordService;
@@ -20,8 +20,8 @@ public class PasswordServiceAdapter implements PasswordService {
 
     public PasswordServiceAdapter(
             AuthenticationFacade authFacade, PasswordStrengthChecker passwordStrengthChecker, PasswordEncoder encoder,
-            LocaleFacade localeFacade) {
+            ClientInfoFacade clientInfoFacade) {
         this.encoder = encoder;
-        this.delegate = new PasswordServiceImpl(authFacade, passwordStrengthChecker, localeFacade);
+        this.delegate = new PasswordServiceImpl(authFacade, passwordStrengthChecker, clientInfoFacade);
     }
 }

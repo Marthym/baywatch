@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class MailQueueScheduler implements Runnable {
     private static final String STACKTRACE = "STACKTRACE";
-    private static final Duration FREQUENCY = Duration.ofSeconds(30);
+    private static final Duration FREQUENCY = Duration.ofSeconds(120);
     private final ScheduledExecutorService scheduleExecutor = Executors.newSingleThreadScheduledExecutor(
             new CustomizableThreadFactory("mailQueueScheduler-"));
     private final Scheduler mqScheduler = Schedulers.newBoundedElastic(
@@ -47,13 +47,13 @@ public class MailQueueScheduler implements Runnable {
     @PreDestroy
     @SneakyThrows
     public void shutdownMailQueue() {
-        if (scheduleExecutor.awaitTermination(5, TimeUnit.MINUTES)) {
-            log.atInfo().log("Mail queue scheduler shutdown gracefully !");
-        } else {
-            log.atWarn().log("Mail queue scheduler shutdown timeout !");
+        log.atInfo().log("Commencing graceful shutdown. ⏳ Waiting for mail queue to empty");
+        scheduleExecutor.shutdown();
+        if (!scheduleExecutor.awaitTermination(5, TimeUnit.MINUTES)) {
+            log.atWarn().log("Mail queue scheduler shutdown timeout ! Some mails can be lost \uD83D\uDE31 !");
         }
         mqScheduler.dispose();
-        log.atInfo().log("Mail queue complete and shutdown !");
+        log.atInfo().log("Graceful shutdown complete");
     }
 
     @Override

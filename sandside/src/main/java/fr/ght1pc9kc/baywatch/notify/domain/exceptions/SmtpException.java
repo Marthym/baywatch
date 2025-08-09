@@ -1,16 +1,14 @@
-package fr.ght1pc9kc.baywatch.notify.domain.model;
+package fr.ght1pc9kc.baywatch.notify.domain.exceptions;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
-public class SmtpException extends RuntimeException {
+public class SmtpException extends NotifyModuleException {
 
     private final int status;
 
     public SmtpException(Throwable cause) {
-        super(cause);
+        super(cause.getMessage(), cause);
         this.status = -1;
     }
 

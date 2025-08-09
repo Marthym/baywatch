@@ -2,11 +2,16 @@ package fr.ght1pc9kc.baywatch.common.api;
 
 import reactor.core.publisher.Mono;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Locale;
 
-public interface LocaleFacade {
+public interface ClientInfoFacade {
     List<Locale> AVAILABLE_LANGUAGES = List.of(Locale.US, Locale.FRANCE);
 
     Mono<Locale> getLocale();
+
+    Mono<String> getUserAgent();
+
+    Mono<InetSocketAddress> getRemoteAddress();
 }
