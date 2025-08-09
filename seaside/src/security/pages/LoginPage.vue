@@ -24,7 +24,8 @@
                    type="password"
                    @keyup="formValidation=false"/>
           </fieldset>
-          <button v-if="recoverMode" class="btn btn-primary w-full mt-27 mb-8 capitalize" type="submit"
+          <button v-if="recoverMode" :disabled="submitDisable" class="btn btn-primary w-full mt-27 mb-8 capitalize"
+                  type="submit"
                   @click.prevent.stop="onRecoverPasswordClick">{{
               t('login.action.recover')
             }}
@@ -76,6 +77,7 @@ export default class LoginPage extends Vue {
   private readonly t;
   private locale;
   private formValidation = false;
+  private submitDisable = false;
 
   get recoverMode(): boolean {
     return this.route.params.state === 'recover';
@@ -121,8 +123,12 @@ export default class LoginPage extends Vue {
     if (!this.username || this.username.length === 0) {
       this.formValidation = true;
     }
+    this.submitDisable = true;
     askForPasswordReset(this.username).subscribe({
       next: () => {
+        this.submitDisable = false;
+        this.router.push('/login');
+        this.password = '';
         notificationService.pushSimpleOk(this.t('login.message.recover.ok'));
       },
       error: err => {
