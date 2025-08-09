@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.Locale;
 
 @Component
@@ -16,5 +17,10 @@ public class ClientLocaleAdapter implements ClientLocalePort {
     @Override
     public Mono<Locale> getClientLocale() {
         return localeFacade.getLocale();
+    }
+
+    @Override
+    public List<Locale> getAvailableLanguages() {
+        return LocaleFacade.AVAILABLE_LANGUAGES;
     }
 }

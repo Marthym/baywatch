@@ -48,3 +48,21 @@ export function refresh(): Observable<Session> {
         take(1),
     );
 }
+
+const ASK_FOR_PASSWORD_RESET_REQUEST = `#graphql
+query AskForPasswordReset($identifier: String!) {
+    askForPasswordReset(identifier: $identifier)
+}`;
+
+export function askForPasswordReset(identifier: string): Observable<void> {
+    return send<{ askForPasswordReset: void }>(ASK_FOR_PASSWORD_RESET_REQUEST, { identifier }).pipe(
+        map(response => {
+            if (response.errors && response.errors.length !== 0) {
+                throw response.errors[0];
+            } else {
+                return;
+            }
+        }),
+        take(1),
+    );
+}

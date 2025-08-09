@@ -40,6 +40,8 @@ import java.util.EnumMap;
 import java.util.HexFormat;
 import java.util.Map;
 
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.LOGIN;
+import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.MAIL;
 import static fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort.MailTemplateType.PASSWORD_RESET;
 
 @Slf4j
@@ -107,8 +109,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public Mono<Void> askPasswordReset(@NotNull String email) {
-        return userService.list(PageRequest.one(Criteria.property("name").eq(email)))
-                .switchIfEmpty(userService.list(PageRequest.one(Criteria.property("mail").eq(email))))
+        return userService.list(PageRequest.one(Criteria.property(LOGIN).eq(email)))
+                .contextWrite(AuthenticationFacade.withSystemAuthentication())
+                .switchIfEmpty(userService.list(PageRequest.one(Criteria.property(MAIL).eq(email)))
+                        .contextWrite(AuthenticationFacade.withSystemAuthentication()))
                 .next()
                 .map(this::generateToken)
                 .map(this::saveTokenInCache)
@@ -149,6 +153,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private Mono<Entity<User>> sendPasswordResetMail(Tuple2<Entity<User>, String> tuple) {
         Entity<User> user = tuple.getT1();
         EnumMap<TemplateVariable, String> variables = new EnumMap<>(Map.of(TemplateVariable.TOKEN, tuple.getT2()));
-        return mailSenderPort.send(PASSWORD_RESET, user.self().mail(), variables).thenReturn(user);
+        return mailSenderPort.send(PASSWORD_RESET, user.self().mail(), variables)
+                .contextWrite(authFacade.withAuthentication(user))
+                .thenReturn(user);
     }
 }

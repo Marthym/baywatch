@@ -21,7 +21,9 @@ import reactor.util.function.Tuples;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -42,8 +44,13 @@ public class MailClientImpl implements MailClient {
     public Mono<Void> send(MailTemplateName template, String to, EnumMap<TemplateVariable, String> variables) {
         Instant now = clock.instant();
         return Mono.zip(
-                        localeFacade.getLocale(),
+                        localeFacade.getLocale()
+                                .map(currentLocale -> localeFacade.getAvailableLanguages().stream()
+                                        .filter(l -> l.getLanguage().equals(currentLocale.getLanguage()))
+                                        .min(Comparator.comparing(Locale::getCountry, Comparator.nullsLast(Comparator.reverseOrder())))
+                                        .orElse(localeFacade.getAvailableLanguages().getFirst())),
                         authenticationPort.getConnectedUser()
+                                .switchIfEmpty(Mono.error(() -> new IllegalStateException("Need user in context to send mail")))
                 )
 
                 .flatMap(t -> templateService.get(template, t.getT1())

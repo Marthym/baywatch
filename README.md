@@ -2,9 +2,9 @@
 
 <img src="./seaside/public/favicon.ico" alt="Size Limit CLI" align="right" style="float: right; margin: auto; width: 100px">
 
-Baywatch is an application that lets you keep an eye on the latest technology.
-Simply hosted, Baywatch will scrape the news feeds that interest you at regular intervals to
-provide you with the most relevant articles in a readable way.
+Baywatch is an app that allows you to stay up to date with the latest technology.
+Simply select the news feeds that interest you and Baywatch will scrape them at regular intervals.
+It then provides you with the most relevant articles in a readable format.
 
 Baywatch has a multitude of features, the main ones being
 

@@ -6,7 +6,6 @@ import fr.ght1pc9kc.baywatch.security.api.UserSettingsService;
 import fr.ght1pc9kc.baywatch.security.api.model.NewsViewType;
 import fr.ght1pc9kc.baywatch.security.api.model.UserSettings;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthenticatedUser;
-import fr.ght1pc9kc.baywatch.security.domain.model.AvailableLanguages;
 import fr.ght1pc9kc.baywatch.security.domain.ports.ClientLocalePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserSettingsPersistencePort;
 import fr.ght1pc9kc.entity.api.Entity;
@@ -43,10 +42,10 @@ public class UserSettingsServiceImpl implements UserSettingsService {
 
     private Mono<Entity<UserSettings>> getDefaultUserSettings(String userId) {
         return clientLocalePort.getClientLocale().map(clientLocale -> {
-            Locale locale = AvailableLanguages.ALL.stream()
+            Locale locale = clientLocalePort.getAvailableLanguages().stream()
                     .filter(l -> l.getLanguage().equals(clientLocale.getLanguage()))
                     .min(Comparator.comparing(Locale::getCountry, Comparator.nullsLast(Comparator.reverseOrder())))
-                    .orElse(AvailableLanguages.DEFAULT);
+                    .orElse(clientLocalePort.getAvailableLanguages().getFirst());
             return Entity.identify(new UserSettings(locale, true, NewsViewType.MAGAZINE)).withId(userId);
         });
     }

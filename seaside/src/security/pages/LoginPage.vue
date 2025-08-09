@@ -52,7 +52,7 @@ import { switchMap } from 'rxjs';
 import { userSettingsGet } from '@/security/services/UserSettingsService';
 import { map } from 'rxjs/operators';
 import { UserState } from '@/security/store/user';
-import { authenticationLogin } from '@/security/services/AuthenticationService';
+import { askForPasswordReset, authenticationLogin } from '@/security/services/AuthenticationService';
 
 @Component({
   name: 'LoginPage',
@@ -108,7 +108,7 @@ export default class LoginPage extends Vue {
         },
         error: err => {
           this.formValidation = true;
-          notificationService.pushSimpleError('Wrong login or password !');
+          notificationService.pushSimpleError(this.t('login.message.failed'));
           console.debug(err);
         },
       });
@@ -121,7 +121,16 @@ export default class LoginPage extends Vue {
     if (!this.username || this.username.length === 0) {
       this.formValidation = true;
     }
-    console.debug('onRecoverPasswordClick', this.username);
+    askForPasswordReset(this.username).subscribe({
+      next: () => {
+        notificationService.pushSimpleOk(this.t('login.message.recover.ok'));
+      },
+      error: err => {
+        this.formValidation = true;
+        notificationService.pushSimpleError(this.t(err.code));
+        console.debug(err);
+      },
+    });
   }
 
   public closeLoginWindow(): void {

@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
+import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -26,9 +27,10 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class MailQueueScheduler implements Runnable {
     private static final String STACKTRACE = "STACKTRACE";
+    private static final Duration FREQUENCY = Duration.ofSeconds(30);
     private final ScheduledExecutorService scheduleExecutor = Executors.newSingleThreadScheduledExecutor(
             new CustomizableThreadFactory("mailQueueScheduler-"));
-    private final Scheduler mailQueueScheduler = Schedulers.newBoundedElastic(
+    private final Scheduler mqScheduler = Schedulers.newBoundedElastic(
             4, Integer.MAX_VALUE, "mailQueue-", 10, true);
 
     private final SmtpConfigurationPort smtpConfigurationPort;
@@ -39,40 +41,49 @@ public class MailQueueScheduler implements Runnable {
     @EventListener(ApplicationStartedEvent.class)
     public void startMailQueue() {
         log.atDebug().log("Start mail queue in 2 minutes ...");
-        scheduleExecutor.schedule(this, 2, TimeUnit.MINUTES);
+        scheduleExecutor.schedule(this, FREQUENCY.toSeconds(), TimeUnit.SECONDS);
     }
 
     @PreDestroy
     @SneakyThrows
-    public void shutdownScrapping() {
+    public void shutdownMailQueue() {
+        if (scheduleExecutor.awaitTermination(5, TimeUnit.MINUTES)) {
+            log.atInfo().log("Mail queue scheduler shutdown gracefully !");
+        } else {
+            log.atWarn().log("Mail queue scheduler shutdown timeout !");
+        }
+        mqScheduler.dispose();
         log.atInfo().log("Mail queue complete and shutdown !");
     }
 
     @Override
     public void run() {
+        log.atTrace().log("Start mail queue consumer ...");
         smtpConfigurationPort.get()
-                .switchIfEmpty(Mono.fromCallable(() -> {
-                    log.atWarn().log("No SMTP configuration found, stoping mail queue.");
-                    return null;
-                }))
-                .map(config -> new ReactiveSmtpMailSender("1", config, mailQueueScheduler, meterRegistry))
+                .switchIfEmpty(Mono.error(() -> new IllegalStateException("No SMTP configuration found")))
+                .map(config -> new ReactiveSmtpMailSender("1", config, mqScheduler, meterRegistry))
                 .flatMapMany(sender -> mailQueuePersistencePort.consume()
                         .flatMap(mail -> sender.sendMail(mail.self())))
                 .subscribe(smtpResult -> {
-                    scheduleExecutor.schedule(this, 2, TimeUnit.MINUTES);
-                    if (smtpResult.isFailure()) {
-                        log.atError()
-                                .addArgument(smtpResult.getCause().getCause())
-                                .addArgument(smtpResult.getCause().getMessage())
-                                .log("Error sending mail: {}: {}", smtpResult.getCause());
-                        log.atDebug().log(STACKTRACE, smtpResult.getCause());
-                    }
-                }, error -> {
-                    log.atError()
-                            .addArgument(error.getCause())
-                            .addArgument(error.getMessage())
-                            .log("Mail queue stop with error -> {}: {}");
-                    log.atDebug().log(STACKTRACE, error);
-                });
+                            if (smtpResult.isFailure()) {
+                                log.atError()
+                                        .addArgument(smtpResult.getCause().getClass())
+                                        .addArgument(smtpResult.getCause().getLocalizedMessage())
+                                        .log("Error sending mail: {}: {}");
+                                log.atDebug().log(STACKTRACE, smtpResult.getCause());
+                            }
+                        }, error -> {
+                            log.atError()
+                                    .addArgument(error.getClass())
+                                    .addArgument(error.getLocalizedMessage())
+                                    .log("Mail queue stop with error -> {}: {}");
+                            log.atDebug().log(STACKTRACE, error);
+                        },
+                        () -> {
+                            log.atDebug().log("Mail queue complete");
+                            if (!scheduleExecutor.isShutdown()) {
+                                scheduleExecutor.schedule(this, FREQUENCY.toSeconds(), TimeUnit.SECONDS);
+                            }
+                        });
     }
 }

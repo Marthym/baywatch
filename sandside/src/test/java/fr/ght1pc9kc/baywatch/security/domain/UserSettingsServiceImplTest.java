@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.List;
 import java.util.Locale;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -42,7 +43,9 @@ class UserSettingsServiceImplTest {
         }).when(mockPersistence).persist(anyString(), any(UserSettings.class));
 
         mockAuthentication = mock(AuthenticationFacade.class);
-        ClientLocalePort mockLocale = () -> Mono.just(Locale.FRENCH);
+        ClientLocalePort mockLocale = mock(ClientLocalePort.class);
+        when(mockLocale.getClientLocale()).thenReturn(Mono.just(Locale.FRENCH));
+        when(mockLocale.getAvailableLanguages()).thenReturn(List.of(Locale.US, Locale.FRANCE));
         tested = new UserSettingsServiceImpl(mockPersistence, mockAuthentication, mockLocale);
     }
 
