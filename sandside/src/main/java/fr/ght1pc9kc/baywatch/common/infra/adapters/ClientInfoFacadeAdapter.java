@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.Locale;
 
 @Service
@@ -35,5 +36,11 @@ public record ClientInfoFacadeAdapter() implements ClientInfoFacade {
     public Mono<InetSocketAddress> getRemoteAddress() {
         return ReactiveClientInfoContextHolder.getContext()
                 .map(ClientInfoContext::ip);
+    }
+
+    @Override
+    public Mono<URI> getBaseUrl() {
+        return ReactiveClientInfoContextHolder.getContext()
+                .map(ClientInfoContext::baseUrl);
     }
 }

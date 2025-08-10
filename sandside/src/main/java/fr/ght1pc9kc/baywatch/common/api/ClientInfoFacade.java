@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.common.api;
 import reactor.core.publisher.Mono;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 
@@ -14,4 +15,6 @@ public interface ClientInfoFacade {
     Mono<String> getUserAgent();
 
     Mono<InetSocketAddress> getRemoteAddress();
+
+    Mono<URI> getBaseUrl();
 }

@@ -23,6 +23,7 @@ import org.jetbrains.annotations.VisibleForTesting;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
+import java.net.URI;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -86,7 +87,17 @@ public class MailClientImpl implements MailClient {
                 .flatMap(t -> templateService.get(template, t.getT1())
                         .map(mailTemplate -> Tuples.of(t.getT2(), mailTemplate)))
 
-                .map(t -> {
+                .flatMap(t -> localeFacade.getBaseUrl()
+                        .switchIfEmpty(Mono.just(URI.create("http://localhost/")))
+                        .map(baseUrl -> {
+                    var collectedTemplateVariables = new EnumMap<>(t.getT1().self());
+                    collectedTemplateVariables.putAll(t.getT1().self());
+                    collectedTemplateVariables.put(TemplateVariable.BASE_URL, baseUrl.toString());
+                    collectedTemplateVariables.putAll(variables);
+                    return Tuples.of(t.getT1().convert(ignore ->
+                            Map.copyOf(collectedTemplateVariables)), t.getT2());
+
+                })).map(t -> {
                     Map<String, String> valueMap = t.getT1().self().entrySet().stream()
                             .map(e -> Map.entry(
                                     CaseUtils.toCamelCase(e.getKey().name(), false, '_'),

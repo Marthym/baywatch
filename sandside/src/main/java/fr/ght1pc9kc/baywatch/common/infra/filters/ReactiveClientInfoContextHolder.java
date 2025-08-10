@@ -6,6 +6,8 @@ import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URL;
 import java.util.function.Function;
 
 @UtilityClass
@@ -34,7 +36,7 @@ public class ReactiveClientInfoContextHolder {
         return Context.of(CLIENT_INFO_CONTEXT_KEY, clientInfoContext);
     }
 
-    public static Context withClientInfo(InetSocketAddress ip, String userAgent) {
-        return withClientInfoContext(Mono.just(new ClientInfoContext(ip, userAgent)));
+    public static Context withClientInfo(InetSocketAddress ip, String userAgent, URI baseUrl) {
+        return withClientInfoContext(Mono.just(new ClientInfoContext(ip, userAgent, baseUrl)));
     }
 }
