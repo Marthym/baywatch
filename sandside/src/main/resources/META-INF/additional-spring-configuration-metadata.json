@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "baywatch.notify.mailer.whitelist_ips",
+      "type": "java.lang.String",
+      "description": "IP allowed to send emails without limit."
+    },
+    {
+      "name": "baywatch.imgproxy.enable",
+      "type": "java.lang.String",
+      "description": "Enable IMGProxy."
+    }
+  ]
+}

@@ -31,6 +31,7 @@ import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -43,6 +44,8 @@ public class MailClientImpl implements MailClient {
     private final NotifyAuthenticationPort authenticationPort;
     private final NotifyClientInfoPort localeFacade;
     private final MailQueuePersistencePort queuePersistencePort;
+    private final Set<String> whitelistIps;
+
     private final UlidFactory ulidFactory = UlidFactory.newMonotonicInstance();
 
     private final Cache<@NotNull String, AtomicInteger> limiter = Caffeine.newBuilder()
@@ -57,7 +60,12 @@ public class MailClientImpl implements MailClient {
         Instant now = clock.instant();
         return localeFacade.getRemoteAddress()
                 .handle((ip, sink) -> {
-                    int count = Objects.requireNonNull(limiter.get(ip.getAddress().getHostAddress() + "@" + to, k -> new AtomicInteger(1)))
+                    String hostAddress = ip.getAddress().getHostAddress();
+                    if (whitelistIps.contains(hostAddress)) {
+                        sink.next(ip);
+                        return;
+                    }
+                    int count = Objects.requireNonNull(limiter.get(hostAddress + "@" + to, k -> new AtomicInteger(1)))
                             .getAndIncrement();
                     if (count > MAX_MAIL_TO_ADDRESS) {
                         sink.error(new MailLimitExceededException(String.format("Too many mail send to %s", to)));

@@ -60,35 +60,36 @@ The administration and actuator passwords was displayed in the console log durin
 
 Baywatch offers many configuration parameters, almost all of which are not mandatory.
 
-| Env                            | Description                                             | Optional | Default Value |
-|--------------------------------|---------------------------------------------------------|----------|---------------|
-| BAYWATCH_COOKIE_VALIDITY       | The time the session cookie is valid                    | X        | 24h           |
-| BAYWATCH_DNS_TIMEOUT           | The timeout duration for DNS query                      | X        | 10s           |
-| BAYWATCH_GRAPHIQL_ENABLE       | Enable the GraphiQL interface                           | X        | false         |
-| BAYWATCH_GRAPHQL_INTROSPECTION | Enable the GraphQL introspection                        | X        | false         |
-| BAYWATCH_HOME                  | The path where BW will create database file             | -        |               |
-| BAYWATCH_IMGPROXY_BASEPATH     | IMGProxy base path to allow reverse proxy               | X        | /img          |
-| BAYWATCH_IMGPROXY_ENABLE       | Minify image with ImgProxy                              | X        | true          |
-| BAYWATCH_IMGPROXY_SALT         | IMGProxy signing salt                                   | X        | -             |
-| BAYWATCH_IMGPROXY_SIGNKEY      | IMGProxy signing key                                    | X        | -             |
-| BAYWATCH_INDEXER_ENABLE        | Enable lucene to index news end feed                    | X        | true          |
-| BAYWATCH_LOG_LEVEL             | Change the log level                                    | X        | INFO          |
-| BAYWATCH_SCRAPER_CONSERVATION  | The time the news was conserved since their publication | X        | 3 month       |
-| BAYWATCH_SCRAPER_ENABLE        | Start the feeds scraping at start up                    | X        | true          |
-| BAYWATCH_SCRAPER_FREQUENCY     | The frequency of the scraping process                   | X        | 1h            |
-| BAYWATCH_SCRAPER_TIMEOUT       | The timeout duration for scraping news or feed          | X        | 2s            |
-| BAYWATCH_SCRAPER_REDDIT_IMAGE  | The URL of image to display on reddit news              | X        | reddit std    |
-| BAYWATCH_SERVER_PORT           | Change the server port                                  | X        | 8080          |
-| BAYWATCH_TOKEN_VALIDITY        | The time the JWToken is valid                           | X        | 1h            |
-| **Mail Server Config**         |                                                         |          |               |
-| BW_MAIL_SMTP_HOST              | SMTP server host name                                   | X        |               |
-| BW_MAIL_SMTP_FROM              | The email address from which emails will be sent        | if host  |               |
-| BW_MAIL_SMTP_USERNAME          | The SMTP server username                                | if host  |               |
-| BW_MAIL_SMTP_PASSWORD          | The SMTP server username password                       | if host  |               |
-| BW_MAIL_SMTP_CIPHER            | The cipher algorithm used                               | X        | SSLv3         |
-| BW_MAIL_SMTP_PORT              | SMTP server port                                        | X        | 587           |
-| BW_MAIL_SMTP_REQUIRE_TLS       | Is TLS required                                         | X        | true          |
-| BW_MAIL_SMTP_SECURE            | SMTP Require secure connection                          | X        | true          |
+| Env                            | Description                                                  | Optional | Default Value |
+|--------------------------------|--------------------------------------------------------------|----------|---------------|
+| BAYWATCH_COOKIE_VALIDITY       | The time the session cookie is valid                         | X        | 24h           |
+| BAYWATCH_DNS_TIMEOUT           | The timeout duration for DNS query                           | X        | 10s           |
+| BAYWATCH_GRAPHIQL_ENABLE       | Enable the GraphiQL interface                                | X        | false         |
+| BAYWATCH_GRAPHQL_INTROSPECTION | Enable the GraphQL introspection                             | X        | false         |
+| BAYWATCH_HOME                  | The path where BW will create database file                  | -        |               |
+| BAYWATCH_IMGPROXY_BASEPATH     | IMGProxy base path to allow reverse proxy                    | X        | /img          |
+| BAYWATCH_IMGPROXY_ENABLE       | Minify image with ImgProxy                                   | X        | true          |
+| BAYWATCH_IMGPROXY_SALT         | IMGProxy signing salt                                        | X        | -             |
+| BAYWATCH_IMGPROXY_SIGNKEY      | IMGProxy signing key                                         | X        | -             |
+| BAYWATCH_INDEXER_ENABLE        | Enable lucene to index news end feed                         | X        | true          |
+| BAYWATCH_LOG_LEVEL             | Change the log level                                         | X        | INFO          |
+| BAYWATCH_SCRAPER_CONSERVATION  | The time the news was conserved since their publication      | X        | 3 month       |
+| BAYWATCH_SCRAPER_ENABLE        | Start the feeds scraping at start up                         | X        | true          |
+| BAYWATCH_SCRAPER_FREQUENCY     | The frequency of the scraping process                        | X        | 1h            |
+| BAYWATCH_SCRAPER_TIMEOUT       | The timeout duration for scraping news or feed               | X        | 2s            |
+| BAYWATCH_SCRAPER_REDDIT_IMAGE  | The URL of image to display on reddit news                   | X        | reddit std    |
+| BAYWATCH_SERVER_PORT           | Change the server port                                       | X        | 8080          |
+| BAYWATCH_TOKEN_VALIDITY        | The time the JWToken is valid                                | X        | 1h            |
+| **Mail Server Config**         |                                                              |          |               |
+| BW_MAIL_SMTP_HOST              | SMTP server host name                                        | X        |               |
+| BW_MAIL_SMTP_FROM              | The email address from which emails will be sent             | if host  |               |
+| BW_MAIL_SMTP_USERNAME          | The SMTP server username                                     | if host  |               |
+| BW_MAIL_SMTP_PASSWORD          | The SMTP server username password                            | if host  |               |
+| BW_MAIL_SMTP_CIPHER            | The cipher algorithm used                                    | X        | SSLv3         |
+| BW_MAIL_SMTP_PORT              | SMTP server port                                             | X        | 587           |
+| BW_MAIL_SMTP_REQUIRE_TLS       | Is TLS required                                              | X        | true          |
+| BW_MAIL_SMTP_SECURE            | SMTP Require secure connection                               | X        | true          |
+| BW_MAILER_IP_WHITELIST         | IPs with no restrictions on sending emails (separate by ',') | X        | 127.0.0.1,::1 |
 
 ### Docker compose
 
