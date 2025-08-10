@@ -43,6 +43,7 @@ import java.util.Map;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.LOGIN;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.MAIL;
 import static fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort.MailTemplateType.PASSWORD_RESET;
+import static java.util.Objects.nonNull;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -117,10 +118,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .map(this::generateToken)
                 .map(this::saveTokenInCache)
                 .flatMap(this::sendPasswordResetMail)
-                .doOnSuccess(user -> log.atInfo()
-                        .addArgument(user.self().login())
-                        .log("Send password reset to {} successful"))
-                .then();
+                .doOnSuccess(user -> {
+                    if (nonNull(user)) {
+                        log.atInfo().addArgument(user.self().login())
+                                .log("Send password reset to {} successful");
+                    }
+                }).then();
     }
 
     private Tuple3<Entity<User>, String, String> generateToken(Entity<User> user) {

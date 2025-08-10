@@ -106,7 +106,7 @@ export default class LoginPage extends Vue {
               }
             }
           }
-          this.router.back();
+          this.router.push('/');
         },
         error: err => {
           this.formValidation = true;
@@ -122,6 +122,7 @@ export default class LoginPage extends Vue {
   public onRecoverPasswordClick(): void {
     if (!this.username || this.username.length === 0) {
       this.formValidation = true;
+      return;
     }
     this.submitDisable = true;
     askForPasswordReset(this.username).subscribe({

@@ -57,7 +57,7 @@ function handleValidationErrors<T>(data: GraphqlResponse<T>): GraphqlResponse<T>
     if (data.errors) {
         const errIdx = data.errors.findIndex(e => e.extensions.classification === VALIDATION_ERROR);
         if (errIdx !== -1) {
-            throw new ValidationError(data.errors[errIdx].message, data.errors[errIdx].extensions.properties);
+            throw new ValidationError(data.errors[errIdx].message, data.errors[errIdx].extensions.properties ?? []);
         }
     }
     return data;
