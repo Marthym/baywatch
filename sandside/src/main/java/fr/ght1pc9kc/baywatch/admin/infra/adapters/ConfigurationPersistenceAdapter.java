@@ -7,6 +7,7 @@ import fr.ght1pc9kc.baywatch.dsl.tables.records.ConfigurationRecord;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
+import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Cursor;
@@ -40,7 +41,10 @@ public class ConfigurationPersistenceAdapter implements ConfigurationPersistence
     @SuppressWarnings("resource")
     public Flux<Entity<Entry<String, String>>> list(PageRequest pageRequest) {
         Condition conditions = pageRequest.filter().accept(JOOQ_CONDITION_VISITOR);
-        var query = dslContext.selectFrom(CONFIGURATION).where(conditions);
+        var query = JooqPagination.apply(
+                pageRequest.pagination(), CONFIGURATION_PROPERTIES_MAPPING,
+                dslContext.selectFrom(CONFIGURATION).where(conditions)
+        );
         return Flux.<ConfigurationRecord>create(sink -> {
                     Cursor<ConfigurationRecord> cursor = query.fetchLazy();
                     sink.onRequest(n -> {

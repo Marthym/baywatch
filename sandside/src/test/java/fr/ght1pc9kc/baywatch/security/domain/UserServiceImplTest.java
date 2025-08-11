@@ -36,6 +36,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -85,7 +86,9 @@ class UserServiceImplTest {
                 .filter(u -> u.id().equals(answer.getArgument(0, String.class)))
                 .findAny().map(Mono::just).orElseThrow()
         ).when(mockUserRepository).get(anyString());
-        doReturn(Mono.just(new ClientInfoContext(InetSocketAddress.createUnresolved("127.0.0.1", 80), "User Agent")))
+        doReturn(Mono.just(new ClientInfoContext(
+                InetSocketAddress.createUnresolved("127.0.0.1", 80),
+                "User Agent", URI.create("http://localhost/feed"))))
                 .when(mockAuthFacade).getClientInfoContext();
 
         when(mockUserRepository.list(any())).thenReturn(Flux.just(UserSamples.LUKE, UserSamples.OBIWAN, UserSamples.YODA));

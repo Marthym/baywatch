@@ -1,11 +1,10 @@
 package fr.ght1pc9kc.baywatch.notify.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.common.domain.Try;
-import fr.ght1pc9kc.baywatch.notify.domain.model.Mail;
 import fr.ght1pc9kc.baywatch.notify.domain.exceptions.SmtpException;
+import fr.ght1pc9kc.baywatch.notify.domain.model.Mail;
 import fr.ght1pc9kc.baywatch.notify.domain.model.SmtpServerConfig;
 import io.micrometer.core.instrument.MeterRegistry;
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.MailAuthenticationException;
@@ -25,6 +24,7 @@ public class ReactiveSmtpMailSender {
     private static final int SMTP_ERROR_MAILBOX_UNAVAILABLE = 450;
     private static final int SMTP_ERROR_SYNTAX_ERROR = 500;
     private static final int SMTP_ERROR_INVALID_CREDENTIALS = 535;
+    private static final String SMTP_TIMEOUTS_MS = "10000"; // 10s
 
     private static final String COUNTER_SEND_MAIL = "rob.mailer.sendmail";
     private static final String COUNTER_TAG_STATUS = "status";
@@ -53,11 +53,15 @@ public class ReactiveSmtpMailSender {
         this.meterRegistry = meterRegistry;
 
         Properties props = this.mailSender.getJavaMailProperties();
-        props.put("mail.transport.protocol", "smtp");
-        props.put("mail.smtp.auth", config.secure());
+        props.put("mail.smtp.auth", Boolean.toString(config.secure()));
         props.put("mail.smtp.from", config.from());
-        props.put("mail.smtp.starttls.enable", config.requireTls());
-        props.put("mail.smtp.starttls.required", config.requireTls());
+        props.put("mail.smtp.starttls.enable", Boolean.toString(config.requireTls()));
+        props.put("mail.smtp.starttls.required", Boolean.toString(config.requireTls()));
+        props.put("mail.smtp.ssl.checkserveridentity", Boolean.toString(config.checkServerIdentity()));
+        props.put("mail.smtp.ssl.protocols", config.sslProtocols());
+        props.put("mail.smtp.connectiontimeout", SMTP_TIMEOUTS_MS);
+        props.put("mail.smtp.timeout", SMTP_TIMEOUTS_MS);
+        props.put("mail.smtp.writetimeout", SMTP_TIMEOUTS_MS);
         props.put("mail.debug", "false");
     }
 
@@ -115,10 +119,8 @@ public class ReactiveSmtpMailSender {
                             COUNTER_TAG_MAILER, id).increment();
                 }
             }).subscribeOn(mailScheduler);
-        } catch (MessagingException e) {
-            return Mono.just(Try.fail(new SmtpException(SMTP_ERROR_SYNTAX_ERROR, e.getLocalizedMessage())));
         } catch (Exception e) {
-            return Mono.error(new SmtpException(e));
+            return Mono.just(Try.fail(new SmtpException(SMTP_ERROR_SYNTAX_ERROR, e.getLocalizedMessage())));
         }
     }
 }

@@ -8,6 +8,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
 
 class ReactiveClientInfoContextHolderTest {
 
@@ -17,7 +18,9 @@ class ReactiveClientInfoContextHolderTest {
         StepVerifier.create(Mono.just(UserSamples.OBIWAN)
                         .flatMap(u -> ReactiveClientInfoContextHolder.getContext().map(ctx -> u.withMeta(UserMeta.loginIP, ctx.ip().toString())))
                         .contextWrite(ReactiveClientInfoContextHolder.withClientInfo(
-                                InetSocketAddress.createUnresolved("127.0.0.1", 80), "Dummy User Agent")))
+                                InetSocketAddress.createUnresolved("127.0.0.1", 80),
+                                "Dummy User Agent",
+                                URI.create("http://localhost/feed"))))
                 .assertNext(user -> Assertions.assertThat(user.meta(UserMeta.loginIP)).contains("127.0.0.1/<unresolved>:80"))
                 .verifyComplete();
     }
@@ -30,7 +33,9 @@ class ReactiveClientInfoContextHolderTest {
                                 .switchIfEmpty(Mono.just(u)))
                         .contextWrite(ReactiveClientInfoContextHolder.clearContext())
                         .contextWrite(ReactiveClientInfoContextHolder.withClientInfo(
-                                InetSocketAddress.createUnresolved("127.0.0.1", 80), "Dummy User Agent")))
+                                InetSocketAddress.createUnresolved("127.0.0.1", 80),
+                                "Dummy User Agent",
+                                URI.create("http://localhost/feed"))))
                 .assertNext(user -> Assertions.assertThat(user.meta(UserMeta.loginIP)).isEmpty())
                 .verifyComplete();
     }

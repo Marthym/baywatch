@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
 
 class SpringAuthenticationContextTest {
 
@@ -24,7 +25,9 @@ class SpringAuthenticationContextTest {
     void should_get_client_info_context() {
         StepVerifier.create(tested.getClientInfoContext()
                         .contextWrite(ReactiveClientInfoContextHolder.withClientInfo(
-                                InetSocketAddress.createUnresolved("127.0.0.1", 80), "Dummy User Agent")))
+                                InetSocketAddress.createUnresolved("127.0.0.1", 80),
+                                "Dummy User Agent",
+                                URI.create("http://localhost/feed"))))
                 .assertNext(actual -> Assertions.assertThat(actual.ip().toString())
                         .isEqualToIgnoringWhitespace("127.0.0.1/<unresolved>:80"))
                 .verifyComplete();

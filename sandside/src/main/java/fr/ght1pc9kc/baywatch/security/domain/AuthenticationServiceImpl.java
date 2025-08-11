@@ -110,6 +110,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public Mono<Void> askPasswordReset(@NotNull String email) {
+        if (email.isBlank()) {
+            return Mono.empty().then();
+        }
         return userService.list(PageRequest.one(Criteria.property(LOGIN).eq(email)))
                 .contextWrite(AuthenticationFacade.withSystemAuthentication())
                 .switchIfEmpty(userService.list(PageRequest.one(Criteria.property(MAIL).eq(email)))

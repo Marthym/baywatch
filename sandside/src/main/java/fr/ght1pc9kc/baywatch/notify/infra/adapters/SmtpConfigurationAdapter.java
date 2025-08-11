@@ -7,10 +7,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+
 @Component
 @RequiredArgsConstructor
 public class SmtpConfigurationAdapter implements SmtpConfigurationPort {
     private static final String MAIL_SMTP_PREFIX = "mail.smtp.";
+    private static final Duration MAIL_QUEUE_POLLING_INTERVAL = Duration.ofSeconds(120);
     private final AppConfigurationService appConfigurationService;
 
     @Override
@@ -23,8 +26,14 @@ public class SmtpConfigurationAdapter implements SmtpConfigurationPort {
                         Boolean.parseBoolean(params.getValue(MAIL_SMTP_PREFIX + "secure")),
                         params.getValue(MAIL_SMTP_PREFIX + "username"),
                         params.getValue(MAIL_SMTP_PREFIX + "password"),
-                        params.getValue(MAIL_SMTP_PREFIX + "cipher"),
+                        params.getValue(MAIL_SMTP_PREFIX + "ssl.protocols"),
+                        Boolean.parseBoolean(params.getValue(MAIL_SMTP_PREFIX + "ssl.checkserveridentity")),
                         Boolean.parseBoolean(params.getValue(MAIL_SMTP_PREFIX + "requireTls"))
                 ));
+    }
+
+    @Override
+    public Duration getMailQueuePollingInterval() {
+        return MAIL_QUEUE_POLLING_INTERVAL;
     }
 }

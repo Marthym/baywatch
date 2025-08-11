@@ -212,7 +212,10 @@ class FeedScraperIntegrationTest {
 
             @Override
             public Mono<ClientInfoContext> getClientInfoContext() {
-                return Mono.just(new ClientInfoContext(InetSocketAddress.createUnresolved("127.0.0.1", 80), "User agent"));
+                return Mono.just(new ClientInfoContext(
+                        InetSocketAddress.createUnresolved("127.0.0.1", 80),
+                        "User agent",
+                        URI.create("http://localhost/feed")));
             }
 
             @Override

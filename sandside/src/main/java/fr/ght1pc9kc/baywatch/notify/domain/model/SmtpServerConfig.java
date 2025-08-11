@@ -11,7 +11,8 @@ public record SmtpServerConfig(
         boolean secure,
         String username,
         String password,
-        String cipher,
+        String sslProtocols,
+        boolean checkServerIdentity,
         boolean requireTls
 ) {
     public SmtpServerConfig {

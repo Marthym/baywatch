@@ -59,12 +59,16 @@ public class V2_2_202508061136__insert_default_config extends BaseJavaMigration 
                         .setConfValue(env.get("BW_MAIL_SMTP_PASSWORD")),
                 CONFIGURATION.newRecord()
                         .setConfId(CONFIGURATION_PREFIX + ulidFactory.create().toString())
-                        .setConfName("mail.smtp.cipher")
-                        .setConfValue(env.getOrDefault("BW_MAIL_SMTP_CIPHER", "SSLv3")),
+                        .setConfName("mail.smtp.ssl.protocols")
+                        .setConfValue(env.getOrDefault("BW_MAIL_SMTP_SSL_PROTOCOLS", "TLSv1.3 TLSv1.2")),
                 CONFIGURATION.newRecord()
                         .setConfId(CONFIGURATION_PREFIX + ulidFactory.create().toString())
                         .setConfName("mail.smtp.requireTls")
                         .setConfValue(env.getOrDefault("BW_MAIL_SMTP_REQUIRE_TLS", "true")),
+                CONFIGURATION.newRecord()
+                        .setConfId(CONFIGURATION_PREFIX + ulidFactory.create().toString())
+                        .setConfName("mail.smtp.ssl.checkserveridentity")
+                        .setConfValue(env.getOrDefault("BW_MAIL_SMTP_CHECK_SERVER_IDENTITY", "true")),
                 CONFIGURATION.newRecord()
                         .setConfId(CONFIGURATION_PREFIX + ulidFactory.create().toString())
                         .setConfName("mail.smtp.from")

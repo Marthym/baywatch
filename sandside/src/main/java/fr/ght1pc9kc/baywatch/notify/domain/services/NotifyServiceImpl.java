@@ -12,6 +12,7 @@ import fr.ght1pc9kc.baywatch.notify.domain.ports.NotificationPersistencePort;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.entity.api.Entity;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.http.codec.ServerSentEvent;
 import reactor.core.Disposable;
@@ -19,7 +20,6 @@ import reactor.core.Scannable;
 import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
-import reactor.core.publisher.Sinks.EmitResult;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -36,7 +36,7 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
     private final NotificationPersistencePort notificationPersistence;
 
     private final Sinks.Many<ServerEvent> multicast;
-    private final Cache<String, Sinks.Many<ServerEvent>> cache;
+    private final Cache<@NotNull String, Sinks.Many<ServerEvent>> cache;
     private final Supplier<String> eventIdGenerator;
     private final Clock clock;
 
@@ -90,16 +90,18 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
                                             log.atDebug().addArgument(u.id()).log("Subscribe for {}"))
 
                                     .flatMap(evt -> switch (evt) {
-                                        case BasicEvent<?> basic -> Mono.just(ServerSentEvent.builder()
-                                                .id(basic.id())
-                                                .event(basic.type().getName())
-                                                .data(basic.message())
-                                                .build());
-                                        case ReactiveEvent<?> reactive -> reactive.message().map(msg -> ServerSentEvent.builder()
-                                                .id(reactive.id())
-                                                .event(reactive.type().getName())
-                                                .data(msg)
-                                                .build());
+                                        case BasicEvent(String id, EventType type, Object message) ->
+                                                Mono.just(ServerSentEvent.builder()
+                                                        .id(id)
+                                                        .event(type.getName())
+                                                        .data(message)
+                                                        .build());
+                                        case ReactiveEvent(String id, EventType type, Mono<?> message) ->
+                                                message.map(msg -> ServerSentEvent.builder()
+                                                        .id(id)
+                                                        .event(type.getName())
+                                                        .data(msg)
+                                                        .build());
                                     });
                         }
                 )
@@ -173,13 +175,10 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
             log.atDebug().log("No subscriber listening the SSE entry point.");
             return;
         }
-        EmitResult result = sink.tryEmitNext(event);
-        if (result.isFailure()) {
-            if (result == EmitResult.FAIL_ZERO_SUBSCRIBER) {
-                log.atDebug().log("No subscriber listening the SSE entry point.");
-            } else {
-                log.atWarn().addArgument(result).log("{} on emit notification");
-            }
+        switch (sink.tryEmitNext(event)) {
+            case OK -> log.atTrace().log("Emit notification");
+            case FAIL_ZERO_SUBSCRIBER -> log.atDebug().log("No subscriber listening the SSE entry point.");
+            default -> log.atWarn().addArgument(sink.tryEmitNext(event)).log("{} on emit notification");
         }
     }
 }
