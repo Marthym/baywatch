@@ -39,7 +39,7 @@ class SseControllerTest {
         Flux<ServerSentEvent<String>> actualSse = tested.sse()
                 .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authenticationToken));
 
-        try (ExecutorService es = Executors.newFixedThreadPool(3)) {
+        try (ExecutorService es = Executors.newVirtualThreadPerTaskExecutor()) {
             BlockingDeque<ServerSentEvent<String>> actual = new LinkedBlockingDeque<>(5);
             Future<Disposable> disposableFuture = es.submit(() -> actualSse.subscribe(actual::add));
 
