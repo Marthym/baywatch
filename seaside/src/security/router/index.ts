@@ -15,11 +15,10 @@ const CreateAccountComponent = () => import('@/security/components/CreateAccount
 
 export const routes: RouteRecordRaw[] = [
     { path: '/login', component: LoginPage, name: 'LoginPage' },
-    { path: '/login/:state', component: LoginPage, name: 'security-recover-password' },
     { path: '/register', component: CreateAccountComponent, name: 'security-register' },
 ];
 
-export const requireAuthNavGuard: NavigationGuardWithThis<NavigationGuardWithThis<boolean>> = async to => {
+export const requireAuthNavGuard: NavigationGuardWithThis<undefined> = async to => {
     if (store.state.user.isAuthenticated === undefined) {
         try {
             const session: Session = await firstValueFrom(refresh());

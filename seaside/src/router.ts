@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory, RouterOptions } from 'vue-router';
+import { createRouter, createWebHistory, RouterOptions } from 'vue-router';
 import { routes as adminRoutes } from '@/administration/router';
 import { routes as configRoutes } from '@/configuration/router';
 import { routes as teamsRoutes } from '@/teams/router';
@@ -7,7 +7,7 @@ import { requireAuthNavGuard, routes as securityRoutes } from '@/security/router
 import { lazyloadTranslations } from '@/i18n';
 
 export const router = createRouter({
-    history: createWebHashHistory(),
+    history: createWebHistory(),
     routes: [
         ...adminRoutes,
         ...teamsRoutes,
