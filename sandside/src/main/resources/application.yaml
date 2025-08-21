@@ -78,5 +78,6 @@ baywatch:
     signingSalt: ${BAYWATCH_IMGPROXY_SALT:}
     pathBase: ${BAYWATCH_IMGPROXY_BASEPATH:/img}
   notify:
-    mailer.whitelist_ips: ${BW_MAILER_IP_WHITELIST:127.0.0.0,0:0:0:0:0:0:0:1}
-
+    mailer:
+      whitelist_ips: ${BW_MAILER_IP_WHITELIST:127.0.0.0,0:0:0:0:0:0:0:1}
+      queuePollingInterval: 120s
