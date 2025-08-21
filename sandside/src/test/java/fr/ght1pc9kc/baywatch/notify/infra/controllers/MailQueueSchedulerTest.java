@@ -10,6 +10,7 @@ import fr.ght1pc9kc.entity.api.Entity;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
@@ -102,5 +103,10 @@ class MailQueueSchedulerTest {
         tested.startMailQueue();
 
         Assertions.assertThatNoException().isThrownBy(() -> tested.shutdownMailQueue());
+    }
+
+    @AfterEach
+    void tearDown() {
+        tested.shutdownMailQueue();
     }
 }

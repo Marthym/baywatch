@@ -28,6 +28,8 @@ import fr.ght1pc9kc.scraphead.core.HeadScrapers;
 import fr.ght1pc9kc.scraphead.netty.http.NettyScrapClient;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -225,5 +227,15 @@ class FeedScraperIntegrationTest {
                 return ReactiveSecurityContextHolder.withAuthentication(authentication);
             }
         };
+    }
+
+    @AfterEach
+    void tearDown() {
+        tested.shutdownScrapping();
+    }
+
+    @AfterAll
+    static void afterAll() {
+        server.stop(0);
     }
 }

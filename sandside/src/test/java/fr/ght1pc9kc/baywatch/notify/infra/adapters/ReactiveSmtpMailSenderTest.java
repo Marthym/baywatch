@@ -70,7 +70,7 @@ class ReactiveSmtpMailSenderTest {
         tested = new ReactiveSmtpMailSender(
                 "death-star-mailer",
                 deathStarConfig,
-                Schedulers.boundedElastic(),
+                Schedulers.immediate(),
                 mockJavaMailSenderFactory,
                 mockMeterRegistry
         );

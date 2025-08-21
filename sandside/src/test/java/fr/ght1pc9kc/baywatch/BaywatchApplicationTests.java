@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.io.IOException;
@@ -21,6 +22,7 @@ import java.nio.file.Paths;
 @Tag("integration")
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class BaywatchApplicationTests {
 
     @Autowired
@@ -40,5 +42,6 @@ class BaywatchApplicationTests {
         ContextInitializer ci = new ContextInitializer(loggerContext);
         loggerContext.reset();
         ci.autoConfig();
+
     }
 }

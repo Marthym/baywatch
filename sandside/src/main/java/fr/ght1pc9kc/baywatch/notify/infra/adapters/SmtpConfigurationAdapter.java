@@ -3,18 +3,25 @@ package fr.ght1pc9kc.baywatch.notify.infra.adapters;
 import fr.ght1pc9kc.baywatch.admin.api.AppConfigurationService;
 import fr.ght1pc9kc.baywatch.notify.domain.model.SmtpServerConfig;
 import fr.ght1pc9kc.baywatch.notify.domain.ports.SmtpConfigurationPort;
-import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 
+import static java.util.Objects.isNull;
+
 @Component
-@RequiredArgsConstructor
 public class SmtpConfigurationAdapter implements SmtpConfigurationPort {
     private static final String MAIL_SMTP_PREFIX = "mail.smtp.";
-    private static final Duration MAIL_QUEUE_POLLING_INTERVAL = Duration.ofSeconds(120);
+    private final Duration queuePollingInterval;
     private final AppConfigurationService appConfigurationService;
+
+    public SmtpConfigurationAdapter(@Nullable @Value("${baywatch.notify.mailer.queuePollingInterval}") Duration queuePollingInterval, AppConfigurationService appConfigurationService) {
+        this.appConfigurationService = appConfigurationService;
+        this.queuePollingInterval = isNull(queuePollingInterval) ? Duration.ofSeconds(120) : queuePollingInterval;
+    }
 
     @Override
     public Mono<SmtpServerConfig> get() {
@@ -34,6 +41,6 @@ public class SmtpConfigurationAdapter implements SmtpConfigurationPort {
 
     @Override
     public Duration getMailQueuePollingInterval() {
-        return MAIL_QUEUE_POLLING_INTERVAL;
+        return queuePollingInterval;
     }
 }
