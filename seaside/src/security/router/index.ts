@@ -12,10 +12,12 @@ import {
 
 const LoginPage = () => import('@/security/pages/LoginPage.vue');
 const CreateAccountComponent = () => import('@/security/components/CreateAccountComponent.vue');
+const PasswordResetComponent = () => import('@/security/components/PasswordResetComponent.vue');
 
 export const routes: RouteRecordRaw[] = [
     { path: '/login', component: LoginPage, name: 'LoginPage' },
     { path: '/register', component: CreateAccountComponent, name: 'security-register' },
+    { path: '/password/reset', component: PasswordResetComponent, name: 'security-password-reset' },
 ];
 
 export const requireAuthNavGuard: NavigationGuardWithThis<undefined> = async to => {
