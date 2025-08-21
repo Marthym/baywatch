@@ -31,7 +31,6 @@ export const requireAuthNavGuard: NavigationGuardWithThis<undefined> = async to 
         } catch (err) {
             store.commit(USER_LOGOUT_MUTATION);
             console.debug((err as Error).message);
-            return { name: 'LoginPage', query: { redirect: to.path } };
         }
     }
     const isAuthenticated = store.state.user.isAuthenticated;
