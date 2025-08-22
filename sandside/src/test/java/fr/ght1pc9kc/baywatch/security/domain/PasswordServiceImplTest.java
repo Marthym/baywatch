@@ -1,9 +1,9 @@
 package fr.ght1pc9kc.baywatch.security.domain;
 
 import fr.ght1pc9kc.baywatch.common.api.ClientInfoFacade;
-import fr.ght1pc9kc.baywatch.security.PasswordChecker;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.baywatch.security.domain.ports.ResetPasswordTokenPort;
 import fr.ght1pc9kc.baywatch.security.infra.adapters.PasswordCheckerNbvcxz;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import org.assertj.core.api.Assertions;
@@ -13,24 +13,35 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import reactor.util.context.Context;
 
 import java.util.Locale;
+import java.util.Optional;
 
+import static fr.ght1pc9kc.baywatch.tests.samples.UserSamples.OBIWAN;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class PasswordServiceImplTest {
 
-    private PasswordChecker tested;
+    private PasswordServiceImpl tested;
 
     @BeforeEach
     void setUp() {
         AuthenticationFacade authenticationFacade = mock(AuthenticationFacade.class);
         when(authenticationFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
+        when(authenticationFacade.withAuthentication(any())).thenReturn(Context.empty());
+
         ClientInfoFacade clientInfoFacade = mock(ClientInfoFacade.class);
         when(clientInfoFacade.getLocale()).thenReturn(Mono.just(Locale.ENGLISH));
 
-        tested = new PasswordServiceImpl(authenticationFacade, new PasswordCheckerNbvcxz(), clientInfoFacade);
+        ResetPasswordTokenPort resetPasswordTokenPortMock = mock(ResetPasswordTokenPort.class);
+        when(resetPasswordTokenPortMock.get(anyString())).thenReturn(Optional.of(OBIWAN));
+
+        tested = new PasswordServiceImpl(
+                authenticationFacade, new PasswordCheckerNbvcxz(), clientInfoFacade);
     }
 
     @ParameterizedTest

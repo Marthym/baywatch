@@ -14,7 +14,6 @@ import graphql.GraphqlErrorException;
 import io.micrometer.observation.ObservationRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.Arguments;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -113,11 +112,5 @@ public class AuthenticationGqlController {
     @PreAuthorize("isAuthenticated()")
     public Mono<Object> currentUser() {
         return authFacade.getConnectedUser().map(u -> jsonMapper.convertValue(u, Object.class));
-    }
-
-    @QueryMapping
-    @PreAuthorize("permitAll()")
-    public Mono<Void> askForPasswordReset(@Argument("identifier") String identifier) {
-        return authenticationService.askPasswordReset(identifier);
     }
 }

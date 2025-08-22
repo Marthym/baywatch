@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.infra.controllers;
 
+import fr.ght1pc9kc.baywatch.security.api.PasswordResetService;
 import fr.ght1pc9kc.baywatch.security.api.PasswordService;
 import fr.ght1pc9kc.baywatch.security.api.model.PasswordEvaluation;
 import fr.ght1pc9kc.baywatch.security.infra.mappers.UserMapper;
@@ -16,6 +17,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class PasswordController {
     private final PasswordService passwordService;
+    private final PasswordResetService passwordResetService;
     private final UserMapper userMapper;
 
     @QueryMapping
@@ -32,5 +34,10 @@ public class PasswordController {
     @QueryMapping
     public Flux<String> passwordGenerate(@Argument("number") int number) {
         return passwordService.generateSecurePassword(number);
+    }
+
+    @QueryMapping
+    public Mono<Void> askForPasswordReset(@Argument("identifier") String identifier) {
+        return passwordResetService.askPasswordReset(identifier);
     }
 }
