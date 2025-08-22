@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.Configuration.CONFIGURATION;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 
@@ -36,6 +37,10 @@ public class V2_2_202508061136__insert_default_config extends BaseJavaMigration 
             requireNonNull(env.get("BW_MAIL_SMTP_FROM"), "BW_MAIL_SMTP_FROM is required");
         }
 
+        if (isNull(bwMailSmtpHost)) {
+            log.atWarn().log("No SMTP server configured, skipping mail configuration !");
+            return;
+        }
         var records = List.of(
                 CONFIGURATION.newRecord()
                         .setConfId(CONFIGURATION_PREFIX + ulidFactory.create().toString())
@@ -72,7 +77,11 @@ public class V2_2_202508061136__insert_default_config extends BaseJavaMigration 
                 CONFIGURATION.newRecord()
                         .setConfId(CONFIGURATION_PREFIX + ulidFactory.create().toString())
                         .setConfName("mail.smtp.from")
-                        .setConfValue(env.get("BW_MAIL_SMTP_FROM"))
+                        .setConfValue(env.get("BW_MAIL_SMTP_FROM")),
+                CONFIGURATION.newRecord()
+                        .setConfId(CONFIGURATION_PREFIX + ulidFactory.create().toString())
+                        .setConfName("mail.smtp.pollingIntervalSeconds")
+                        .setConfValue(env.getOrDefault("BW_MAIL_SMTP_POLLING_INTERVAL_SECONDS", "60"))
         );
 
         dsl.batchInsert(records).execute();

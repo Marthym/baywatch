@@ -80,4 +80,3 @@ baywatch:
   notify:
     mailer:
       whitelist_ips: ${BW_MAILER_IP_WHITELIST:127.0.0.0,0:0:0:0:0:0:0:1}
-      queuePollingInterval: 120s

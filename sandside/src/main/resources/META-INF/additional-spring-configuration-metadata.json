@@ -6,11 +6,6 @@
       "description": "IP allowed to send emails without limit."
     },
     {
-      "name": "baywatch.notify.mailer.queuePollingInterval",
-      "type": "java.time.Duration",
-      "description": "Interval between each polling of the mail queue."
-    },
-    {
       "name": "baywatch.imgproxy.enable",
       "type": "java.lang.String",
       "description": "Enable IMGProxy."

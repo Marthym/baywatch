@@ -11,7 +11,6 @@ baywatch:
   indexer:
     enable: false
     directory: ${BAYWATCH_HOME:.}/target/feedidx
-  notify.mailer.queuePollingInterval: 100ms
 
 logging:
   # Avoid infinite stacktrace due to reactor

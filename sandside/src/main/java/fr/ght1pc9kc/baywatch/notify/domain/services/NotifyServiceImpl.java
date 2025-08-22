@@ -120,35 +120,35 @@ public class NotifyServiceImpl implements NotifyService, NotifyManager {
         this.multicast.tryEmitComplete();
         this.cache.invalidateAll();
         this.cache.cleanUp();
-        log.atWarn().addArgument(this.multicast.currentSubscriberCount())
-                .log("Close multicast notifications channel ({} indisposed subscription(s))!");
+        if (this.multicast.currentSubscriberCount() > 0) {
+            log.atWarn().addArgument(this.multicast.currentSubscriberCount())
+                    .log("Close multicast notifications channel ({} indisposed subscription(s))!");
+        }
     }
 
     @Override
     public <T> BasicEvent<T> send(String userId, EventType type, T data) {
         BasicEvent<T> event = new BasicEvent<>(eventIdGenerator.get(), type, data);
-        Optional.ofNullable(cache.getIfPresent(userId))
-                .ifPresentOrElse(
-                        sk -> emit(sk, event),
-                        () -> notificationPersistence.persist(Entity.identify(event)
-                                .meta(createdBy, userId)
-                                .meta(createdAt, clock.instant())
-                                .withId(event.id())
-                        ).subscribe());
+        Optional.ofNullable(cache.getIfPresent(userId)).ifPresentOrElse(
+                sk -> emit(sk, event),
+                () -> notificationPersistence.persist(Entity.identify(event)
+                        .meta(createdBy, userId)
+                        .meta(createdAt, clock.instant())
+                        .withId(event.id())
+                ).subscribe());
         return event;
     }
 
     @Override
     public <T> ReactiveEvent<T> send(String userId, EventType type, Mono<T> data) {
         ReactiveEvent<T> event = new ReactiveEvent<>(eventIdGenerator.get(), type, data);
-        Optional.ofNullable(cache.getIfPresent(userId))
-                .ifPresentOrElse(
-                        sk -> emit(sk, event),
-                        () -> notificationPersistence.persist(Entity.identify(event)
-                                .meta(createdBy, userId)
-                                .meta(createdAt, clock.instant())
-                                .withId(event.id())
-                        ).subscribe());
+        Optional.ofNullable(cache.getIfPresent(userId)).ifPresentOrElse(
+                sk -> emit(sk, event),
+                () -> notificationPersistence.persist(Entity.identify(event)
+                        .meta(createdBy, userId)
+                        .meta(createdAt, clock.instant())
+                        .withId(event.id())
+                ).subscribe());
         return event;
     }
 

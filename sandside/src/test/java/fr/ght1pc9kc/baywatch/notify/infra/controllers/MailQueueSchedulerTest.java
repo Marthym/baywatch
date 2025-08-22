@@ -40,8 +40,7 @@ class MailQueueSchedulerTest {
         mailQueuePersistencePort = mock(MailQueuePersistencePort.class);
         when(smtpConfigurationPort.get()).thenReturn(Mono.just(new SmtpServerConfig(
                 "mail.jedi.com", 587, "yoda@jedi.com", true,
-                "obiwan", "kenobi", "TLSv1.3", true, true)));
-        when(smtpConfigurationPort.getMailQueuePollingInterval()).thenReturn(Duration.ofSeconds(10));
+                "obiwan", "kenobi", "TLSv1.3", true, true, Duration.ZERO)));
         when(mailQueuePersistencePort.consume()).thenReturn(Flux.just(
                 Entity.identify(Mail.builder()
                         .to("darth.vader@sith.com")
@@ -99,7 +98,6 @@ class MailQueueSchedulerTest {
 
     @Test
     void should_start_mail_queue() {
-        when(smtpConfigurationPort.getMailQueuePollingInterval()).thenReturn(Duration.ofMillis(200));
         tested.startMailQueue();
 
         Assertions.assertThatNoException().isThrownBy(() -> tested.shutdownMailQueue());

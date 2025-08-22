@@ -16,6 +16,10 @@ public class ParameterSet {
                 .collect(Collectors.toUnmodifiableMap(Entry::getKey, Entry::getValue)));
     }
 
+    public boolean isEmpty() {
+        return parameters.isEmpty();
+    }
+
     public String getValue(String key) {
         if (!parameters.containsKey(key)) {
             throw new IllegalArgumentException("No parameter with key " + key);

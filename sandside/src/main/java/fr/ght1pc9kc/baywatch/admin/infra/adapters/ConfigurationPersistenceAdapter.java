@@ -40,12 +40,12 @@ public class ConfigurationPersistenceAdapter implements ConfigurationPersistence
     @Override
     @SuppressWarnings("resource")
     public Flux<Entity<Entry<String, String>>> list(PageRequest pageRequest) {
-        Condition conditions = pageRequest.filter().accept(JOOQ_CONDITION_VISITOR);
-        var query = JooqPagination.apply(
-                pageRequest.pagination(), CONFIGURATION_PROPERTIES_MAPPING,
-                dslContext.selectFrom(CONFIGURATION).where(conditions)
-        );
         return Flux.<ConfigurationRecord>create(sink -> {
+                    Condition conditions = pageRequest.filter().accept(JOOQ_CONDITION_VISITOR);
+                    var query = JooqPagination.apply(
+                            pageRequest.pagination(), CONFIGURATION_PROPERTIES_MAPPING,
+                            dslContext.selectFrom(CONFIGURATION).where(conditions)
+                    );
                     Cursor<ConfigurationRecord> cursor = query.fetchLazy();
                     sink.onRequest(n -> {
                         int count = (int) n;

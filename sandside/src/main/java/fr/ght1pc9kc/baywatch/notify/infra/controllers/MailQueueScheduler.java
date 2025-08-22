@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.notify.infra.controllers;
 
+import fr.ght1pc9kc.baywatch.common.domain.Try;
 import fr.ght1pc9kc.baywatch.notify.domain.exceptions.NotifyModuleException;
 import fr.ght1pc9kc.baywatch.notify.domain.model.SmtpServerConfig;
 import fr.ght1pc9kc.baywatch.notify.domain.ports.MailQueuePersistencePort;
@@ -42,20 +43,33 @@ public class MailQueueScheduler implements Runnable {
     @Async
     @EventListener(ApplicationStartedEvent.class)
     public void startMailQueue() {
-        log.atDebug().log("Start mail queue in 2 minutes ...");
-        scheduleExecutor.schedule(this, smtpConfigurationPort.getMailQueuePollingInterval().toSeconds(), TimeUnit.SECONDS);
+        smtpConfigurationPort.get()
+                .switchIfEmpty(Mono.fromRunnable(() -> {
+                    mqScheduler.dispose();
+                    scheduleExecutor.shutdownNow();
+                    log.atWarn().log("No SMTP configuration found, disable mail queue !");
+                }))
+                .subscribe(config -> {
+                    log.atDebug()
+                            .addArgument(config.pollingInterval().toSeconds())
+                            .log("Start mail queue in {} seconds ...");
+                    scheduleExecutor.schedule(this, config.pollingInterval().toSeconds(), TimeUnit.SECONDS);
+                });
     }
 
     @PreDestroy
     @SneakyThrows
     public void shutdownMailQueue() {
-        log.atInfo().log("Commencing graceful shutdown. ⏳ Waiting for mail queue to empty");
-        scheduleExecutor.shutdown();
-        if (!scheduleExecutor.awaitTermination(5, TimeUnit.MINUTES)) {
-            log.atWarn().log("Mail queue scheduler shutdown timeout ! Some mails can be lost \uD83D\uDE31 !");
+        if (!scheduleExecutor.isShutdown()) {
+            log.atInfo().log("Commencing graceful shutdown. ⏳ Waiting for mail queue to empty");
+            scheduleExecutor.shutdown();
+            if (!scheduleExecutor.awaitTermination(5, TimeUnit.MINUTES)) {
+                log.atWarn().log("Mail queue scheduler shutdown timeout ! Some mails can be lost \uD83D\uDE31 !");
+            }
         }
-        mqScheduler.dispose();
-        log.atInfo().log("Graceful shutdown complete");
+        if (!mqScheduler.isDisposed()) {
+            mqScheduler.dispose();
+        }
     }
 
     @Override
@@ -65,33 +79,35 @@ public class MailQueueScheduler implements Runnable {
             CountDownLatch latch = new CountDownLatch(1);
             smtpConfigurationPort.get()
                     .switchIfEmpty(Mono.error(() -> new IllegalStateException("No SMTP configuration found")))
-                    .map(this::newReactiveSmtpMailSender)
-                    .flatMapMany(sender -> mailQueuePersistencePort.consume()
-                            .flatMap(mail -> sender.sendMail(mail.self())))
-                    .subscribe(smtpResult -> {
-                                if (smtpResult.isFailure()) {
+                    .flatMap(config -> {
+                        ReactiveSmtpMailSender sender = this.newReactiveSmtpMailSender(config);
+                        return mailQueuePersistencePort.consume()
+                                .flatMap(mail -> sender.sendMail(mail.self()))
+                                .filter(Try::isFailure)
+                                .doOnNext(smtpResult -> {
                                     log.atError()
                                             .addArgument(smtpResult.getCause().getClass())
                                             .addArgument(smtpResult.getCause().getLocalizedMessage())
                                             .log("Error sending mail: {}: {}");
                                     log.atDebug().log(STACKTRACE, smtpResult.getCause());
-                                }
-                            }, error -> {
-                                log.atError()
-                                        .addArgument(error.getClass())
-                                        .addArgument(error.getLocalizedMessage())
-                                        .log("Mail queue stop with error -> {}: {}");
-                                log.atDebug().log(STACKTRACE, error);
-                                latch.countDown();
-                            },
-                            () -> {
-                                log.atDebug().log("Mail queue complete");
-                                if (!scheduleExecutor.isShutdown()) {
-                                    scheduleExecutor.schedule(this,
-                                            smtpConfigurationPort.getMailQueuePollingInterval().toSeconds(), TimeUnit.SECONDS);
-                                }
-                                latch.countDown();
-                            });
+                                }).then(Mono.just(config));
+
+                    }).subscribe(config -> {
+                        log.atDebug().log("Mail queue complete");
+                        if (!scheduleExecutor.isShutdown()) {
+                            scheduleExecutor.schedule(this,
+                                    config.pollingInterval().toSeconds(), TimeUnit.SECONDS);
+                        }
+                        latch.countDown();
+
+                    }, error -> {
+                        log.atError()
+                                .addArgument(error.getClass())
+                                .addArgument(error.getLocalizedMessage())
+                                .log("Mail queue stop with error -> {}: {}");
+                        log.atDebug().log(STACKTRACE, error);
+                        latch.countDown();
+                    });
             if (!latch.await(2, TimeUnit.MINUTES)) {
                 log.atWarn().log("Mail queue scheduler latch timeout ! Operation can be blocked ?");
             }

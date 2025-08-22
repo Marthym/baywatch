@@ -19,6 +19,7 @@ import reactor.test.StepVerifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.Supplier;
@@ -59,7 +60,8 @@ class ReactiveSmtpMailSenderTest {
                 "force-strong-password",
                 "TLSv1.3",
                 true,
-                true
+                true,
+                Duration.ZERO
         );
 
         when(mockJavaMailSenderFactory.get()).thenReturn(mockJavaMailSender);
