@@ -33,7 +33,7 @@
 
       <div class="text-right">
         <button class="btn mx-1 capitalize" @click.stop="curtainModal.close()">{{ t('dialog.cancel') }}</button>
-        <button class="btn btn-primary capitalize mx-1" @click.stop="onRegisterClick(curtainModal)">{{
+        <button class="btn btn-primary capitalize mx-1" @click.stop="onPasswordResetClick(curtainModal)">{{
             t('security.passreset.dialog.submit')
           }}
         </button>
@@ -44,10 +44,11 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
 import CurtainModal, { CurtainModalSlot } from '@/common/components/CurtainModal.vue';
-import { passwordAnonymousCheckStrength, passwordGenerate } from '@/security/services/PasswordService';
+import { passwordGenerate, passwordReset } from '@/security/services/PasswordService';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/solid';
 import { useI18n } from 'vue-i18n';
 import { Router, useRouter } from 'vue-router';
+import notificationService from '@/services/notification/NotificationService';
 
 const CLOSE_EVENT: string = 'close';
 
@@ -73,6 +74,14 @@ export default class PasswordResetComponent extends Vue {
   private passwordVisible: boolean = false;
   private token: string = '';
 
+  private mounted(): void {
+    if (!this.$route.query.token) {
+      this.close();
+      return;
+    }
+    this.token = this.$route.query.token;
+  }
+
   private onFieldChange(field: string): void {
     this.errors.delete(field);
   }
@@ -96,16 +105,6 @@ export default class PasswordResetComponent extends Vue {
       this.errors.set('password', 'This password is not secure. An attacker will find it instant !');
       return;
     }
-    passwordAnonymousCheckStrength().subscribe({
-      next: evaluation => {
-        if (evaluation.isSecure) {
-          this.errors.delete('password');
-        } else {
-          this.errors.set('password', evaluation.message);
-        }
-      },
-      error: err => this.errors.set('password', err.message),
-    });
   }
 
   private onBlurConfirmPassword(): void {
@@ -120,7 +119,7 @@ export default class PasswordResetComponent extends Vue {
     this.router.push('/');
   }
 
-  private onRegisterClick(curtainModal: CurtainModalSlot): void {
+  private onPasswordResetClick(curtainModal: CurtainModalSlot): void {
     if (!this.passwordNew) {
       this.errors.set('password', 'Password is mandatory !');
     } else if (this.passwordNew !== this.passwordConfirm) {
@@ -130,25 +129,22 @@ export default class PasswordResetComponent extends Vue {
       return;
     }
 
-    // userCreate(this.account).subscribe({
-    //   next: () => {
-    //     curtainModal.close();
-    //     notificationService.pushSimpleOk('User account registered Successfully !');
-    //   },
-    //   error: err => {
-    //     console.debug(err);
-    //     console.debug(err.properties);
-    //     if (err.properties) {
-    //       err.properties.forEach(p => {
-    //         console.debug(p);
-    //         if (['mail', 'password', 'login', 'passwordConfirm'].includes(p)) {
-    //           this.errors.set(p, err.message);
-    //         }
-    //       });
-    //     }
-    //     notificationService.pushSimpleError(err.message);
-    //   },
-    // });
+    passwordReset(this.token, this.passwordNew).subscribe({
+      next: () => {
+        curtainModal.close();
+        notificationService.pushSimpleOk('User account registered Successfully !');
+      },
+      error: err => {
+        if (err.properties) {
+          err.properties.forEach(p => {
+            if (['password', 'passwordConfirm'].includes(p)) {
+              this.errors.set(p, err.message);
+            }
+          });
+        }
+        notificationService.pushSimpleError(this.t(err.code) ?? err.message);
+      },
+    });
   }
 }
 </script>

@@ -53,7 +53,8 @@ import { switchMap } from 'rxjs';
 import { userSettingsGet } from '@/security/services/UserSettingsService';
 import { map } from 'rxjs/operators';
 import { UserState } from '@/security/store/user';
-import { askForPasswordReset, authenticationLogin } from '@/security/services/AuthenticationService';
+import { authenticationLogin } from '@/security/services/AuthenticationService';
+import { passwordAskForReset } from '@/security/services/PasswordService';
 
 @Component({
   name: 'LoginPage',
@@ -125,7 +126,7 @@ export default class LoginPage extends Vue {
       return;
     }
     this.submitDisable = true;
-    askForPasswordReset(this.username).subscribe({
+    passwordAskForReset(this.username).subscribe({
       next: () => {
         this.submitDisable = false;
         this.router.push('/login');

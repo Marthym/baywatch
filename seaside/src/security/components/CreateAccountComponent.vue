@@ -5,7 +5,7 @@
       <fieldset class="fieldset">
         <legend class="fieldset-legend capitalize">{{ t('security.register.login') }}</legend>
         <input v-model="account.login" :class="{'input-error': errors.has('login')}" class="input w-full" type="text"
-          @change="errors.delete('login')"/>
+               @change="errors.delete('login')"/>
         <p class="label">{{ errors.get('login') }}&nbsp;</p>
       </fieldset>
 
@@ -172,11 +172,8 @@ export default class CreateAccountComponent extends Vue {
         notificationService.pushSimpleOk('User account registered Successfully !');
       },
       error: err => {
-        console.debug(err);
-        console.debug(err.properties);
         if (err.properties) {
           err.properties.forEach(p => {
-            console.debug(p);
             if (['mail', 'password', 'login', 'passwordConfirm'].includes(p)) {
               this.errors.set(p, err.message);
             }

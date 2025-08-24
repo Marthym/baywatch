@@ -16,6 +16,7 @@ const PasswordResetComponent = () => import('@/security/components/PasswordReset
 
 export const routes: RouteRecordRaw[] = [
     { path: '/login', component: LoginPage, name: 'LoginPage' },
+    { path: '/login/:state', component: LoginPage, name: 'security-recover-password' },
     { path: '/register', component: CreateAccountComponent, name: 'security-register' },
     { path: '/password/reset', component: PasswordResetComponent, name: 'security-password-reset' },
 ];

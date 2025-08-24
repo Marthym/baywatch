@@ -28,8 +28,8 @@ query GeneratePasswords($count: Int) {
 }`;
 
 
-export function passwordAnonymousCheckStrength(user: User = {} as User): Observable<PasswordEvaluation> {
-    const {_id, _createdAt, _loginAt, _loginIP, ...passwordCheckedProps} = user;
+export function passwordAnonymousCheckStrength(user: User): Observable<PasswordEvaluation> {
+    const { _id, _createdAt, _loginAt, _loginIP, ...passwordCheckedProps } = user;
     return send<PasswordAnonymousCheckResponse>(PASSWORD_ANONYMOUS_CHECK_REQUEST, { user: passwordCheckedProps }).pipe(
         map(data => data.data.passwordCheckAnonymous),
         take(1),
@@ -46,6 +46,42 @@ export function passwordCheckStrength(password: string): Observable<PasswordEval
 export function passwordGenerate(count: number): Observable<string[]> {
     return send<PasswordGenerateResponse>(PASSWORD_GENERATE_REQUEST, { count: count }).pipe(
         map(data => data.data.passwordGenerate),
+        take(1),
+    );
+}
+
+const PASSWORD_ASK_FOR_RESET_QUERY = `#graphql
+query PasswordResetAskFor($identifier: String!) {
+    passwordAskForReset(identifier: $identifier)
+}`;
+
+export function passwordAskForReset(identifier: string): Observable<void> {
+    return send<{ passwordAskForReset: void }>(PASSWORD_ASK_FOR_RESET_QUERY, { identifier }).pipe(
+        map(response => {
+            if (response.errors && response.errors.length !== 0) {
+                throw response.errors[0];
+            } else {
+                return;
+            }
+        }),
+        take(1),
+    );
+}
+
+const PASSWORD_RESET_MUTATION = `#graphql
+mutation PasswordReset($token: String, $newPassword: String) {
+    passwordReset(token: $token, newPassword: $newPassword)
+}`;
+
+export function passwordReset(token: string, newPassword: string): Observable<void> {
+    return send<{ passwordReset: void }>(PASSWORD_RESET_MUTATION, { token, newPassword }).pipe(
+        map(response => {
+            if (response.errors && response.errors.length !== 0) {
+                throw response.errors[0];
+            } else {
+                return;
+            }
+        }),
         take(1),
     );
 }

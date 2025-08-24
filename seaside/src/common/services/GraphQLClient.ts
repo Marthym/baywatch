@@ -36,12 +36,17 @@ function gqlMinify(gql: string): string {
 }
 
 function handleAuthenticationErrors<T>(data: GraphqlResponse<T>): GraphqlResponse<T> {
-    if (data.errors
-        && data.errors.findIndex(e => e.extensions.classification === UNAUTHORIZED) !== -1) {
-        throw new UnauthorizedError('You are not login on !');
-    } else {
-        return data;
+    if (data.errors) {
+        const errIdx = data.errors.findIndex(e =>
+            e.extensions.classification === UNAUTHORIZED);
+        if (errIdx !== -1) {
+            throw new UnauthorizedError(
+                data.errors[errIdx].extensions.translation ?? data.errors[errIdx].message,
+                data.errors[errIdx].message,
+            );
+        }
     }
+    return data;
 }
 
 function handleSyntaxErrors<T>(data: GraphqlResponse<T>): GraphqlResponse<T> {
@@ -87,7 +92,7 @@ function handleBadRequestErrors<T>(data: GraphqlResponse<T>): GraphqlResponse<T>
         const errIdx = data.errors.findIndex(e => e.extensions.classification === BAD_REQUEST);
         if (errIdx !== -1) {
             throw new BadRequestError(
-                data.errors[errIdx].extensions.translation ?? 'unknown.error.code',
+                data.errors[errIdx].extensions.translation ?? data.errors[errIdx].message,
                 data.errors[errIdx].message);
         }
     }
