@@ -10,6 +10,7 @@ import graphql.VisibleForTesting;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
@@ -31,7 +32,9 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class MailQueueScheduler implements Runnable {
     private static final String STACKTRACE = "STACKTRACE";
-    private final ScheduledExecutorService scheduleExecutor = Executors.newSingleThreadScheduledExecutor(
+
+    @Setter(onMethod_ = @__(@VisibleForTesting))
+    private ScheduledExecutorService scheduleExecutor = Executors.newSingleThreadScheduledExecutor(
             new CustomizableThreadFactory("mailQueueScheduler-"));
     private final Scheduler mqScheduler = Schedulers.newBoundedElastic(
             4, Integer.MAX_VALUE, "mailQueue-", 10, true);

@@ -17,8 +17,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -40,7 +43,7 @@ class MailQueueSchedulerTest {
         mailQueuePersistencePort = mock(MailQueuePersistencePort.class);
         when(smtpConfigurationPort.get()).thenReturn(Mono.just(new SmtpServerConfig(
                 "mail.jedi.com", 587, "yoda@jedi.com", true,
-                "obiwan", "kenobi", "TLSv1.3", true, true, Duration.ZERO)));
+                "obiwan", "kenobi", "TLSv1.3", true, true, Duration.ofMillis(200))));
         when(mailQueuePersistencePort.consume()).thenReturn(Flux.just(
                 Entity.identify(Mail.builder()
                         .to("darth.vader@sith.com")
@@ -69,21 +72,28 @@ class MailQueueSchedulerTest {
 
     @Test
     void should_run_mail_queue() {
+        ScheduledExecutorService mockScheduleExecutor = mock(ScheduledExecutorService.class);
+        tested.setScheduleExecutor(mockScheduleExecutor);
         tested.run();
 
         verify(smtpConfigurationPort).get();
         verify(mailQueuePersistencePort).consume();
         verify(mockMailSender, times(2)).sendMail(any(Mail.class));
+        verify(mockScheduleExecutor).schedule(any(Runnable.class), anyLong(), any(TimeUnit.class));
     }
 
     @Test
     void should_handle_smtp_error() {
+        ScheduledExecutorService mockScheduleExecutor = mock(ScheduledExecutorService.class);
+        tested.setScheduleExecutor(mockScheduleExecutor);
         when(mockMailSender.sendMail(any(Mail.class))).thenReturn(Mono.just(Try.fail(new RuntimeException("Bad mail sender"))));
+
         tested.run();
 
         verify(smtpConfigurationPort).get();
         verify(mailQueuePersistencePort).consume();
         verify(mockMailSender, times(2)).sendMail(any(Mail.class));
+        verify(mockScheduleExecutor).schedule(any(Runnable.class), anyLong(), any(TimeUnit.class));
     }
 
     @Test
