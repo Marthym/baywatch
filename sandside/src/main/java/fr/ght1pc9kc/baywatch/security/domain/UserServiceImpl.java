@@ -147,26 +147,30 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
             throw new IllegalArgumentException("Password must be stronger !");
         }
         return authorizeSelfData(user.id())
-                .flatMap(u -> get(u.id()))
-                .<Entity<User>>handle((u, sink) -> {
-                    if (hasRole(u.self(), Role.ADMIN)) {
-                        sink.next(u);
-                    } else if (user.id().equals(u.id())
-                            && Objects.nonNull(currentPassword)
-                            && passwordService.matches(currentPassword, u.self().password())) {
-                        sink.next(u);
+                .flatMap(operator -> {
+                    if (hasRole(operator.self(), Role.SYSTEM)) {
+                        return Mono.just(operator);
                     } else {
-                        sink.error(new UnauthorizedOperation(UNAUTHORIZED_USER));
+                        return get(operator.id()).handle((op, sink) -> {
+                            if (hasRole(op.self(), Role.ADMIN)) {
+                                sink.next(op);
+                            } else if (user.id().equals(op.id())
+                                    && Objects.nonNull(currentPassword)
+                                    && passwordService.matches(currentPassword, op.self().password())) {
+                                sink.next(op);
+                            } else {
+                                sink.error(new UnauthorizedOperation(UNAUTHORIZED_USER));
+                            }
+                        });
                     }
-
-                }).flatMap(u -> {
+                }).flatMap(operator -> {
                     User checkedUser = (Objects.nonNull(user.self().password()))
                             ? user.self().withPassword(passwordService.encode(user.self().password()))
                             : user.self();
 
                     return authFacade.getClientInfoContext()
-                            // update meta-login only if the session user is the updated user
-                            .filter(ignore -> u.id().equals(user.id()))
+                            // update meta-login only if the operator is the updated user
+                            .filter(ignore -> operator.id().equals(user.id()))
                             .map(clientInfo -> user.convert(ignore -> checkedUser)
                                     .withMeta(UserMeta.loginIP, clientInfo.ip().getHostString())
                                     .withMeta(UserMeta.loginAt, clock.instant().truncatedTo(ChronoUnit.SECONDS)))

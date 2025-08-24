@@ -18,7 +18,7 @@ public class ClientInfoContextWebFilter implements WebFilter {
         return chain.filter(exchange).contextWrite(ReactiveClientInfoContextHolder.withClientInfo(
                 exchange.getRequest().getRemoteAddress(),
                 exchange.getRequest().getHeaders().getFirst(HttpHeaders.USER_AGENT),
-                exchange.getRequest().getURI().resolve("/"))
+                exchange.getRequest().getURI().resolve("/").normalize())
         );
     }
 }

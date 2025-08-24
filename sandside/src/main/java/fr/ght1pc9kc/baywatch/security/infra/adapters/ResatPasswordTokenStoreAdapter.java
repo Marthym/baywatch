@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
+import java.time.Duration;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
@@ -32,8 +33,8 @@ public class ResatPasswordTokenStoreAdapter implements ResetPasswordTokenPort {
     }
 
     @Override
-    public void store(@NotNull String hashedToken, @NotNull Entity<User> user) {
-        kvStore.put(TOKEN_KEY_PREFIX + hashedToken, requireNonNull(user));
+    public void store(@NotNull String hashedToken, @NotNull Entity<User> user, @NotNull Duration ttl) {
+        kvStore.put(TOKEN_KEY_PREFIX + hashedToken, requireNonNull(user), ttl);
     }
 
     @Override

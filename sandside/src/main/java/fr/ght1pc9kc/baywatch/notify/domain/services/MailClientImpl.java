@@ -88,11 +88,11 @@ public class MailClientImpl implements MailClient {
                         .map(mailTemplate -> Tuples.of(t.getT2(), mailTemplate)))
 
                 .flatMap(t -> localeFacade.getBaseUrl()
-                        .switchIfEmpty(Mono.just(URI.create("http://localhost/")))
+                        .switchIfEmpty(Mono.just(URI.create("http://localhost")))
                         .map(baseUrl -> {
                     var collectedTemplateVariables = new EnumMap<>(t.getT1().self());
                     collectedTemplateVariables.putAll(t.getT1().self());
-                    collectedTemplateVariables.put(TemplateVariable.BASE_URL, baseUrl.toString());
+                    collectedTemplateVariables.put(TemplateVariable.BASE_URL, String.format("%s://%s", baseUrl.getScheme(), baseUrl.getAuthority()));
                     collectedTemplateVariables.putAll(variables);
                     return Tuples.of(t.getT1().convert(ignore ->
                             Map.copyOf(collectedTemplateVariables)), t.getT2());
