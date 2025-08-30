@@ -12,8 +12,6 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 
-import java.util.Locale;
-
 /**
  * Facade used to get the connected user.
  */

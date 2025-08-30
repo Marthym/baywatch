@@ -2,6 +2,7 @@ package fr.ght1pc9kc.baywatch.tests.metrics;
 
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,11 +21,11 @@ public class MockObservationRegistry implements ObservationRegistry {
 
     @Override
     public void setCurrentObservationScope(Observation.Scope scope) {
-
+        // No need to implement for test
     }
 
     @Override
-    public ObservationConfig observationConfig() {
+    public @NotNull ObservationConfig observationConfig() {
         return delegate.observationConfig();
     }
 }

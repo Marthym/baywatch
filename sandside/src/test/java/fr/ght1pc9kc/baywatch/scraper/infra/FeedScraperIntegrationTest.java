@@ -28,6 +28,8 @@ import fr.ght1pc9kc.scraphead.core.HeadScrapers;
 import fr.ght1pc9kc.scraphead.netty.http.NettyScrapClient;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -212,7 +214,10 @@ class FeedScraperIntegrationTest {
 
             @Override
             public Mono<ClientInfoContext> getClientInfoContext() {
-                return Mono.just(new ClientInfoContext(InetSocketAddress.createUnresolved("127.0.0.1", 80), "User agent"));
+                return Mono.just(new ClientInfoContext(
+                        InetSocketAddress.createUnresolved("127.0.0.1", 80),
+                        "User agent",
+                        URI.create("http://localhost/feed")));
             }
 
             @Override
@@ -222,5 +227,15 @@ class FeedScraperIntegrationTest {
                 return ReactiveSecurityContextHolder.withAuthentication(authentication);
             }
         };
+    }
+
+    @AfterEach
+    void tearDown() {
+        tested.shutdownScrapping();
+    }
+
+    @AfterAll
+    static void afterAll() {
+        server.stop(0);
     }
 }

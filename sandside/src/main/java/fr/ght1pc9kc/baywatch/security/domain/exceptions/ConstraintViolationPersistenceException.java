@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.security.domain.exceptions;
 import lombok.Getter;
 
 @Getter
-public class ConstraintViolationPersistenceException extends RuntimeException {
+public class ConstraintViolationPersistenceException extends SecurityException {
     private final String propertyField;
 
     public ConstraintViolationPersistenceException(String propertyField, Throwable cause) {

@@ -2,9 +2,9 @@
 
 <img src="./seaside/public/favicon.ico" alt="Size Limit CLI" align="right" style="float: right; margin: auto; width: 100px">
 
-Baywatch is an application that lets you keep an eye on the latest technology.
-Simply hosted, Baywatch will scrape the news feeds that interest you at regular intervals to
-provide you with the most relevant articles in a readable way.
+Baywatch is an app that allows you to stay up to date with the latest technology.
+Simply select the news feeds that interest you and Baywatch will scrape them at regular intervals.
+It then provides you with the most relevant articles in a readable format.
 
 Baywatch has a multitude of features, the main ones being
 
@@ -26,7 +26,7 @@ Baywatch has a multitude of features, the main ones being
   This powerful search suggests news feeds based on what users have posted on the feeds,
   increasing the quality of the results.*
 * **Translated** \
-  *Baywatch is fully translated into English and French. The translation system makes it 
+  *Baywatch is fully translated into English and French. The translation system makes it
   easy to add new translations.*
 * **Responsive** \
   *Baywatch is fully responsive and you can use it from your preferred device.*
@@ -53,33 +53,44 @@ docker run --rm --name baywatch -d \
 Baywatch will automatically create the SQLite database in `BAYWATCH_HOME` and need be able to
 write in `/tmp`.
 
-The administration and actuator passwords was displayed in the console log during the first application launch. Use the 
+The administration and actuator passwords was displayed in the console log during the first application launch. Use the
 `admin` password to login into **Baywatch** and change the password according to your preferences.
 
 ### Configure
 
 Baywatch offers many configuration parameters, almost all of which are not mandatory.
 
-| Env                            | Description                                             | Optional | Default Value |
-|--------------------------------|---------------------------------------------------------|----------|---------------|
-| BAYWATCH_COOKIE_VALIDITY       | The time the session cookie is valid                    | X        | 24h           |
-| BAYWATCH_DNS_TIMEOUT           | The timeout duration for DNS query                      | X        | 10s           |
-| BAYWATCH_GRAPHIQL_ENABLE       | Enable the GraphiQL interface                           | X        | false         |
-| BAYWATCH_GRAPHQL_INTROSPECTION | Enable the GraphQL introspection                        | X        | false         |
-| BAYWATCH_HOME                  | The path where BW will create database file             | -        |               |
-| BAYWATCH_IMGPROXY_BASEPATH     | IMGProxy base path to allow reverse proxy               | X        | /img          |
-| BAYWATCH_IMGPROXY_ENABLE       | Minify image with ImgProxy                              | X        | true          |
-| BAYWATCH_IMGPROXY_SALT         | IMGProxy signing salt                                   | X        | -             |
-| BAYWATCH_IMGPROXY_SIGNKEY      | IMGProxy signing key                                    | X        | -             |
-| BAYWATCH_INDEXER_ENABLE        | Enable lucene to index news end feed                    | X        | true          |
-| BAYWATCH_LOG_LEVEL             | Change the log level                                    | X        | INFO          |
-| BAYWATCH_SCRAPER_CONSERVATION  | The time the news was conserved since their publication | X        | 3 month       |
-| BAYWATCH_SCRAPER_ENABLE        | Start the feeds scraping at start up                    | X        | true          |
-| BAYWATCH_SCRAPER_FREQUENCY     | The frequency of the scraping process                   | X        | 1h            |
-| BAYWATCH_SCRAPER_TIMEOUT       | The timeout duration for scraping news or feed          | X        | 2s            |
-| BAYWATCH_SCRAPER_REDDIT_IMAGE  | The URL of image to display on reddit news              | X        | reddit std    |
-| BAYWATCH_SERVER_PORT           | Change the server port                                  | X        | 8080          |
-| BAYWATCH_TOKEN_VALIDITY        | The time the JWToken is valid                           | X        | 1h            |
+| Env                                   | Description                                                  | Optional | Default Value |
+|---------------------------------------|--------------------------------------------------------------|----------|---------------|
+| BAYWATCH_COOKIE_VALIDITY              | The time the session cookie is valid                         | X        | 24h           |
+| BAYWATCH_DNS_TIMEOUT                  | The timeout duration for DNS query                           | X        | 10s           |
+| BAYWATCH_GRAPHIQL_ENABLE              | Enable the GraphiQL interface                                | X        | false         |
+| BAYWATCH_GRAPHQL_INTROSPECTION        | Enable the GraphQL introspection                             | X        | false         |
+| BAYWATCH_HOME                         | The path where BW will create database file                  | -        |               |
+| BAYWATCH_IMGPROXY_BASEPATH            | IMGProxy base path to allow reverse proxy                    | X        | /img          |
+| BAYWATCH_IMGPROXY_ENABLE              | Minify image with ImgProxy                                   | X        | true          |
+| BAYWATCH_IMGPROXY_SALT                | IMGProxy signing salt                                        | X        | -             |
+| BAYWATCH_IMGPROXY_SIGNKEY             | IMGProxy signing key                                         | X        | -             |
+| BAYWATCH_INDEXER_ENABLE               | Enable lucene to index news end feed                         | X        | true          |
+| BAYWATCH_LOG_LEVEL                    | Change the log level                                         | X        | INFO          |
+| BAYWATCH_SCRAPER_CONSERVATION         | The time the news was conserved since their publication      | X        | 3 month       |
+| BAYWATCH_SCRAPER_ENABLE               | Start the feeds scraping at start up                         | X        | true          |
+| BAYWATCH_SCRAPER_FREQUENCY            | The frequency of the scraping process                        | X        | 1h            |
+| BAYWATCH_SCRAPER_TIMEOUT              | The timeout duration for scraping news or feed               | X        | 2s            |
+| BAYWATCH_SCRAPER_REDDIT_IMAGE         | The URL of image to display on reddit news                   | X        | reddit std    |
+| BAYWATCH_SERVER_PORT                  | Change the server port                                       | X        | 8080          |
+| BAYWATCH_TOKEN_VALIDITY               | The time the JWToken is valid                                | X        | 1h            |
+| **Mail Server Config**                |                                                              |          |               |
+| BW_MAIL_SMTP_HOST                     | SMTP server host name                                        | X        |               |
+| BW_MAIL_SMTP_FROM                     | The email address from which emails will be sent             | if host  |               |
+| BW_MAIL_SMTP_USERNAME                 | The SMTP server username                                     | if host  |               |
+| BW_MAIL_SMTP_PASSWORD                 | The SMTP server username password                            | if host  |               |
+| BW_MAIL_SMTP_CIPHER                   | The cipher algorithm used                                    | X        | SSLv3         |
+| BW_MAIL_SMTP_PORT                     | SMTP server port                                             | X        | 587           |
+| BW_MAIL_SMTP_REQUIRE_TLS              | Is TLS required                                              | X        | true          |
+| BW_MAIL_SMTP_SECURE                   | SMTP Require secure connection                               | X        | true          |
+| BW_MAIL_SMTP_POLLING_INTERVAL_SECONDS | Mail queue polling interval in seconds                       | X        | 60            |
+| BW_MAILER_IP_WHITELIST                | IPs with no restrictions on sending emails (separate by ',') | X        | 127.0.0.1,::1 |
 
 ### Docker compose
 
@@ -93,10 +104,10 @@ It will be necessary to secure the installation more reliably for production.
 Baywatch is based on Springboot 3 and uses the Webflux model. Spring serves both the frontend
 and backend, but it is advisable to place them behind a proxy for caching purposes.
 
-In order to compile and run the Baywatch code, it is necessary to have installed versions 
+In order to compile and run the Baywatch code, it is necessary to have installed versions
 later than or equal to **Java 21**, **Node 20** and **Maven 3**.
 
-Find more informations in [CONTRIBUTING.md](./CONTRIBUTING.md). 
+Find more informations in [CONTRIBUTING.md](./CONTRIBUTING.md).
 Take a look on our [Code of Conduct](./CODE_OF_CONDUCT.md)
 
 ### Sandside

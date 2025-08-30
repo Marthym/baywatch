@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.notify.infra;
 import fr.ght1pc9kc.baywatch.notify.api.NotifyManager;
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.model.UserNotification;
+import fr.ght1pc9kc.baywatch.notify.infra.controllers.NotificationController;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.entity.api.Entity;

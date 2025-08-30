@@ -15,17 +15,26 @@
             <input ref="usrInput" v-model="username" :class="{'input-error': formValidation}"
                    :placeholder="t('login.username')"
                    class="input input-bordered w-full"
-                   type="text"/>
+                   type="text" @keyup="formValidation=false"/>
           </fieldset>
-          <fieldset class="fieldset">
+          <fieldset v-if="!recoverMode" class="fieldset">
             <legend class="fieldset-legend">{{ t('login.password') }}</legend>
             <input v-model="password" :class="{'input-error': formValidation}" :placeholder="t('login.password')"
                    class="input input-bordered w-full"
                    type="password"
                    @keyup="formValidation=false"/>
           </fieldset>
-          <button class="btn btn-primary w-full mt-8" type="submit">{{ t('login.login') }}</button>
-          <button class="btn btn-sm btn-link btn-neutral w-full">{{ t('login.password.forget') }}</button>
+          <button v-if="recoverMode" :disabled="submitDisable" class="btn btn-primary w-full mt-27 mb-8 capitalize"
+                  type="submit"
+                  @click.prevent.stop="onRecoverPasswordClick">{{
+              t('login.action.recover')
+            }}
+          </button>
+          <button v-else class="btn btn-primary w-full mt-8" type="submit">{{ t('login.login') }}
+          </button>
+          <router-link v-if="!recoverMode" class="btn btn-sm btn-link btn-neutral w-full" to="/login/recover">
+            {{ t('login.password.forget') }}
+          </router-link>
         </form>
       </div>
     </div>
@@ -37,14 +46,15 @@ import { Component, Vue } from 'vue-facing-decorator';
 import { Store, useStore } from 'vuex';
 import { UPDATE_MUTATION, UPDATE_SETTINGS_MUTATION } from '@/security/store/UserConstants';
 
-import authenticationService from '@/security/services/AuthenticationService';
 import notificationService from '@/services/notification/NotificationService';
-import { Router, useRouter } from 'vue-router';
+import { RouteLocation, Router, useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { switchMap } from 'rxjs';
 import { userSettingsGet } from '@/security/services/UserSettingsService';
 import { map } from 'rxjs/operators';
 import { UserState } from '@/security/store/user';
+import { authenticationLogin } from '@/security/services/AuthenticationService';
+import { passwordAskForReset } from '@/security/services/PasswordService';
 
 @Component({
   name: 'LoginPage',
@@ -53,6 +63,7 @@ import { UserState } from '@/security/store/user';
     return {
       store: useStore(),
       router: useRouter(),
+      route: useRoute(),
       t: t,
       locale: locale,
     };
@@ -63,9 +74,15 @@ export default class LoginPage extends Vue {
   public password = '';
   private readonly store!: Store<UserState>;
   private readonly router!: Router;
+  private readonly route!: RouteLocation;
   private readonly t;
-  private readonly locale;
+  private locale;
   private formValidation = false;
+  private submitDisable = false;
+
+  get recoverMode(): boolean {
+    return this.route.params.state === 'recover';
+  }
 
   mounted(): void {
     (this.$refs.usrInput as HTMLElement).focus();
@@ -73,7 +90,7 @@ export default class LoginPage extends Vue {
 
   onLogin(): void {
     if (this.username !== '' && this.password !== '') {
-      authenticationService.login(this.username, this.password).pipe(
+      authenticationLogin(this.username, this.password).pipe(
           switchMap(user => userSettingsGet(user._id).pipe(map(settings => ({ user, settings })))),
       ).subscribe({
         next: authent => {
@@ -90,17 +107,38 @@ export default class LoginPage extends Vue {
               }
             }
           }
-          this.router.back();
+          this.router.push('/');
         },
         error: err => {
           this.formValidation = true;
-          notificationService.pushSimpleError('Wrong login or password !');
+          notificationService.pushSimpleError(this.t('login.message.failed'));
           console.debug(err);
         },
       });
     } else {
       this.formValidation = true;
     }
+  }
+
+  public onRecoverPasswordClick(): void {
+    if (!this.username || this.username.length === 0) {
+      this.formValidation = true;
+      return;
+    }
+    this.submitDisable = true;
+    passwordAskForReset(this.username).subscribe({
+      next: () => {
+        this.submitDisable = false;
+        this.router.push('/login');
+        this.password = '';
+        notificationService.pushSimpleOk(this.t('login.message.recover.ok'));
+      },
+      error: err => {
+        this.formValidation = true;
+        notificationService.pushSimpleError(this.t(err.code));
+        console.debug(err);
+      },
+    });
   }
 
   public closeLoginWindow(): void {

@@ -120,7 +120,6 @@ class FeedIndexerServiceImplTest {
     @Test
     @SuppressWarnings("ResultOfMethodCallIgnored")
     void should_wait_on_shutdown() {
-        System.out.println(((FeedIndexerServiceImpl) tested).getLock().availablePermits());
         ((FeedIndexerServiceImpl) tested).getLock().tryAcquire();
         try (ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor()) {
             scheduler.schedule(() ->

@@ -7,4 +7,4 @@ export const fr_FR = {
     'security.register.password': 'mot de passe',
     'security.register.title': 'Enregistrer un nouveau compte',
     'security.register.username': 'nom',
-}
+};

@@ -1,9 +1,7 @@
-import {HttpStatusError} from "@/common/errors/HttpStatusError";
+import { SandSideError } from '@/common/errors/SandSideError';
 
-export class UnauthorizedError extends HttpStatusError {
-    public httpStatus: number;
-
-    constructor(message: string) {
-        super(401, message);
+export class UnauthorizedError extends SandSideError {
+    constructor(code: string, message: string) {
+        super(code, message);
     }
 }

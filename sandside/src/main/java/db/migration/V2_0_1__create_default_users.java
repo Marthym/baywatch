@@ -26,7 +26,7 @@ import static fr.ght1pc9kc.baywatch.dsl.tables.UsersRoles.USERS_ROLES;
 @SuppressWarnings({"unused", "java:S101", "java:S106"})
 public class V2_0_1__create_default_users extends BaseJavaMigration {
     @Override
-    public void migrate(Context context) throws Exception {
+    public void migrate(Context context) {
         try {
             Connection conn = context.getConnection();
             var previousAutocommit = conn.getAutoCommit();
@@ -45,7 +45,7 @@ public class V2_0_1__create_default_users extends BaseJavaMigration {
             List<UsersRecord> usersRecords = new ArrayList<>();
             List<UsersRolesRecord> rolesRecords = new ArrayList<>();
             Stream.of("admin", "actuator").forEach(user -> {
-                String password = RandomStringUtils.randomPrint(15, 20);
+                String password = RandomStringUtils.secure().nextPrint(15, 20);
                 String bcryptedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
 
                 String userId = "US" + idGenerator.getAndUpdate(Ulid::increment);

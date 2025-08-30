@@ -37,7 +37,6 @@ public class SecurityConfiguration {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-                .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
 
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange(ae -> {
@@ -55,8 +54,10 @@ public class SecurityConfiguration {
                     ae.pathMatchers("/api/g").permitAll();
                     ae.pathMatchers(baseRoute + "/**").hasAnyRole(
                             Role.USER.name(), Role.MANAGER.name(), Role.ADMIN.name());
+                    ae.pathMatchers(HttpMethod.GET, "/**").permitAll();
                     ae.anyExchange().denyAll();
                 })
+                .formLogin(form -> form.loginPage("/login"))
 
                 .addFilterAt(new AuthenticationWebFilter(authenticationManager), SecurityWebFiltersOrder.HTTP_BASIC)
                 .addFilterAt(new JwtTokenAuthenticationFilter(jwtTokenProvider, cookieManager, userService), SecurityWebFiltersOrder.AUTHENTICATION)

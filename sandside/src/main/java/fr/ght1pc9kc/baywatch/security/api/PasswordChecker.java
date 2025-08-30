@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.security;
+package fr.ght1pc9kc.baywatch.security.api;
 
 import fr.ght1pc9kc.baywatch.security.api.model.PasswordEvaluation;
 import fr.ght1pc9kc.baywatch.security.api.model.User;

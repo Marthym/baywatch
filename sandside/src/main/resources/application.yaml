@@ -11,10 +11,11 @@ spring:
       data-source-properties:
         foreign_keys: true
 
-#      maximum-pool-size: 1
+  #      maximum-pool-size: 1
   flyway:
     baseline-on-migrate: true
     baseline-version: 2.0.0
+    placeholder-replacement: false
   jooq:
     sql-dialect: sqlite
   graphql:
@@ -22,7 +23,7 @@ spring:
     schema:
       introspection.enabled: ${BAYWATCH_GRAPHQL_INTROSPECTION:false}
       inspection.enabled: false
-    path: /api/g
+    http.path: /api/g
 
 server:
   port: ${BAYWATCH_SERVER_PORT:8081}
@@ -46,7 +47,7 @@ logging:
     org.jooq: WARN
     fr.ght1pc9kc.baywatch: ${BAYWATCH_LOG_LEVEL:DEBUG}
     fr.ght1pc9kc.scraphead: ${BAYWATCH_LOG_LEVEL:DEBUG}
-#    fr.ght1pc9kc.scraphead.core.scrap.HeadScraperImpl: DEBUG
+    #    fr.ght1pc9kc.scraphead.core.scrap.HeadScraperImpl: DEBUG
     #    fr.ght1pc9kc.baywatch.indexer: TRACE
     # Avoid unwanted log error ...
     org.springframework:
@@ -76,3 +77,6 @@ baywatch:
     signingKey: ${BAYWATCH_IMGPROXY_SIGNKEY:}
     signingSalt: ${BAYWATCH_IMGPROXY_SALT:}
     pathBase: ${BAYWATCH_IMGPROXY_BASEPATH:/img}
+  notify:
+    mailer:
+      whitelist_ips: ${BW_MAILER_IP_WHITELIST:127.0.0.0,0:0:0:0:0:0:0:1}

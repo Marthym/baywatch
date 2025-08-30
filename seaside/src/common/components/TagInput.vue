@@ -70,68 +70,91 @@ export default class TagInput extends Vue {
   private onKeydown(event: KeyboardEvent): void {
     switch (event.key) {
       case 'Enter':
-        if (this.proposalIndex !== -1) {
-          this.tag = this.proposal[this.proposalIndex];
-          this.proposalIndex = -1;
-        }
-        if (this.tag === '') {
-          this.emitSubmitEvent();
+        if (this.onKeyEnter()) {
           break;
         }
         // falls through
       case ' ':
       case ',':
-        event.preventDefault();
-        if (this.tag !== '' && this.tags.filter(tv => tv.name === this.tag).length === 0) {
-          this.tags.push({ name: this.tag, status: TagStatus.PRIMARY });
-        }
-        this.tag = '';
-        this.emitInputEvent();
+        this.onKeySpaceOrComma(event);
         break;
-
       case 'Escape':
-        this.displayProposal = false;
-        if (this.proposalIndex !== -1) {
-          this.proposalIndex = -1;
-        }
+        this.onKeyEscape();
         break;
-
       case 'Backspace':
-        this.displayProposal = true;
-        if (this.tag === '' && this.tags.length > 0) {
-          event.preventDefault();
-          const lastTag = this.tags[this.tags.length - 1];
-          if (lastTag.status === TagStatus.ALERT) {
-            this.tags.pop();
-            if (lastTag.timeout) {
-              clearTimeout(lastTag.timeout);
-            }
-            this.emitInputEvent();
-          } else {
-            lastTag.status = TagStatus.ALERT;
-            lastTag.timeout = window.setTimeout(() => lastTag.status = TagStatus.PRIMARY, 1000);
-          }
-        }
+        this.onKeyBackspace(event);
         break;
-
       case 'ArrowDown':
-        if (this.displayProposal && this.proposal.length - 1 > this.proposalIndex) {
-          event.preventDefault();
-          this.proposalIndex += 1;
-        } else {
-          this.displayProposal = true;
-        }
+        this.onKeyArrowDown(event);
         break;
-
       case 'ArrowUp':
-        if (this.displayProposal && this.proposalIndex > 0) {
-          event.preventDefault();
-          this.proposalIndex -= 1;
-        }
+        this.onKeyArrowUp(event);
         break;
-
       default:
         this.displayProposal = true;
+    }
+  }
+
+  private onKeySpaceOrComma(event: KeyboardEvent): void {
+    event.preventDefault();
+    if (this.tag !== '' && this.tags.filter(tv => tv.name === this.tag).length === 0) {
+      this.tags.push({ name: this.tag, status: TagStatus.PRIMARY });
+    }
+    this.tag = '';
+    this.emitInputEvent();
+  }
+
+  private onKeyEnter(): boolean {
+    if (this.proposalIndex !== -1) {
+      this.tag = this.proposal[this.proposalIndex];
+      this.proposalIndex = -1;
+    }
+    if (this.tag === '') {
+      this.emitSubmitEvent();
+      return true;
+    }
+    return false;
+  }
+
+  private onKeyEscape(): void {
+    this.displayProposal = false;
+    if (this.proposalIndex !== -1) {
+      this.proposalIndex = -1;
+    }
+  }
+
+  private onKeyBackspace(event: KeyboardEvent): boolean {
+    this.displayProposal = true;
+    if (this.tag === '' && this.tags.length > 0) {
+      event.preventDefault();
+      const lastTag = this.tags[this.tags.length - 1];
+      if (lastTag.status === TagStatus.ALERT) {
+        this.tags.pop();
+        if (lastTag.timeout) {
+          clearTimeout(lastTag.timeout);
+        }
+        this.emitInputEvent();
+      } else {
+        lastTag.status = TagStatus.ALERT;
+        lastTag.timeout = window.setTimeout(() => lastTag.status = TagStatus.PRIMARY, 1000);
+      }
+    }
+    return true;
+  }
+
+  private onKeyArrowDown(event: KeyboardEvent): void {
+    if (this.displayProposal && this.proposal.length - 1 > this.proposalIndex) {
+      event.preventDefault();
+      this.proposalIndex += 1;
+    } else {
+      this.displayProposal = true;
+    }
+  }
+
+  private onKeyArrowUp(event: KeyboardEvent): void {
+    if (this.displayProposal && this.proposalIndex > 0) {
+      event.preventDefault();
+      this.proposalIndex -= 1;
     }
   }
 

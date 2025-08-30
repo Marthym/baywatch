@@ -12,13 +12,16 @@ import {
 
 const LoginPage = () => import('@/security/pages/LoginPage.vue');
 const CreateAccountComponent = () => import('@/security/components/CreateAccountComponent.vue');
+const PasswordResetComponent = () => import('@/security/components/PasswordResetComponent.vue');
 
 export const routes: RouteRecordRaw[] = [
     { path: '/login', component: LoginPage, name: 'LoginPage' },
+    { path: '/login/:state', component: LoginPage, name: 'security-recover-password' },
     { path: '/register', component: CreateAccountComponent, name: 'security-register' },
+    { path: '/password/reset', component: PasswordResetComponent, name: 'security-password-reset' },
 ];
 
-export const requireAuthNavGuard: NavigationGuardWithThis<NavigationGuardWithThis<boolean>> = async to => {
+export const requireAuthNavGuard: NavigationGuardWithThis<undefined> = async to => {
     if (store.state.user.isAuthenticated === undefined) {
         try {
             const session: Session = await firstValueFrom(refresh());
@@ -30,6 +33,7 @@ export const requireAuthNavGuard: NavigationGuardWithThis<NavigationGuardWithThi
             store.commit(USER_UPDATE_SETTINGS_MUTATION, session.settings);
         } catch (err) {
             store.commit(USER_LOGOUT_MUTATION);
+            console.debug((err as Error).message);
         }
     }
     const isAuthenticated = store.state.user.isAuthenticated;

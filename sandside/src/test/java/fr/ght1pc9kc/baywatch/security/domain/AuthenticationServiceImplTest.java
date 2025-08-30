@@ -8,6 +8,7 @@ import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthenticationManagerPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.JwtTokenProvider;
+import fr.ght1pc9kc.baywatch.security.infra.adapters.SpringAuthenticationContext;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.entity.api.Entity;
 import org.assertj.core.api.Assertions;
@@ -36,6 +37,7 @@ class AuthenticationServiceImplTest {
     private JwtTokenProvider tokenProviderMock;
     private UserService userServiceMock;
 
+
     @BeforeEach
     void setUp() {
         Entity<User> user = Entity.identify(User.builder().login("okenobi").role(Role.USER).build()).withId("42");
@@ -63,8 +65,10 @@ class AuthenticationServiceImplTest {
         userServiceMock = mock(UserService.class);
         when(userServiceMock.get(anyString())).thenReturn(Mono.just(user));
 
-        AuthenticationFacade authenticationFacadeMock = mock(AuthenticationFacade.class);
-        tested = new AuthenticationServiceImpl(authenticationManagerPortMock, tokenProviderMock, userServiceMock, authenticationFacadeMock);
+        AuthenticationFacade authenticationFacadeMock = new SpringAuthenticationContext();
+
+        tested = new AuthenticationServiceImpl(
+                authenticationManagerPortMock, tokenProviderMock, userServiceMock, authenticationFacadeMock);
     }
 
     @Test

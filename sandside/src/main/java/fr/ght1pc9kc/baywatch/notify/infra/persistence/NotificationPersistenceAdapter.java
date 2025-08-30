@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.notify.infra.adapters;
+package fr.ght1pc9kc.baywatch.notify.infra.persistence;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapLikeType;

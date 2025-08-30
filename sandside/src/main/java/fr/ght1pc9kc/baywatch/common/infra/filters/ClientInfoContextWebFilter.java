@@ -17,7 +17,8 @@ public class ClientInfoContextWebFilter implements WebFilter {
     public @NotNull Mono<Void> filter(@NotNull ServerWebExchange exchange, WebFilterChain chain) {
         return chain.filter(exchange).contextWrite(ReactiveClientInfoContextHolder.withClientInfo(
                 exchange.getRequest().getRemoteAddress(),
-                exchange.getRequest().getHeaders().getFirst(HttpHeaders.USER_AGENT))
+                exchange.getRequest().getHeaders().getFirst(HttpHeaders.USER_AGENT),
+                exchange.getRequest().getURI().resolve("/").normalize())
         );
     }
 }

@@ -3,16 +3,16 @@ import NotificationListener from '@/services/notification/NotificationListener';
 import { NotificationCode } from '@/services/notification/NotificationCode.enum';
 import { Severity } from '@/services/notification/Severity.enum';
 
-const DEFAUTL_DELAY = 5000;
+const DEFAULT_DELAY = 5000;
 
 export class NotificationService {
     private readonly defaultDelay: number;
-    private notifs: Notification[] = [];
+    private readonly notifs: Notification[] = [];
     private listeners: NotificationListener[] = [];
     private timeout?: number;
 
 
-    constructor(delay: number = DEFAUTL_DELAY) {
+    constructor(delay: number = DEFAULT_DELAY) {
         this.defaultDelay = delay;
     }
 
@@ -60,7 +60,7 @@ export class NotificationService {
     }
 
     /**
-     * Remove immediatly all {@link Notification} and all {@link NotificationListener}
+     * Remove immediately all {@link Notification} and all {@link NotificationListener}
      */
     public destroy(): void {
         this.notifs.forEach(() => {

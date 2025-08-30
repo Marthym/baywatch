@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.notify.infra;
+package fr.ght1pc9kc.baywatch.notify.infra.controllers;
 
 import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
@@ -32,15 +32,12 @@ public class SseController {
     private final Sinks.Many<ServerSentEvent<String>> notificationSink = Sinks.many().multicast().directBestEffort();
     private final Map<String, Sinks.Many<ServerSentEvent<String>>> byUserNotifications = new ConcurrentHashMap<>();
 
+    @SuppressWarnings({"unchecked", "CallingSubscribeInNonBlockingScope"})
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<String>> sse() {
         return ReactiveSecurityContextHolder.getContext()
                 .map(ctx -> ((Entity<User>) ctx.getAuthentication().getPrincipal()).self().login())
                 .flatMapMany(user -> Flux.create(sink -> {
-                    sink.next(ServerSentEvent.<String>builder()
-                            .id(ulid.create().toString())
-                            .event("open")
-                            .build());
                     var currentUserSink = byUserNotifications.computeIfAbsent(user, key -> Sinks.many().multicast().directBestEffort());
                     Disposable disposable = notificationSink.asFlux().subscribe(sink::next);
                     Disposable userDisposable = currentUserSink.asFlux().subscribe(sink::next);
@@ -53,28 +50,35 @@ public class SseController {
                             byUserNotifications.remove(user);
                         }
                     });
+                    sink.next(ServerSentEvent.<String>builder()
+                            .id(ulid.create().toString())
+                            .event("open")
+                            .build());
                 }));
 
     }
 
     @GetMapping("/send")
     public Mono<Void> send(@RequestParam("msg") String msg, @Nullable @RequestParam(value = "user", required = false) String user) {
-        if (nonNull(user)) {
-            var userSink = byUserNotifications.get(user);
-            if (nonNull(userSink)) {
-                userSink.tryEmitNext(ServerSentEvent.<String>builder()
+        return Mono.fromCallable(() -> {
+            if (nonNull(user)) {
+                var userSink = byUserNotifications.get(user);
+                if (nonNull(userSink)) {
+                    return userSink.tryEmitNext(ServerSentEvent.<String>builder()
+                            .id(ulid.create().toString())
+                            .event("notification")
+                            .data(String.format("[%s] %s", user, msg))
+                            .build());
+                } else {
+                    return Mono.just(Sinks.EmitResult.FAIL_ZERO_SUBSCRIBER);
+                }
+            } else {
+                return notificationSink.tryEmitNext(ServerSentEvent.<String>builder()
                         .id(ulid.create().toString())
                         .event("notification")
-                        .data(String.format("[%s] %s", user, msg))
+                        .data(msg)
                         .build());
             }
-        } else {
-            notificationSink.tryEmitNext(ServerSentEvent.<String>builder()
-                    .id(ulid.create().toString())
-                    .event("notification")
-                    .data(msg)
-                    .build());
-        }
-        return Mono.empty();
+        }).then();
     }
 }

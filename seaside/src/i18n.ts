@@ -12,11 +12,11 @@ export const i18n = createI18n({
     datetimeFormats: { 'en-US': datetimeFormat_en_US, 'fr-FR': datetimeFormat_fr_FR },
 });
 
-export const lazyloadTranslations: NavigationGuardWithThis<NavigationGuardWithThis<boolean>> = async (to, from, next) => {
-    const localePageFile = `./locales/${to.name}_${i18n.global.fallbackLocale.value}.ts`;
+export const lazyloadTranslations: NavigationGuardWithThis<undefined> = async (to, from, next) => {
+    const localePageFile = `./locales/${String(to.name)}_${i18n.global.fallbackLocale.value}.ts`;
     try {
-        const messagesFallback = import(`./locales/${to.name}_${i18n.global.fallbackLocale.value}.ts`);
-        const messages = import(`./locales/${to.name}_${i18n.global.locale.value}.ts`);
+        const messagesFallback = import(`./locales/${String(to.name)}_${i18n.global.fallbackLocale.value}.ts`);
+        const messages = import(`./locales/${String(to.name)}_${i18n.global.locale.value}.ts`);
         await Promise.all([
             messagesFallback.then(msg => i18n.global.mergeLocaleMessage(
                 i18n.global.fallbackLocale.value, msg[i18n.global.fallbackLocale.value.replace('-', '_')])),

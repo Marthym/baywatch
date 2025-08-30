@@ -17,9 +17,10 @@ public class SpringConfiguration {
         return new ListPropertiesCriteriaVisitor();
     }
 
-    @Bean
     @DatabaseQualifier
+    @Bean(destroyMethod = "dispose")
     Scheduler getDatabaseScheduler() {
         return Schedulers.newBoundedElastic(5, Integer.MAX_VALUE, "database");
     }
+
 }

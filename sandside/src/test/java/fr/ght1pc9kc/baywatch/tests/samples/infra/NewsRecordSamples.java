@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class NewsRecordSamples implements RelationalDataSet<NewsRecord> {
@@ -38,16 +37,16 @@ public class NewsRecordSamples implements RelationalDataSet<NewsRecord> {
 
         NEWS_FEEDS_RECORDS = buildNewsFeedRecords();
 
-        Integer[] FLAGS = new Integer[]{
+        Integer[] flags = new Integer[]{
                 Flags.NONE, Flags.READ, Flags.SHARED, Flags.ALL};
-        String[] USERS = new String[]{
+        String[] users = new String[]{
                 UsersRecordSamples.OKENOBI.getUserId(),
                 UsersRecordSamples.LSKYWALKER.getUserId()};
         NEWS_USER_STATE_RECORDS = IntStream.range(1, 51).mapToObj(i ->
                 NewsUserState.NEWS_USER_STATE.newRecord()
                         .setNursNewsId(RECORDS.get(i % RECORDS.size()).getNewsId())
-                        .setNursUserId(USERS[i % USERS.length])
-                        .setNursState(FLAGS[i % FLAGS.length])
+                        .setNursUserId(users[i % users.length])
+                        .setNursState(flags[i % flags.length])
         ).toList();
     }
 
@@ -55,18 +54,18 @@ public class NewsRecordSamples implements RelationalDataSet<NewsRecord> {
         List<NewsFeedsRecord> temps = new ArrayList<>(53);
         for (int i = 1; i < 51; i++) {
             int feedIdx = i % FeedRecordSamples.SAMPLE.records().size();
-            NewsFeedsRecord record = NewsFeeds.NEWS_FEEDS.newRecord()
+            NewsFeedsRecord newsFeedRecord = NewsFeeds.NEWS_FEEDS.newRecord()
                     .setNefeFeedId(FeedRecordSamples.SAMPLE.records().get(feedIdx).getFeedId())
                     .setNefeNewsId(Hasher.identify(BASE_TEST_URI.resolve(String.format("%03d", i))));
-            temps.add(record);
+            temps.add(newsFeedRecord);
         }
 
         // Add record for multi-feed news
         for (FeedsRecord rFeed : FeedRecordSamples.SAMPLE.records()) {
-            NewsFeedsRecord record = NewsFeeds.NEWS_FEEDS.newRecord()
+            NewsFeedsRecord newsFeedRecord = NewsFeeds.NEWS_FEEDS.newRecord()
                     .setNefeFeedId(rFeed.getFeedId())
                     .setNefeNewsId(NEWS_MULTI_FEED_ID);
-            temps.add(record);
+            temps.add(newsFeedRecord);
         }
 
         return List.copyOf(temps);

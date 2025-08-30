@@ -1,11 +1,13 @@
 package fr.ght1pc9kc.baywatch.security.infra.controllers;
 
+import fr.ght1pc9kc.baywatch.security.api.PasswordResetService;
 import fr.ght1pc9kc.baywatch.security.api.PasswordService;
 import fr.ght1pc9kc.baywatch.security.api.model.PasswordEvaluation;
 import fr.ght1pc9kc.baywatch.security.infra.mappers.UserMapper;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserForm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -16,6 +18,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class PasswordController {
     private final PasswordService passwordService;
+    private final PasswordResetService passwordResetService;
     private final UserMapper userMapper;
 
     @QueryMapping
@@ -32,5 +35,15 @@ public class PasswordController {
     @QueryMapping
     public Flux<String> passwordGenerate(@Argument("number") int number) {
         return passwordService.generateSecurePassword(number);
+    }
+
+    @QueryMapping
+    public Mono<Void> passwordAskForReset(@Argument("identifier") String identifier) {
+        return passwordResetService.askPasswordReset(identifier);
+    }
+
+    @MutationMapping
+    public Mono<Void> passwordReset(@Argument("token") String token, @Argument("newPassword") String newPassword) {
+        return passwordResetService.resetPassword(token, newPassword);
     }
 }

@@ -4,6 +4,7 @@ import com.github.f4b6a3.ulid.Ulid;
 import fr.ght1pc9kc.baywatch.notify.api.model.BasicEvent;
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.domain.ports.NotificationPersistencePort;
+import fr.ght1pc9kc.baywatch.notify.domain.services.NotifyServiceImpl;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import org.awaitility.Awaitility;
