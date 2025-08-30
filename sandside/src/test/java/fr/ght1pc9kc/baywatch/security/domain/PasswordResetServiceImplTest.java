@@ -7,6 +7,8 @@ import fr.ght1pc9kc.baywatch.security.api.PasswordChecker;
 import fr.ght1pc9kc.baywatch.security.api.PasswordResetService;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.PasswordEvaluation;
+import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.baywatch.security.domain.exceptions.PasswordEvaluationException;
 import fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.ResetPasswordTokenPort;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
@@ -31,6 +33,7 @@ import static fr.ght1pc9kc.baywatch.tests.samples.UserSamples.LUKE;
 import static fr.ght1pc9kc.baywatch.tests.samples.UserSamples.OBIWAN;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.assertArg;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -44,6 +47,8 @@ class PasswordResetServiceImplTest {
 
     private MailSenderPort mailSenderPortMock;
     private UserService userServiceMock;
+    private ResetPasswordTokenPort resetPasswordTokenPortMock;
+    private PasswordChecker passwordCheckerMock;
 
     @BeforeEach
     void setUp() {
@@ -54,7 +59,7 @@ class PasswordResetServiceImplTest {
         ClientInfoFacade clientInfoFacade = mock(ClientInfoFacade.class);
         when(clientInfoFacade.getLocale()).thenReturn(Mono.just(Locale.ENGLISH));
 
-        PasswordChecker passwordCheckerMock = mock(PasswordChecker.class);
+        passwordCheckerMock = mock(PasswordChecker.class);
         when(passwordCheckerMock.checkPasswordStrength(OBIWAN.self()))
                 .thenReturn(Mono.just(new PasswordEvaluation(true, 65d, "ok")));
         when(passwordCheckerMock.checkPasswordStrength(DSIDIOUS.self()))
@@ -64,8 +69,9 @@ class PasswordResetServiceImplTest {
 
         userServiceMock = mock(UserService.class);
         when(userServiceMock.get(anyString())).thenReturn(Mono.just(OBIWAN));
+        when(userServiceMock.update(any())).thenReturn(Mono.just(OBIWAN));
 
-        ResetPasswordTokenPort resetPasswordTokenPortMock = mock(ResetPasswordTokenPort.class);
+        resetPasswordTokenPortMock = mock(ResetPasswordTokenPort.class);
         when(resetPasswordTokenPortMock.get(anyString())).thenReturn(Optional.of(OBIWAN));
 
         tested = new PasswordResetServiceImpl(
@@ -172,5 +178,39 @@ class PasswordResetServiceImplTest {
 
         verify(userServiceMock, never()).list(any(PageRequest.class));
         verify(mailSenderPortMock, never()).send(any(), anyString(), any());
+    }
+
+    @Test
+    void should_reset_password_successfully() {
+        when(passwordCheckerMock.checkPasswordStrength(any(User.class)))
+                .thenReturn(Mono.just(new PasswordEvaluation(true, 65d, "ok")));
+
+        StepVerifier.create(tested.resetPassword("valid-token", "newPassword"))
+                .verifyComplete();
+
+        verify(resetPasswordTokenPortMock).get(assertArg(actual ->
+                Assertions.assertThat(actual).isEqualTo("OXoqnFv14szsOMJZa2grsb0F_m5OzqbBDPQnVf8iVAM")));
+        verify(resetPasswordTokenPortMock).remove(assertArg(actual ->
+                Assertions.assertThat(actual).isEqualTo("OXoqnFv14szsOMJZa2grsb0F_m5OzqbBDPQnVf8iVAM")));
+        verify(passwordCheckerMock).checkPasswordStrength(assertArg((User actual) ->
+                Assertions.assertThat(actual.password()).isEqualTo("newPassword")));
+        verify(userServiceMock).update(assertArg(actual ->
+                Assertions.assertThat(actual.self().password()).isEqualTo("newPassword")));
+    }
+
+    @Test
+    void should_fail_reset_password_with_unsecure_password() {
+        when(passwordCheckerMock.checkPasswordStrength(any(User.class)))
+                .thenReturn(Mono.just(new PasswordEvaluation(false, 4d, "Fail")));
+
+        StepVerifier.create(tested.resetPassword("valid-token", "newPassword"))
+                .verifyError(PasswordEvaluationException.class);
+
+        verify(resetPasswordTokenPortMock).get(assertArg(actual ->
+                Assertions.assertThat(actual).isEqualTo("OXoqnFv14szsOMJZa2grsb0F_m5OzqbBDPQnVf8iVAM")));
+        verify(resetPasswordTokenPortMock, never()).remove(anyString());
+        verify(passwordCheckerMock).checkPasswordStrength(assertArg((User actual) ->
+                Assertions.assertThat(actual.password()).isEqualTo("newPassword")));
+        verify(userServiceMock, never()).update(any());
     }
 }
