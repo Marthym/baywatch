@@ -48,7 +48,8 @@
         <ulid-creator.version>5.2.3</ulid-creator.version>
         <unbescape.version>1.1.6.RELEASE</unbescape.version>
         <lombok.version>1.18.38</lombok.version>
-        <apache-commons-text.version>1.13.1</apache-commons-text.version>
+        <apache-commons-text.version>1.14.0</apache-commons-text.version>
+        <jspecify.version>1.0.0</jspecify.version>
 
         <exec-maven-plugin.version>3.5.1</exec-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
