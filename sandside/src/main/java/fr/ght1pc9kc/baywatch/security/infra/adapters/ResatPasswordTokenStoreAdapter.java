@@ -5,7 +5,7 @@ import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.ports.ResetPasswordTokenPort;
 import fr.ght1pc9kc.entity.api.Entity;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
@@ -21,7 +21,7 @@ public class ResatPasswordTokenStoreAdapter implements ResetPasswordTokenPort {
 
     @Override
     @SuppressWarnings("unchecked")
-    public Optional<Entity<User>> get(@NotNull String hashedToken) {
+    public Optional<Entity<User>> get(@NonNull String hashedToken) {
         return kvStore.get(TOKEN_KEY_PREFIX + requireNonNull(hashedToken))
                 .flatMap(obj -> {
                     if (obj instanceof Entity<?> entity && entity.self() instanceof User) {
@@ -33,13 +33,13 @@ public class ResatPasswordTokenStoreAdapter implements ResetPasswordTokenPort {
     }
 
     @Override
-    public void store(@NotNull String hashedToken, @NotNull Entity<User> user, @NotNull Duration ttl) {
+    public void store(@NonNull String hashedToken, @NonNull Entity<User> user, @NonNull Duration ttl) {
         kvStore.put(TOKEN_KEY_PREFIX + requireNonNull(hashedToken),
                 requireNonNull(user), requireNonNull(ttl, "ttl must not be null"));
     }
 
     @Override
-    public void remove(@NotNull String hashedToken) {
+    public void remove(@NonNull String hashedToken) {
         kvStore.remove(TOKEN_KEY_PREFIX + requireNonNull(hashedToken));
     }
 }

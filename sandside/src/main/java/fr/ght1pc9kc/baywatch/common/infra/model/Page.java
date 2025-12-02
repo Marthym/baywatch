@@ -7,7 +7,7 @@ import org.springframework.util.MultiValueMap;
 import reactor.core.publisher.Flux;
 
 public final class Page<T> extends ResponseEntity<Flux<T>> {
-    Page(MultiValueMap<String, String> headers, Flux<T> body) {
+    Page(HttpHeaders headers, Flux<T> body) {
         super(body, headers, HttpStatus.OK);
     }
 

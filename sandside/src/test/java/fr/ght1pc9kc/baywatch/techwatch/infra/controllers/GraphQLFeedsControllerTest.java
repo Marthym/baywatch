@@ -1,7 +1,5 @@
 package fr.ght1pc9kc.baywatch.techwatch.infra.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.ght1pc9kc.baywatch.common.infra.adapters.GraphqlExceptionAdapter;
 import fr.ght1pc9kc.baywatch.common.infra.config.GraphqlConfiguration;
 import fr.ght1pc9kc.baywatch.common.infra.config.jackson.JacksonMappingConfiguration;
@@ -16,7 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.graphql.GraphQlTest;
+import org.springframework.boot.graphql.test.autoconfigure.GraphQlTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.graphql.execution.ErrorType;
 import org.springframework.graphql.test.tester.GraphQlTester;
@@ -25,6 +23,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -66,7 +65,7 @@ class GraphQLFeedsControllerTest {
     }
 
     @Test
-    void should_call_get() throws JsonProcessingException {
+    void should_call_get() {
         Object response = gqlClient.documentName("feedsServiceTest").operationName("GetFeed")
                 .variable("feedId", FeedSamples.JEDI.id())
                 .execute().path("getFeed")
@@ -80,7 +79,7 @@ class GraphQLFeedsControllerTest {
     }
 
     @Test
-    void should_call_feeds_search() throws JsonProcessingException {
+    void should_call_feeds_search() {
         Object response = gqlClient.documentName("feedsServiceTest").operationName("SearchFeedsQuery")
                 .variable("_p", 0)
                 .variable("_pp", 20)
@@ -102,7 +101,7 @@ class GraphQLFeedsControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
-    void should_call_feedAddAndSubscribe() throws JsonProcessingException {
+    void should_call_feedAddAndSubscribe() {
         gqlClient.documentName("feedsServiceTest")
                 .operationName("FeedAddAndSubscribe")
                 .variable("feed", null)

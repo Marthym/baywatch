@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.security.infra.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationService;
 import fr.ght1pc9kc.baywatch.security.api.model.AuthenticationRequest;
@@ -26,6 +25,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.observability.micrometer.Micrometer;
 import reactor.core.publisher.Mono;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
