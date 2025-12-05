@@ -84,7 +84,7 @@ public class LuceneDataAdapter implements IndexBuilderPort, IndexSearcherPort {
         }
         this.indexSearcher = new AtomicReference<>();
         try {
-            new IndexUpgrader(this.indexDirectory).upgrade();
+            new IndexUpgrader(this.indexDirectory, new IndexWriterConfig(analyzer), true).upgrade();
             DirectoryReader reader = Exceptions.propagate().get(Exceptions.sneak().supplier(() ->
                     DirectoryReader.open(indexDirectory))
             ).orElseThrow();
