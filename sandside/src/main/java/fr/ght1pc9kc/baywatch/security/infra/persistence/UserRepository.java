@@ -80,6 +80,7 @@ public class UserRepository implements UserPersistencePort {
                         Result<Record> rs = cursor.fetchNext(count);
                         rs.forEach(sink::next);
                         if (rs.size() < count) {
+                            cursor.close();
                             sink.complete();
                         }
                     }).onDispose(cursor::close);

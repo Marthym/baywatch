@@ -51,6 +51,7 @@ import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.loginIP;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.assertArg;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -285,6 +286,29 @@ class UserServiceImplTest {
                 .verifyError(UnauthorizedOperation.class);
 
         verify(mockUserRepository, never()).update(obiChan);
+    }
+
+    @Test
+    void should_update_myself_without_password() {
+        when(mockAuthFacade.getConnectedUser()).thenReturn(Mono.just(UserSamples.OBIWAN));
+        when(mockUserRepository.update(any())).thenReturn(Mono.just(UserSamples.OBIWAN));
+        Entity<User> obiChan = UserSamples.OBIWAN.convert(u -> u.toBuilder()
+                .name("Obi Chan")
+                .build());
+
+        Assertions.assertThat(obiChan.self().name())
+                .describedAs("Name should be different to allow testing meta update")
+                .isNotEqualTo(UserSamples.OBIWAN.self().name());
+        Assertions.assertThat(obiChan.meta(loginAt, Instant.class).orElse(null)).isNotEqualTo(CURRENT);
+
+        StepVerifier.create(tested.update(obiChan, null))
+                .expectNextCount(1)
+                .verifyComplete();
+
+        verify(mockUserRepository).update(assertArg(actual -> SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(actual.self().name()).isEqualTo(UserSamples.OBIWAN.self().name());
+            softly.assertThat(actual.meta(loginAt, Instant.class)).contains(CURRENT);
+        })));
     }
 
     @Test
