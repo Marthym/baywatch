@@ -84,7 +84,7 @@
                 <configuration>
                     <from>
                         <image>
-                            bellsoft/liberica-runtime-container:jre-25-slim-musl@sha256:8fc82d9699b4181adb9c4ab2640c31cb4075014a61843b2bb905691789ecd565
+                            gcr.io/distroless/java25-debian13@sha256:965f5a27fac19dd1211d2d7c9ea7a18d9f45e986f070d63d9e00cf2bf44d3744
                         </image>
                     </from>
                     <to>
