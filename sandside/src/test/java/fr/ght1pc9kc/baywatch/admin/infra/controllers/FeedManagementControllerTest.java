@@ -61,7 +61,7 @@ class FeedManagementControllerTest {
         StepVerifier.create(result)
                 .assertNext(page -> SoftAssertions.assertSoftly(soft -> {
                     soft.assertThat(page.getBody()).isNotNull();
-                    soft.assertThat(page.getHeaders()).containsEntry("X-Total-Count", List.of("1"));
+                    soft.assertThat(page.getHeaders().toSingleValueMap()).containsEntry("X-Total-Count", "1");
                 }))
                 .verifyComplete();
 

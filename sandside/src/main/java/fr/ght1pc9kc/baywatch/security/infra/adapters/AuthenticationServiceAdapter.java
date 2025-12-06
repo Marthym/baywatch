@@ -7,7 +7,11 @@ import fr.ght1pc9kc.baywatch.security.domain.AuthenticationServiceImpl;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthenticationManagerPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.JwtTokenProvider;
 import lombok.experimental.Delegate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.time.Clock;
+import java.time.Duration;
 
 @Service
 public class AuthenticationServiceAdapter implements AuthenticationService {
@@ -16,8 +20,10 @@ public class AuthenticationServiceAdapter implements AuthenticationService {
 
     public AuthenticationServiceAdapter(
             AuthenticationManagerPort authenticationManagerPort, JwtTokenProvider tokenProvider, UserService userService,
-            AuthenticationFacade authFacade) {
-        this.delegate = new AuthenticationServiceImpl(authenticationManagerPort, tokenProvider, userService, authFacade);
-        this.delegate.onPostConstruct();
+            AuthenticationFacade authFacade, @Value("${baywatch.security.autoUpdate.delay}") Duration autoUpdateUserDelay) {
+        this.delegate = new AuthenticationServiceImpl(
+                authenticationManagerPort, tokenProvider, userService, authFacade,
+                Clock.systemUTC(), autoUpdateUserDelay
+        );
     }
 }

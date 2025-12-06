@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.notify.infra.adapters;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.ght1pc9kc.baywatch.dsl.tables.Notifications;
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.model.ServerEvent;
@@ -20,6 +19,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

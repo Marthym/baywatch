@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
@@ -68,7 +69,8 @@ class AuthenticationServiceImplTest {
         AuthenticationFacade authenticationFacadeMock = new SpringAuthenticationContext();
 
         tested = new AuthenticationServiceImpl(
-                authenticationManagerPortMock, tokenProviderMock, userServiceMock, authenticationFacadeMock);
+                authenticationManagerPortMock, tokenProviderMock, userServiceMock, authenticationFacadeMock,
+                Clock.systemUTC(), Duration.ofMillis(100));
     }
 
     @Test
@@ -90,12 +92,10 @@ class AuthenticationServiceImplTest {
     }
 
     @Test
-    void should_call_update_after_post_construct() {
-        tested.onPostConstruct();
-
+    void should_call_update_after_login() {
         StepVerifier.create(tested.login(new AuthenticationRequest("okenobi", "MayThe4th", true)))
                 .assertNext(actual -> Assertions.assertThat(actual.user().id()).isEqualTo("42"))
                 .verifyComplete();
-        Awaitility.await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> verify(userServiceMock).update(any()));
+        Awaitility.await().atMost(Duration.ofSeconds(2)).untilAsserted(() -> verify(userServiceMock).update(any()));
     }
 }

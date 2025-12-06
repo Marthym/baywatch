@@ -1,19 +1,18 @@
 package fr.ght1pc9kc.baywatch.security.infra.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.ght1pc9kc.baywatch.common.infra.model.Page;
 import fr.ght1pc9kc.baywatch.security.api.AuthorizationService;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
-import fr.ght1pc9kc.baywatch.security.infra.mappers.UserMapper;
 import fr.ght1pc9kc.baywatch.security.infra.config.PermissionMixin;
 import fr.ght1pc9kc.baywatch.security.infra.config.UserMixin;
+import fr.ght1pc9kc.baywatch.security.infra.mappers.UserMapper;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserForm;
 import fr.ght1pc9kc.baywatch.security.infra.model.UserSearchRequest;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.juery.api.PageRequest;
-import fr.ght1pc9kc.testy.core.extensions.WithObjectMapper;
+import fr.ght1pc9kc.testy.core.extensions.WithJsonMapper;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +21,7 @@ import org.mapstruct.factory.Mappers;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -36,7 +36,7 @@ import static org.mockito.Mockito.mock;
 class UserGqlControllerTest {
 
     @RegisterExtension
-    private static final WithObjectMapper wMapper = WithObjectMapper.builder()
+    private static final WithJsonMapper wMapper = WithJsonMapper.builder()
             .addMixin(User.class, UserMixin.class)
             .addMixin(Permission.class, PermissionMixin.class)
             .build();

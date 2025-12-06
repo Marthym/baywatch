@@ -46,6 +46,8 @@ import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdAt;
 import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdBy;
 import static fr.ght1pc9kc.baywatch.notify.api.model.EventType.USER_NOTIFICATION;
 import static fr.ght1pc9kc.baywatch.security.api.model.RoleUtils.hasRole;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.function.Predicate.not;
 
 @Slf4j
@@ -154,29 +156,49 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                         return get(operator.id()).handle((op, sink) -> {
                             if (hasRole(op.self(), Role.ADMIN)) {
                                 sink.next(op);
-                            } else if (user.id().equals(op.id())
-                                    && Objects.nonNull(currentPassword)
-                                    && passwordService.matches(currentPassword, op.self().password())) {
+                            } else if (user.id().equals(op.id()) &&
+                                    (isNull(currentPassword) || passwordService.matches(currentPassword, operator.self().password()))) {
                                 sink.next(op);
                             } else {
                                 sink.error(new UnauthorizedOperation(UNAUTHORIZED_USER));
                             }
                         });
                     }
-                }).flatMap(operator -> {
-                    User checkedUser = (Objects.nonNull(user.self().password()))
-                            ? user.self().withPassword(passwordService.encode(user.self().password()))
-                            : user.self();
+                })
+                .flatMap(operator ->
+                        checkFieldToUpdateDependingOnOperator(operator, user, currentPassword))
+                .flatMap(userRepository::update);
+    }
 
-                    return authFacade.getClientInfoContext()
-                            // update meta-login only if the operator is the updated user
-                            .filter(ignore -> operator.id().equals(user.id()))
-                            .map(clientInfo -> user.convert(ignore -> checkedUser)
-                                    .withMeta(UserMeta.loginIP, clientInfo.ip().getHostString())
-                                    .withMeta(UserMeta.loginAt, clock.instant().truncatedTo(ChronoUnit.SECONDS)))
-                            .switchIfEmpty(Mono.just(user.convert(old -> checkedUser)));
+    private Mono<Entity<User>> checkFieldToUpdateDependingOnOperator(Entity<User> operator, Entity<User> toUpdate, String currentPassword) {
+        boolean isAdmin = hasRole(operator.self(), Role.ADMIN);
+        if (operator.id().equals(toUpdate.id())) {
+            return authFacade.getClientInfoContext()
+                    .map(clientInfo -> toUpdate
+                            .withMeta(UserMeta.loginIP, clientInfo.ip().getHostString())
+                            .withMeta(UserMeta.loginAt, clock.instant().truncatedTo(ChronoUnit.SECONDS)))
+                    .switchIfEmpty(Mono.just(toUpdate))
+                    .map(userWithClientInfo -> userWithClientInfo.convert(old -> {
+                        if (isAdmin || (nonNull(currentPassword)
+                                && passwordService.matches(currentPassword, operator.self().password()))) {
+                            return old.withPassword(passwordService.encode(toUpdate.self().password()));
+                        } else {
+                            // if not admin and correct password not given, we do not update the user.
+                            // `operator` is the current unmodified user from database.
+                            return operator.self();
+                        }
+                    }));
 
-                }).flatMap(userRepository::update);
+        } else if (isAdmin) {
+            if (nonNull(toUpdate.self().password())) {
+                return Mono.just(toUpdate.convert(old -> old.withPassword(passwordService.encode(toUpdate.self().password()))));
+            } else {
+                return Mono.just(toUpdate);
+            }
+
+        } else {
+            return Mono.error(new UnauthorizedOperation(UNAUTHORIZED_USER));
+        }
     }
 
     @Override

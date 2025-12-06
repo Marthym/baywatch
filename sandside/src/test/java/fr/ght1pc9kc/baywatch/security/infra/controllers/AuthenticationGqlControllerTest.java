@@ -1,6 +1,5 @@
 package fr.ght1pc9kc.baywatch.security.infra.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationService;
 import fr.ght1pc9kc.baywatch.security.api.model.AuthenticationRequest;
@@ -9,8 +8,8 @@ import fr.ght1pc9kc.baywatch.security.domain.ports.JwtTokenProvider;
 import fr.ght1pc9kc.baywatch.security.infra.TokenCookieManager;
 import fr.ght1pc9kc.baywatch.tests.metrics.MockObservationRegistry;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
-import fr.ght1pc9kc.entity.jackson.EntityModule;
-import fr.ght1pc9kc.testy.core.extensions.WithObjectMapper;
+import fr.ght1pc9kc.entity.json.EntityModule;
+import fr.ght1pc9kc.testy.core.extensions.WithJsonMapper;
 import graphql.GraphQLContext;
 import graphql.GraphqlErrorException;
 import io.micrometer.observation.ObservationRegistry;
@@ -25,6 +24,7 @@ import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -38,7 +38,7 @@ import static org.mockito.Mockito.verify;
 
 class AuthenticationGqlControllerTest {
     @RegisterExtension
-    private static final WithObjectMapper withObjectMapper = WithObjectMapper.builder()
+    private static final WithJsonMapper withObjectMapper = WithJsonMapper.builder()
             .addModule(new EntityModule())
             .build();
 

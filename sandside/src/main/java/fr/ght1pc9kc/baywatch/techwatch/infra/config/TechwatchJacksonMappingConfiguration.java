@@ -5,7 +5,7 @@ import fr.ght1pc9kc.baywatch.techwatch.api.model.State;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.NewsMixin;
 import fr.ght1pc9kc.baywatch.techwatch.infra.model.StateMixin;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,11 +13,11 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class TechwatchJacksonMappingConfiguration {
     @Bean
-    public Jackson2ObjectMapperBuilderCustomizer techwatchJacksonMapperCustomizer() {
+    public JsonMapperBuilderCustomizer techwatchJacksonMapperCustomizer() {
         return builder -> {
             log.debug("Configure Techwatch Jackson Mapper");
-            builder.mixIn(News.class, NewsMixin.class);
-            builder.mixIn(State.class, StateMixin.class);
+            builder.addMixIn(News.class, NewsMixin.class);
+            builder.addMixIn(State.class, StateMixin.class);
         };
     }
 }

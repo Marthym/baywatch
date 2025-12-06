@@ -1,9 +1,9 @@
 package fr.ght1pc9kc.baywatch.scraper.domain.actions;
 
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.scraper.api.ScrapingEventHandler;
 import fr.ght1pc9kc.baywatch.scraper.api.model.ScrapingEventType;
 import fr.ght1pc9kc.baywatch.scraper.infra.config.ScraperApplicationProperties;
-import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.techwatch.domain.ports.NewsPersistencePort;
 import fr.ght1pc9kc.juery.api.Criteria;
 import lombok.RequiredArgsConstructor;
@@ -11,8 +11,10 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.EnumSet;
 
@@ -21,6 +23,8 @@ import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.PUBLICAT
 @Slf4j
 @RequiredArgsConstructor
 public class PurgeNewsHandler implements ScrapingEventHandler {
+    private static final Duration DELAY = Duration.ofMillis(500);
+    private static final int MAX_RETRY = 3;
     private final NewsPersistencePort newsPersistence;
     private final ScraperApplicationProperties scraperProperties;
 
@@ -33,7 +37,12 @@ public class PurgeNewsHandler implements ScrapingEventHandler {
         LocalDateTime maxPublicationPasDate = LocalDateTime.now(clock).minus(scraperProperties.conservation());
         Criteria criteria = Criteria.property(PUBLICATION).lt(maxPublicationPasDate);
         return newsPersistence.listId(QueryContext.all(criteria)).collectList()
-                .flatMap(newsPersistence::delete)
+                .delayElement(DELAY)
+                .flatMap(ids -> newsPersistence.delete(ids)
+                        .retryWhen(Retry.backoff(MAX_RETRY, DELAY)
+                                .filter(ex -> ex.toString().contains("SQLITE_LOCKED"))
+                        )
+                )
                 .onErrorContinue((t, o) -> {
                     log.error("{}: {}", t.getCause(), t.getLocalizedMessage());
                     log.debug("STACKTRACE", t);

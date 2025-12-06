@@ -163,8 +163,12 @@ public class NewsRepository implements NewsPersistencePort {
 
     @Override
     public Mono<Integer> delete(Collection<String> ids) {
-        QueryContext qCtx = QueryContext.all(Criteria.property(EntitiesProperties.ID).in(ids));
-        return delete(qCtx);
+        return Flux.fromIterable(ids)
+                .buffer(100)
+                .flatMap(idsBatch -> {
+                    QueryContext qCtx = QueryContext.all(Criteria.property(EntitiesProperties.ID).in(idsBatch));
+                    return delete(qCtx);
+                }).reduce(Integer::sum);
     }
 
     @Override

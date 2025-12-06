@@ -1,20 +1,21 @@
 package fr.ght1pc9kc.baywatch.security.infra.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
-import fr.ght1pc9kc.testy.core.extensions.WithObjectMapper;
+import fr.ght1pc9kc.testy.core.extensions.WithJsonMapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.Optional;
 
 class PermissionMixinTest {
 
     @RegisterExtension
-    public WithObjectMapper withObjectMapper = WithObjectMapper.builder()
+    @SuppressWarnings("JUnitMalformedDeclaration")
+    public WithJsonMapper withObjectMapper = WithJsonMapper.builder()
             .addMixin(Permission.class, PermissionMixin.class)
             .build();
 

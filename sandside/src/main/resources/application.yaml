@@ -3,7 +3,7 @@ spring:
   application.name: Baywatch
 
   datasource:
-    url: jdbc:sqlite:file:${BAYWATCH_HOME:.}/.baywatch/data.db?cache=shared&journal_mode=WAL&synchronous=NORMAL&read_uncommitted=true
+    url: jdbc:sqlite:file:${BAYWATCH_HOME:.}/.baywatch/data.db?journal_mode=WAL&synchronous=NORMAL&busy_timeout=5000
     driver-class-name: org.sqlite.JDBC
     username: baywatch
     password: hasselhoff
@@ -61,6 +61,7 @@ baywatch:
       name: X-TOKEN
       validity: ${BAYWATCH_COOKIE_VALIDITY:24h}
     jwt.validity: ${BAYWATCH_TOKEN_VALIDITY:1h}
+    autoUpdate.delay: ${BAYWATCH_AUTOUPDATE_DELAY:5s}
   scraper:
     enable: ${BAYWATCH_SCRAPER_ENABLE:true}
     frequency: ${BAYWATCH_SCRAPER_FREQUENCY:1h}

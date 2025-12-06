@@ -1,15 +1,16 @@
 package fr.ght1pc9kc.baywatch.common.infra.config.jackson;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.infra.config.UserMixin;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.std.SimpleFilterProvider;
 
 import java.util.Locale;
 
@@ -17,16 +18,17 @@ import java.util.Locale;
 @Configuration
 public class JacksonMappingConfiguration {
     @Bean
-    public Jackson2ObjectMapperBuilderCustomizer jacksonMapperCustomizer() {
+    public JsonMapperBuilderCustomizer jacksonMapperCustomizer() {
         return builder -> {
             log.debug("Configure Common Jackson Mapper");
-            builder.findModulesViaServiceLoader(true);
-            builder.featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-            builder.featuresToDisable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-            builder.filters(new SimpleFilterProvider().setFailOnUnknownId(false));
-            builder.serializationInclusion(JsonInclude.Include.NON_NULL);
-            builder.serializerByType(Locale.class, new LocaleToLanguageTagSerializer());
-            builder.mixIn(User.class, UserMixin.class);
+            builder.findAndAddModules();
+            builder.disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS);
+            builder.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+            builder.filterProvider(new SimpleFilterProvider().setFailOnUnknownId(false));
+            builder.changeDefaultPropertyInclusion(spec -> spec.withContentInclusion(JsonInclude.Include.NON_NULL));
+            builder.addModule(
+                    new SimpleModule().addSerializer(Locale.class, new LocaleToLanguageTagSerializer()));
+            builder.addMixIn(User.class, UserMixin.class);
         };
     }
 }
