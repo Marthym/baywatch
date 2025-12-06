@@ -23,7 +23,7 @@
     </modules>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>25</java.version>
 
         <db.driver>org.sqlite.JDBC</db.driver>
         <db.url>jdbc:sqlite:file:${project.build.directory}/jooq_baywatch.db</db.url>
@@ -47,7 +47,7 @@
         <testy-box.version>2.1.1</testy-box.version>
         <ulid-creator.version>5.2.3</ulid-creator.version>
         <unbescape.version>1.1.6.RELEASE</unbescape.version>
-        <lombok.version>1.18.38</lombok.version>
+        <lombok.version>1.18.42</lombok.version>
         <apache-commons-text.version>1.14.0</apache-commons-text.version>
         <jspecify.version>1.0.0</jspecify.version>
 
