@@ -3,7 +3,7 @@ type MailSmtpConfiguration {
     port: Int
     secure: Boolean
     username: String
-    sslProtocol: String
+    sslProtocols: String
     requireTls: Boolean
     sslCheckserveridentity: Boolean
     from: String
@@ -16,7 +16,7 @@ input MailSmtpConfigurationForm {
     secure: Boolean
     username: String
     password: String
-    sslProtocol: String
+    sslProtocols: String
     requireTls: Boolean
     sslCheckserveridentity: Boolean
     from: String

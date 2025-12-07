@@ -1,6 +1,6 @@
 <template>
-  <section class="max-w-3xl">
-    <h2 class="card-title capitalize">
+  <section class="max-w-3xl [&_input]:text-base-content [&_label]:first-letter:uppercase">
+    <h2 class="card-title first-letter:uppercase">
       {{ t('config.admin.mail.title') || 'Mail server configuration' }}
     </h2>
     <p class="text-sm text-base-content/70">
@@ -72,7 +72,7 @@
                  type="checkbox"/>
         </label>
         <label class="label block">{{ t('config.admin.mail.smtp.ssl.checkserveridentity') || 'Check server identity' }}
-          <input v-model="mailConfig.sslCheckServerIdentity"
+          <input v-model="mailConfig.sslCheckserveridentity"
                  class="toggle ml-2"
                  type="checkbox"/>
         </label>
@@ -113,19 +113,8 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
 import { useI18n } from 'vue-i18n';
-
-type MailConfig = {
-  host: string;
-  port: number;
-  secure: boolean;
-  username: string;
-  password: string;
-  sslProtocols: string;
-  requireTls: boolean;
-  sslCheckServerIdentity: boolean;
-  from: string;
-  pollingIntervalSeconds: number;
-};
+import { MailSmtpConfig } from '@/administration/model/MailSmtpConfig.type';
+import { adminAppConfigurationMailSmtp } from '@/administration/services/AddConfigurationService';
 
 @Component({
   name: 'ConfigAdminTab',
@@ -138,18 +127,19 @@ type MailConfig = {
 export default class ConfigAdminTab extends Vue {
   private t!: (key: string) => string;
 
-  private mailConfig: MailConfig = {
-    host: 'smtp.jedi.net',
-    port: 587,
-    secure: true,
-    username: 'voldemor',
-    password: 'the mot you can write',
-    sslProtocols: 'TLSv1.3 TLSv1.2',
-    requireTls: true,
-    sslCheckServerIdentity: true,
-    from: 'noreply@ght1pc9kc.fr',
-    pollingIntervalSeconds: 60,
-  };
+  private mailConfig: MailSmtpConfig = {} as MailSmtpConfig;
+
+  mounted(): void {
+    adminAppConfigurationMailSmtp().subscribe({
+      next: (mailConfig) => {
+        console.debug('Loaded mail configuration', mailConfig);
+        Object.assign(this.mailConfig, mailConfig);
+      },
+      error: (error) => {
+        console.error('Error loading mail configuration', error);
+      },
+    });
+  }
 
   // À brancher plus tard sur ton service de persistance de config
   private onClickSaveConfig(): void {
