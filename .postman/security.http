@@ -1,0 +1,26 @@
+### Login
+GRAPHQL http://localhost:8081/api/g
+
+mutation Login($username: String!, $password: String!) {
+    login(username: $username, password: $password) {
+        _id _createdAt
+        login name roles mail
+    }
+}
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+### CurrentUser
+
+GRAPHQL http://localhost:8081/api/g
+
+query CurrentUser {
+    currentUser {
+        login name roles mail
+    }
+}
+
+###

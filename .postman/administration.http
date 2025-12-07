@@ -1,0 +1,17 @@
+import security.http
+### Login
+run #Login
+
+### adminAppConfigurationMailSmtp
+
+GRAPHQL http://localhost:8081/api/g
+
+query AdminAppConfigurationMailSmtp {
+    adminAppConfigurationMailSmtp {
+        from host port pollingIntervalSeconds
+        requireTls secure sslCheckserveridentity sslProtocol
+        username
+    }
+}
+
+###
