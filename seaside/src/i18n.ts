@@ -13,18 +13,25 @@ export const i18n = createI18n({
 });
 
 export const lazyloadTranslations: NavigationGuardWithThis<undefined> = async (to, from, next) => {
-    const localePageFile = `./locales/${String(to.name)}_${i18n.global.fallbackLocale.value}.ts`;
+    const fallbackLocale = i18n.global.fallbackLocale.value as string;
+    const currentLocale = i18n.global.locale.value as string;
+
+    const localePageFile = `./locales/${String(to.name)}_${fallbackLocale}.ts`;
     try {
-        const messagesFallback = import(`./locales/${String(to.name)}_${i18n.global.fallbackLocale.value}.ts`);
-        const messages = import(`./locales/${String(to.name)}_${i18n.global.locale.value}.ts`);
+        const messagesFallback = import(/* @vite-ignore */`./locales/${String(to.name)}_${fallbackLocale}.ts`);
+        const messages = import(/* @vite-ignore */`./locales/${String(to.name)}_${currentLocale}.ts`);
         await Promise.all([
             messagesFallback.then(msg => i18n.global.mergeLocaleMessage(
-                i18n.global.fallbackLocale.value, msg[i18n.global.fallbackLocale.value.replace('-', '_')])),
+                fallbackLocale, msg[fallbackLocale.replace('-', '_')])),
             messages.then(msg => i18n.global.mergeLocaleMessage(
-                i18n.global.locale.value, msg[i18n.global.locale.value.replace('-', '_')])),
+                currentLocale, msg[currentLocale.replace('-', '_')])),
         ]);
     } catch (error) {
-        console.debug('Error on loading locale file', localePageFile, error.message);
+        if (error instanceof Error) {
+            console.debug('Error on loading locale file', localePageFile, error.message);
+        } else {
+            console.debug('Error on loading locale file', localePageFile, error);
+        }
     }
 
     await nextTick();
