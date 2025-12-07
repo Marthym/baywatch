@@ -1,0 +1,32 @@
+type MailSmtpConfiguration {
+    host: String
+    port: Int
+    secure: Boolean
+    username: String
+    sslProtocol: String
+    requireTls: Boolean
+    sslCheckserveridentity: Boolean
+    from: String
+    pollingIntervalSeconds: Int
+}
+
+input MailSmtpConfigurationForm {
+    host: String
+    port: Int
+    secure: Boolean
+    username: String
+    password: String
+    sslProtocol: String
+    requireTls: Boolean
+    sslCheckserveridentity: Boolean
+    from: String
+    pollingIntervalSeconds: Int
+}
+
+extend type Query {
+    adminAppConfigurationMailSmtp: MailSmtpConfiguration,
+}
+
+extend type Mutation {
+    adminAppConfigurationMailSmtpUpdate(mailSmtp: RawFeedForm): MailSmtpConfiguration,
+}
