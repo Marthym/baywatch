@@ -8,9 +8,12 @@ GRAPHQL http://localhost:8081/api/g
 
 query AdminAppConfigurationMailSmtp {
     adminAppConfigurationMailSmtp {
-        from host port pollingIntervalSeconds
-        requireTls secure sslCheckserveridentity sslProtocol
-        username
+        mail {smtp {
+            from host port pollingIntervalSeconds
+            requireTls secure username ssl {
+                protocols checkserveridentity
+            }
+        }}
     }
 }
 

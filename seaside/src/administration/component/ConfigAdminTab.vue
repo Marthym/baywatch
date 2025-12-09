@@ -56,7 +56,7 @@
       <legend class="fieldset-legend">{{ t('config.admin.mail.section.security') || 'Security' }}</legend>
 
       <label class="label block">{{ t('config.admin.mail.smtp.ssl.protocols') || 'SSL/TLS Protocols' }}
-        <input v-model="mailConfig.sslProtocols"
+        <input v-model="mailConfig.ssl.protocols"
                class="input input-bordered w-full block"
                placeholder="TLSv1.3 TLSv1.2"
                type="text"/>
@@ -72,7 +72,7 @@
                  type="checkbox"/>
         </label>
         <label class="label block">{{ t('config.admin.mail.smtp.ssl.checkserveridentity') || 'Check server identity' }}
-          <input v-model="mailConfig.sslCheckserveridentity"
+          <input v-model="mailConfig.ssl.checkserveridentity"
                  class="toggle ml-2"
                  type="checkbox"/>
         </label>
@@ -127,12 +127,11 @@ import { adminAppConfigurationMailSmtp } from '@/administration/services/AddConf
 export default class ConfigAdminTab extends Vue {
   private t!: (key: string) => string;
 
-  private mailConfig: MailSmtpConfig = {} as MailSmtpConfig;
+  private mailConfig: MailSmtpConfig = { ssl: {} } as MailSmtpConfig;
 
   mounted(): void {
     adminAppConfigurationMailSmtp().subscribe({
       next: (mailConfig) => {
-        console.debug('Loaded mail configuration', mailConfig);
         Object.assign(this.mailConfig, mailConfig);
       },
       error: (error) => {

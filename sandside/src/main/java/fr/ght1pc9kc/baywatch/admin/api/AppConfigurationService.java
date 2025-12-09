@@ -5,4 +5,6 @@ import reactor.core.publisher.Mono;
 
 public interface AppConfigurationService {
     Mono<ParameterSet> get(String name);
+
+    Mono<ParameterSet> update(ParameterSet configToPersist);
 }

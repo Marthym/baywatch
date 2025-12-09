@@ -18,6 +18,9 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Scheduler;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -59,5 +62,39 @@ public class ConfigurationPersistenceAdapter implements ConfigurationPersistence
                 .map(r -> Entity.identify(Map.entry(
                         r.getConfName(), r.getConfValue()
                 )).withId(r.getConfId()));
+    }
+
+    @Override
+    public Flux<Entity<Entry<String, String>>> persist(Collection<Entry<String, String>> parametersToPersist) {
+        return Flux.defer(() -> dslContext.transactionResult(tx -> {
+                    List<String> keys = parametersToPersist.stream()
+                            .map(Entry::getKey)
+                            .toList();
+
+                    Map<String, ConfigurationRecord> existingRecords = tx.dsl().selectFrom(CONFIGURATION)
+                            .where(CONFIGURATION.CONF_NAME.in(keys))
+                            .fetchMap(CONFIGURATION.CONF_NAME);
+
+                    List<ConfigurationRecord> recordsToSave = new ArrayList<>(parametersToPersist.size());
+                    for (Entry<String, String> param : parametersToPersist) {
+                        ConfigurationRecord configRecord = existingRecords.get(param.getKey());
+                        if (configRecord == null) {
+                            configRecord = tx.dsl().newRecord(CONFIGURATION);
+                            configRecord.setConfName(param.getKey());
+                        }
+                        configRecord.setConfValue(param.getValue());
+                        recordsToSave.add(configRecord);
+                    }
+
+                    if (!recordsToSave.isEmpty()) {
+                        tx.dsl().batchStore(recordsToSave).execute();
+                    }
+
+                    return Flux.fromIterable(recordsToSave);
+                }))
+                .subscribeOn(databaseScheduler)
+                .map(r -> Entity.identify(
+                                Map.entry(r.getConfName(), r.getConfValue()))
+                        .withId(r.getConfId()));
     }
 }

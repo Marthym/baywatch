@@ -4,9 +4,11 @@ export type MailSmtpConfig = {
     secure: boolean;
     username: string;
     password: string;
-    sslProtocols: string;
     requireTls: boolean;
-    sslCheckserveridentity: boolean;
+    ssl: {
+        protocols: string;
+        checkserveridentity: boolean
+    };
     from: string;
     pollingIntervalSeconds: number;
 };

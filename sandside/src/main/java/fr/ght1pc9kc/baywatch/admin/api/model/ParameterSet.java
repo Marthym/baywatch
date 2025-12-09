@@ -39,18 +39,30 @@ public class ParameterSet {
         return parameters.get(key).id();
     }
 
-    public Map<String, Object> toMap(@Nullable String prefix) {
-        return parameters.entrySet().stream()
-                .filter(e -> isNull(prefix) || e.getKey().startsWith(prefix))
-                .map(e -> Map.entry(dotToCamel(prefix, e.getKey()), e.getValue().self()))
-                .collect(Collectors.toUnmodifiableMap(Entry::getKey, Entry::getValue));
-    }
+    public Map<String, Object> toMap() {
+        Map<String, Object> root = new java.util.HashMap<>();
 
-    public String dotToCamel(@Nullable String prefix, String input) {
-        String unprefixed = nonNull(prefix) ? input.substring(prefix.length() + 1) : input;
-        return Arrays.stream(unprefixed.split("\\."))
-                .filter(part -> !part.isEmpty())
-                .reduce("", (left, right) ->
-                        left + ((left.isEmpty()) ? right : Character.toUpperCase(right.charAt(0)) + right.substring(1)));
+        for (Entry<String, Entity<String>> entry : parameters.entrySet()) {
+            String[] path = entry.getKey().split("\\.");
+            Map<String, Object> current = root;
+
+            for (int i = 0; i < path.length - 1; i++) {
+                String node = path[i];
+                Object value = current.get(node);
+
+                if (!(value instanceof Map)) {
+                    value = new java.util.HashMap<String, Object>();
+                    current.put(node, value);
+                }
+
+                @SuppressWarnings("unchecked")
+                Map<String, Object> subMap = (Map<String, Object>) value;
+                current = subMap;
+            }
+
+            current.put(path[path.length - 1], entry.getValue().self());
+        }
+
+        return root;
     }
 }
