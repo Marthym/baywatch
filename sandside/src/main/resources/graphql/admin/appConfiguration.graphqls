@@ -22,15 +22,19 @@ type MailSmtpConfiguration {
     mail: Mail
 }
 
+input SslForm {
+    protocols: String
+    checkserveridentity: Boolean
+}
+
 input MailSmtpConfigurationForm {
     host: String
     port: Int
     secure: Boolean
     username: String
     password: String
-    sslProtocols: String
+    ssl: SslForm
     requireTls: Boolean
-    sslCheckserveridentity: Boolean
     from: String
     pollingIntervalSeconds: Int
 }

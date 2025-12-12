@@ -1,16 +1,11 @@
 package fr.ght1pc9kc.baywatch.admin.api.model;
 
 import fr.ght1pc9kc.entity.api.Entity;
-import org.jspecify.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
 public class ParameterSet {
     private final Map<String, Entity<String>> parameters;

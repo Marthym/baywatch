@@ -6,10 +6,11 @@ public record MailSmtpConfigurationForm(
         boolean secure,
         String username,
         String password,
-        String sslProtocols,
         boolean requireTls,
-        boolean sslCheckserveridentity,
+        Ssl ssl,
         String from,
         int pollingIntervalSeconds
 ) {
+    public record Ssl(String protocols, boolean checkserveridentity) {
+    }
 }

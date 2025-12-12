@@ -3,11 +3,13 @@ package fr.ght1pc9kc.baywatch.admin.domain.services;
 import fr.ght1pc9kc.baywatch.admin.api.AppConfigurationService;
 import fr.ght1pc9kc.baywatch.admin.api.model.ParameterSet;
 import fr.ght1pc9kc.baywatch.admin.domain.ports.ConfigurationPersistencePort;
-import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
+
+import java.util.Collection;
+import java.util.Map;
 
 @RequiredArgsConstructor
 public class AppConfigurationServiceImpl implements AppConfigurationService {
@@ -21,7 +23,8 @@ public class AppConfigurationServiceImpl implements AppConfigurationService {
     }
 
     @Override
-    public Mono<ParameterSet> update(ParameterSet configToPersist) {
-        return Mono.empty();
+    public Mono<ParameterSet> update(Collection<Map.Entry<String, String>> configToPersist) {
+        return persistencePort.persist(configToPersist).collectList()
+                .map(ParameterSet::new);
     }
 }
