@@ -16,10 +16,10 @@ query AdminAppConfigurationMailSmtp {
         }}
     }
 }
-
 ### MUTATION adminAppConfigurationMailSmtp
 
 GRAPHQL http://localhost:8081/api/g
+Accept-Language: fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3
 
 mutation AdminAppConfigurationMailSmtpUpdate($mailSmtp: MailSmtpConfigurationForm) {
     adminAppConfigurationMailSmtpUpdate(mailSmtp: $mailSmtp) {
@@ -47,5 +47,6 @@ mutation AdminAppConfigurationMailSmtpUpdate($mailSmtp: MailSmtpConfigurationFor
     }
   }
 }
+
 
 ###

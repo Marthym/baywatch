@@ -2,7 +2,10 @@ package fr.ght1pc9kc.baywatch.admin.infra.controllers;
 
 import fr.ght1pc9kc.baywatch.admin.api.AppConfigurationService;
 import fr.ght1pc9kc.baywatch.admin.api.model.ParameterSet;
+import fr.ght1pc9kc.baywatch.admin.infra.exceptions.InvalidConfigurationException;
 import fr.ght1pc9kc.baywatch.admin.infra.model.MailSmtpConfigurationForm;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
@@ -37,11 +40,16 @@ public class AppConfigurationController {
     }
 
     @MutationMapping
-    public Mono<Map<String, Object>> adminAppConfigurationMailSmtpUpdate(@Argument("mailSmtp") MailSmtpConfigurationForm mailSmtp) {
+    public Mono<Map<String, Object>> adminAppConfigurationMailSmtpUpdate(@Valid @Argument("mailSmtp") MailSmtpConfigurationForm mailSmtp) {
         Map<String, Object> parameters = jsonMapper.convertValue(mailSmtp, new TypeReference<>() {
         });
         return appConfigurationService.update(flatten(parameters, EMAIL_CONFIG_PREFIX))
-                .map(ParameterSet::toMap);
+                .map(ParameterSet::toMap)
+                .onErrorMap(ConstraintViolationException.class, e ->
+                        e.getConstraintViolations().stream().findFirst().map(violation ->
+                                new InvalidConfigurationException(
+                                        violation.getMessage(), List.of(violation.getPropertyPath().toString()))
+                        ).orElseGet(() -> new InvalidConfigurationException(e.getLocalizedMessage(), List.of())));
     }
 
     private static List<Entry<String, String>> flatten(Map<String, Object> current, @Nullable String prefix) {
