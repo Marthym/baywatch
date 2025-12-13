@@ -2314,6 +2314,11 @@ uri-js@^4.2.2:
   dependencies:
     punycode "^2.1.0"
 
+valibot@1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/valibot/-/valibot-1.2.0.tgz#8fc720d9e4082ba16e30a914064a39619b2f1d6f"
+  integrity sha512-mm1rxUsmOxzrwnX5arGS+U4T25RdvpPjPN4yR0u9pUBov9+zGVtO84tif1eY4r6zWxVxu3KzIyknJy3rxfRZZg==
+
 vite@7.2.6, "vite@^6.0.0 || ^7.0.0":
   version "7.2.6"
   resolved "https://registry.yarnpkg.com/vite/-/vite-7.2.6.tgz#91e05ba05bc7c667a7645595e21f2a0eb1057631"

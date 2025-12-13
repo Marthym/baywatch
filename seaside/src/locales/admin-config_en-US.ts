@@ -4,31 +4,32 @@ export const en_US = {
     ...admin_en_US,
 
     // Page title & description
-    'config.admin.mail.title': 'Mail server configuration',
-    'config.admin.mail.subtitle': 'Configure the SMTP settings used to send emails.',
+    'admin.config.mail.title': 'Mail server configuration',
+    'admin.config.mail.subtitle': 'Configure the SMTP settings used to send emails.',
 
     // Sections
-    'config.admin.mail.section.connection': 'Connection',
-    'config.admin.mail.section.credentials': 'Credentials',
-    'config.admin.mail.section.security': 'Security',
-    'config.admin.mail.section.misc': 'Sender & polling',
+    'admin.config.mail.section.connection': 'Connection',
+    'admin.config.mail.section.credentials': 'Credentials',
+    'admin.config.mail.section.security': 'Security',
+    'admin.config.mail.section.misc': 'Sender & polling',
 
     // Fields
-    'config.admin.mail.smtp.host': 'SMTP host',
-    'config.admin.mail.smtp.port': 'SMTP port',
-    'config.admin.mail.smtp.secure': 'Use secure connection (STARTTLS/SSL)',
-    'config.admin.mail.smtp.username': 'SMTP username',
-    'config.admin.mail.smtp.password': 'SMTP password',
-    'config.admin.mail.smtp.ssl.protocols': 'SSL/TLS protocols',
-    'config.admin.mail.smtp.ssl.protocols.help':
+    'admin.config.mail.smtp.host': 'SMTP host',
+    'admin.config.mail.smtp.port': 'SMTP port',
+    'admin.config.mail.smtp.secure': 'Use secure connection (STARTTLS/SSL)',
+    'admin.config.mail.smtp.username': 'SMTP username',
+    'admin.config.mail.smtp.password': 'SMTP password', //NOSONAR
+    'admin.config.mail.smtp.ssl.protocols': 'SSL/TLS protocols',
+    'admin.config.mail.smtp.ssl.protocols.help':
         'Space-separated list of allowed protocols (e.g. TLSv1.3 TLSv1.2)',
-    'config.admin.mail.smtp.requireTls': 'Require TLS',
-    'config.admin.mail.smtp.ssl.checkserveridentity': 'Check server identity',
-    'config.admin.mail.smtp.from': 'From address',
-    'config.admin.mail.smtp.pollingIntervalSeconds': 'Polling interval (seconds)',
+    'admin.config.mail.smtp.requireTls': 'Require TLS',
+    'admin.config.mail.smtp.ssl.checkserveridentity': 'Check server identity',
+    'admin.config.mail.smtp.from': 'From address',
+    'admin.config.mail.smtp.pollingIntervalSeconds': 'Polling interval (seconds)',
 
     // Actions & messages
-    'config.admin.mail.action.save': 'Save configuration',
-    'config.admin.mail.messages.updateSuccess': 'Mail configuration saved successfully.',
-    'config.admin.mail.messages.updateError': 'Unable to save mail configuration.',
+    'admin.config.mail.messages.loadingError': 'Error while loading mail configuration.',
+    'admin.config.mail.messages.formValidationError': 'Some fields are invalid. Please check the form below.',
+    'admin.config.mail.messages.updateSuccess': 'Mail configuration saved successfully.',
+    'admin.config.mail.messages.updateError': 'Unable to save mail configuration.',
 };

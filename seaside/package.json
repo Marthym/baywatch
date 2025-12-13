@@ -17,6 +17,7 @@
     "lodash": "4.17.21",
     "md5-js-tools": "1.0.2",
     "rxjs": "7.8.2",
+    "valibot": "1.2.0",
     "vue": "3.5.25",
     "vue-facing-decorator": "4.0.1",
     "vue-i18n": "11.2.2",
