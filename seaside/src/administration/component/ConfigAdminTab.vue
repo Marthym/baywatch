@@ -15,8 +15,8 @@
                :class="{'input-error': errors.includes('host')}"
                autocomplete="off"
                class="input input-bordered w-full block"
-               @input="clearError('host')"
-               type="text"/>
+               type="text"
+               @input="clearError('host')"/>
       </label>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -24,16 +24,16 @@
           <input v-model.number="mailConfig.port"
                  :class="{'input-error': errors.includes('port')}"
                  class="input input-bordered w-full block"
-                 @input="clearError('port')"
-                 max="65535" min="1" type="number"/>
+                 max="65535"
+                 min="1" type="number" @input="clearError('port')"/>
         </label>
 
         <label class="label mt-4">{{ t('admin.config.mail.smtp.secure') || 'Use STARTTLS/secure connection' }}
           <input v-model="mailConfig.secure"
-                 :class="{'toggle-error': errors.includes('secure')}"
+                 :class="{'border-error': errors.includes('secure')}"
                  class="toggle ml-2"
-                 @change="clearError('secure')"
-                 type="checkbox"/>
+                 type="checkbox"
+                 @change="clearError('secure')"/>
         </label>
       </div>
     </fieldset>
@@ -47,16 +47,16 @@
                  :class="{'input-error': errors.includes('username')}"
                  autocomplete="off"
                  class="input input-bordered w-full block"
-                 @input="clearError('username')"
-                 type="text"/>
+                 type="text"
+                 @input="clearError('username')"/>
         </label>
         <label class="label block">{{ t('admin.config.mail.smtp.password') || 'SMTP Password' }}
           <input v-model="mailConfig.password"
                  :class="{'input-error': errors.includes('password')}"
                  autocomplete="off"
                  class="input input-bordered w-full block"
-                 @input="clearError('password')"
-                 type="password"/>
+                 type="password"
+                 @input="clearError('password')"/>
         </label>
       </div>
     </fieldset>
@@ -69,9 +69,9 @@
         <input v-model="mailConfig.ssl.protocols"
                :class="{'input-error': errors.includes('ssl.protocols')}"
                class="input input-bordered w-full block"
-               @input="clearError('ssl.protocols')"
                placeholder="TLSv1.3 TLSv1.2"
-               type="text"/>
+               type="text"
+               @input="clearError('ssl.protocols')"/>
         <span class="label text-wrap">{{
             t('admin.config.mail.smtp.ssl.protocols.help') || 'Space-separated list of protocols'
           }}</span>
@@ -80,17 +80,17 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <label class="label block">{{ t('admin.config.mail.smtp.requireTls') || 'Require TLS' }}
           <input v-model="mailConfig.requireTls"
-                 :class="{'toggle-error': errors.includes('requireTls')}"
+                 :class="{'border-error': errors.includes('requireTls')}"
                  class="toggle ml-2"
-                 @change="clearError('requireTls')"
-                 type="checkbox"/>
+                 type="checkbox"
+                 @change="clearError('requireTls')"/>
         </label>
         <label class="label block">{{ t('admin.config.mail.smtp.ssl.checkserveridentity') || 'Check server identity' }}
           <input v-model="mailConfig.ssl.checkserveridentity"
-                 :class="{'toggle-error': errors.includes('ssl.checkserveridentity')}"
+                 :class="{'border-error': errors.includes('ssl.checkserveridentity')}"
                  class="toggle ml-2"
-                 @change="clearError('ssl.checkserveridentity')"
-                 type="checkbox"/>
+                 type="checkbox"
+                 @change="clearError('ssl.checkserveridentity')"/>
         </label>
       </div>
     </fieldset>
@@ -104,8 +104,8 @@
                  :class="{'input-error': errors.includes('from')}"
                  autocomplete="off"
                  class="input input-bordered w-full block"
-                 @input="clearError('from')"
-                 type="email"/>
+                 type="email"
+                 @input="clearError('from')"/>
         </label>
         <label class="label block">{{
             t('admin.config.mail.smtp.pollingIntervalSeconds') || 'Polling interval (seconds)'
@@ -113,9 +113,9 @@
           <input v-model.number="mailConfig.pollingIntervalSeconds"
                  :class="{'input-error': errors.includes('pollingIntervalSeconds')}"
                  class="input input-bordered w-full block"
-                 @input="clearError('pollingIntervalSeconds')"
                  min="1"
-                 type="number"/>
+                 type="number"
+                 @input="clearError('pollingIntervalSeconds')"/>
         </label>
       </div>
     </fieldset>
@@ -203,6 +203,7 @@ export default class ConfigAdminTab extends Vue {
         this.handleValiError(e);
       }
       notificationService.pushSimpleError(this.t('admin.config.mail.messages.formValidationError'));
+      console.error(this.errors);
     }
   }
 

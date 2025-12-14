@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.admin.infra.adapters;
 
+import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.admin.domain.ports.ConfigurationPersistencePort;
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
@@ -39,6 +40,8 @@ public class ConfigurationPersistenceAdapter implements ConfigurationPersistence
 
     private final DSLContext dslContext;
     private final @DatabaseQualifier Scheduler databaseScheduler;
+
+    private final UlidFactory ulidFactory = UlidFactory.newMonotonicInstance();
 
     @Override
     @SuppressWarnings("resource")
@@ -80,6 +83,7 @@ public class ConfigurationPersistenceAdapter implements ConfigurationPersistence
                         ConfigurationRecord configRecord = existingRecords.get(param.getKey());
                         if (configRecord == null) {
                             configRecord = tx.dsl().newRecord(CONFIGURATION);
+                            configRecord.setConfId("CF" + ulidFactory.create().toString());
                             configRecord.setConfName(param.getKey());
                         }
                         configRecord.setConfValue(param.getValue());

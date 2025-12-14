@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { map, take } from 'rxjs/operators';
+import { filter, map, take } from 'rxjs/operators';
 import { send } from '@/common/services/GraphQLClient';
 import { MailSmtpConfig } from '@/administration/model/MailSmtpConfig.type';
 
@@ -22,7 +22,8 @@ query AdminAppConfigurationMailSmtp {
 
 export function adminAppConfigurationMailSmtp(): Observable<MailSmtpConfig> {
     return send<AdminAppConfigurationMailSmtpResponse>(ADMIN_APP_CONFIGURATION_MAIL_SMTP).pipe(
-        map(res => res.data.adminAppConfigurationMailSmtp.mail.smtp),
+        map(res => res.data?.adminAppConfigurationMailSmtp?.mail?.smtp ?? null),
+        filter((smtp): smtp is MailSmtpConfig => smtp !== null),
         take(1),
     );
 }

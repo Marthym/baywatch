@@ -12,6 +12,7 @@ import org.springframework.graphql.execution.ErrorType;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -63,7 +64,7 @@ public class GraphqlExceptionAdapter extends DataFetcherExceptionResolverAdapter
                         EXT_CLASSIFICATION, ErrorType.BAD_REQUEST.name(),
                         EXT_VIOLATIONS, ex.getConstraintViolations().stream()
                                 .map(v -> Map.of(
-                                        "field", v.getPropertyPath().toString(),
+                                        "field", Objects.toString(v.getPropertyPath()),
                                         "message", v.getMessage()
                                 ))
                                 .toList()
