@@ -13,18 +13,15 @@ export const i18n = createI18n({
 });
 
 export const lazyloadTranslations: NavigationGuardWithThis<undefined> = async (to, from, next) => {
-    const fallbackLocale = i18n.global.fallbackLocale.value as string;
-    const currentLocale = i18n.global.locale.value as string;
-
-    const localePageFile = `./locales/${String(to.name)}_${fallbackLocale}.ts`;
+    const localePageFile = `./locales/${String(to.name)}_${i18n.global.fallbackLocale.value}.ts`;
     try {
-        const messagesFallback = import(/* @vite-ignore */`./locales/${String(to.name)}_${fallbackLocale}.ts`);
-        const messages = import(/* @vite-ignore */`./locales/${String(to.name)}_${currentLocale}.ts`);
+        const messagesFallback = import(`./locales/${String(to.name)}_${i18n.global.fallbackLocale.value}.ts`);
+        const messages = import(`./locales/${String(to.name)}_${i18n.global.locale.value}.ts`);
         await Promise.all([
             messagesFallback.then(msg => i18n.global.mergeLocaleMessage(
-                fallbackLocale, msg[fallbackLocale.replace('-', '_')])),
+                i18n.global.fallbackLocale.value, msg[i18n.global.fallbackLocale.value.replace('-', '_')])),
             messages.then(msg => i18n.global.mergeLocaleMessage(
-                currentLocale, msg[currentLocale.replace('-', '_')])),
+                i18n.global.locale.value, msg[i18n.global.locale.value.replace('-', '_')])),
         ]);
     } catch (error) {
         if (error instanceof Error) {
