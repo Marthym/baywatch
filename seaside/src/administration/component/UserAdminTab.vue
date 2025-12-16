@@ -173,7 +173,7 @@ export default class UserAdminTab extends Vue {
   }
 
   loadUserPage(page: number): Observable<UserView[]> {
-    const resolvedPage = (page > 0) ? page : 0;
+    const resolvedPage = Math.max(page, 0);
     return userList(resolvedPage).pipe(
         map(page => {
           this.pagesNumber = page.totalPage;

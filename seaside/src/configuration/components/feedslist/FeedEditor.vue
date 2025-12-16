@@ -124,11 +124,11 @@ export default class FeedEditor extends Vue {
   }
 
   private onUriBlur(): void {
-    if (!URL_PATTERN.test(this.feed.location)) {
+    if (URL_PATTERN.test(this.feed.location)) {
+      delete this.errors.location;
+    } else {
       this.errors.location = this.t('config.feeds.messages.locationMustBeURL');
       return;
-    } else {
-      delete this.errors.location;
     }
     this.isFormLock = true;
     feedFetchInformation(this.feed.location).subscribe({

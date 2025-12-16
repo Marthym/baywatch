@@ -2,6 +2,8 @@ package fr.ght1pc9kc.baywatch.admin.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.admin.domain.ports.ConfigurationPersistencePort;
 import fr.ght1pc9kc.baywatch.admin.infra.samples.ConfigurationRecordSamples;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.ConfigurationRecord;
+import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import fr.ght1pc9kc.juery.api.Pagination;
@@ -17,6 +19,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
+
+import java.util.List;
+import java.util.Map;
 
 import static fr.ght1pc9kc.baywatch.dsl.tables.Configuration.CONFIGURATION;
 
@@ -142,4 +147,81 @@ class ConfigurationPersistenceAdapterTest {
         Assertions.assertThat(count).isEqualTo(ConfigurationRecordSamples.SAMPLE.records().size());
     }
 
+    @Test
+    void should_persist_new_configurations_and_generate_ids(DSLContext dsl) {
+        int beforeCount = dsl.fetchCount(CONFIGURATION);
+
+        var params = List.of(
+                Map.entry("mail.smtp.host", "smtp.jedi.temple"),
+                Map.entry("mail.smtp.port", "587")
+        );
+
+        StepVerifier.create(tested.persist(params).collectList())
+                .assertNext(saved -> SoftAssertions.assertSoftly(softly -> {
+                    softly.assertThat(saved).hasSize(2);
+
+                    Entity<Map.Entry<String, String>> first = saved.getFirst();
+                    softly.assertThat(first.id()).startsWith("CF");
+                    softly.assertThat(first.self().getKey()).isEqualTo("mail.smtp.host");
+                    softly.assertThat(first.self().getValue()).isEqualTo("smtp.jedi.temple");
+
+                    Entity<Map.Entry<String, String>> second = saved.get(1);
+                    softly.assertThat(second.id()).startsWith("CF");
+                    softly.assertThat(second.self().getKey()).isEqualTo("mail.smtp.port");
+                    softly.assertThat(second.self().getValue()).isEqualTo("587");
+                }))
+                .verifyComplete();
+
+        int afterCount = dsl.fetchCount(CONFIGURATION);
+        Assertions.assertThat(afterCount).isEqualTo(beforeCount + 2);
+
+        ConfigurationRecord host = dsl.selectFrom(CONFIGURATION)
+                .where(CONFIGURATION.CONF_NAME.eq("mail.smtp.host"))
+                .fetchOne();
+        Assertions.assertThat(host).isNotNull();
+        Assertions.assertThat(host.getConfValue()).isEqualTo("smtp.jedi.temple");
+    }
+
+    @Test
+    void should_update_existing_configuration_without_creating_new_row(DSLContext dsl) {
+        // On prend une entrée existante du dataset
+        String key = "jedi.master";
+
+        ConfigurationRecord before = dsl.selectFrom(CONFIGURATION)
+                .where(CONFIGURATION.CONF_NAME.eq(key))
+                .fetchOne();
+        Assertions.assertThat(before).isNotNull();
+
+        int beforeCount = dsl.fetchCount(CONFIGURATION);
+        String existingId = before.getConfId();
+
+        StepVerifier.create(tested.persist(List.of(Map.entry(key, "Mace Windu"))).single())
+                .assertNext(saved -> SoftAssertions.assertSoftly(softly -> {
+                    softly.assertThat(saved.id()).isEqualTo(existingId);
+                    softly.assertThat(saved.self().getKey()).isEqualTo(key);
+                    softly.assertThat(saved.self().getValue()).isEqualTo("Mace Windu");
+                }))
+                .verifyComplete();
+
+        int afterCount = dsl.fetchCount(CONFIGURATION);
+        Assertions.assertThat(afterCount).isEqualTo(beforeCount);
+
+        ConfigurationRecord after = dsl.selectFrom(CONFIGURATION)
+                .where(CONFIGURATION.CONF_NAME.eq(key))
+                .fetchOne();
+        Assertions.assertThat(after).isNotNull();
+        Assertions.assertThat(after.getConfId()).isEqualTo(existingId);
+        Assertions.assertThat(after.getConfValue()).isEqualTo("Mace Windu");
+    }
+
+    @Test
+    void should_noop_when_persisting_empty_collection(DSLContext dsl) {
+        int beforeCount = dsl.fetchCount(CONFIGURATION);
+
+        StepVerifier.create(tested.persist(List.of()))
+                .verifyComplete();
+
+        int afterCount = dsl.fetchCount(CONFIGURATION);
+        Assertions.assertThat(afterCount).isEqualTo(beforeCount);
+    }
 }
