@@ -20,7 +20,7 @@ query LoadUsersAdminList ($_p: Int = 0, $_pp: Int = ${DEFAULT_PER_PAGE}, $_s: St
 }`;
 
 export function userList(page = 0, query: URLSearchParams = new URLSearchParams(DEFAULT_QUERY)): Observable<Page<User>> {
-    const resolvedPage = (page > 0) ? page : 0;
+    const resolvedPage = Math.max(page, 0);
     let resolvedPerPage = query.get(ConstantFilters.PER_PAGE);
     if (resolvedPerPage) {
         resolvedPerPage = String(DEFAULT_PER_PAGE);

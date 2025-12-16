@@ -25,7 +25,7 @@ query SearchForTeams{
 }`;
 
 export function teamsList(page = 0, query: URLSearchParams = new URLSearchParams(DEFAULT_QUERY)): Observable<Page<Team>> {
-    const resolvedPage = (page > 0) ? page : 0;
+    const resolvedPage = Math.max(page, 0);
     let resolvedPerPage = query.get(ConstantFilters.PER_PAGE);
     if (resolvedPerPage) {
         resolvedPerPage = String(DEFAULT_PER_PAGE);
@@ -77,7 +77,7 @@ mutation UpdateTeam($id: ID, $team: TeamForm){
 export function teamUpdate(_id: string, team: Team): Observable<Team> {
     const teamForm = {
         name: team.name,
-        topic: (team.topic.trim() !== '') ? team.topic : undefined,
+        topic: (team.topic.trim() === '') ? undefined : team.topic,
     };
     return send<{ teamUpdate: Team }>(TEAMS_UPDATE_REQUEST, { id: _id, team: teamForm }).pipe(
         map(data => data.data.teamUpdate),

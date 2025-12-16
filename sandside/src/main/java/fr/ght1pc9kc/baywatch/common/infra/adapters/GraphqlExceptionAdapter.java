@@ -12,6 +12,7 @@ import org.springframework.graphql.execution.ErrorType;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,15 +21,13 @@ public class GraphqlExceptionAdapter extends DataFetcherExceptionResolverAdapter
 
     private static final String EXT_CLASSIFICATION = "classification";
     private static final String EXT_TRANSLATION = "translation";
+    private static final String EXT_VIOLATIONS = "violations";
+    private static final String CONSTRAINTS_VIOLATION_TRANSLATION_KEY = "sandside.common.constraints.violation.message";
 
     @Override
     protected GraphQLError resolveToSingleError(@NotNull Throwable ex, @NotNull DataFetchingEnvironment env) {
         return switch (ex) {
-            case ConstraintViolationException cve -> GraphqlErrorBuilder.newError(env)
-                    .errorType(ErrorType.BAD_REQUEST)
-                    .extensions(Map.of(EXT_CLASSIFICATION, ErrorType.BAD_REQUEST.name()))
-                    .message(cve.getLocalizedMessage())
-                    .build();
+            case ConstraintViolationException cve -> handlerConstraintViolationException(cve, env);
             case IllegalArgumentException iaex -> GraphqlErrorBuilder.newError(env)
                     .errorType(ErrorType.BAD_REQUEST)
                     .extensions(Map.of(EXT_CLASSIFICATION, ErrorType.BAD_REQUEST.name()))
@@ -54,5 +53,22 @@ public class GraphqlExceptionAdapter extends DataFetcherExceptionResolverAdapter
             default -> null;
         };
 
+    }
+
+    private static GraphQLError handlerConstraintViolationException(ConstraintViolationException ex, DataFetchingEnvironment env) {
+        return GraphqlErrorBuilder.newError(env)
+                .message(ex.getLocalizedMessage())
+                .errorType(ErrorType.BAD_REQUEST)
+                .extensions(Map.of(
+                        EXT_TRANSLATION, CONSTRAINTS_VIOLATION_TRANSLATION_KEY,
+                        EXT_CLASSIFICATION, ErrorType.BAD_REQUEST.name(),
+                        EXT_VIOLATIONS, ex.getConstraintViolations().stream()
+                                .map(v -> Map.of(
+                                        "field", Objects.toString(v.getPropertyPath()),
+                                        "message", v.getMessage()
+                                ))
+                                .toList()
+                ))
+                .build();
     }
 }

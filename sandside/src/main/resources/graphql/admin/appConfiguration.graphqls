@@ -1,0 +1,48 @@
+type Ssl {
+    protocols: String
+    checkserveridentity: Boolean
+}
+
+type Smtp {
+    host: String
+    port: Int
+    secure: Boolean
+    username: String
+    ssl: Ssl
+    requireTls: Boolean
+    from: String
+    pollingIntervalSeconds: Int
+}
+
+type Mail {
+    smtp: Smtp
+}
+
+type MailSmtpConfiguration {
+    mail: Mail
+}
+
+input SslForm {
+    protocols: String
+    checkserveridentity: Boolean
+}
+
+input MailSmtpConfigurationForm {
+    host: String
+    port: Int
+    secure: Boolean
+    username: String
+    password: String
+    ssl: SslForm
+    requireTls: Boolean
+    from: String
+    pollingIntervalSeconds: Int
+}
+
+extend type Query {
+    adminAppConfigurationMailSmtp: MailSmtpConfiguration,
+}
+
+extend type Mutation {
+    adminAppConfigurationMailSmtpUpdate(mailSmtp: MailSmtpConfigurationForm): MailSmtpConfiguration,
+}

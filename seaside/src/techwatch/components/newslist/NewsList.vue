@@ -408,9 +408,9 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     if (!target) {
       return;
     }
-    const markObs = (!target.data.state.shared)
-        ? newsMark(target.data.id, Mark.SHARED)
-        : newsUnMark(target.data.id, Mark.SHARED);
+    const markObs = (target.data.state.shared)
+        ? newsUnMark(target.data.id, Mark.SHARED)
+        : newsMark(target.data.id, Mark.SHARED);
 
     markObs.subscribe(state => {
       if (!this.news[idx].data.popularity) {
@@ -433,9 +433,9 @@ export default class NewsList extends Vue implements ScrollActivable, InfiniteSc
     if (!target) {
       return;
     }
-    const markObs = (!target.data.state.keep)
-        ? newsMark(target.data.id, Mark.KEEP)
-        : newsUnMark(target.data.id, Mark.KEEP);
+    const markObs = (target.data.state.keep)
+        ? newsUnMark(target.data.id, Mark.KEEP)
+        : newsMark(target.data.id, Mark.KEEP);
 
     markObs.subscribe(state => {
       this.news[idx].data.state.keep = state.keep;

@@ -33,4 +33,31 @@ public class ParameterSet {
         }
         return parameters.get(key).id();
     }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> root = new java.util.HashMap<>();
+
+        for (Entry<String, Entity<String>> entry : parameters.entrySet()) {
+            String[] path = entry.getKey().split("\\.");
+            Map<String, Object> current = root;
+
+            for (int i = 0; i < path.length - 1; i++) {
+                String node = path[i];
+                Object value = current.get(node);
+
+                if (!(value instanceof Map)) {
+                    value = new java.util.HashMap<String, Object>();
+                    current.put(node, value);
+                }
+
+                @SuppressWarnings("unchecked")
+                Map<String, Object> subMap = (Map<String, Object>) value;
+                current = subMap;
+            }
+
+            current.put(path[path.length - 1], entry.getValue().self());
+        }
+
+        return root;
+    }
 }

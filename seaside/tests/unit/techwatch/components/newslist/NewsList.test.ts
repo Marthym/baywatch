@@ -7,13 +7,22 @@ import { i18n } from '@/i18n';
 describe('NewsList', () => {
     beforeEach(() => {
         // IntersectionObserver isn't available in test environment
-        const mockIntersectionObserver = vi.fn();
-        mockIntersectionObserver.mockReturnValue({
-            observe: () => null,
-            unobserve: () => null,
-            disconnect: () => null,
+        const IntersectionObserverMock = vi.fn(function (
+            this: IntersectionObserver,
+            _callback: IntersectionObserverCallback,
+            _options?: IntersectionObserverInit,
+        ) {
+            this.observe = vi.fn();
+            this.unobserve = vi.fn();
+            this.disconnect = vi.fn();
+            this.takeRecords = vi.fn(() => []);
         });
-        window.IntersectionObserver = mockIntersectionObserver;
+
+        Object.defineProperty(globalThis, 'IntersectionObserver', {
+            value: IntersectionObserverMock,
+            writable: true,
+            configurable: true,
+        });
     });
 
     test('render news list', async () => {

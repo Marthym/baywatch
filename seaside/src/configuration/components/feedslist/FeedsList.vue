@@ -92,7 +92,7 @@ export default class FeedsList extends Vue {
   }
 
   loadFeedPage(page: number): Observable<SmartTableView<Feed>[]> {
-    const resolvedPage = (page > 0) ? page : 0;
+    const resolvedPage = Math.max(page, 0);
     return feedsService.list({ _p: resolvedPage }).pipe(
         switchMap(feedPage => {
           this.pagesNumber = feedPage.totalPage;
@@ -100,7 +100,7 @@ export default class FeedsList extends Vue {
           return feedPage.data;
         }),
         map(fs => fs.map(f =>
-            this.modelToView({ icon: new URL(window.location.origin + '/favicon.ico'), ...f }))),
+            this.modelToView({ icon: new URL(globalThis.location.origin + '/favicon.ico'), ...f }))),
         tap(fs => this.feeds = fs),
     );
   }

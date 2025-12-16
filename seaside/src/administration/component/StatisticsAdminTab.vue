@@ -62,7 +62,7 @@ export default class StatisticsAdminTab extends Vue {
         map(cs => {
           this.counters = [...cs];
           this.counters.forEach(c => {
-            if (!isNaN(Date.parse(c.description))) {
+            if (!Number.isNaN(Date.parse(c.description))) {
               c.description = new Date(c.description).toLocaleDateString(navigator.languages, {
                 timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                 year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit',

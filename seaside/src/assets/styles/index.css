@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-@plugin "daisyui";
+@plugin "daisyui" {
+    exclude: properties; /* https://github.com/saadeghi/daisyui/issues/3882 */
+}
 @plugin "daisyui/theme" {
     name: "baywatch";
     default: true;
