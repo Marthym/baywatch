@@ -74,7 +74,7 @@ export default class App extends Vue {
     try {
       const userNotif: Notification = JSON.parse((evt as MessageEvent).data);
       notificationService.pushNotification(userNotif);
-    } catch (err: Error) {
+    } catch (err) {
       console.error('Unable to parse JSON notification', err);
       console.debug('Notification message: ', evt);
     }
