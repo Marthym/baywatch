@@ -1,30 +1,28 @@
 <template>
   <curtain-modal v-slot="curtainModal" @leave="close()">
     <h2 class="font-sans text-xl border-b border-accent/40 pb-2">{{ t('security.register.title') }}</h2>
-    <div class="m-4 max-w-lg">
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend capitalize">{{ t('security.register.login') }}</legend>
-        <input v-model="account.login" :class="{'input-error': errors.has('login')}" class="input w-full" type="text"
-               @change="errors.delete('login')"/>
-        <p class="label">{{ errors.get('login') }}&nbsp;</p>
-      </fieldset>
+    <div class="m-4 max-w-lg [&_input]:text-base-content [&_label]:first-letter:uppercase">
+      <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
 
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend capitalize">{{ t('security.register.username') }}</legend>
-        <input v-model="account.name" :class="{'input-error': errors.has('name')}" class="input w-full" type="text"
-               @change="errors.delete('name')"/>
-        <p class="label">{{ errors.get('name') }}&nbsp;</p>
-      </fieldset>
+        <label class="label block">{{ t('security.register.login') }}
+          <input v-model="account.login" :class="{'input-error': errors.has('login')}" class="input block w-full mt-1" type="text"
+                 @change="errors.delete('login')"/>
+          <span class="label" :class="{'text-error': errors.has('login')}">{{ errors.get('login') }}&nbsp;</span>
+        </label>
 
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend capitalize">{{ t('security.register.mail') }}</legend>
-        <input v-model="account.mail" :class="{'input-error': errors.has('mail')}" class="input w-full" type="email"
-               @change="errors.delete('mail')"/>
-        <p class="label">{{ errors.get('mail') }}&nbsp;</p>
-      </fieldset>
+        <label class="label block">{{ t('security.register.username') }}
+          <input v-model="account.name" :class="{'input-error': errors.has('name')}" class="input w-full block mt-1" type="text"
+                 @change="errors.delete('name')"/>
+          <span class="label" :class="{'text-error': errors.has('name')}">{{ errors.get('name') }}&nbsp;</span>
+        </label>
 
-      <fieldset class="fieldset w-full">
-        <legend class="fieldset-legend capitalize">{{ t('security.register.password') }}</legend>
+        <label class="label block">{{ t('security.register.mail') }}
+          <input v-model="account.mail" :class="{'input-error': errors.has('mail')}" class="input w-full block mt-1" type="email"
+                 @change="errors.delete('mail')"/>
+          <span class="label" :class="{'text-error': errors.has('mail')}">{{ errors.get('mail') }}&nbsp;</span>
+        </label>
+
+        <span class="label block first-letter:uppercase">{{ t('security.register.password') }}</span>
         <div class="join">
           <input v-model="account.password" :class="{'input-error': errors.has('password')}"
                  :type="passwordVisible?'text':'password'" class="join-item input border-r-0 w-full"
@@ -36,29 +34,31 @@
             <EyeIcon v-if="!passwordVisible" class="h-6 w-6 opacity-50"/>
             <EyeSlashIcon v-else class="h-6 w-6 opacity-50"/>
           </button>
-          <button class="btn join-item" @click.prevent.stop="onPasswordGenerate">
-            {{ t('security.register.generate') }}
+          <button class="btn btn-soft join-item"
+                  :class="{'border-error border': errors.has('password')}"
+                  @click.prevent.stop="onPasswordGenerate">
+            {{ t('security.register.generate') || 'generate' }}
           </button>
         </div>
-        <p class="label">{{ errors.get('password') }}&nbsp;</p>
-      </fieldset>
+        <p class="label" :class="{'text-error': errors.has('password')}">{{ errors.get('password') }}&nbsp;</p>
 
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend capitalize">{{ t('security.register.confirmation') }}</legend>
+      <label class="label block">{{ t('security.register.confirmation') }}
         <input v-model="passwordConfirm" :class="{'input-error': errors.has('passwordConfirm')}"
-               class="input w-full" type="password"
+               class="input w-full block mt-1" type="password"
                @blur="onBlurConfirmPassword"
                @change="onFieldChange('passwordConfirm')"/>
-        <p class="label">{{ errors.get('confirmation') }}&nbsp;</p>
+        <span class="label" :class="{'text-error': errors.has('confirmation')}">{{ errors.get('confirmation') }}&nbsp;</span>
+      </label>
       </fieldset>
 
-      <div class="text-right">
-        <button class="btn mx-1 capitalize" @click.stop="curtainModal.close()">{{ t('dialog.cancel') }}</button>
+      <div class="card-actions justify-end pt-2">
+        <button class="btn mx-1 capitalize" @click.stop="curtainModal.close()">{{ t('dialog.cancel') || 'cancel' }}</button>
         <button class="btn btn-primary capitalize mx-1" @click.stop="onRegisterClick(curtainModal)">{{
-            t('security.register.dialog.register')
+            t('security.register.dialog.register') || 'register'
           }}
         </button>
       </div>
+
     </div>
   </curtain-modal>
 </template>
