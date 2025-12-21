@@ -5,21 +5,24 @@
       <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
 
         <label class="label block">{{ t('security.register.login') }}
-          <input v-model="account.login" :class="{'input-error': errors.has('login')}" class="input block w-full mt-1" type="text"
+          <input v-model="account.login" :class="{'input-error': errors.has('login')}" class="input block w-full mt-1"
+                 type="text"
                  @change="errors.delete('login')"/>
-          <span class="label" :class="{'text-error': errors.has('login')}">{{ errors.get('login') }}&nbsp;</span>
+          <span :class="{'text-error': errors.has('login')}" class="label">{{ errors.get('login') }}&nbsp;</span>
         </label>
 
         <label class="label block">{{ t('security.register.username') }}
-          <input v-model="account.name" :class="{'input-error': errors.has('name')}" class="input w-full block mt-1" type="text"
+          <input v-model="account.name" :class="{'input-error': errors.has('name')}" class="input w-full block mt-1"
+                 type="text"
                  @change="errors.delete('name')"/>
-          <span class="label" :class="{'text-error': errors.has('name')}">{{ errors.get('name') }}&nbsp;</span>
+          <span :class="{'text-error': errors.has('name')}" class="label">{{ errors.get('name') }}&nbsp;</span>
         </label>
 
         <label class="label block">{{ t('security.register.mail') }}
-          <input v-model="account.mail" :class="{'input-error': errors.has('mail')}" class="input w-full block mt-1" type="email"
+          <input v-model="account.mail" :class="{'input-error': errors.has('mail')}" class="input w-full block mt-1"
+                 type="email"
                  @change="errors.delete('mail')"/>
-          <span class="label" :class="{'text-error': errors.has('mail')}">{{ errors.get('mail') }}&nbsp;</span>
+          <span :class="{'text-error': errors.has('mail')}" class="label">{{ errors.get('mail') }}&nbsp;</span>
         </label>
 
         <span class="label block first-letter:uppercase">{{ t('security.register.password') }}</span>
@@ -34,25 +37,31 @@
             <EyeIcon v-if="!passwordVisible" class="h-6 w-6 opacity-50"/>
             <EyeSlashIcon v-else class="h-6 w-6 opacity-50"/>
           </button>
-          <button class="btn btn-soft join-item"
-                  :class="{'border-error border': errors.has('password')}"
+          <button :class="{'border-error border': errors.has('password')}"
+                  class="btn btn-soft join-item"
                   @click.prevent.stop="onPasswordGenerate">
             {{ t('security.register.generate') || 'generate' }}
           </button>
         </div>
-        <p class="label" :class="{'text-error': errors.has('password')}">{{ errors.get('password') }}&nbsp;</p>
+        <p :class="{'text-error': errors.has('password')}" class="label">{{ errors.get('password') }}&nbsp;</p>
 
-      <label class="label block">{{ t('security.register.confirmation') }}
-        <input v-model="passwordConfirm" :class="{'input-error': errors.has('passwordConfirm')}"
-               class="input w-full block mt-1" type="password"
-               @blur="onBlurConfirmPassword"
-               @change="onFieldChange('passwordConfirm')"/>
-        <span class="label" :class="{'text-error': errors.has('confirmation')}">{{ errors.get('confirmation') }}&nbsp;</span>
-      </label>
+        <label class="label block">{{ t('security.register.confirmation') }}
+          <input v-model="account.passwordConfirm" :class="{'input-error': errors.has('passwordConfirm')}"
+                 :type="passwordVisible?'text':'password'"
+                 class="input w-full block mt-1"
+                 @blur="onBlurConfirmPassword"
+                 @change="onFieldChange('passwordConfirm')"/>
+          <span :class="{'text-error': errors.has('passwordConfirm')}" class="label">{{
+              errors.get('passwordConfirm')
+            }}&nbsp;</span>
+        </label>
       </fieldset>
 
       <div class="card-actions justify-end pt-2">
-        <button class="btn mx-1 capitalize" @click.stop="curtainModal.close()">{{ t('dialog.cancel') || 'cancel' }}</button>
+        <button class="btn mx-1 capitalize" @click.stop="curtainModal.close()">{{
+            t('dialog.cancel') || 'cancel'
+          }}
+        </button>
         <button class="btn btn-primary capitalize mx-1" @click.stop="onRegisterClick(curtainModal)">{{
             t('security.register.dialog.register') || 'register'
           }}
@@ -65,14 +74,15 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
 import CurtainModal, { CurtainModalSlot } from '@/common/components/CurtainModal.vue';
-import { User } from '@/security/model/User';
+import { UserAccountForm, UserAccountFormSchema, UserCreated } from '@/security/model/User';
 import { passwordAnonymousCheckStrength, passwordGenerate } from '@/security/services/PasswordService';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/solid';
 import { userCreate } from '@/security/services/UserService';
 import notificationService from '@/services/notification/NotificationService';
-import { MAIL_PATTERN } from '@/common/services/RegexPattern';
 import { useI18n } from 'vue-i18n';
 import { Router, useRouter } from 'vue-router';
+import { TranslatorFunction } from '@/i18n';
+import { isValiError, parse, pick, ValiError } from 'valibot';
 
 const CLOSE_EVENT: string = 'close';
 
@@ -82,19 +92,21 @@ const CLOSE_EVENT: string = 'close';
   setup() {
     const { t } = useI18n();
     const router = useRouter();
-    return {
-      t: t,
-      router: router,
-    };
+    return { t, router };
   },
 })
 export default class CreateAccountComponent extends Vue {
   private readonly router!: Router;
-  private readonly t!;
+  private readonly t!: TranslatorFunction;
   private errors: Map<string, string> = new Map<string, string>([]);
 
-  private account: User = { roles: [] } as User;
-  private passwordConfirm: string = '';
+  private account: UserAccountForm = {
+    login: '',
+    name: '',
+    mail: '',
+    password: '',
+    passwordConfirm: '',
+  };
   private passwordVisible: boolean = false;
 
   private onFieldChange(field: string): void {
@@ -114,33 +126,43 @@ export default class CreateAccountComponent extends Vue {
   }
 
   private onBlurNewPassword(): void {
-    if (!this.account.password || this.account.password.length === 0) {
-      return;
-    } else if (!this.account.password || this.account.password.length <= 3) {
-      this.errors.set('password', 'This password is not secure. An attacker will find it instant !');
-      return;
+    try {
+      parse(pick(UserAccountFormSchema.pipe[0], ['login', 'password']), {
+        password: this.account.password,
+        login: this.account.login,
+      });
+
+      const user: UserCreated = {
+        login: this.account.login,
+        name: this.account.name,
+        mail: this.account.mail,
+        password: this.account.password,
+        roles: [],
+      };
+
+      passwordAnonymousCheckStrength(user).subscribe({
+        next: evaluation => {
+          if (evaluation.isSecure) {
+            this.errors.delete('password');
+          } else {
+            this.errors.set('password', evaluation.message);
+          }
+        },
+        error: err => this.errors.set('password', err.message),
+      });
+
+    } catch (e) {
+      this.handleValiError(e as ValiError<typeof UserAccountFormSchema>);
     }
-    if (!this.account.login) {
-      this.errors.set('password', 'Login field is required to check password strength');
-      return;
-    }
-    passwordAnonymousCheckStrength(this.account).subscribe({
-      next: evaluation => {
-        if (evaluation.isSecure) {
-          this.errors.delete('password');
-        } else {
-          this.errors.set('password', evaluation.message);
-        }
-      },
-      error: err => this.errors.set('password', err.message),
-    });
   }
 
   private onBlurConfirmPassword(): void {
-    if (this.passwordConfirm && this.passwordConfirm.length > 3 && this.passwordConfirm === this.account.password) {
+    if (this.account.passwordConfirm
+        && this.account.passwordConfirm.length > 3
+        && this.account.passwordConfirm === this.account.password) {
       this.errors.delete('passwordConfirm');
     } else {
-      this.errors.set('passwordConfirm', 'The new and confirmation passwords must be the same');
+      this.errors.set('passwordConfirm', this.t('security.register.message.confirm.different.password'));
     }
   }
 
@@ -149,38 +171,49 @@ export default class CreateAccountComponent extends Vue {
   }
 
   private onRegisterClick(curtainModal: CurtainModalSlot): void {
-    if (!this.account.login || this.account.login.length < 3) {
-      this.errors.set('login', 'Invalid login !');
-    }
-    if (!this.account.mail || this.account.mail.length < 3) {
-      this.errors.set('mail', 'Invalid mail address !');
-    } else if (!MAIL_PATTERN.test(this.account.mail)) {
-      this.errors.set('mail', 'Mail address must be syntactically correct !');
-    }
-    if (!this.account.password) {
-      this.errors.set('password', 'Password is mandatory !');
-    } else if (this.account.password !== this.passwordConfirm) {
-      this.errors.set('passwordConfirm', 'Password confirmation doesn\'t match !');
-    }
-    if (this.errors.size !== 0) {
-      return;
-    }
+    try {
+      parse(UserAccountFormSchema, this.account);
 
-    userCreate(this.account).subscribe({
-      next: () => {
-        curtainModal.close();
-        notificationService.pushSimpleOk('User account registered Successfully !');
-      },
-      error: err => {
-        if (err.properties) {
-          err.properties.forEach(p => {
-            if (['mail', 'password', 'login', 'passwordConfirm'].includes(p)) {
-              this.errors.set(p, err.message);
-            }
-          });
-        }
-        notificationService.pushSimpleError(err.message);
-      },
+      const user: UserCreated = {
+        login: this.account.login,
+        name: this.account.name,
+        mail: this.account.mail,
+        password: this.account.password,
+        roles: [],
+      };
+
+      userCreate(user).subscribe({
+        next: () => {
+          curtainModal.close();
+          notificationService.pushSimpleOk(this.t('security.register.message.save.successfully'));
+        },
+        error: err => {
+          if (err.properties) {
+            err.properties
+                .filter((p: string) => Object.keys(this.account).includes(p))
+                .forEach((p: string) => this.errors.set(p, err.message));
+          }
+          notificationService.pushSimpleError(err.message);
+        },
+      });
+
+    } catch (e) {
+      if (isValiError(e)) {
+        this.handleValiError(e as ValiError<typeof UserAccountFormSchema>);
+      }
+      notificationService.pushSimpleError(this.t('security.register.message.formValidationError'));
+      console.error(this.errors);
+    }
+  }
+
+  private handleValiError(error: ValiError<typeof UserAccountFormSchema>): void {
+    this.errors.clear();
+    error.issues.forEach((value) => {
+      if (value.path) {
+        this.errors.set(value.path.map((p: { key: any }) => p.key).join('.'), this.t(value.message));
+      } else {
+        console.debug('No path for validation error: ', value);
+      }
     });
   }
 }

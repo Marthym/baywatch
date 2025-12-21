@@ -144,6 +144,7 @@ import {
 } from '@/administration/services/AddConfigurationService';
 import { isValiError, parse, ValiError } from 'valibot';
 import notificationService from '@/services/notification/NotificationService';
+import { TranslatorFunction } from '@/i18n';
 
 @Component({
   name: 'ConfigAdminTab',
@@ -154,7 +155,7 @@ import notificationService from '@/services/notification/NotificationService';
   },
 })
 export default class ConfigAdminTab extends Vue {
-  private t!: (key: string) => string;
+  private t!: TranslatorFunction;
 
   private mailConfig: MailSmtpConfig = { ssl: {} } as MailSmtpConfig;
   private readonly errors: string[] = [];
@@ -200,7 +201,7 @@ export default class ConfigAdminTab extends Vue {
       });
     } catch (e) {
       if (isValiError(e)) {
-        this.handleValiError(e);
+        this.handleValiError(e as ValiError<typeof MailSmtpConfigSchema>);
       }
       notificationService.pushSimpleError(this.t('admin.config.mail.messages.formValidationError'));
       console.error(this.errors);

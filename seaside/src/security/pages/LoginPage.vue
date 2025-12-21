@@ -48,13 +48,14 @@ import { UPDATE_MUTATION, UPDATE_SETTINGS_MUTATION } from '@/security/store/User
 
 import notificationService from '@/services/notification/NotificationService';
 import { RouteLocation, Router, useRoute, useRouter } from 'vue-router';
-import { useI18n } from 'vue-i18n';
+import { Locale, useI18n } from 'vue-i18n';
 import { switchMap } from 'rxjs';
 import { userSettingsGet } from '@/security/services/UserSettingsService';
 import { map } from 'rxjs/operators';
 import { UserState } from '@/security/store/user';
 import { authenticationLogin } from '@/security/services/AuthenticationService';
 import { passwordAskForReset } from '@/security/services/PasswordService';
+import { TranslatorFunction } from '@/i18n';
 
 @Component({
   name: 'LoginPage',
@@ -75,8 +76,8 @@ export default class LoginPage extends Vue {
   private readonly store!: Store<UserState>;
   private readonly router!: Router;
   private readonly route!: RouteLocation;
-  private readonly t;
-  private locale;
+  private readonly t!: TranslatorFunction;
+  private locale: Locale | undefined;
   private formValidation = false;
   private submitDisable = false;
 

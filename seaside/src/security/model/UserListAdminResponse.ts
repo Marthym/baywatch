@@ -5,5 +5,5 @@ type UserPage = {
     entities: User[]
 }
 export type UserListAdminResponse = {
-    userSearch?: UserPage
+    userSearch: UserPage
 }

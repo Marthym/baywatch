@@ -1,8 +1,8 @@
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { Page } from '@/common/model/Page';
 import { ConstantFilters } from '@/constants';
-import { User } from '@/security/model/User';
+import { User, UserCreated } from '@/security/model/User';
 import { send } from '@/common/services/GraphQLClient';
 import { UserListAdminResponse } from '@/security/model/UserListAdminResponse';
 
@@ -30,18 +30,21 @@ export function userList(page = 0, query: URLSearchParams = new URLSearchParams(
         map(response => ({
                 currentPage: resolvedPage,
                 totalPage: Math.ceil(response.totalCount / Number(resolvedPerPage)),
-                data: response.entities.map(user => ({
+                data: of(response.entities.map(user => ({
                     ...user,
                     _createdAt: utcToZonedTime(user._createdAt),
-                    _loginAt: (user._loginAt)?utcToZonedTime(user._loginAt):null,
-                })),
+                    _loginAt: utcToZonedTime(user._loginAt),
+                }))),
             }),
         ),
         take(1),
     );
 }
 
-function utcToZonedTime(utcDate: string): string {
+function utcToZonedTime(utcDate: string | undefined): string {
+    if (!utcDate) {
+        return new Date(0).toLocaleString();
+    }
     return new Date(utcDate).toLocaleString();
 }
 
@@ -52,7 +55,7 @@ mutation CreateNewUser ($user: UserForm) {
     }
 }`;
 
-export function userCreate(user: User): Observable<User> {
+export function userCreate(user: UserCreated): Observable<User> {
     return send<{ userCreate: User }>(USER_CREATE_REQUEST, { user: user }).pipe(
         map(data => data.data.userCreate),
         take(1),

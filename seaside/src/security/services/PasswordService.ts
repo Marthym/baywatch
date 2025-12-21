@@ -2,7 +2,7 @@ import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { send } from '@/common/services/GraphQLClient';
 import { PasswordEvaluation } from '@/security/model/PasswordEvaluation.type';
-import { User } from '@/security/model/User';
+import { UserCreated } from '@/security/model/User';
 
 type PasswordCheckResponse = { passwordCheckStrength: PasswordEvaluation };
 type PasswordAnonymousCheckResponse = { passwordCheckAnonymous: PasswordEvaluation };
@@ -28,9 +28,8 @@ query GeneratePasswords($count: Int) {
 }`;
 
 
-export function passwordAnonymousCheckStrength(user: User): Observable<PasswordEvaluation> {
-    const { _id, _createdAt, _loginAt, _loginIP, ...passwordCheckedProps } = user;
-    return send<PasswordAnonymousCheckResponse>(PASSWORD_ANONYMOUS_CHECK_REQUEST, { user: passwordCheckedProps }).pipe(
+export function passwordAnonymousCheckStrength(user: UserCreated): Observable<PasswordEvaluation> {
+    return send<PasswordAnonymousCheckResponse>(PASSWORD_ANONYMOUS_CHECK_REQUEST, { user }).pipe(
         map(data => data.data.passwordCheckAnonymous),
         take(1),
     );

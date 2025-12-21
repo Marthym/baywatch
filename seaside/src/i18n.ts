@@ -58,3 +58,5 @@ export const lazyloadTranslations: NavigationGuardWithThis<undefined> = async (t
     await nextTick();
     return next();
 };
+
+export type TranslatorFunction = (key: string) => string;
