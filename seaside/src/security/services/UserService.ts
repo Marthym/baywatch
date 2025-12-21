@@ -9,6 +9,20 @@ import { UserListAdminResponse } from '@/security/model/UserListAdminResponse';
 const DEFAULT_PER_PAGE: number = 20;
 const DEFAULT_QUERY: string = `?${ConstantFilters.PER_PAGE}=${DEFAULT_PER_PAGE}&_s=login`;
 
+const USER_GET = `#graphql
+query UserGet($id: ID) {
+    userGet(id: $id) {
+        _id _createdAt _createdBy _loginAt _loginIP login name mail roles
+    }
+}`;
+
+export function userGet(id: string): Observable<User> {
+    return send<{ userGet: User }>(USER_GET, { id }).pipe(
+        map(data => data.data.userGet),
+        take(1),
+    );
+}
+
 const LOAD_USER_ADMIN_LIST_REQUEST = `#graphql
 query LoadUsersAdminList ($_p: Int = 0, $_pp: Int = ${DEFAULT_PER_PAGE}, $_s: String = "login") {
     userSearch(_p: $_p, _pp: $_pp, _s: $_s) {

@@ -1,10 +1,10 @@
 <template>
   <div class="overflow-x-auto">
     <div class="md:join mb-2">
-      <button class="btn btn-sm mb-2 mr-2 join-item md:m-0 capitalize" @click.prevent="onUserAdd()">
+      <router-link class="btn btn-sm mb-2 mr-2 join-item md:m-0 capitalize" tag="button" to="/admin/users/new">
         <PlusCircleIcon class="w-6 h-6 md:mr-2"/>
         <span>{{ t('admin.users.add') }}</span>
-      </button>
+      </router-link>
       <button class="btn btn-sm btn-ghost mb-2 mr-2 join-item md:m-0 capitalize" @click="">
         <ArrowDownTrayIcon class="w-6 h-6 mr-2"/>
         {{ t('admin.users.import') }}
@@ -70,9 +70,11 @@
         </td>
         <td>
           <div class="join justify-end w-full">
-            <button class="btn btn-sm btn-square btn-ghost join-item" @click.prevent="onUserEdit(vUser.data)">
+            <router-link :to="`/admin/users/${vUser.data._id}`"
+                         class="btn btn-sm btn-square btn-ghost join-item"
+                         tag="button">
               <PencilIcon class="h-6 w-6"/>
-            </button>
+            </router-link>
             <button class="btn btn-sm btn-square btn-ghost join-item" @click.prevent="onUserDelete(vUser.data)">
               <TrashIcon class="h-6 w-6"/>
             </button>
@@ -101,10 +103,9 @@
       </tr>
       </tfoot>
     </table>
-    <UserEditor v-if="editorOpened"
-                v-model="activeUser"
-                @cancel="editorOpened = false"
-                @submit="onUserSubmit"/>
+    <teleport v-if="route.params.userId" to="body">
+      <router-view/>
+    </teleport>
   </div>
 </template>
 
@@ -130,6 +131,7 @@ import {
 } from '@heroicons/vue/24/outline';
 import { useI18n } from 'vue-i18n';
 import { TranslatorFunction } from '@/i18n';
+import { RouteLocation, Router, useRoute, useRouter } from 'vue-router';
 
 @Component({
   name: 'UserAdminTab',
@@ -144,11 +146,15 @@ import { TranslatorFunction } from '@/i18n';
   },
   setup() {
     const { t } = useI18n();
-    return { t };
+    const router = useRouter();
+    const route = useRoute();
+    return { t, router, route };
   },
 })
 export default class UserAdminTab extends Vue {
   private readonly t!: TranslatorFunction;
+  private readonly router!: Router;
+  private readonly route!: RouteLocation;
   private users: UserView[] = [];
   private pagesNumber = 0;
   private activePage = 0;
@@ -261,7 +267,7 @@ export default class UserAdminTab extends Vue {
   private onUserAdd(): void {
     this.activeUser = { ...ANONYMOUS };
     this.activeUserChange = { properties: false, roles: [] };
-    this.editorOpened = true;
+    this.router.push('/admin/users/new');
   }
 
   private onUserEdit(user: User): void {

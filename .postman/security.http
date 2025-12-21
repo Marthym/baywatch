@@ -23,4 +23,15 @@ query CurrentUser {
     }
 }
 
-###
+### Get User
+GRAPHQL http://localhost:8081/api/g
+
+query UserGet($id: ID) {
+    userGet(id: $id) {
+        _id _createdAt _createdBy _loginAt _loginIP login name mail roles
+    }
+}
+
+{
+  "id": "US01GS2KEG1VVTV78KBQFCX4VVJN"
+}

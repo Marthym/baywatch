@@ -6,6 +6,7 @@ extend type Mutation {
 }
 
 extend type Query {
+    userGet(id: ID): User
     userSearch(_p: Int, _pp: Int, _from: Int, _to: Int, _s: String
         _id: [ID], login: String, name: String, mail: String): SearchUsersResponse
 }

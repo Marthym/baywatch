@@ -6,6 +6,7 @@ const AdminFeedEditor = () => import('@/administration/component/usereditor/Admi
 const FeedsAdminTab = () => import('@/administration/component/FeedsAdminTab.vue');
 const ConfigAdminTab = () => import('@/administration/component/ConfigAdminTab.vue');
 const StatisticsAdminTab = () => import('@/administration/component/StatisticsAdminTab.vue');
+const UserEditor = () => import('@/administration/component/usereditor/UserEditor.vue');
 
 export const routes: RouteRecordRaw[] = [
     {
@@ -17,7 +18,11 @@ export const routes: RouteRecordRaw[] = [
                 ],
             },
             { path: 'stats', component: StatisticsAdminTab, name: 'admin-stats' },
-            { path: 'users', component: UserAdminTab, name: 'admin-users' },
+            {
+                path: 'users', component: UserAdminTab, name: 'admin-users', children: [
+                    { path: ':userId', component: UserEditor, name: 'admin-users-editor' },
+                ],
+            },
         ],
         meta: { requiresAuth: true },
     },

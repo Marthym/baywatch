@@ -1,7 +1,4 @@
-import { fr_FR as admin_fr_FR } from '@/locales/admin_fr-FR';
-
 export const fr_FR = {
-    ...admin_fr_FR,
     'admin.users.add': 'ajouter',
     'admin.users.import': 'importer',
     'admin.users.export': 'exporter',
@@ -24,8 +21,6 @@ export const fr_FR = {
     'admin.users.messages.configUsersDeletion': 'NOP ' +
         '| Etes-vous certain de vouloir supprimer l’utilisateur {login} ? ' +
         '| Etes-vous certain de vouloir supprimer {count} utilisateurs ?',
-    'admin.users.editor.title.create': 'ajouter un utilisateur',
-    'admin.users.editor.title.update': 'modifier l’utilisateur {login}',
     'admin.users.editor.message.password_too_short': 'Ce mot de passe n’est pas sécurisé, il est crackable instantanément !',  //NOSONAR
     'admin.users.editor.message.login_field_required': 'Le pseudo est nécessaire pour tester la robustesse du mot de passe',
     'admin.users.editor.message.wrong_confirmation': 'La confirmation diffère du mot de passe !',

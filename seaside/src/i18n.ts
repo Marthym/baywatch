@@ -39,14 +39,17 @@ export const i18n = createI18n({
 export const lazyloadTranslations: NavigationGuardWithThis<undefined> = async (to, from, next) => {
     const localePageFile = `./locales/${String(to.name)}_${i18n.global.fallbackLocale.value}.ts`;
     try {
-        const messagesFallback = import(`./locales/${String(to.name)}_${i18n.global.fallbackLocale.value}.ts`);
-        const messages = import(`./locales/${String(to.name)}_${i18n.global.locale.value}.ts`);
-        await Promise.all([
-            messagesFallback.then(msg => i18n.global.mergeLocaleMessage(
-                i18n.global.fallbackLocale.value, msg[i18n.global.fallbackLocale.value.replace('-', '_')])),
-            messages.then(msg => i18n.global.mergeLocaleMessage(
-                i18n.global.locale.value, msg[i18n.global.locale.value.replace('-', '_')])),
-        ]);
+        await Promise.all(to.matched.flatMap(m => {
+            const messagesFallback = import(`./locales/${String(m.name)}_${i18n.global.fallbackLocale.value}.ts`);
+            const messages = import(`./locales/${String(m.name)}_${i18n.global.locale.value}.ts`);
+            return [
+                messagesFallback.then(msg => i18n.global.mergeLocaleMessage(
+                    i18n.global.fallbackLocale.value, msg[i18n.global.fallbackLocale.value.replace('-', '_')])),
+                messages.then(msg => i18n.global.mergeLocaleMessage(
+                    i18n.global.locale.value, msg[i18n.global.locale.value.replace('-', '_')])),
+            ];
+        }));
+
     } catch (error) {
         if (error instanceof Error) {
             console.debug('Error on loading locale file', localePageFile, error.message);

@@ -1,126 +1,115 @@
 <template>
-  <div class="grid bg-base-200/60 z-30 w-full h-full absolute top-0 left-0 overflow-hidden"
-       @click="opened = false">
-    <Transition
-        enter-active-class="lg:duration-300 ease-in-out"
-        enter-from-class="lg:transform lg:translate-x-full"
-        enter-to-class="lg:translate-x-0"
-        leave-active-class="lg:duration-300 ease-in-out"
-        leave-from-class="lg:translate-x-0"
-        leave-to-class="lg:transform lg:translate-x-full"
-        @after-leave="onTransitionLeave">
-      <form v-if="opened"
-            class="justify-self-end flex flex-col bg-base-100 text-base-content lg:w-3/4 w-full h-full overflow-auto p-6"
-            @click.stop @submit.prevent="onSaveUser">
-        <h2 class="card-title text-2xl pb-2 w-full first-letter:capitalize">{{ title }}</h2>
-        <p class="text-sm text-base-content/70 mb-4">
-          {{ isEditionMode ? t('admin.users.editor.subtitle.update') : t('admin.users.editor.subtitle.create') }}
-        </p>
+  <curtain-modal v-slot="curtainModal" @leave="onCancel()">
+    <form v-if="opened"
+          class="justify-self-end flex flex-col text-base-content lg:w-3/4 w-full h-full overflow-auto p-6"
+          @click.stop @submit.prevent="onSaveUser">
+      <h2 class="card-title text-2xl pb-2 w-full first-letter:capitalize">{{ title }}</h2>
+      <p class="text-sm text-base-content/70 mb-4">
+        {{ isEditionMode ? t('admin.users.editor.subtitle.update') : t('admin.users.editor.subtitle.create') }}
+      </p>
 
-        <div class="space-y-6 [&_input]:text-base-content [&_label]:first-letter:uppercase">
-          <!-- Informations générales -->
-          <fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4">
-            <legend class="fieldset-legend">{{ t('admin.users.section.general') || 'General Information' }}</legend>
+      <div class="space-y-6 [&_input]:text-base-content [&_label]:first-letter:uppercase">
 
+        <fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4">
+          <legend class="fieldset-legend">{{ t('admin.users.editor.section.general') }}</legend>
+
+          <label class="label block">
+            {{ t('admin.users.login') }}
+            <input v-model="modelValue.login"
+                   :class="{'input-error': errors.has('login')}"
+                   :disabled="isEditionMode"
+                   class="input input-bordered w-full block"
+                   type="text"
+                   @input="onFieldChange('login')">
+            <span v-if="errors.has('login')" class="label text-error text-xs">{{ errors.get('login') }}</span>
+          </label>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label class="label block">
-              {{ t('admin.users.login') }}
-              <input v-model="modelValue.login"
-                     :class="{'input-error': errors.has('login')}"
-                     :disabled="isEditionMode"
+              {{ t('admin.users.username') }}
+              <input v-model="modelValue.name"
+                     :class="{'input-error': errors.has('name')}"
                      class="input input-bordered w-full block"
                      type="text"
-                     @input="onFieldChange('login')">
-              <span v-if="errors.has('login')" class="label text-error text-xs">{{ errors.get('login') }}</span>
+                     @input="onFieldChange('name')">
+              <span v-if="errors.has('name')" class="label text-error text-xs">{{ errors.get('name') }}</span>
             </label>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label class="label block">
-                {{ t('admin.users.username') }}
-                <input v-model="modelValue.name"
-                       :class="{'input-error': errors.has('name')}"
-                       class="input input-bordered w-full block"
-                       type="text"
-                       @input="onFieldChange('name')">
-                <span v-if="errors.has('name')" class="label text-error text-xs">{{ errors.get('name') }}</span>
-              </label>
-
-              <label class="label block">
-                {{ t('admin.users.mail') }}
-                <input v-model="modelValue.mail"
-                       :class="{'input-error': errors.has('mail')}"
-                       class="input input-bordered w-full block"
-                       type="email"
-                       @input="onFieldChange('mail')">
-                <span v-if="errors.has('mail')" class="label text-error text-xs">{{ errors.get('mail') }}</span>
-              </label>
-            </div>
-          </fieldset>
-
-          <!-- Sécurité / Mot de passe -->
-          <fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4">
-            <legend class="fieldset-legend">{{ t('admin.users.section.security') || 'Security' }}</legend>
-
-            <span class="label block first-letter:uppercase">{{ t('admin.users.password') }}</span>
-            <div class="join w-full">
-              <input v-model="modelValue.password"
-                     :class="{'input-error': errors.has('password')}"
-                     :type="visible.password?'text':'password'"
-                     class="input input-bordered join-item w-full"
-                     @input="onFieldChange('password')"
-                     @blur.stop="onBlurNewPassword">
-              <button class="btn btn-neutral input input-bordered border-x-0 join-item max-w-fit focus:outline-hidden"
-                      type="button"
-                      @click.prevent.stop="visible.password = !visible.password">
-                <EyeIcon v-if="!visible.password" class="h-5 w-5 opacity-50"/>
-                <EyeSlashIcon v-else class="h-5 w-5 opacity-50"/>
-              </button>
-              <button class="btn btn-soft join-item" type="button" @click.prevent.stop="onPasswordGenerate">
-                {{ t('admin.users.editor.button.generate') }}
-              </button>
-            </div>
-            <p v-if="errors.has('password')" class="label text-error text-xs">{{ errors.get('password') }}</p>
-
-            <label class="label block mt-2">
-              {{ t('admin.users.confirmation') }}
-              <input v-model="passwordConfirm"
-                     :class="{'input-error': errors.has('confirm')}"
-                     :type="visible.password?'text':'password'"
+            <label class="label block">
+              {{ t('admin.users.mail') }}
+              <input v-model="modelValue.mail"
+                     :class="{'input-error': errors.has('mail')}"
                      class="input input-bordered w-full block"
-                     @blur="onBlurConfirmPassword"
-                     @input="onFieldChange('confirm')">
-
-              <span v-if="errors.has('confirm')" class="label text-error text-xs">{{ errors.get('confirm') }}</span>
+                     type="email"
+                     @input="onFieldChange('mail')">
+              <span v-if="errors.has('mail')" class="label text-error text-xs">{{ errors.get('mail') }}</span>
             </label>
-          </fieldset>
+          </div>
+        </fieldset>
 
-          <!-- Rôles -->
-          <fieldset :class="{'border-error': errors.has('roles')}"
-                    class="fieldset bg-base-200 border-base-300 rounded-box border p-4">
-            <legend class="fieldset-legend">{{ t('admin.users.roles.title') || 'Roles & Permissions' }}</legend>
-            <UserRoleInput :model-value="modelValue.roles" @update:modelValue="onRoleUpdate"/>
-            <span v-if="errors.has('roles')" class="label text-error text-xs">{{ errors.get('roles') }}</span>
-          </fieldset>
-        </div>
+        <!-- Sécurité / Mot de passe -->
+        <fieldset class="fieldset bg-base-200 border-base-300 rounded-box border p-4">
+          <legend class="fieldset-legend">{{ t('admin.users.editor.section.security') }}</legend>
 
-        <div class="grow"></div>
+          <span class="label block first-letter:uppercase">{{ t('admin.users.password') }}</span>
+          <div class="join w-full">
+            <input v-model="modelValue.password"
+                   :class="{'input-error': errors.has('password')}"
+                   :type="visible.password?'text':'password'"
+                   class="input input-bordered join-item w-full"
+                   @input="onFieldChange('password')"
+                   @blur.stop="onBlurNewPassword">
+            <button class="btn btn-neutral input input-bordered border-x-0 join-item max-w-fit focus:outline-hidden"
+                    type="button"
+                    @click.prevent.stop="visible.password = !visible.password">
+              <EyeIcon v-if="!visible.password" class="h-5 w-5 opacity-50"/>
+              <EyeSlashIcon v-else class="h-5 w-5 opacity-50"/>
+            </button>
+            <button class="btn btn-soft join-item" type="button" @click.prevent.stop="onPasswordGenerate">
+              {{ t('admin.users.editor.button.generate') }}
+            </button>
+          </div>
+          <p v-if="errors.has('password')" class="label text-error text-xs">{{ errors.get('password') }}</p>
 
-        <div class="card-actions justify-end pt-6">
-          <button class="btn first-letter:uppercase" @click.prevent.stop="onCancel">
-            {{ t('admin.users.editor.button.cancel') }}
-          </button>
-          <button :disabled="!hasValidRoles" class="btn btn-primary first-letter:uppercase"
-                  @click.prevent.stop="onSaveUser">
-            {{ t('admin.users.editor.button.save') }}
-          </button>
-        </div>
-      </form>
-    </Transition>
+          <label class="label block mt-2">
+            {{ t('admin.users.confirmation') }}
+            <input v-model="passwordConfirm"
+                   :class="{'input-error': errors.has('confirm')}"
+                   :type="visible.password?'text':'password'"
+                   class="input input-bordered w-full block"
+                   @blur="onBlurConfirmPassword"
+                   @input="onFieldChange('confirm')">
 
-  </div>
+            <span v-if="errors.has('confirm')" class="label text-error text-xs">{{ errors.get('confirm') }}</span>
+          </label>
+        </fieldset>
+
+        <!-- Rôles -->
+        <fieldset :class="{'border-error': errors.has('roles')}"
+                  class="fieldset bg-base-200 border-base-300 rounded-box border p-4">
+          <legend class="fieldset-legend">{{ t('admin.users.roles.title') }}</legend>
+          <UserRoleInput :model-value="modelValue.roles" @update:modelValue="onRoleUpdate"/>
+          <span v-if="errors.has('roles')" class="label text-error text-xs">{{ errors.get('roles') }}</span>
+        </fieldset>
+      </div>
+
+      <div class="grow"></div>
+
+      <div class="card-actions justify-end pt-6">
+        <button class="btn first-letter:uppercase" @click.prevent.stop="onCancel">
+          {{ t('dialog.cancel') }}
+        </button>
+        <button :disabled="!hasValidRoles" class="btn btn-primary first-letter:uppercase"
+                @click.prevent.stop="onSaveUser">
+          {{ t('dialog.save') }}
+        </button>
+      </div>
+    </form>
+  </curtain-modal>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-facing-decorator';
+import { Component, Vue } from 'vue-facing-decorator';
 import { UserAccountFormSchema, UserCreated } from '@/security/model/User';
 import UserRoleInput from '@/administration/component/usereditor/UserRoleInput.vue';
 import { ULID_PATTERN } from '@/common/services/RegexPattern';
@@ -130,6 +119,10 @@ import { EyeSlashIcon } from '@heroicons/vue/24/solid';
 import { passwordAnonymousCheckStrength, passwordGenerate } from '@/security/services/PasswordService';
 import { TranslatorFunction } from '@/i18n';
 import { parse, pick, ValiError } from 'valibot';
+import CurtainModal from '@/common/components/CurtainModal.vue';
+import { userGet } from '@/security/services/UserService';
+import { of, switchMap } from 'rxjs';
+import { Router, useRoute, useRouter } from 'vue-router';
 
 const CANCEL_EVENT: string = 'cancel';
 const SUBMIT_EVENT: string = 'submit';
@@ -139,16 +132,26 @@ const FIELD_CONFIRM: string = 'confirm';
 
 @Component({
   name: 'UserEditor',
-  components: { EyeSlashIcon, EyeIcon, UserRoleInput },
+  components: { CurtainModal, EyeSlashIcon, EyeIcon, UserRoleInput },
   emits: [CANCEL_EVENT, SUBMIT_EVENT, CHANGE_EVENT],
   setup() {
     const { t } = useI18n();
-    return { t };
+    const id = useRoute().params.userId as string;
+    const router = useRouter();
+    return { t, id, router };
   },
 })
 export default class UserEditor extends Vue {
-  @Prop() private modelValue!: UserCreated;
+  private readonly id!: string;
   private readonly t!: TranslatorFunction;
+  private readonly router!: Router;
+  private modelValue: UserCreated = {
+    login: '',
+    password: '',
+    mail: '',
+    name: '',
+    roles: [],
+  };
   private passwordConfirm: string = '';
   private title: string = '';
   private isEditionMode: boolean = false;
@@ -165,13 +168,30 @@ export default class UserEditor extends Vue {
   }
 
   mounted(): void {
-    console.debug('UserEditor mounted, modelValue:', this.modelValue);
-    this.isEditionMode = this.modelValue !== undefined && '_id' in this.modelValue && this.modelValue._id !== '0';
-    console.debug('UserEditor mounted, isEditionMode:', this.isEditionMode);
-    this.title = this.isEditionMode
-        ? this.t('admin.users.editor.title.update', { login: this.modelValue?.login || 'unknown' })
-        : this.t('admin.users.editor.title.create');
-    this.$nextTick(() => this.opened = true);
+    this.isEditionMode = this.id !== 'new';
+    of(this.isEditionMode).pipe(
+        switchMap(idEdit => {
+          if (idEdit) {
+            return userGet(this.id);
+          }
+          return of({
+            login: '',
+            password: '',
+            mail: '',
+            name: '',
+            roles: [],
+          });
+        }),
+    ).subscribe({
+      next: user => {
+        Object.assign(this.modelValue, user);
+        this.title = this.isEditionMode
+            ? this.t('admin.users.editor.title.update', { login: this.modelValue?.login || 'unknown' })
+            : this.t('admin.users.editor.title.create');
+        this.$nextTick(() => this.opened = true);
+      },
+      error: err => console.error('Failed to load user', err),
+    });
   }
 
   private onFieldChange(field: string): void {
@@ -229,8 +249,7 @@ export default class UserEditor extends Vue {
   }
 
   private onCancel(): void {
-    this.closeEvent = CANCEL_EVENT;
-    this.opened = false;
+    this.router.push({ name: 'admin-users' });
   }
 
   private onSaveUser(): void {
