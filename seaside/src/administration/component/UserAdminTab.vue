@@ -13,27 +13,27 @@
         <ArrowUpTrayIcon class="w-6 h-6 mr-2"/>
         {{ t('admin.users.export') }}
       </a>
-      <button class="btn btn-sm btn-error mb-2 mr-2 join-item md:m-0 capitalize" :disabled="!checkState"
+      <button :disabled="!checkState" class="btn btn-sm btn-error mb-2 mr-2 join-item md:m-0 capitalize"
               @click="onUserBulkDelete()">
         <TrashIcon class="w-6 h-6"/>
         {{ t('admin.users.delete') }}
       </button>
     </div>
-    <table class="table w-full table-sm" aria-describedby="User List">
+    <table aria-describedby="User List" class="table w-full table-sm">
       <thead>
       <tr>
-        <th scope="col" class="w-1">
-          <input type="checkbox" class="checkbox" ref="globalCheck"
-                 :checked="checkState" @change="onSelectAll()"/>
+        <th class="w-1" scope="col">
+          <input ref="globalCheck" :checked="checkState" class="checkbox"
+                 type="checkbox" @change="onSelectAll()"/>
         </th>
-        <th scope="col" class="capitalize">{{ t('admin.users.login') }}</th>
-        <th scope="col" class="capitalize">{{ t('admin.users.username') }}</th>
-        <th scope="col" class="capitalize">{{ t('admin.users.mail') }}</th>
-        <th scope="col" class="capitalize">{{ t('admin.users.role') }}</th>
-        <th scope="col" class="capitalize">{{ t('admin.users.createdAt') }}</th>
-        <th scope="col" class="capitalize">{{ t('admin.users.lastActivity') }}</th>
+        <th class="capitalize" scope="col">{{ t('admin.users.login') }}</th>
+        <th class="capitalize" scope="col">{{ t('admin.users.username') }}</th>
+        <th class="capitalize" scope="col">{{ t('admin.users.mail') }}</th>
+        <th class="capitalize" scope="col">{{ t('admin.users.role') }}</th>
+        <th class="capitalize" scope="col">{{ t('admin.users.createdAt') }}</th>
+        <th class="capitalize" scope="col">{{ t('admin.users.lastActivity') }}</th>
         <th scope="col">
-          <div class="join justify-end" v-if="pagesNumber > 1">
+          <div v-if="pagesNumber > 1" class="join justify-end">
             <button v-for="i in pagesNumber" :key="i"
                     :class="{'btn-active': activePage === i-1}" class="join-item btn btn-sm"
                     v-on:click="loadUserPage(i-1).subscribe()">
@@ -45,15 +45,15 @@
       </thead>
       <tbody>
       <tr v-for="vUser in this.users" v-bind:key="vUser.data._id">
-        <th scope="row" class="w-1">
+        <th class="w-1" scope="row">
           <label>
-            <input type="checkbox" class="checkbox" v-model="vUser.isSelected">
+            <input v-model="vUser.isSelected" class="checkbox" type="checkbox">
             <span class="checkbox-mark"></span>
           </label>
         </th>
         <td>
           {{ vUser.data.login }}
-          <div class="tooltip tooltip-right tooltip-secondary" :data-tip="vUser.data._id">
+          <div :data-tip="vUser.data._id" class="tooltip tooltip-right tooltip-secondary">
             <button class="btn btn-circle btn-xs btn-ghost -ml-2"
                     @click.prevent.stop="onCopyToClipboard(vUser.data._id)">
               <InformationCircleIcon class="w-3 h-3"/>
@@ -65,7 +65,8 @@
         <td>{{ roleFromPermission(vUser.data.roles) }}</td>
         <td>{{ vUser.data._createdAt }}</td>
         <td>
-          <span class="tooltip tooltip-top tooltip-secondary text-left" :data-tip="vUser.data._loginIP">{{ vUser.data._loginAt }}</span>
+          <span :data-tip="vUser.data._loginIP"
+                class="tooltip tooltip-top tooltip-secondary text-left">{{ vUser.data._loginAt }}</span>
         </td>
         <td>
           <div class="join justify-end w-full">
@@ -81,15 +82,15 @@
       </tbody>
       <tfoot>
       <tr>
-        <th scope="col" class="w-1"></th>
-        <th scope="col" class="capitalize">{{ t('admin.users.login') }}</th>
-        <th scope="col" class="capitalize">{{ t('admin.users.username') }}</th>
-        <th scope="col" class="capitalize">{{ t('admin.users.mail') }}</th>
-        <th scope="col" class="capitalize">{{ t('admin.users.role') }}</th>
-        <th scope="col" class="capitalize">{{ t('admin.users.createdAt') }}</th>
-        <th scope="col" class="capitalize">{{ t('admin.users.lastActivity') }}</th>
+        <th class="w-1" scope="col"></th>
+        <th class="capitalize" scope="col">{{ t('admin.users.login') }}</th>
+        <th class="capitalize" scope="col">{{ t('admin.users.username') }}</th>
+        <th class="capitalize" scope="col">{{ t('admin.users.mail') }}</th>
+        <th class="capitalize" scope="col">{{ t('admin.users.role') }}</th>
+        <th class="capitalize" scope="col">{{ t('admin.users.createdAt') }}</th>
+        <th class="capitalize" scope="col">{{ t('admin.users.lastActivity') }}</th>
         <th scope="col">
-          <div class="join justify-end" v-if="pagesNumber > 1">
+          <div v-if="pagesNumber > 1" class="join justify-end">
             <button v-for="i in pagesNumber" :key="i"
                     :class="{'btn-active': activePage === i-1}" class="join-item btn btn-sm"
                     v-on:click="loadUserPage(i-1).subscribe()">
@@ -102,8 +103,8 @@
     </table>
     <UserEditor v-if="editorOpened"
                 v-model="activeUser"
-                @submit="onUserSubmit"
-                @cancel="editorOpened = false"/>
+                @cancel="editorOpened = false"
+                @submit="onUserSubmit"/>
   </div>
 </template>
 
@@ -117,7 +118,7 @@ import { Observable } from 'rxjs';
 import { filter, map, switchMap, tap } from 'rxjs/operators';
 import { UserView } from '@/administration/model/UserView';
 import UserEditor from '@/administration/component/usereditor/UserEditor.vue';
-import { User } from '@/security/model/User';
+import { ANONYMOUS, User, UserCreated } from '@/security/model/User';
 import { AlertResponse, AlertType } from '@/common/components/alertdialog/AlertDialog.types';
 import {
   ArrowDownTrayIcon,
@@ -128,6 +129,7 @@ import {
   TrashIcon,
 } from '@heroicons/vue/24/outline';
 import { useI18n } from 'vue-i18n';
+import { TranslatorFunction } from '@/i18n';
 
 @Component({
   name: 'UserAdminTab',
@@ -143,16 +145,24 @@ import { useI18n } from 'vue-i18n';
   setup() {
     const { t } = useI18n();
     return { t };
-  }
+  },
 })
 export default class UserAdminTab extends Vue {
-  private t;
+  private readonly t!: TranslatorFunction;
   private users: UserView[] = [];
   private pagesNumber = 0;
   private activePage = 0;
   private editorOpened: boolean = false;
-  private activeUser: User;
+  private activeUser: User | undefined;
   private activeUserChange: UserChangement = { properties: false, roles: [] };
+
+  get checkState(): boolean {
+    const userView: UserView | undefined = this.users.find(f => f.isSelected);
+    const isOneSelected = userView !== undefined;
+    if (this.$refs?.['globalCheck'])
+      (this.$refs['globalCheck'] as HTMLInputElement).indeterminate = isOneSelected && this.users.some(f => !f.isSelected);
+    return isOneSelected;
+  }
 
   mounted(): void {
     this.loadUserPage(0).subscribe({
@@ -164,18 +174,10 @@ export default class UserAdminTab extends Vue {
     });
   }
 
-  get checkState(): boolean {
-    const userView: UserView | undefined = this.users.find(f => f.isSelected);
-    const isOneSelected = userView !== undefined;
-    if (this.$refs?.['globalCheck'])
-      this.$refs['globalCheck'].indeterminate = isOneSelected && this.users.find(f => !f.isSelected) !== undefined;
-    return isOneSelected;
-  }
-
   loadUserPage(page: number): Observable<UserView[]> {
     const resolvedPage = Math.max(page, 0);
     return userList(resolvedPage).pipe(
-        map(page => {
+        switchMap(page => {
           this.pagesNumber = page.totalPage;
           this.activePage = page.currentPage;
           return page.data;
@@ -183,6 +185,10 @@ export default class UserAdminTab extends Vue {
         map(users => users.map(user => ({ isSelected: false, data: user }))),
         tap(users => this.users = users),
     );
+  }
+
+  public unmounted(): void {
+    actionServiceUnregisterFunction();
   }
 
   private roleFromPermission(perm: string[]): string {
@@ -202,7 +208,7 @@ export default class UserAdminTab extends Vue {
   }
 
   private onUserSubmit(): void {
-    const edit = '_id' in this.activeUser && this.activeUser._id !== undefined;
+    const edit = this.activeUser && '_id' in this.activeUser && this.activeUser._id !== undefined;
     if (edit) {
       this.updateActiveUser();
     } else {
@@ -211,29 +217,38 @@ export default class UserAdminTab extends Vue {
   }
 
   private createActiveUser(): void {
-    userCreate(this.activeUser).subscribe({
-      next: user => {
-        this.users.push({ isSelected: false, data: user });
-        notificationService.pushSimpleOk(this.t('admin.users.messages.userCreatedSuccessfully', {login: user.login}));
-        this.editorOpened = false;
-      },
-      error: e => {
-        notificationService.pushSimpleError(e.message);
-        this.editorOpened = false;
-      },
-    });
+    if (this.activeUser) {
+      const created: UserCreated = {
+        login: this.activeUser.login,
+        name: this.activeUser.name,
+        mail: this.activeUser.mail,
+        roles: this.activeUser.roles,
+        password: '',
+      };
+      userCreate(created).subscribe({
+        next: user => {
+          this.users.push({ isSelected: false, data: user });
+          notificationService.pushSimpleOk(this.t('admin.users.messages.userCreatedSuccessfully', { login: user.login }));
+          this.editorOpened = false;
+        },
+        error: e => {
+          notificationService.pushSimpleError(e.message);
+          this.editorOpened = false;
+        },
+      });
+    }
   }
 
   private updateActiveUser(): void {
-    const idx = this.users.findIndex(uv => uv.data._id === this.activeUser._id);
-    if (!this.activeUser._id) {
+    const idx = this.users.findIndex(uv => this.activeUser && uv.data._id === this.activeUser._id);
+    if (!this.activeUser || !this.activeUser._id) {
       console.error('Active user has no ID !');
       return;
     }
     userUpdate(this.activeUser._id, this.activeUser).subscribe({
       next: user => {
         this.users.splice(idx, 1, { isSelected: false, data: user });
-        notificationService.pushSimpleOk(this.t('admin.users.messages.userUpdatedSuccessfully', {login: user.login}));
+        notificationService.pushSimpleOk(this.t('admin.users.messages.userUpdatedSuccessfully', { login: user.login }));
         this.editorOpened = false;
       },
       error: e => {
@@ -244,7 +259,7 @@ export default class UserAdminTab extends Vue {
   }
 
   private onUserAdd(): void {
-    this.activeUser = { roles: [] } as User;
+    this.activeUser = { ...ANONYMOUS };
     this.activeUserChange = { properties: false, roles: [] };
     this.editorOpened = true;
   }
@@ -256,8 +271,7 @@ export default class UserAdminTab extends Vue {
   }
 
   private onUserDelete(user: User): void {
-    console.log(user)
-    const message = this.t('admin.users.messages.configUsersDeletion', {login: user.name}, 1);
+    const message = this.t('admin.users.messages.configUsersDeletion', { login: user.name }, 1);
     this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
         filter(response => response === AlertResponse.CONFIRM),
         switchMap(() => userDelete(user._id ? [user._id] : [])),
@@ -268,10 +282,10 @@ export default class UserAdminTab extends Vue {
           });
         }),
     ).subscribe({
-      next: () => notificationService.pushSimpleOk(this.t('admin.users.messages.userDeletedSuccessfully', {login: user.login})),
+      next: () => notificationService.pushSimpleOk(this.t('admin.users.messages.userDeletedSuccessfully', { login: user.login })),
       error: e => {
         console.error(e);
-        notificationService.pushSimpleError(this.t('admin.users.messages.unableDeleteUser', {login: user.login}));
+        notificationService.pushSimpleError(this.t('admin.users.messages.unableDeleteUser', { login: user.login }));
       },
     });
   }
@@ -300,10 +314,6 @@ export default class UserAdminTab extends Vue {
         notificationService.pushSimpleError(this.t('admin.users.messages.unableDeleteUser', ids.length));
       },
     });
-  }
-
-  public unmounted(): void {
-    actionServiceUnregisterFunction();
   }
 }
 

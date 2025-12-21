@@ -59,4 +59,8 @@ export const lazyloadTranslations: NavigationGuardWithThis<undefined> = async (t
     return next();
 };
 
-export type TranslatorFunction = (key: string) => string;
+export type TranslatorFunction = (
+    key: string,
+    options?: { [key: string]: string | RegExp } | number,
+    plurals?: number,
+) => string;

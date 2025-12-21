@@ -37,7 +37,7 @@ export const ANONYMOUS: User = {
     _id: '0',
     _createdAt: new Date(0).toLocaleString(),
     login: '',
-    name: 'Anonymous',
+    name: '',
     mail: '',
     roles: [],
 };
