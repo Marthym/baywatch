@@ -19,7 +19,7 @@ export type UserCreated = {
     login: string;
     name: string;
     mail: string;
-    password: string;
+    password?: string;
     roles: string[];
 }
 
@@ -30,8 +30,7 @@ type UserMeta = {
     _loginIP?: string;
 }
 
-export type User = UserMeta
-    & Omit<UserCreated, 'password'> & { password?: string; };
+export type User = UserMeta & UserCreated;
 
 export const ANONYMOUS: User = {
     _id: '0',

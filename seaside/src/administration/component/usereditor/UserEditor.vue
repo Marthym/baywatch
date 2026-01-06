@@ -2,7 +2,7 @@
   <curtain-modal v-slot="curtainModal" @leave="onCancel()">
     <form v-if="opened"
           class="justify-self-end flex flex-col text-base-content lg:w-3/4 w-full h-full overflow-auto p-6"
-          @click.stop @submit.prevent="onSaveUser">
+          @click.stop @submit.prevent="onSaveUser(curtainModal)">
       <h2 class="card-title text-2xl pb-2 w-full first-letter:capitalize">{{ title }}</h2>
       <p class="text-sm text-base-content/70 mb-4">
         {{ isEditionMode ? t('admin.users.editor.subtitle.update') : t('admin.users.editor.subtitle.create') }}
@@ -73,7 +73,7 @@
 
           <label class="label block mt-2">
             {{ t('admin.users.confirmation') }}
-            <input v-model="passwordConfirm"
+            <input v-model="modelValue.passwordConfirm"
                    :class="{'input-error': errors.has('confirm')}"
                    :type="visible.password?'text':'password'"
                    class="input input-bordered w-full block"
@@ -100,7 +100,7 @@
           {{ t('dialog.cancel') }}
         </button>
         <button :disabled="!hasValidRoles" class="btn btn-primary first-letter:uppercase"
-                @click.prevent.stop="onSaveUser">
+                @click.prevent.stop="onSaveUser(curtainModal)">
           {{ t('dialog.save') }}
         </button>
       </div>
@@ -110,7 +110,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
-import { UserAccountFormSchema, UserCreated } from '@/security/model/User';
+import { UserCreated } from '@/security/model/User';
 import UserRoleInput from '@/administration/component/usereditor/UserRoleInput.vue';
 import { ULID_PATTERN } from '@/common/services/RegexPattern';
 import { EyeIcon } from '@heroicons/vue/24/outline';
@@ -119,10 +119,12 @@ import { EyeSlashIcon } from '@heroicons/vue/24/solid';
 import { passwordAnonymousCheckStrength, passwordGenerate } from '@/security/services/PasswordService';
 import { TranslatorFunction } from '@/i18n';
 import { parse, pick, ValiError } from 'valibot';
-import CurtainModal from '@/common/components/CurtainModal.vue';
-import { userGet } from '@/security/services/UserService';
+import CurtainModal, { CurtainModalSlot } from '@/common/components/CurtainModal.vue';
+import { userCreate, userGet, userUpdate } from '@/security/services/UserService';
 import { of, switchMap } from 'rxjs';
 import { Router, useRoute, useRouter } from 'vue-router';
+import { UserAccountForm, UserAccountFormSchema } from '@/administration/model/User';
+import notificationService from '@/services/notification/NotificationService';
 
 const CANCEL_EVENT: string = 'cancel';
 const SUBMIT_EVENT: string = 'submit';
@@ -145,14 +147,14 @@ export default class UserEditor extends Vue {
   private readonly id!: string;
   private readonly t!: TranslatorFunction;
   private readonly router!: Router;
-  private modelValue: UserCreated = {
+  private modelValue: UserAccountForm = {
     login: '',
     password: '',
+    passwordConfirm: '',
     mail: '',
     name: '',
     roles: [],
   };
-  private passwordConfirm: string = '';
   private title: string = '';
   private isEditionMode: boolean = false;
   private errors: Map<string, string> = new Map<string, string>();
@@ -176,7 +178,6 @@ export default class UserEditor extends Vue {
           }
           return of({
             login: '',
-            password: '',
             mail: '',
             name: '',
             roles: [],
@@ -185,6 +186,8 @@ export default class UserEditor extends Vue {
     ).subscribe({
       next: user => {
         Object.assign(this.modelValue, user);
+        delete this.modelValue.password;
+        delete this.modelValue.passwordConfirm;
         this.title = this.isEditionMode
             ? this.t('admin.users.editor.title.update', { login: this.modelValue?.login || 'unknown' })
             : this.t('admin.users.editor.title.create');
@@ -205,7 +208,7 @@ export default class UserEditor extends Vue {
         let randomValue = new Uint32Array(1);
         crypto.getRandomValues(randomValue);
         this.modelValue.password = passwords[randomValue[0] % 19];
-        this.passwordConfirm = this.modelValue.password;
+        this.modelValue.passwordConfirm = this.modelValue.password;
       },
       error: err => this.errors.set(FIELD_PASSWORD, err.message),
     });
@@ -241,10 +244,10 @@ export default class UserEditor extends Vue {
   }
 
   private onBlurConfirmPassword(): void {
-    if (this.passwordConfirm && this.passwordConfirm.length > 3 && this.passwordConfirm === this.modelValue.password) {
+    if (this.modelValue.passwordConfirm && this.modelValue.passwordConfirm.length > 3 && this.modelValue.passwordConfirm === this.modelValue.password) {
       this.errors.delete(FIELD_CONFIRM);
     } else {
-      this.errors.set(FIELD_CONFIRM, this.t('admin.users.editor.message.wrong_confirmation'));
+      this.errors.set(FIELD_CONFIRM, this.t('admin.users.editor.message.confirm.different.password'));
     }
   }
 
@@ -252,15 +255,33 @@ export default class UserEditor extends Vue {
     this.router.push({ name: 'admin-users' });
   }
 
-  private onSaveUser(): void {
+  private onSaveUser(curtainModal: CurtainModalSlot): void {
     try {
       parse(UserAccountFormSchema, this.modelValue);
+      if (!this.isEditionMode && !this.modelValue.password) {
+        this.errors.set('password', this.t('admin.users.editor.message.password.too.short'));
+        return;
+      }
       if (!this.hasValidRoles) {
         this.errors.set('roles', this.t('admin.users.editor.message.role_incorrect', { pattern: ULID_PATTERN }));
+        return;
       }
 
-      this.closeEvent = SUBMIT_EVENT;
-      this.opened = false;
+      const user: UserCreated = {
+        login: this.modelValue.login,
+        name: this.modelValue.name,
+        mail: this.modelValue.mail,
+        password: this.modelValue.password,
+        roles: this.modelValue.roles,
+      };
+      const persistFunction = (this.isEditionMode) ? () => userUpdate(this.id, user) : () => userCreate(user);
+      persistFunction().subscribe({
+        next: created => {
+          notificationService.pushSimpleOk(this.t('admin.users.editor.message.save.successfully', { login: created.login }));
+          curtainModal.close();
+        },
+        error: () => notificationService.pushSimpleError(this.t('admin.users.editor.message.save.error')),
+      });
     } catch (e) {
       this.handleValiError(e as ValiError<typeof UserAccountFormSchema>);
     }
@@ -271,15 +292,8 @@ export default class UserEditor extends Vue {
     this.modelValue.roles.splice(0, this.modelValue.roles.length, ...event);
   }
 
-  private onTransitionLeave(): void {
-    if (this.closeEvent === CANCEL_EVENT) {
-      this.$emit(this.closeEvent);
-    } else {
-      this.$emit(this.closeEvent, this.modelValue);
-    }
-  }
-
   private handleValiError(error: ValiError<typeof UserAccountFormSchema>): void {
+    console.debug(error.issues)
     this.errors.clear();
     error.issues.forEach((value) => {
       if (value.path) {

@@ -12,7 +12,6 @@ export const fr_FR = {
     'admin.users.createdAt': 'créé le',
     'admin.users.lastActivity': 'dernière activité',
     'admin.users.messages.userIdCopied': 'Identifiant copié dans le presse papier !',
-    'admin.users.messages.userCreatedSuccessfully': 'Utilisateur {login} créé avec succès',
     'admin.users.messages.userUpdatedSuccessfully': 'Utilisateur {login} modifié avec succès',
     'admin.users.messages.userDeletedSuccessfully': 'Utilisateur {login} supprimé avec succès ! ' +
         '| Tous les utilisateurs supprimés avec succès !',
@@ -21,19 +20,6 @@ export const fr_FR = {
     'admin.users.messages.configUsersDeletion': 'NOP ' +
         '| Etes-vous certain de vouloir supprimer l’utilisateur {login} ? ' +
         '| Etes-vous certain de vouloir supprimer {count} utilisateurs ?',
-    'admin.users.editor.message.password_too_short': 'Ce mot de passe n’est pas sécurisé, il est crackable instantanément !',  //NOSONAR
-    'admin.users.editor.message.login_field_required': 'Le pseudo est nécessaire pour tester la robustesse du mot de passe',
-    'admin.users.editor.message.wrong_confirmation': 'La confirmation diffère du mot de passe !',
-    'admin.users.editor.message.login_mandatory': 'La pseudo est obligatoire !',
-    'admin.users.editor.message.name_mandatory': 'Le nom est obligatoire !',
-    'admin.users.editor.message.mail_mandatory': 'L’adresse mail est obligatoire',
-    'admin.users.editor.message.mail_incorrect': 'L’adresse mail est mal formatté',
-    'admin.users.editor.message.role_mandatory': 'Un rôle est obligatoire !',
-    'admin.users.editor.message.role_incorrect': 'Tous les rôles doivent souvre ce format {pattern}',
-    'admin.users.editor.message.password_mandatory': 'Le mot de passe est obligatoire !',  //NOSONAR
-    'admin.users.editor.button.generate': 'générer',
-    'admin.users.editor.button.cancel': 'Annuler',
-    'admin.users.editor.button.save': 'Enregistrer',
     'admin.users.roles.title': 'rôle(s) de l’utilisateur',
     'admin.users.roles.name': 'nom',
     'admin.users.roles.scope': 'scope',
