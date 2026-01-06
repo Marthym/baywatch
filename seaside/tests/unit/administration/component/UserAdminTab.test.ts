@@ -4,6 +4,8 @@ import { createI18n } from 'vue-i18n';
 import UserAdminTab from '@/administration/component/UserAdminTab.vue';
 import { of } from 'rxjs';
 import { userList } from '@/security/services/UserService';
+import { createRouter, createWebHashHistory } from 'vue-router';
+import UserEditor from '@/administration/component/usereditor/UserEditor.vue';
 
 vi.mock('@/security/services/UserService', () => {
     return {
@@ -19,10 +21,21 @@ describe('UserAdminTab', () => {
             missingWarn: false,
             messages: { 'en': {} },
         });
+        const router = createRouter({
+            history: createWebHashHistory(),
+            routes: [
+                {
+                    path: '/admin/users', component: UserAdminTab, name: 'admin-users', children: [
+                        { path: ':userId', component: UserEditor, name: 'admin-users-editor' },
+                    ],
+                },
+                { path: '/:catchAll(.*)*', redirect: '/admin/users/news' }
+            ],
+        });
 
         const wrapper = mount(UserAdminTab, {
             global: {
-                plugins: [i18n],
+                plugins: [i18n, router],
             },
         });
         expect(wrapper.find('table').exists()).toBe(true);
