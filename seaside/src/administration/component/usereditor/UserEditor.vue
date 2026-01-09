@@ -253,6 +253,7 @@ export default class UserEditor extends Vue {
 
   private onCancel(): void {
     this.router.push({ name: 'admin-users' });
+    console.log('Navigating back to admin-users');
   }
 
   private onSaveUser(curtainModal: CurtainModalSlot): void {

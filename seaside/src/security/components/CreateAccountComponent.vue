@@ -34,8 +34,8 @@
           <button :class="{'input-error': errors.has('password')}"
                   class="btn btn-neutral input input-bordered border-x-0 join-item max-w-fit focus:outline-hidden"
                   @click.prevent.stop="passwordVisible = !passwordVisible">
-            <EyeIcon v-if="!passwordVisible" class="h-6 w-6 opacity-50"/>
-            <EyeSlashIcon v-else class="h-6 w-6 opacity-50"/>
+            <EyeIcon v-if="!passwordVisible" class="h-6 w-6 opacity-50" alt="Show password"/>
+            <EyeSlashIcon v-else class="h-6 w-6 opacity-50" alt="Hide password"/>
           </button>
           <button :class="{'border-error border': errors.has('password')}"
                   class="btn btn-soft join-item"

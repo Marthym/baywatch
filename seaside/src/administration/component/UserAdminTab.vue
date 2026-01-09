@@ -46,10 +46,8 @@
       <tbody>
       <tr v-for="vUser in this.users" v-bind:key="vUser.data._id">
         <th class="w-1" scope="row">
-          <label>
-            <input v-model="vUser.isSelected" class="checkbox" type="checkbox">
-            <span class="checkbox-mark"></span>
-          </label>
+          <input v-model="vUser.isSelected" class="checkbox" type="checkbox"/>
+          <span class="checkbox-mark"></span>
         </th>
         <td>
           {{ vUser.data.login }}
