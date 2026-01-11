@@ -76,7 +76,7 @@
             <input v-model="modelValue.passwordConfirm"
                    :class="{'input-error': errors.has('confirm')}"
                    :type="visible.password?'text':'password'"
-                   class="input input-bordered w-full block"
+                   class="input input-bordered w-full block _js_input-confirm"
                    @blur="onBlurConfirmPassword"
                    @input="onFieldChange('confirm')">
 
@@ -99,7 +99,7 @@
         <button class="btn first-letter:uppercase" @click.prevent.stop="onCancel">
           {{ t('dialog.cancel') }}
         </button>
-        <button :disabled="!hasValidRoles" class="btn btn-primary first-letter:uppercase"
+        <button :disabled="!hasValidRoles" class="btn btn-primary first-letter:uppercase _js_btn-save"
                 @click.prevent.stop="onSaveUser(curtainModal)">
           {{ t('dialog.save') }}
         </button>
@@ -263,6 +263,7 @@ export default class UserEditor extends Vue {
         this.errors.set('password', this.t('admin.users.editor.message.password.too.short'));
         return;
       }
+
       if (!this.hasValidRoles) {
         this.errors.set('roles', this.t('admin.users.editor.message.role_incorrect', { pattern: ULID_PATTERN }));
         return;
@@ -294,7 +295,6 @@ export default class UserEditor extends Vue {
   }
 
   private handleValiError(error: ValiError<typeof UserAccountFormSchema>): void {
-    console.debug(error.issues)
     this.errors.clear();
     error.issues.forEach((value) => {
       if (value.path) {
