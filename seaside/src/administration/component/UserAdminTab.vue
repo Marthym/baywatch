@@ -111,13 +111,13 @@
 import { Component, Vue } from 'vue-facing-decorator';
 
 import notificationService from '@/services/notification/NotificationService';
-import { userCreate, userDelete, userList, userUpdate } from '@/security/services/UserService';
+import { userDelete, userList } from '@/security/services/UserService';
 import { actionServiceRegisterFunction, actionServiceUnregisterFunction } from '@/common/services/ReloadActionService';
 import { Observable } from 'rxjs';
 import { filter, map, switchMap, tap } from 'rxjs/operators';
 import { UserView } from '@/administration/model/UserView';
 import UserEditor from '@/administration/component/usereditor/UserEditor.vue';
-import { ANONYMOUS, User, UserCreated } from '@/security/model/User';
+import { User } from '@/security/model/User';
 import { AlertResponse, AlertType } from '@/common/components/alertdialog/AlertDialog.types';
 import {
   ArrowDownTrayIcon,
@@ -129,7 +129,7 @@ import {
 } from '@heroicons/vue/24/outline';
 import { useI18n } from 'vue-i18n';
 import { TranslatorFunction } from '@/i18n';
-import { RouteLocation, Router, useRoute, useRouter } from 'vue-router';
+import { RouteLocation, useRoute } from 'vue-router';
 
 @Component({
   name: 'UserAdminTab',
@@ -144,21 +144,16 @@ import { RouteLocation, Router, useRoute, useRouter } from 'vue-router';
   },
   setup() {
     const { t } = useI18n();
-    const router = useRouter();
     const route = useRoute();
-    return { t, router, route };
+    return { t, route };
   },
 })
 export default class UserAdminTab extends Vue {
   private readonly t!: TranslatorFunction;
-  private readonly router!: Router;
   private readonly route!: RouteLocation;
   private users: UserView[] = [];
   private pagesNumber = 0;
   private activePage = 0;
-  private editorOpened: boolean = false;
-  private activeUser: User | undefined;
-  private activeUserChange: UserChangement = { properties: false, roles: [] };
 
   get checkState(): boolean {
     const userView: UserView | undefined = this.users.find(f => f.isSelected);
@@ -211,69 +206,6 @@ export default class UserAdminTab extends Vue {
     notificationService.pushSimpleOk(this.t('admin.users.messages.userIdCopied'));
   }
 
-  private onUserSubmit(): void {
-    const edit = this.activeUser && '_id' in this.activeUser && this.activeUser._id !== undefined;
-    if (edit) {
-      this.updateActiveUser();
-    } else {
-      this.createActiveUser();
-    }
-  }
-
-  private createActiveUser(): void {
-    if (this.activeUser) {
-      const created: UserCreated = {
-        login: this.activeUser.login,
-        name: this.activeUser.name,
-        mail: this.activeUser.mail,
-        roles: this.activeUser.roles,
-        password: '',
-      };
-      userCreate(created).subscribe({
-        next: user => {
-          this.users.push({ isSelected: false, data: user });
-          notificationService.pushSimpleOk(this.t('admin.users.messages.userCreatedSuccessfully', { login: user.login }));
-          this.editorOpened = false;
-        },
-        error: e => {
-          notificationService.pushSimpleError(e.message);
-          this.editorOpened = false;
-        },
-      });
-    }
-  }
-
-  private updateActiveUser(): void {
-    const idx = this.users.findIndex(uv => this.activeUser && uv.data._id === this.activeUser._id);
-    if (!this.activeUser || !this.activeUser._id) {
-      console.error('Active user has no ID !');
-      return;
-    }
-    userUpdate(this.activeUser._id, this.activeUser).subscribe({
-      next: user => {
-        this.users.splice(idx, 1, { isSelected: false, data: user });
-        notificationService.pushSimpleOk(this.t('admin.users.messages.userUpdatedSuccessfully', { login: user.login }));
-        this.editorOpened = false;
-      },
-      error: e => {
-        notificationService.pushSimpleError(e.message);
-        this.editorOpened = false;
-      },
-    });
-  }
-
-  private onUserAdd(): void {
-    this.activeUser = { ...ANONYMOUS };
-    this.activeUserChange = { properties: false, roles: [] };
-    this.router.push('/admin/users/new');
-  }
-
-  private onUserEdit(user: User): void {
-    this.activeUser = { ...user };
-    this.activeUserChange = { properties: false, roles: [] };
-    this.editorOpened = true;
-  }
-
   private onUserDelete(user: User): void {
     const message = this.t('admin.users.messages.configUsersDeletion', { login: user.name }, 1);
     this.$alert.fire(message, AlertType.CONFIRM_DELETE).pipe(
@@ -321,8 +253,4 @@ export default class UserAdminTab extends Vue {
   }
 }
 
-type UserChangement = {
-  properties: boolean,
-  roles: { type: 'grant' | 'revoke', perm: string }[]
-}
 </script>

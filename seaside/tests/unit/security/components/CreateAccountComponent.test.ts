@@ -1,7 +1,7 @@
-import { describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { createI18n } from 'vue-i18n';
-import { createRouter, createWebHashHistory } from 'vue-router';
+import { createI18n, I18n } from 'vue-i18n';
+import { createRouter, createWebHashHistory, Router } from 'vue-router';
 import CreateAccountComponent from '@/security/components/CreateAccountComponent.vue';
 import { passwordAnonymousCheckStrength, passwordGenerate } from '@/security/services/PasswordService';
 import { of, throwError } from 'rxjs';
@@ -26,33 +26,63 @@ vi.mock('@/services/notification/NotificationService', () => ({
 }));
 
 describe('CreateAccountComponent', () => {
-    test('render feeds register window', async () => {
+    const i18n = createI18n({
+        legacy: false,
+        missingWarn: false,
+        messages: {
+            'en': {
+                'security.register.dialog.register': 'Register',
+                'security.register.title': 'Register Curtain Title',
+                'security.register.generate': 'Generate',
+                'security.register.message.save.successfully': 'Saved',
+            },
+        },
+    });
 
-        const i18n = createI18n({
-            legacy: false,
-            missingWarn: false,
-            messages: {
-                'en': {
-                    'security.register.dialog.register': 'Register',
-                    'security.register.title': 'Register Curtain Title',
+    const router = createRouter({
+        history: createWebHashHistory(),
+        routes: [
+            { path: '/', name: 'page-login', component: CreateAccountComponent },
+            { path: '/register', component: CreateAccountComponent, name: 'security-register' },
+        ],
+    });
+
+    const closeSpy = vi.fn();
+
+    const mountWrapper = async (i18n: I18n<any>, router: Router, close: Function) => {
+        const vueWrapper = mount(CreateAccountComponent, {
+            global: {
+                plugins: [i18n, router],
+                stubs: {
+                    'curtain-modal': { template: '<div><slot :close="close" /></div>', methods: { close: close } },
+                    EyeIcon: true,
+                    EyeSlashIcon: true,
                 },
             },
         });
+        await vueWrapper.vm.$nextTick();
+        return vueWrapper;
+    };
 
-        const router = createRouter({
-            history: createWebHashHistory(),
-            routes: [
-                { path: '/', name: 'page-login', component: CreateAccountComponent },
-                { path: '/register', component: CreateAccountComponent, name: 'security-register' },
-            ],
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.mocked(passwordGenerate).mockReturnValue(of(['random-password']));
+        vi.stubGlobal('crypto', {
+            getRandomValues: vi.fn(),
         });
 
-        const wrapper = mount(CreateAccountComponent, {
-            global: {
-                plugins: [i18n, router],
-            },
-        });
+        const weakResponse = of({ isSecure: false, message: 'Too weak', entropy: 1 });
+        const okResponse = of({ isSecure: true, message: '', entropy: 10 });
+        vi.mocked(passwordAnonymousCheckStrength)
+            .mockReturnValueOnce(weakResponse)
+            .mockReturnValueOnce(okResponse);
 
+        vi.mocked(passwordAnonymousCheckStrength).mockReturnValue(of({ isSecure: true, message: '', entropy: 10 }));
+        vi.mocked(userCreate).mockReturnValue(of({ login: 'neo' } as User));
+    })
+
+    test('render feeds register window', async () => {
+        const wrapper = await mountWrapper(i18n, router, closeSpy);
         const element = await vi.waitFor(
             () => wrapper.find('h2').exists()
                 ? Promise.resolve(wrapper.find('h2'))
@@ -65,36 +95,12 @@ describe('CreateAccountComponent', () => {
     });
 
     test('click generate button should generate password and clear error', async () => {
+        const wrapper = await mountWrapper(i18n, router, closeSpy);
 
-        const i18n = createI18n({
-            legacy: false,
-            missingWarn: false,
-            messages: { 'en': { 'security.register.generate': 'Generate' } },
-        });
-
-        const router = createRouter({
-            history: createWebHashHistory(),
-            routes: [{ path: '/', component: CreateAccountComponent }],
-        });
-
-        vi.mocked(passwordGenerate).mockReturnValue(of(['random-password']));
-        vi.stubGlobal('crypto', {
-            getRandomValues: (arr: Uint32Array) => {
-                arr[0] = 0;
-                return arr;
-            },
-        });
-
-        const wrapper = mount(CreateAccountComponent, {
-            global: {
-                plugins: [i18n, router],
-                stubs: {
-                    'curtain-modal': { template: '<div><slot :close="() => {}" /></div>' },
-                    EyeIcon: true,
-                    EyeSlashIcon: true,
-                },
-            },
-        });
+        await wrapper.find('input[type="text"]').setValue('neo');
+        await wrapper.find('input[type="password"].join-item').trigger('focus');
+        await wrapper.find('input[type="password"].join-item').trigger('blur');
+        await wrapper.vm.$nextTick();
 
         const passwordInput = wrapper.find('input[type="password"].join-item');
         await passwordInput.setValue('');
@@ -113,34 +119,7 @@ describe('CreateAccountComponent', () => {
     });
 
     test('must display error when password is weak and remove it when it is correct', async () => {
-
-        const i18n = createI18n({
-            legacy: false,
-            missingWarn: false,
-            messages: { 'en': { 'security.register.login': 'Login' } },
-        });
-
-        const router = createRouter({
-            history: createWebHashHistory(),
-            routes: [{ path: '/', component: CreateAccountComponent }],
-        });
-
-        const weakResponse = of({ isSecure: false, message: 'Too weak', entropy: 1 });
-        const okResponse = of({ isSecure: true, message: '', entropy: 10 });
-        vi.mocked(passwordAnonymousCheckStrength)
-            .mockReturnValueOnce(weakResponse)
-            .mockReturnValueOnce(okResponse);
-
-        const wrapper = mount(CreateAccountComponent, {
-            global: {
-                plugins: [i18n, router],
-                stubs: {
-                    'curtain-modal': { template: '<div><slot :close="() => {}" /></div>' },
-                    EyeIcon: true,
-                    EyeSlashIcon: true,
-                },
-            },
-        });
+        const wrapper = await mountWrapper(i18n, router, closeSpy);
 
         await wrapper.find('input[type="text"]').setValue('neo');
         const passwordInput = wrapper.find('input[type="password"].join-item');
@@ -158,37 +137,14 @@ describe('CreateAccountComponent', () => {
     });
 
     test('must create the account and close the modal on success', async () => {
+        const wrapper = await mountWrapper(i18n, router, closeSpy);
+        const saveButton = wrapper.find('button.btn-primary');
 
-        const i18n = createI18n({
-            legacy: false,
-            missingWarn: false,
-            messages: {
-                'en': {
-                    'security.register.dialog.register': 'Register',
-                    'security.register.message.save.successfully': 'Saved',
-                },
-            },
-        });
+        await saveButton.trigger('click');
 
-        const router = createRouter({
-            history: createWebHashHistory(),
-            routes: [{ path: '/', component: CreateAccountComponent }],
-        });
-
-        vi.mocked(passwordAnonymousCheckStrength).mockReturnValue(of({ isSecure: true, message: '', entropy: 10 }));
-        vi.mocked(userCreate).mockReturnValue(of({ login: 'neo' } as User));
-        const closeSpy = vi.fn();
-
-        const wrapper = mount(CreateAccountComponent, {
-            global: {
-                plugins: [i18n, router],
-                stubs: {
-                    'curtain-modal': { template: '<div><slot :close="close" /></div>', methods: { close: closeSpy } },
-                    EyeIcon: true,
-                    EyeSlashIcon: true,
-                },
-            },
-        });
+        expect(notificationService.pushSimpleError).toHaveBeenCalledWith('security.register.message.formValidationError');
+        expect(wrapper.find('span.text-error').text()).toEqual('security.register.message.login.too.short');
+        expect(closeSpy).not.toHaveBeenCalled();
 
         wrapper.setData({
             account: {
@@ -200,7 +156,7 @@ describe('CreateAccountComponent', () => {
             },
         });
 
-        await wrapper.find('button.btn-primary').trigger('click');
+        await saveButton.trigger('click');
 
         expect(userCreate).toHaveBeenCalledWith({
             login: 'neo',
@@ -215,37 +171,10 @@ describe('CreateAccountComponent', () => {
 
     test('must display API errors and not close the modal', async () => {
 
-        const i18n = createI18n({
-            legacy: false,
-            missingWarn: false,
-            messages: {
-                'en': {
-                    'security.register.dialog.register': 'Register',
-                    'security.register.message.formValidationError': 'Form invalid',
-                },
-            },
-        });
-
-        const router = createRouter({
-            history: createWebHashHistory(),
-            routes: [{ path: '/', component: CreateAccountComponent }],
-        });
-
         vi.mocked(userCreate).mockReturnValue(
             throwError(() => ({ message: 'Already exists', properties: ['login'] })),
         );
-        const closeSpy = vi.fn();
-
-        const wrapper = mount(CreateAccountComponent, {
-            global: {
-                plugins: [i18n, router],
-                stubs: {
-                    'curtain-modal': { template: '<div><slot :close="close" /></div>', methods: { close: closeSpy } },
-                    EyeIcon: true,
-                    EyeSlashIcon: true,
-                },
-            },
-        });
+        const wrapper = await mountWrapper(i18n, router, closeSpy);
 
         wrapper.setData({
             account: {
@@ -263,4 +192,24 @@ describe('CreateAccountComponent', () => {
         expect(wrapper.find('span.text-error').text()).toEqual('Already exists');
         expect(closeSpy).not.toHaveBeenCalled();
     });
+
+    test('should compare password and confirm password', async () => {
+        const wrapper = await mountWrapper(i18n, router, closeSpy);
+
+        const passwordInput = wrapper.find('input._js_password-input');
+        const confirmPasswordInput = wrapper.find('input._js_password-confirm-input');
+
+        await passwordInput.setValue('Sup3r!Pass');
+        await confirmPasswordInput.setValue('wrong-password');
+        await confirmPasswordInput.trigger('blur');
+
+        expect(passwordInput.classes()).not.toContain('input-error');
+        expect(confirmPasswordInput.classes()).toContain('input-error');
+
+        await confirmPasswordInput.setValue('Sup3r!Pass');
+        await confirmPasswordInput.trigger('blur');
+
+        expect(passwordInput.classes()).not.toContain('input-error');
+        expect(confirmPasswordInput.classes()).not.toContain('input-error');
+    })
 });

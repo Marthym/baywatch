@@ -28,7 +28,7 @@
         <span class="label block first-letter:uppercase">{{ t('security.register.password') }}</span>
         <div class="join">
           <input v-model="account.password" :class="{'input-error': errors.has('password')}"
-                 :type="passwordVisible?'text':'password'" class="join-item input border-r-0 w-full"
+                 :type="passwordVisible?'text':'password'" class="join-item input border-r-0 w-full _js_password-input"
                  @keyup="onFieldChange('password')"
                  @blur.stop="onBlurNewPassword"/>
           <button :class="{'input-error': errors.has('password')}"
@@ -48,7 +48,7 @@
         <label class="label block">{{ t('security.register.confirmation') }}
           <input v-model="account.passwordConfirm" :class="{'input-error': errors.has('passwordConfirm')}"
                  :type="passwordVisible?'text':'password'"
-                 class="input w-full block mt-1"
+                 class="input w-full block mt-1 _js_password-confirm-input"
                  @blur="onBlurConfirmPassword"
                  @change="onFieldChange('passwordConfirm')"/>
           <span :class="{'text-error': errors.has('passwordConfirm')}" class="label">{{
