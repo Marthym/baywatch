@@ -10,10 +10,11 @@ import UserEditor from '@/administration/component/usereditor/UserEditor.vue';
 vi.mock('@/security/services/UserService', () => {
     return {
         userList: vi.fn().mockImplementation(() => of({ data: [] })),
+        userGet: vi.fn().mockImplementation(() => of({ data: {} })),
     };
 });
 
-describe('UserAdminTab', () => {
+describe('UserAdminTabs', () => {
     const i18n = createI18n({
         legacy: false,
         missingWarn: false,

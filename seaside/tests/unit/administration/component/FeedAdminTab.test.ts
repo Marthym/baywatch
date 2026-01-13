@@ -34,6 +34,7 @@ describe('FeedsAdminTab', () => {
                         { path: ':id', component: AdminFeedEditor, name: 'admin-feed-editor' },
                     ],
                 },
+                { path: '/:catchAll(.*)*', redirect: '/feeds' },
             ],
         });
 
