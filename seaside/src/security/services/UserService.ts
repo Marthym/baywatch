@@ -1,13 +1,27 @@
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { Page } from '@/common/model/Page';
 import { ConstantFilters } from '@/constants';
-import { User } from '@/security/model/User';
+import { User, UserCreated } from '@/security/model/User';
 import { send } from '@/common/services/GraphQLClient';
 import { UserListAdminResponse } from '@/security/model/UserListAdminResponse';
 
 const DEFAULT_PER_PAGE: number = 20;
 const DEFAULT_QUERY: string = `?${ConstantFilters.PER_PAGE}=${DEFAULT_PER_PAGE}&_s=login`;
+
+const USER_GET = `#graphql
+query UserGet($id: ID) {
+    userGet(id: $id) {
+        _id _createdAt _createdBy _loginAt _loginIP login name mail roles
+    }
+}`;
+
+export function userGet(id: string): Observable<User> {
+    return send<{ userGet: User }>(USER_GET, { id }).pipe(
+        map(data => data.data.userGet),
+        take(1),
+    );
+}
 
 const LOAD_USER_ADMIN_LIST_REQUEST = `#graphql
 query LoadUsersAdminList ($_p: Int = 0, $_pp: Int = ${DEFAULT_PER_PAGE}, $_s: String = "login") {
@@ -30,18 +44,21 @@ export function userList(page = 0, query: URLSearchParams = new URLSearchParams(
         map(response => ({
                 currentPage: resolvedPage,
                 totalPage: Math.ceil(response.totalCount / Number(resolvedPerPage)),
-                data: response.entities.map(user => ({
+                data: of(response.entities.map(user => ({
                     ...user,
                     _createdAt: utcToZonedTime(user._createdAt),
-                    _loginAt: (user._loginAt)?utcToZonedTime(user._loginAt):null,
-                })),
+                    _loginAt: utcToZonedTime(user._loginAt),
+                }))),
             }),
         ),
         take(1),
     );
 }
 
-function utcToZonedTime(utcDate: string): string {
+function utcToZonedTime(utcDate: string | undefined): string {
+    if (!utcDate) {
+        return new Date(0).toLocaleString();
+    }
     return new Date(utcDate).toLocaleString();
 }
 
@@ -52,7 +69,7 @@ mutation CreateNewUser ($user: UserForm) {
     }
 }`;
 
-export function userCreate(user: User): Observable<User> {
+export function userCreate(user: UserCreated): Observable<User> {
     return send<{ userCreate: User }>(USER_CREATE_REQUEST, { user: user }).pipe(
         map(data => data.data.userCreate),
         take(1),

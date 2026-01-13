@@ -1,6 +1,5 @@
 <template>
   <div class="overflow-x-auto">
-    <h3 class="font-sans text-lg border-b border-accent/40 pb-1 mb-2 w-full capitalize">{{ t('admin.users.roles.title') }}</h3>
     <table :aria-label="t('admin.users.roles.title')" class="table table-zebra table-compact">
       <thead>
       <tr class="capitalize">
@@ -12,7 +11,7 @@
       <tbody>
       <tr v-for="(role, index) in roles">
         <td>
-          <select v-model="role.name" class="select select-bordered select-sm max-w-xs w-32 w-full"
+          <select v-model="role.name" class="select select-bordered select-sm max-w-xs w-full"
                   @change="emitInputEvent">
             <option class="capitalize" :value="undefined" disabled selected>{{ t('admin.users.roles.name.default') }}</option>
             <option class="capitalize" value="USER">{{ t('admin.users.roles.name.user') }}</option>

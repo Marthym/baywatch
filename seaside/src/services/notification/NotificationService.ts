@@ -9,7 +9,7 @@ export class NotificationService {
     private readonly defaultDelay: number;
     private readonly notifs: Notification[] = [];
     private listeners: NotificationListener[] = [];
-    private timeout?: number;
+    private timeout?: ReturnType<typeof setTimeout>;
 
 
     constructor(delay: number = DEFAULT_DELAY) {
@@ -24,7 +24,7 @@ export class NotificationService {
         this.notifs.push(notif);
         if (!this.timeout) {
             const delay = notif.delay ?? this.defaultDelay;
-            this.timeout = window.setTimeout(NotificationService.onNotificationExpiration, delay, this);
+            this.timeout = globalThis.setTimeout(NotificationService.onNotificationExpiration, delay, this);
         }
         this.listeners.forEach(listener => {
             listener.onPushNotification(notif);
@@ -46,14 +46,14 @@ export class NotificationService {
 
     private static onNotificationExpiration(ns: NotificationService): void {
         if (ns.timeout) {
-            window.clearTimeout(ns.timeout);
+            globalThis.clearTimeout(ns.timeout);
             ns.timeout = undefined;
         }
         const notif = ns.notifs.shift();
         if (notif) {
             if (ns.notifs.length > 0) {
                 const delay = notif.delay ?? ns.defaultDelay;
-                ns.timeout = window.setTimeout(NotificationService.onNotificationExpiration, delay, ns);
+                ns.timeout = globalThis.setTimeout(NotificationService.onNotificationExpiration, delay, ns);
             }
             ns.listeners.forEach(listener => listener.onPopNotification(notif));
         }

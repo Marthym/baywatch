@@ -1,19 +1,23 @@
 <template>
-  <nav class="tabs tabs-border place-content-start" role="navigation">
-    <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/admin/users">
-      {{ t('admin.tab.users') }}
-    </router-link>
-    <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/admin/feeds">
-      {{ t('admin.tab.feeds') }}
-    </router-link>
-    <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/admin/config">
-      {{ t('admin.tab.config') }}
-    </router-link>
-    <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/admin/stats">
-      {{ t('admin.tab.stats') }}
-    </router-link>
-  </nav>
-  <div class="mt-5"><router-view></router-view></div>
+  <div>
+    <nav class="tabs tabs-border place-content-start" role="navigation">
+      <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/admin/users">
+        {{ t('admin.tab.users') }}
+      </router-link>
+      <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/admin/feeds">
+        {{ t('admin.tab.feeds') }}
+      </router-link>
+      <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/admin/config">
+        {{ t('admin.tab.config') }}
+      </router-link>
+      <router-link active-class="tab-active" class="tab capitalize" role="tab" to="/admin/stats">
+        {{ t('admin.tab.stats') }}
+      </router-link>
+    </nav>
+    <div class="mt-5">
+      <router-view/>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">

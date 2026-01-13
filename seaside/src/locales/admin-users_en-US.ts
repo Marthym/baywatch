@@ -1,7 +1,4 @@
-import { en_US as admin_en_US } from '@/locales/admin_en-US';
-
 export const en_US = {
-    ...admin_en_US,
     'admin.users.add': 'add',
     'admin.users.import': 'import',
     'admin.users.export': 'export',
@@ -15,28 +12,12 @@ export const en_US = {
     'admin.users.createdAt': 'created at',
     'admin.users.lastActivity': 'last activity',
     'admin.users.messages.userIdCopied': 'User ID copied on clipboard !',
-    'admin.users.messages.userCreatedSuccessfully': 'User {login} created successfully !',
     'admin.users.messages.userUpdatedSuccessfully': 'User {login} updated successfully !',
     'admin.users.messages.userDeletedSuccessfully': 'User {login} deleted successfully ! | All users deleted successfully !',
     'admin.users.messages.unableDeleteUser': 'Unable to delete user {login} ! | Unable to delete all selected users !',
     'admin.users.messages.configUsersDeletion': 'NOP ' +
         '| Delete user {login} ? ' +
         '| Delete all {count} selected users ?',
-    'admin.users.editor.title.create': 'create new user',
-    'admin.users.editor.title.update': 'update user {login}',
-    'admin.users.editor.message.password_too_short': 'This password is not secure. An attacker will find it instant !',
-    'admin.users.editor.message.login_field_required': 'Login field is required to check password strength',
-    'admin.users.editor.message.wrong_confirmation': 'The new and confirmation passwords must be the same',
-    'admin.users.editor.message.login_mandatory': 'Login is mandatory !',
-    'admin.users.editor.message.name_mandatory': 'Name is mandatory !',
-    'admin.users.editor.message.mail_mandatory': 'Mail address is mandatory !',
-    'admin.users.editor.message.mail_incorrect': 'Mail address must be syntactically correct !',
-    'admin.users.editor.message.role_mandatory': 'Role is mandatory !',
-    'admin.users.editor.message.role_incorrect': 'All role scope must match {pattern}',
-    'admin.users.editor.message.password_mandatory': 'Password is mandatory !',
-    'admin.users.editor.button.generate': 'generate',
-    'admin.users.editor.button.cancel': 'Cancel',
-    'admin.users.editor.button.save': 'Save',
     'admin.users.roles.title': 'User role(s)',
     'admin.users.roles.name': 'name',
     'admin.users.roles.scope': 'scope',

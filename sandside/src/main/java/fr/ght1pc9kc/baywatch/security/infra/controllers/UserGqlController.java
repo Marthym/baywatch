@@ -52,6 +52,13 @@ public class UserGqlController {
     private final UserMapper userMapper;
 
     @QueryMapping
+    public Mono<Map<String, Object>> userGet(@Argument("id") String id) {
+        MapType gqlType = mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class);
+        return userService.get(id)
+                .map(e -> mapper.convertValue(e, gqlType));
+    }
+
+    @QueryMapping
     @PreAuthorize("isAuthenticated()")
     public Mono<Page<Entity<User>>> userSearch(@Arguments UserSearchRequest request) {
         PageRequest pageRequest = qsParser.parse(request.toPageRequest());
