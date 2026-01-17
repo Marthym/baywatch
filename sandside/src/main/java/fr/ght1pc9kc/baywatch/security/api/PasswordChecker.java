@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.api;
 
+import fr.ght1pc9kc.baywatch.security.api.model.OneTimePassword;
 import fr.ght1pc9kc.baywatch.security.api.model.PasswordEvaluation;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import reactor.core.publisher.Flux;
@@ -25,4 +26,6 @@ public interface PasswordChecker {
     Mono<PasswordEvaluation> checkPasswordStrength(User user);
 
     Flux<String> generateSecurePassword(int number);
+
+    OneTimePassword generateOneTimePassword();
 }
