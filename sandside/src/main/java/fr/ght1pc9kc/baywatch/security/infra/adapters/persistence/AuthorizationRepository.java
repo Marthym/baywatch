@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.security.infra.persistence;
+package fr.ght1pc9kc.baywatch.security.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
 import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRolesRecord;

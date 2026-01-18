@@ -1,12 +1,10 @@
-package fr.ght1pc9kc.baywatch.security.infra.adapters;
+package fr.ght1pc9kc.baywatch.security.infra.adapters.services;
 
 import fr.ght1pc9kc.baywatch.notify.api.NotifyService;
-import fr.ght1pc9kc.baywatch.notify.api.model.BasicEvent;
 import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.notify.api.model.UserNotification;
 import fr.ght1pc9kc.baywatch.security.domain.ports.NotificationPort;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.Delegate;
 import org.springframework.stereotype.Component;
 
 @Component

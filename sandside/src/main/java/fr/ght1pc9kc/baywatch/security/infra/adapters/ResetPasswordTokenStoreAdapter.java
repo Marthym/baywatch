@@ -15,7 +15,7 @@ import static java.util.Objects.requireNonNull;
 
 @Repository
 @RequiredArgsConstructor
-public class ResatPasswordTokenStoreAdapter implements ResetPasswordTokenPort {
+public class ResetPasswordTokenStoreAdapter implements ResetPasswordTokenPort {
     private static final String TOKEN_KEY_PREFIX = "security:reset-password:";
     private final KeyValueStore kvStore;
 

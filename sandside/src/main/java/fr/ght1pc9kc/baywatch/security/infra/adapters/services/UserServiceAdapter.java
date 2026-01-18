@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.security.infra.adapters;
+package fr.ght1pc9kc.baywatch.security.infra.adapters.services;
 
 import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.common.api.model.UserMeta;
@@ -9,8 +9,8 @@ import fr.ght1pc9kc.baywatch.security.api.PasswordService;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.domain.UserServiceImpl;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
-import fr.ght1pc9kc.baywatch.security.domain.ports.NotificationPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.TechwatchModulePort;
+import fr.ght1pc9kc.baywatch.security.domain.ports.UserEventPublisherPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.baywatch.security.infra.model.BaywatchUserDetails;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -19,6 +19,7 @@ import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.experimental.Delegate;
 import org.jetbrains.annotations.VisibleForTesting;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
@@ -46,17 +47,17 @@ public class UserServiceAdapter implements AuthorizationService, UserService, Re
     public UserServiceAdapter(UserPersistencePort userPersistencePort,
                               AuthorizationPersistencePort authorizationRepository,
                               TechwatchModulePort techwatchModulePort,
-                              NotificationPort notificationPort,
+                              UserEventPublisherPort userEventPublisherPort,
                               AuthenticationFacade authFacade,
                               PasswordService passwordService) {
         this.delegate = new UserServiceImpl(
-                userPersistencePort, authorizationRepository, techwatchModulePort, notificationPort, authFacade, passwordService,
+                userPersistencePort, authorizationRepository, techwatchModulePort, userEventPublisherPort, authFacade, passwordService,
                 Clock.systemUTC(), UlidFactory.newMonotonicInstance());
         this.delegateA = (UserServiceImpl) this.delegate;
     }
 
     @Override
-    public Mono<UserDetails> findByUsername(String username) {
+    public Mono<UserDetails> findByUsername(@NonNull String username) {
         return Mono.just(username).flatMapMany(u ->
                         delegate.list(PageRequest.one(Criteria.property(LOGIN).eq(username)))
                                 .contextWrite(AuthenticationFacade.withSystemAuthentication()))

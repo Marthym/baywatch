@@ -3,6 +3,7 @@ package fr.ght1pc9kc.baywatch.security.infra.adapters;
 import fr.ght1pc9kc.baywatch.security.api.model.AuthenticationRequest;
 import fr.ght1pc9kc.baywatch.security.api.model.BaywatchAuthentication;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthenticationManagerPort;
+import fr.ght1pc9kc.baywatch.security.infra.adapters.services.UserServiceAdapter;
 import fr.ght1pc9kc.baywatch.security.infra.model.BaywatchUserDetails;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;

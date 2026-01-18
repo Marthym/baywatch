@@ -17,8 +17,8 @@ import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UserCreateException;
 import fr.ght1pc9kc.baywatch.security.domain.model.PersonalFeed;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
-import fr.ght1pc9kc.baywatch.security.domain.ports.NotificationPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.TechwatchModulePort;
+import fr.ght1pc9kc.baywatch.security.domain.ports.UserEventPublisherPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -38,17 +38,13 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.NO_ONE;
 import static fr.ght1pc9kc.baywatch.common.api.model.BaywatchLogsMarkers.AUDIT;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
-import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ROLES;
 import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdAt;
 import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdBy;
-import static fr.ght1pc9kc.baywatch.notify.api.model.EventType.USER_NOTIFICATION;
 import static fr.ght1pc9kc.baywatch.security.api.model.RoleUtils.hasRole;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.function.Predicate.not;
 
 @Slf4j
 @AllArgsConstructor
@@ -60,7 +56,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     private final UserPersistencePort userRepository;
     private final AuthorizationPersistencePort authorizationRepository;
     private final TechwatchModulePort techwatchModulePort;
-    private final NotificationPort notificationPort;
+    private final UserEventPublisherPort userEventPublisherPort;
     private final AuthenticationFacade authFacade;
     private final PasswordService passwordService;
     private final Clock clock;
@@ -122,15 +118,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                                 String.format("Unable to create User, %s unavailable !", e.getPropertyField()),
                                 List.of(e.getPropertyField()), e))
 
-                .flatMap(this::notifyAdmins);
-    }
-
-    private Mono<Entity<User>> notifyAdmins(Entity<User> newUser) {
-        return userRepository.list(QueryContext.all(Criteria.property(ROLES).eq(Role.ADMIN.toString())))
-                .filter(not(admin -> admin.id().equals(newUser.meta(createdBy).orElse(NO_ONE))))
-                .map(admin -> notificationPort.send(admin.id(), USER_NOTIFICATION,
-                        String.format("New user %s created by %s.", newUser.self().login(), newUser.meta(createdBy).orElse(NO_ONE))))
-                .then(Mono.just(newUser));
+                .flatMap(userEventPublisherPort::publish);
     }
 
     @Override

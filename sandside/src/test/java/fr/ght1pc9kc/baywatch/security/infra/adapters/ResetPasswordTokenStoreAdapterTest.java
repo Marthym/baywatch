@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests pour ResatPasswordTokenStoreAdapter")
-class ResatPasswordTokenStoreAdapterTest {
+class ResetPasswordTokenStoreAdapterTest {
 
     private static final String TOKEN_KEY_PREFIX = "security:reset-password:";
     private static final String LUKE_TOKEN = "luke-skywalker-hash-token";
@@ -37,7 +37,7 @@ class ResatPasswordTokenStoreAdapterTest {
     @Mock
     private KeyValueStore kvStore;
 
-    private ResatPasswordTokenStoreAdapter adapter;
+    private ResetPasswordTokenStoreAdapter adapter;
 
     // Données de test avec le thème Star Wars
     private Entity<User> lukeEntity;
@@ -46,7 +46,7 @@ class ResatPasswordTokenStoreAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new ResatPasswordTokenStoreAdapter(kvStore);
+        adapter = new ResetPasswordTokenStoreAdapter(kvStore);
 
         // Création des utilisateurs Star Wars
         User luke = User.builder()

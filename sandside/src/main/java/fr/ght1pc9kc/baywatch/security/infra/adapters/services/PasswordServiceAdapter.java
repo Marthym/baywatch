@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.security.infra.adapters;
+package fr.ght1pc9kc.baywatch.security.infra.adapters.services;
 
 import fr.ght1pc9kc.baywatch.common.api.ClientInfoFacade;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
