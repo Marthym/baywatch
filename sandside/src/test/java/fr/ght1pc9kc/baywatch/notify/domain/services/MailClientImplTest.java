@@ -8,7 +8,7 @@ import fr.ght1pc9kc.baywatch.notify.domain.MailTemplateService;
 import fr.ght1pc9kc.baywatch.notify.domain.exceptions.MailLimitExceededException;
 import fr.ght1pc9kc.baywatch.notify.domain.model.Mail;
 import fr.ght1pc9kc.baywatch.notify.domain.model.MailMeta;
-import fr.ght1pc9kc.baywatch.notify.domain.model.MailTemplate;
+import fr.ght1pc9kc.baywatch.notify.domain.model.TranslatedTemplate;
 import fr.ght1pc9kc.baywatch.notify.domain.ports.MailQueuePersistencePort;
 import fr.ght1pc9kc.baywatch.notify.domain.ports.NotifyAuthenticationPort;
 import fr.ght1pc9kc.baywatch.notify.domain.ports.NotifyClientInfoPort;
@@ -88,12 +88,9 @@ class MailClientImplTest {
         when(mockClientInfoPort.getBaseUrl())
                 .thenReturn(Mono.just(URI.create("https://jedi.temple")));
 
-        Entity<MailTemplate> passwordResetTemplate = Entity.identify(
-                new MailTemplate(MailTemplateName.PASSWORD_RESET,
-                        Locale.FRANCE,
-                        "Réinitialisation de mot de passe",
-                        "Bonjour ${username}, voici votre lien de réinitialisation : ${baseUrl}/reset?token=${token}")
-        ).withId("TP01K2FJCKHVAVFXNV31F32X9G4Q");
+        TranslatedTemplate passwordResetTemplate = new TranslatedTemplate(MailTemplateName.PASSWORD_RESET,
+                "Réinitialisation de mot de passe",
+                "Bonjour ${username}, voici votre lien de réinitialisation : ${baseUrl}/reset?token=${token}");
         when(mockTemplateService.get(any(MailTemplateName.class), any(Locale.class)))
                 .thenReturn(Mono.just(passwordResetTemplate));
 
@@ -228,12 +225,9 @@ class MailClientImplTest {
     @Test
     @SuppressWarnings("unchecked")
     void should_interpolate_template_variables_correctly() {
-        Entity<MailTemplate> customTemplate = Entity.identify(
-                new MailTemplate(MailTemplateName.PASSWORD_RESET,
-                        Locale.FRANCE,
-                        "Welcome ${username}!",
-                        "Hello ${username}, welcome to ${baseUrl}! Your token is ${token} and custom var is ${customVar}.")
-        ).withId("CUSTOM-TEMPLATE");
+        TranslatedTemplate customTemplate = new TranslatedTemplate(MailTemplateName.PASSWORD_RESET,
+                "Welcome ${username}!",
+                "Hello ${username}, welcome to ${baseUrl}! Your token is ${token} and custom var is ${customVar}.");
         when(mockTemplateService.get(any(MailTemplateName.class), any(Locale.class)))
                 .thenReturn(Mono.just(customTemplate));
 
@@ -295,7 +289,7 @@ class MailClientImplTest {
         Entity<Mail> queuedMail = mailCaptor.getValue();
         assertThat(queuedMail.meta(MailMeta.createdAt, Instant.class)).contains(fixedClock.instant());
         assertThat(queuedMail.meta(MailMeta.createdBy)).contains(OBIWAN.id());
-        assertThat(queuedMail.meta(MailMeta.template)).contains("TP01K2FJCKHVAVFXNV31F32X9G4Q");
+        assertThat(queuedMail.meta(MailMeta.template)).contains("PASSWORD_RESET");
         assertThat(queuedMail.id()).startsWith("ML");
     }
 

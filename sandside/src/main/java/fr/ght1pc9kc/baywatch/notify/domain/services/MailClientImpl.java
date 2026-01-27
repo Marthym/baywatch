@@ -105,12 +105,12 @@ public class MailClientImpl implements MailClient {
                     StringSubstitutor interpolator = new StringSubstitutor(valueMap);
                     return Entity.identify(Mail.builder()
                                     .to(to)
-                                    .subject(interpolator.replace(t.getT2().self().subject()))
-                                    .message(interpolator.replace(t.getT2().self().body()))
+                                    .subject(interpolator.replace(t.getT2().subject()))
+                                    .message(interpolator.replace(t.getT2().body()))
                                     .build())
                             .meta(MailMeta.createdAt, now)
                             .meta(MailMeta.createdBy, t.getT1().id())
-                            .meta(MailMeta.template, t.getT2().id())
+                            .meta(MailMeta.template, t.getT2().id().name())
                             .withId(MATE_PREFIX + ulidFactory.create().toString());
                 })
                 .flatMap(queuePersistencePort::push);

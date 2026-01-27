@@ -6,7 +6,7 @@ import reactor.core.publisher.Mono;
 import java.util.EnumMap;
 
 public interface MailSenderPort {
-    enum MailTemplateType {PASSWORD_RESET}
+    enum MailTemplateType {PASSWORD_RESET, WELCOME_USER}
 
     Mono<Void> send(MailTemplateType template, String to, EnumMap<TemplateVariable, String> variables);
 }

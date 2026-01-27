@@ -10,6 +10,7 @@ import reactor.core.publisher.Mono;
 import java.util.EnumMap;
 
 import static fr.ght1pc9kc.baywatch.notify.api.model.MailTemplateName.PASSWORD_RESET;
+import static fr.ght1pc9kc.baywatch.notify.api.model.MailTemplateName.WELCOME_USER;
 
 @Component
 @RequiredArgsConstructor
@@ -20,6 +21,7 @@ public class MailSenderSecurityAdapter implements MailSenderPort {
     public Mono<Void> send(MailTemplateType template, String to, EnumMap<TemplateVariable, String> variables) {
         final var notifyTemplate = switch (template) {
             case PASSWORD_RESET -> PASSWORD_RESET;
+            case WELCOME_USER -> WELCOME_USER;
         };
         return delegate.send(notifyTemplate, to, variables);
     }

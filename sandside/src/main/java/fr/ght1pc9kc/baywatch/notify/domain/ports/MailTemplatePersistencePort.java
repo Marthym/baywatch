@@ -1,10 +1,12 @@
 package fr.ght1pc9kc.baywatch.notify.domain.ports;
 
+import fr.ght1pc9kc.baywatch.notify.api.model.MailTemplateName;
 import fr.ght1pc9kc.baywatch.notify.domain.model.MailTemplate;
-import fr.ght1pc9kc.entity.api.Entity;
-import fr.ght1pc9kc.juery.api.PageRequest;
-import reactor.core.publisher.Flux;
+import fr.ght1pc9kc.baywatch.notify.domain.model.TranslatedTemplate;
+import reactor.core.publisher.Mono;
+
+import java.util.Locale;
 
 public interface MailTemplatePersistencePort {
-    Flux<Entity<MailTemplate>> list(PageRequest pageRequest);
+    Mono<TranslatedTemplate> get(MailTemplateName name, Locale locale);
 }

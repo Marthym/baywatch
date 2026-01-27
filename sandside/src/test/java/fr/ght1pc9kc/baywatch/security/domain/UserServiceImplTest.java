@@ -5,7 +5,6 @@ import com.github.f4b6a3.ulid.UlidFactory;
 import fr.ght1pc9kc.baywatch.common.api.model.ClientInfoContext;
 import fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties;
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
-import fr.ght1pc9kc.baywatch.notify.api.model.EventType;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.PasswordService;
 import fr.ght1pc9kc.baywatch.security.api.model.PasswordEvaluation;
@@ -15,9 +14,10 @@ import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
 import fr.ght1pc9kc.baywatch.security.domain.model.PersonalFeed;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
-import fr.ght1pc9kc.baywatch.security.domain.ports.NotificationPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.TechwatchModulePort;
+import fr.ght1pc9kc.baywatch.security.domain.ports.UserEventPublisherPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
+import fr.ght1pc9kc.baywatch.security.infra.adapters.UserEventPublisherAdapter;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -65,7 +65,6 @@ class UserServiceImplTest {
     private final AuthorizationPersistencePort mockAuthorizationRepository = mock(AuthorizationPersistencePort.class);
     private final AuthenticationFacade mockAuthFacade = mock(AuthenticationFacade.class);
     private final UlidFactory mockUlidFactory = mock(UlidFactory.class);
-    private final NotificationPort mockNotificationPort = mock(NotificationPort.class);
     private final TechwatchModulePort mockTechwatchModulePort = mock(TechwatchModulePort.class);
 
     private UserServiceImpl tested;
@@ -95,12 +94,10 @@ class UserServiceImplTest {
         when(mockUserRepository.list(any())).thenReturn(Flux.just(UserSamples.LUKE, UserSamples.OBIWAN, UserSamples.YODA));
         doAnswer(answer -> Flux.fromIterable(answer.getArgument(0, Collection.class)))
                 .when(mockUserRepository).persist(anyCollection());
-        doAnswer(answer -> Mono.just(UserSamples.LUKE)).when(mockUserRepository).persist(anyString(), anyCollection());
+        doAnswer(ignore -> Mono.just(UserSamples.LUKE)).when(mockUserRepository).persist(anyString(), anyCollection());
         when(mockUserRepository.delete(anyString(), anyCollection())).thenReturn(Mono.empty().then());
         when(mockUserRepository.count(any())).thenReturn(Mono.just(3));
         when(mockAuthorizationRepository.count(any())).thenReturn(Mono.just(0));
-        when(mockNotificationPort.send(anyString(), any(EventType.class), any()))
-                .thenReturn(Ulid.fast().toString());
 
         PasswordService mockPasswordService = mock(PasswordService.class);
         doAnswer(a -> a.getArgument(0)).when(mockPasswordService).encode(anyString());
@@ -111,6 +108,8 @@ class UserServiceImplTest {
         when(mockTechwatchModulePort.addAndSubscribePersonalFeed(any())).thenReturn(Mono.empty().then());
         when(mockTechwatchModulePort.unsubscribePersonalFeed(any())).thenReturn(Mono.empty().then());
         when(mockTechwatchModulePort.deletePersonalFeed(any())).thenReturn(Mono.empty().then());
+
+        UserEventPublisherPort mockNotificationPort = new UserEventPublisherAdapter();
 
         tested = new UserServiceImpl(mockUserRepository, mockAuthorizationRepository, mockTechwatchModulePort,
                 mockNotificationPort, mockAuthFacade, mockPasswordService,
