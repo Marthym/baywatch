@@ -1,8 +1,7 @@
-package fr.ght1pc9kc.baywatch.security.infra.persistence;
+package fr.ght1pc9kc.baywatch.security.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.security.api.model.NewsViewType;
 import fr.ght1pc9kc.baywatch.security.api.model.UserSettings;
-import fr.ght1pc9kc.baywatch.security.infra.adapters.persistence.UserSettingsRepository;
 import fr.ght1pc9kc.baywatch.security.infra.mappers.UserSettingsMapper;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.UsersSettingsRecordSamples;
 import fr.ght1pc9kc.testy.core.extensions.ChainedExtension;

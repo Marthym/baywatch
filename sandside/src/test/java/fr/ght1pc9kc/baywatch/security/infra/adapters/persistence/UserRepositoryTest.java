@@ -1,4 +1,4 @@
-package fr.ght1pc9kc.baywatch.security.infra.persistence;
+package fr.ght1pc9kc.baywatch.security.infra.adapters.persistence;
 
 import fr.ght1pc9kc.baywatch.common.domain.Hasher;
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
@@ -7,7 +7,6 @@ import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.Role;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.ConstraintViolationPersistenceException;
-import fr.ght1pc9kc.baywatch.security.infra.adapters.persistence.UserRepository;
 import fr.ght1pc9kc.baywatch.security.infra.mappers.UserMapper;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.baywatch.tests.samples.infra.FeedRecordSamples;

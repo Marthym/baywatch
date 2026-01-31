@@ -18,7 +18,6 @@ import reactor.core.scheduler.Scheduler;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,7 +26,7 @@ import static java.util.function.Predicate.not;
 
 @Repository
 @RequiredArgsConstructor
-@SuppressWarnings("BlockingMethodInNonBlockingContext")
+@SuppressWarnings({"BlockingMethodInNonBlockingContext", "resource"})
 public class AuthorizationRepository implements AuthorizationPersistencePort {
     private final @DatabaseQualifier Scheduler databaseScheduler;
     private final DSLContext dsl;
@@ -43,7 +42,7 @@ public class AuthorizationRepository implements AuthorizationPersistencePort {
 
     @Override
     public Flux<Map.Entry<String, Set<Permission>>> list(Collection<String> userIds) {
-        if (Objects.isNull(userIds)) {
+        if (userIds == null) {
             return Flux.error(() -> new IllegalArgumentException("User list can not be null !"));
         }
         if (userIds.isEmpty()) {
@@ -56,7 +55,7 @@ public class AuthorizationRepository implements AuthorizationPersistencePort {
         return Flux.<UsersRolesRecord>create(sink -> {
                     Cursor<UsersRolesRecord> cursor = query.fetchLazy();
                     sink.onRequest(n -> {
-                        int count = (int) n;
+                        int count = toBatchSize(n);
                         Result<UsersRolesRecord> rs = cursor.fetchNext(count);
                         rs.forEach(sink::next);
                         if (rs.size() < count) {
@@ -68,7 +67,7 @@ public class AuthorizationRepository implements AuthorizationPersistencePort {
                 .bufferUntilChanged(r -> r.get(USERS_ROLES.USRO_USER_ID))
                 .filter(not(List::isEmpty))
                 .map(permsRecords -> {
-                    String userId = permsRecords.get(0).get(USERS_ROLES.USRO_USER_ID);
+                    String userId = permsRecords.getFirst().get(USERS_ROLES.USRO_USER_ID);
                     Set<Permission> permissions = permsRecords.stream()
                             .map(r -> r.get(USERS_ROLES.USRO_ROLE))
                             .map(Permission::from)
@@ -83,7 +82,7 @@ public class AuthorizationRepository implements AuthorizationPersistencePort {
         return Flux.<Record1<String>>create(sink -> {
                     Cursor<Record1<String>> cursor = query.fetchLazy();
                     sink.onRequest(n -> {
-                        int count = (int) n;
+                        int count = toBatchSize(n);
                         Result<Record1<String>> rs = cursor.fetchNext(count);
                         rs.forEach(sink::next);
                         if (rs.size() < count) {
@@ -100,5 +99,9 @@ public class AuthorizationRepository implements AuthorizationPersistencePort {
         return Mono.fromCallable(() -> dsl.deleteFrom(USERS_ROLES).where(USERS_ROLES.USRO_ROLE.in(authorizations)).execute())
                 .subscribeOn(databaseScheduler)
                 .then();
+    }
+
+    private static int toBatchSize(long requested) {
+        return Math.toIntExact(Math.min(requested, Integer.MAX_VALUE));
     }
 }
