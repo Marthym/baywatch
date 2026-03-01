@@ -1,6 +1,7 @@
 package fr.ght1pc9kc.baywatch.security.domain;
 
 import com.github.f4b6a3.ulid.UlidFactory;
+import fr.ght1pc9kc.baywatch.common.api.model.ClientInfoContext;
 import fr.ght1pc9kc.baywatch.common.api.model.UserMeta;
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
@@ -27,7 +28,9 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
 
+import java.net.InetSocketAddress;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -42,6 +45,8 @@ import static fr.ght1pc9kc.baywatch.common.api.model.BaywatchLogsMarkers.AUDIT;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
 import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdAt;
 import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdBy;
+import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.locale;
+import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.loginIP;
 import static fr.ght1pc9kc.baywatch.security.api.model.RoleUtils.hasRole;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -102,9 +107,19 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                         })
                         .switchIfEmpty(Mono.just(userId))
 
+                        .flatMap(currentUserId -> authFacade.getClientInfoContext()
+                                .map(ClientInfoContext::ip)
+                                .switchIfEmpty(Mono.just(InetSocketAddress.createUnresolved("127.0.0.1", 80)))
+                                .map(ip -> Tuples.of(currentUserId, ip)))
+
+                        .flatMap(t -> authFacade.getContextLocale()
+                                .map(locale -> Tuples.of(t.getT1(), t.getT2(), locale)))
+
                         .map(currentUserId -> Entity.identify(withPassword)
                                 .meta(createdAt, now)
-                                .meta(createdBy, currentUserId)
+                                .meta(createdBy, currentUserId.getT1())
+                                .meta(loginIP, currentUserId.getT2().toString())
+                                .meta(locale, currentUserId.getT3())
                                 .withId(userId)))
 
                 .flatMap(createdUser -> userRepository.persist(List.of(createdUser)).single())

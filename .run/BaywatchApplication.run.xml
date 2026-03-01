@@ -13,7 +13,7 @@
       <env name="SPRING_THREADS_VIRTUAL_ENABLED" value="true" />
     </envs>
     <option name="envFilePaths">
-      <option value="$PROJECT_DIR$/.private.env" />
+      <option value="$USER_HOME$/workspace/baywatch/.private.env" />
     </option>
     <module name="assembly" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="fr.ght1pc9kc.baywatch.BaywatchApplication" />

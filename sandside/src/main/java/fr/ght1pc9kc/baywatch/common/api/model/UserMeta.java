@@ -4,6 +4,7 @@ import fr.ght1pc9kc.entity.api.TypedMeta;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
+import java.util.Locale;
 
 @RequiredArgsConstructor
 @SuppressWarnings("java:S115")
@@ -15,6 +16,7 @@ public enum UserMeta implements TypedMeta {
      * Current or last IP used to log in
      */
     loginIP(String.class),
+    locale(Locale.class),
     ;
 
     private final Class<?> type;

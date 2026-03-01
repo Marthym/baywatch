@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="seaside serve" type="js.build_tools.npm">
-    <package-json value="$PROJECT_DIR$/seaside/package.json" />
+    <package-json value="$USER_HOME$/workspace/baywatch/seaside/package.json" />
     <command value="run" />
     <scripts>
       <script value="dev" />
