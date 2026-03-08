@@ -39,7 +39,7 @@ public class MailTemplatePersistenceAdapter implements MailTemplatePersistencePo
         if (mailTemplate.isEmpty()) {
             return Mono.error(new IllegalArgumentException("Mail template not found: " + name + " " + locale));
         }
-        String classpathLocation = String.format("mails/%s-%s.html", name.name().toLowerCase(), locale.toLanguageTag());
+        String classpathLocation = String.format("mails/%s-%s.html", name.name().toLowerCase(), locale.getLanguage());
         Resource resource = new ClassPathResource(classpathLocation);
         if (!resource.exists()) {
             return Mono.error(new IllegalArgumentException("Mail template file not found: " + classpathLocation));

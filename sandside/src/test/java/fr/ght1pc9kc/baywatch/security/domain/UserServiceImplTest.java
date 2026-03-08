@@ -109,7 +109,7 @@ class UserServiceImplTest {
         when(mockTechwatchModulePort.unsubscribePersonalFeed(any())).thenReturn(Mono.empty().then());
         when(mockTechwatchModulePort.deletePersonalFeed(any())).thenReturn(Mono.empty().then());
 
-        UserEventPublisherPort mockNotificationPort = new UserEventPublisherAdapter();
+        UserEventPublisherPort mockNotificationPort = new UserEventPublisherAdapter(mockAuthFacade);
 
         tested = new UserServiceImpl(mockUserRepository, mockAuthorizationRepository, mockTechwatchModulePort,
                 mockNotificationPort, mockAuthFacade, mockPasswordService,

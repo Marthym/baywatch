@@ -9,6 +9,7 @@ import fr.ght1pc9kc.baywatch.security.domain.ports.UserEventPublisherPort;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
+import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 
 import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.NO_ONE;
@@ -20,14 +21,13 @@ import static java.util.function.Predicate.not;
 public class AdminNotifyUserSubscriber {
     private final UserService userService;
     private final NotificationPort notificationPort;
+    private final Disposable disposable;
 
     public AdminNotifyUserSubscriber(UserEventPublisherPort userPublisher,
                                      UserService userService, NotificationPort notificationPort) {
         this.userService = userService;
         this.notificationPort = notificationPort;
-        userPublisher.events()
-                .flatMap(this::onNewUser)
-                .subscribe();
+        this.disposable = userPublisher.onEvent(this::onNewUser);
     }
 
     private Mono<Void> onNewUser(Entity<User> user) {
@@ -37,5 +37,9 @@ public class AdminNotifyUserSubscriber {
                 .map(admin -> notificationPort.send(admin.id(), USER_NOTIFICATION,
                         String.format("New user %s created by %s.", user.self().login(), user.meta(createdBy).orElse(NO_ONE))))
                 .then();
+    }
+
+    public void destroy() {
+        this.disposable.dispose();
     }
 }

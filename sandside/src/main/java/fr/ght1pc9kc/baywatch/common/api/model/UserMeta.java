@@ -17,6 +17,7 @@ public enum UserMeta implements TypedMeta {
      */
     loginIP(String.class),
     locale(Locale.class),
+    userAgent(String.class),
     ;
 
     private final Class<?> type;

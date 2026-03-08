@@ -66,6 +66,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -218,6 +219,11 @@ class FeedScraperIntegrationTest {
                         InetSocketAddress.createUnresolved("127.0.0.1", 80),
                         "User agent",
                         URI.create("http://localhost/feed")));
+            }
+
+            @Override
+            public Mono<Locale> getContextLocale() {
+                return Mono.just(Locale.FRANCE);
             }
 
             @Override

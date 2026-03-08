@@ -1,7 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.domain;
 
 import com.github.f4b6a3.ulid.UlidFactory;
-import fr.ght1pc9kc.baywatch.common.api.model.ClientInfoContext;
 import fr.ght1pc9kc.baywatch.common.api.model.UserMeta;
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
@@ -30,7 +29,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
-import java.net.InetSocketAddress;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -47,6 +45,7 @@ import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdAt;
 import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdBy;
 import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.locale;
 import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.loginIP;
+import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.userAgent;
 import static fr.ght1pc9kc.baywatch.security.api.model.RoleUtils.hasRole;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -108,9 +107,9 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                         .switchIfEmpty(Mono.just(userId))
 
                         .flatMap(currentUserId -> authFacade.getClientInfoContext()
-                                .map(ClientInfoContext::ip)
-                                .switchIfEmpty(Mono.just(InetSocketAddress.createUnresolved("127.0.0.1", 80)))
-                                .map(ip -> Tuples.of(currentUserId, ip)))
+                                .switchIfEmpty(Mono.error(() ->
+                                        new UserCreateException("No context found for user", List.of("ip", "userAgent", "baseUrl"))))
+                                .map(ctx -> Tuples.of(currentUserId, ctx)))
 
                         .flatMap(t -> authFacade.getContextLocale()
                                 .map(locale -> Tuples.of(t.getT1(), t.getT2(), locale)))
@@ -118,7 +117,8 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                         .map(currentUserId -> Entity.identify(withPassword)
                                 .meta(createdAt, now)
                                 .meta(createdBy, currentUserId.getT1())
-                                .meta(loginIP, currentUserId.getT2().toString())
+                                .meta(loginIP, currentUserId.getT2().ip().getHostString())
+                                .meta(userAgent, currentUserId.getT2().userAgent())
                                 .meta(locale, currentUserId.getT3())
                                 .withId(userId)))
 
@@ -255,7 +255,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                                     ? Mono.error(() -> new UnauthorizedOperation("Unauthorized grant operation !"))
                                     : Mono.just(currentUser));
 
-                }).flatMap(currentUser -> userRepository.persist(
+                }).flatMap(_ -> userRepository.persist(
                         grantedUserId, permissions.stream().map(Permission::toString).distinct().toList()))
 
                 // Do not grant if not loginIn
@@ -270,19 +270,19 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
             } else {
                 return Mono.error(() -> new UnauthorizedOperation("Unauthorized revoke operation !"));
             }
-        }).flatMap(currentUser ->
+        }).flatMap(_ ->
                 userRepository.delete(permission.toString(), userIds.stream().distinct().toList()));
     }
 
     @Override
     public Mono<Void> remove(Collection<Permission> permissions) {
         return authorizeAllData()
-                .flatMap(currentUser -> authorizationRepository.remove(permissions));
+                .flatMap(_ -> authorizationRepository.remove(permissions));
     }
 
     @Override
     public Flux<String> listGrantedUsers(Permission permission) {
-        return authorizeAllData().flatMapMany(ignored ->
+        return authorizeAllData().flatMapMany(_ ->
                 authorizationRepository.grantees(permission));
     }
 
@@ -291,7 +291,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
                 .filter(u -> (hasRole(u.self(), Role.ADMIN)
                         || (hasRole(u.self(), Role.USER) && original.id().equals(u.id()))))
-                .map(u -> original)
+                .map(_ -> original)
                 .switchIfEmpty(Mono.just(Entity.identify(original.self().toBuilder()
                                 .clearRoles()
                                 .password(null)
