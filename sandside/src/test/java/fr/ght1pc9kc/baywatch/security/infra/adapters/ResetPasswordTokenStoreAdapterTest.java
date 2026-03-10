@@ -37,7 +37,7 @@ class ResetPasswordTokenStoreAdapterTest {
     @Mock
     private KeyValueStore kvStore;
 
-    private ResetPasswordTokenStoreAdapter adapter;
+    private KeyValuePersistenceStoreAdapter adapter;
 
     // Données de test avec le thème Star Wars
     private Entity<User> lukeEntity;
@@ -46,7 +46,7 @@ class ResetPasswordTokenStoreAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new ResetPasswordTokenStoreAdapter(kvStore);
+        adapter = new KeyValuePersistenceStoreAdapter(kvStore);
 
         // Création des utilisateurs Star Wars
         User luke = User.builder()

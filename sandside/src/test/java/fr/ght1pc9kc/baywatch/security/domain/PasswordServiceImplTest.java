@@ -3,7 +3,7 @@ package fr.ght1pc9kc.baywatch.security.domain;
 import fr.ght1pc9kc.baywatch.common.api.ClientInfoFacade;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
-import fr.ght1pc9kc.baywatch.security.domain.ports.ResetPasswordTokenPort;
+import fr.ght1pc9kc.baywatch.security.domain.ports.KeyValuePersistencePort;
 import fr.ght1pc9kc.baywatch.security.infra.adapters.PasswordCheckerNbvcxz;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import org.assertj.core.api.Assertions;
@@ -37,8 +37,8 @@ class PasswordServiceImplTest {
         ClientInfoFacade clientInfoFacade = mock(ClientInfoFacade.class);
         when(clientInfoFacade.getLocale()).thenReturn(Mono.just(Locale.ENGLISH));
 
-        ResetPasswordTokenPort resetPasswordTokenPortMock = mock(ResetPasswordTokenPort.class);
-        when(resetPasswordTokenPortMock.get(anyString())).thenReturn(Optional.of(OBIWAN));
+        KeyValuePersistencePort keyValuePersistencePortMock = mock(KeyValuePersistencePort.class);
+        when(keyValuePersistencePortMock.get(anyString())).thenReturn(Optional.of(OBIWAN));
 
         tested = new PasswordServiceImpl(
                 authenticationFacade, new PasswordCheckerNbvcxz(), clientInfoFacade);

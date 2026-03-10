@@ -1,5 +1,6 @@
 package fr.ght1pc9kc.baywatch.security.infra.adapters.subscribers;
 
+import fr.ght1pc9kc.baywatch.security.domain.ports.KeyValuePersistencePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserEventPublisherPort;
 import fr.ght1pc9kc.baywatch.security.domain.subscribers.WelcomeMailUserSubscriber;
@@ -13,8 +14,8 @@ public class WelcomeMailUserSubscriberAdapter {
     private final WelcomeMailUserSubscriber delegate;
 
     public WelcomeMailUserSubscriberAdapter(
-            UserEventPublisherPort publisher, MailSenderPort mailSenderPort) {
-        this.delegate = new WelcomeMailUserSubscriber(publisher, mailSenderPort);
+            UserEventPublisherPort publisher, MailSenderPort mailSenderPort, KeyValuePersistencePort keyValuePersistencePort) {
+        this.delegate = new WelcomeMailUserSubscriber(publisher, mailSenderPort, keyValuePersistencePort);
     }
 
     @PreDestroy

@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.time.Duration;
 import java.util.Optional;
 
-public interface ResetPasswordTokenPort {
+public interface KeyValuePersistencePort {
     Optional<Entity<User>> get(@NotNull String hashedToken);
 
     void store(@NotNull String hashedToken, @NotNull Entity<User> user, @NotNull Duration ttl);

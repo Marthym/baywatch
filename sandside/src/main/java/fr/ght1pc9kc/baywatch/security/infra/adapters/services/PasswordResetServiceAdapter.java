@@ -6,7 +6,7 @@ import fr.ght1pc9kc.baywatch.security.api.PasswordResetService;
 import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.domain.PasswordResetServiceImpl;
 import fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort;
-import fr.ght1pc9kc.baywatch.security.domain.ports.ResetPasswordTokenPort;
+import fr.ght1pc9kc.baywatch.security.domain.ports.KeyValuePersistencePort;
 import lombok.experimental.Delegate;
 import org.springframework.stereotype.Service;
 
@@ -16,8 +16,8 @@ public class PasswordResetServiceAdapter implements PasswordResetService {
     private final PasswordResetServiceImpl delegate;
 
     public PasswordResetServiceAdapter(
-            AuthenticationFacade authFacade, ResetPasswordTokenPort resetPasswordTokenPort, UserService userService,
+            AuthenticationFacade authFacade, KeyValuePersistencePort keyValuePersistencePort, UserService userService,
             PasswordChecker passwordChecker, MailSenderPort mailSender) {
-        this.delegate = new PasswordResetServiceImpl(authFacade, userService, passwordChecker, mailSender, resetPasswordTokenPort);
+        this.delegate = new PasswordResetServiceImpl(authFacade, userService, passwordChecker, mailSender, keyValuePersistencePort);
     }
 }

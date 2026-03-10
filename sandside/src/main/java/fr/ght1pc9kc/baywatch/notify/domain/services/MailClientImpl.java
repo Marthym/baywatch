@@ -50,6 +50,7 @@ public class MailClientImpl implements MailClient {
     private final NotifyClientInfoPort localeFacade;
     private final MailQueuePersistencePort queuePersistencePort;
     private final Set<String> whitelistIps;
+    private final String applicationName;
 
     private final UlidFactory ulidFactory = UlidFactory.newMonotonicInstance();
 
@@ -105,6 +106,7 @@ public class MailClientImpl implements MailClient {
                             var collectedTemplateVariables = new EnumMap<>(t.getT1().self());
                             collectedTemplateVariables.putAll(t.getT1().self());
                             collectedTemplateVariables.put(TemplateVariable.BASE_URL, String.format("%s://%s", baseUrl.getScheme(), baseUrl.getAuthority()));
+                            collectedTemplateVariables.put(TemplateVariable.APPLICATION_NAME, applicationName);
                             collectedTemplateVariables.putAll(variables);
                             return Tuples.of(t.getT1().convert(ignore ->
                                     Map.copyOf(collectedTemplateVariables)), t.getT2());
