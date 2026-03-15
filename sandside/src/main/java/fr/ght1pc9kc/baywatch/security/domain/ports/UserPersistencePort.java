@@ -19,7 +19,7 @@ public interface UserPersistencePort {
 
     /**
      * Persist all {@link Entity} given as argument.
-     * If error throw during insert, all the transaction was rollback and nothing was persisted
+     * If error thrown during insert, all the transaction was rollback and nothing was persisted
      *
      * @param users A collection af {@link User} {@link Entity}
      * @return the persisted {@link User} {@link Entity}
@@ -27,7 +27,7 @@ public interface UserPersistencePort {
     Flux<Entity<User>> persist(Collection<Entity<User>> users);
 
     /**
-     * Persist new roles line for user id in roles tables
+     * Persist new roles lines for user id in roles tables
      *
      * @param userId The user ID
      * @param roles  The role string representation

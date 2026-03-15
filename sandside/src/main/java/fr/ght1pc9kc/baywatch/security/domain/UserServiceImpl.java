@@ -91,11 +91,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     public Mono<Entity<User>> create(User user) {
         String userId = String.format("%s%s", ID_PREFIX, idGenerator.create());
         Instant now = clock.instant();
-        return passwordService.checkPasswordStrength(user)
-                .flatMap(eval -> (eval.isSecure())
-                        ? Mono.just(user.withPassword(passwordService.encode(user.password())))
-                        : Mono.error(new IllegalArgumentException(eval.message())))
-
+        return managePasswordSecurity(user)
                 .flatMap(withPassword -> authFacade.getConnectedUser()
                         .<String>handle((u, sink) -> {
                             if (hasRole(u.self(), Role.ADMIN)) {
@@ -134,6 +130,31 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                                 List.of(e.getPropertyField()), e))
 
                 .flatMap(userEventPublisherPort::publish);
+    }
+
+    /**
+     * Manage password security for user creation.
+     * If the password is null, create a dummy random secure password.
+     * If the password is not null, check password strength and encode if secure.
+     *
+     * @param user User entity to be validated
+     * @return Mono<User> with password encoded if secure, error otherwise
+     */
+    private Mono<User> managePasswordSecurity(User user) {
+        User withRoles = (user.roles().isEmpty())
+                ? user.withRoles(Role.USER.toString())
+                : user;
+
+        if (isNull(withRoles.password())) {
+            return passwordService.generateSecurePassword(1).next()
+                    .map(passwordService::encode)
+                    .map(withRoles::withPassword);
+        }
+
+        return passwordService.checkPasswordStrength(withRoles)
+                .flatMap(eval -> (eval.isSecure())
+                        ? Mono.just(withRoles.withPassword(passwordService.encode(withRoles.password())))
+                        : Mono.error(new IllegalArgumentException(eval.message())));
     }
 
     @Override

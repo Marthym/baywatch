@@ -160,8 +160,8 @@ class UserRepositoryTest {
         {
             var actual = List.of(dsl.fetchCount(Users.USERS), dsl.fetchCount(USERS_ROLES));
             assertThat(actual)
-                    .describedAs("function must persist only user not roles")
-                    .containsExactly(4, 3);
+                    .describedAs("function must persist users and roles")
+                    .containsExactly(4, 6);
         }
     }
 

@@ -105,8 +105,18 @@ public class UserRepository implements UserPersistencePort {
         List<UsersRecord> usersRecords = toPersist.stream()
                 .map(userMapper::entityUserToRecord)
                 .toList();
+        List<UsersRolesRecord> usersRolesRecords = toPersist.stream()
+                .flatMap(user -> user.self().roles().stream().distinct()
+                        .map(role -> userMapper.permissionToRecord(role).setUsroUserId(user.id())))
+                .toList();
 
-        return Mono.fromCallable(() -> dsl.transactionResult(tx -> tx.dsl().batchInsert(usersRecords).execute()))
+        return Mono.fromCallable(() -> dsl.transactionResult(tx -> {
+                    int[] insertedUsers = tx.dsl().batchInsert(usersRecords).execute();
+                    if (!usersRolesRecords.isEmpty()) {
+                        tx.dsl().batchInsert(usersRolesRecords).execute();
+                    }
+                    return insertedUsers;
+                }))
                 .subscribeOn(databaseScheduler)
                 .flatMapMany(insertedCount -> {
                     log.debug("{} user(s) inserted successfully.", Arrays.stream(insertedCount).sum());
