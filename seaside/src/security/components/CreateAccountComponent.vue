@@ -24,37 +24,6 @@
                  @change="errors.delete('mail')"/>
           <span :class="{'text-error': errors.has('mail')}" class="label">{{ errors.get('mail') }}&nbsp;</span>
         </label>
-
-        <span class="label block first-letter:uppercase">{{ t('security.register.password') }}</span>
-        <div class="join">
-          <input v-model="account.password" :class="{'input-error': errors.has('password')}"
-                 :type="passwordVisible?'text':'password'" class="join-item input border-r-0 w-full _js_password-input"
-                 @keyup="onFieldChange('password')"
-                 @blur.stop="onBlurNewPassword"/>
-          <button :class="{'input-error': errors.has('password')}"
-                  class="btn btn-neutral input input-bordered border-x-0 join-item max-w-fit focus:outline-hidden"
-                  @click.prevent.stop="passwordVisible = !passwordVisible">
-            <EyeIcon v-if="!passwordVisible" class="h-6 w-6 opacity-50" alt="Show password"/>
-            <EyeSlashIcon v-else class="h-6 w-6 opacity-50" alt="Hide password"/>
-          </button>
-          <button :class="{'border-error border': errors.has('password')}"
-                  class="btn btn-soft join-item"
-                  @click.prevent.stop="onPasswordGenerate">
-            {{ t('security.register.generate') || 'generate' }}
-          </button>
-        </div>
-        <p :class="{'text-error': errors.has('password')}" class="label">{{ errors.get('password') }}&nbsp;</p>
-
-        <label class="label block">{{ t('security.register.confirmation') }}
-          <input v-model="account.passwordConfirm" :class="{'input-error': errors.has('passwordConfirm')}"
-                 :type="passwordVisible?'text':'password'"
-                 class="input w-full block mt-1 _js_password-confirm-input"
-                 @blur="onBlurConfirmPassword"
-                 @change="onFieldChange('passwordConfirm')"/>
-          <span :class="{'text-error': errors.has('passwordConfirm')}" class="label">{{
-              errors.get('passwordConfirm')
-            }}&nbsp;</span>
-        </label>
       </fieldset>
 
       <div class="card-actions justify-end pt-2">
@@ -74,15 +43,14 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
 import CurtainModal, { CurtainModalSlot } from '@/common/components/CurtainModal.vue';
-import { UserAccountForm, UserAccountFormSchema, UserCreated } from '@/security/model/User';
-import { passwordAnonymousCheckStrength, passwordGenerate } from '@/security/services/PasswordService';
+import { UserAccountFormSchema, UserCreated } from '@/security/model/User';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/solid';
 import { userCreate } from '@/security/services/UserService';
 import notificationService from '@/services/notification/NotificationService';
 import { useI18n } from 'vue-i18n';
 import { Router, useRouter } from 'vue-router';
 import { TranslatorFunction } from '@/i18n';
-import { isValiError, parse, pick, ValiError } from 'valibot';
+import { isValiError, ValiError } from 'valibot';
 
 const CLOSE_EVENT: string = 'close';
 
@@ -100,71 +68,12 @@ export default class CreateAccountComponent extends Vue {
   private readonly t!: TranslatorFunction;
   private errors: Map<string, string> = new Map<string, string>([]);
 
-  private account: UserAccountForm = {
+  private account: UserCreated = {
     login: '',
     name: '',
     mail: '',
-    password: '',
-    passwordConfirm: '',
+    roles: [],
   };
-  private passwordVisible: boolean = false;
-
-  private onFieldChange(field: string): void {
-    this.errors.delete(field);
-  }
-
-  private onPasswordGenerate(): void {
-    passwordGenerate(20).subscribe({
-      next: passwords => {
-        this.errors.delete('password');
-        let randomValue = new Uint32Array(1);
-        crypto.getRandomValues(randomValue);
-        this.account.password = passwords[randomValue[0] % 19];
-      },
-      error: err => this.errors.set('password', err.message),
-    });
-  }
-
-  private onBlurNewPassword(): void {
-    try {
-      parse(pick(UserAccountFormSchema.pipe[0], ['login', 'password']), {
-        password: this.account.password,
-        login: this.account.login,
-      });
-
-      const user: UserCreated = {
-        login: this.account.login,
-        name: this.account.name,
-        mail: this.account.mail,
-        password: this.account.password,
-        roles: [],
-      };
-
-      passwordAnonymousCheckStrength(user).subscribe({
-        next: evaluation => {
-          if (evaluation.isSecure) {
-            this.errors.delete('password');
-          } else {
-            this.errors.set('password', evaluation.message);
-          }
-        },
-        error: err => this.errors.set('password', err.message),
-      });
-
-    } catch (e) {
-      this.handleValiError(e as ValiError<typeof UserAccountFormSchema>);
-    }
-  }
-
-  private onBlurConfirmPassword(): void {
-    if (this.account.passwordConfirm
-        && this.account.passwordConfirm.length > 3
-        && this.account.passwordConfirm === this.account.password) {
-      this.errors.delete('passwordConfirm');
-    } else {
-      this.errors.set('passwordConfirm', this.t('security.register.message.confirm.different.password'));
-    }
-  }
 
   private close(): void {
     this.router.push('/');
@@ -172,13 +81,11 @@ export default class CreateAccountComponent extends Vue {
 
   private onRegisterClick(curtainModal: CurtainModalSlot): void {
     try {
-      parse(UserAccountFormSchema, this.account);
-
       const user: UserCreated = {
         login: this.account.login,
         name: this.account.name,
         mail: this.account.mail,
-        password: this.account.password,
+        password: undefined,
         roles: [],
       };
 

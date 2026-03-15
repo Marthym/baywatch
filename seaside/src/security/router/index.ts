@@ -19,6 +19,7 @@ export const routes: RouteRecordRaw[] = [
     { path: '/login/:state', component: LoginPage, name: 'security-recover-password' },
     { path: '/register', component: CreateAccountComponent, name: 'security-register' },
     { path: '/password/reset', component: PasswordResetComponent, name: 'security-password-reset' },
+    { path: '/password/validation', component: PasswordResetComponent, name: 'security-password-validation' },
 ];
 
 export const requireAuthNavGuard: NavigationGuardWithThis<undefined> = async to => {
