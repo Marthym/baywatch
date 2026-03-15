@@ -42,6 +42,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdAt;
@@ -82,6 +83,7 @@ class UserServiceImplTest {
                             .toArray(String[]::new)));
             return ReactiveSecurityContextHolder.withAuthentication(authentication);
         });
+        when(mockAuthFacade.getContextLocale()).thenReturn(Mono.just(Locale.ENGLISH));
         doAnswer(answer -> Stream.of(UserSamples.LUKE, UserSamples.YODA, UserSamples.OBIWAN)
                 .filter(u -> u.id().equals(answer.getArgument(0, String.class)))
                 .findAny().map(Mono::just).orElseThrow()

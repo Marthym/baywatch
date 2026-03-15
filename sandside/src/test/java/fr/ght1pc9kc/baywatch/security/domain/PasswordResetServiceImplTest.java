@@ -9,8 +9,8 @@ import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.PasswordEvaluation;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.PasswordEvaluationException;
-import fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.KeyValuePersistencePort;
+import fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import org.assertj.core.api.Assertions;
@@ -69,6 +69,7 @@ class PasswordResetServiceImplTest {
 
         userServiceMock = mock(UserService.class);
         when(userServiceMock.get(anyString())).thenReturn(Mono.just(OBIWAN));
+        when(userServiceMock.list(any(PageRequest.class))).thenReturn(Flux.just(OBIWAN));
         when(userServiceMock.update(any())).thenReturn(Mono.just(OBIWAN));
 
         keyValuePersistencePortMock = mock(KeyValuePersistencePort.class);
@@ -189,9 +190,9 @@ class PasswordResetServiceImplTest {
                 .verifyComplete();
 
         verify(keyValuePersistencePortMock).get(assertArg(actual ->
-                Assertions.assertThat(actual).isEqualTo("OXoqnFv14szsOMJZa2grsb0F_m5OzqbBDPQnVf8iVAM")));
+                Assertions.assertThat(actual).isEqualTo("security:reset-password:OXoqnFv14szsOMJZa2grsb0F_m5OzqbBDPQnVf8iVAM")));
         verify(keyValuePersistencePortMock).remove(assertArg(actual ->
-                Assertions.assertThat(actual).isEqualTo("OXoqnFv14szsOMJZa2grsb0F_m5OzqbBDPQnVf8iVAM")));
+                Assertions.assertThat(actual).isEqualTo("security:reset-password:OXoqnFv14szsOMJZa2grsb0F_m5OzqbBDPQnVf8iVAM")));
         verify(passwordCheckerMock).checkPasswordStrength(assertArg((User actual) ->
                 Assertions.assertThat(actual.password()).isEqualTo("newPassword")));
         verify(userServiceMock).update(assertArg(actual ->
@@ -207,7 +208,7 @@ class PasswordResetServiceImplTest {
                 .verifyError(PasswordEvaluationException.class);
 
         verify(keyValuePersistencePortMock).get(assertArg(actual ->
-                Assertions.assertThat(actual).isEqualTo("OXoqnFv14szsOMJZa2grsb0F_m5OzqbBDPQnVf8iVAM")));
+                Assertions.assertThat(actual).isEqualTo("security:reset-password:OXoqnFv14szsOMJZa2grsb0F_m5OzqbBDPQnVf8iVAM")));
         verify(keyValuePersistencePortMock, never()).remove(anyString());
         verify(passwordCheckerMock).checkPasswordStrength(assertArg((User actual) ->
                 Assertions.assertThat(actual.password()).isEqualTo("newPassword")));

@@ -66,7 +66,7 @@ class MailClientImplTest {
                 mockAuthenticationPort,
                 mockClientInfoPort,
                 mockQueuePersistencePort,
-                whitelistIps
+                whitelistIps, "Baywatch"
         );
 
         ((MailClientImpl) tested).setClock(fixedClock);

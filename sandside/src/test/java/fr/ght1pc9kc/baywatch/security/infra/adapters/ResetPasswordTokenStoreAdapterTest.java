@@ -3,14 +3,13 @@ package fr.ght1pc9kc.baywatch.security.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.common.api.KeyValueStore;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.entity.api.Entity;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -19,13 +18,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.assertArg;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-@DisplayName("Tests pour ResatPasswordTokenStoreAdapter")
 class ResetPasswordTokenStoreAdapterTest {
 
     private static final String TOKEN_KEY_PREFIX = "security:reset-password:";
@@ -34,65 +32,35 @@ class ResetPasswordTokenStoreAdapterTest {
     private static final String VADER_TOKEN = "darth-vader-hash-token";
     private static final String INVALID_TOKEN = "invalid-token-hash";
 
-    @Mock
     private KeyValueStore kvStore;
 
     private KeyValuePersistenceStoreAdapter adapter;
 
-    // Données de test avec le thème Star Wars
-    private Entity<User> lukeEntity;
-    private Entity<User> leiaEntity;
-    private Entity<User> vaderEntity;
-
     @BeforeEach
     void setUp() {
+        kvStore = mock(KeyValueStore.class);
         adapter = new KeyValuePersistenceStoreAdapter(kvStore);
-
-        // Création des utilisateurs Star Wars
-        User luke = User.builder()
-                .login("luke.skywalker")
-                .name("Luke Skywalker")
-                .mail("luke@rebelalliance.galaxy")
-                .build();
-
-        User leia = User.builder()
-                .login("princess.leia")
-                .name("Princess Leia Organa")
-                .mail("leia@rebelalliance.galaxy")
-                .build();
-
-        User vader = User.builder()
-                .login("darth.vader")
-                .name("Anakin Skywalker")
-                .mail("vader@empire.galaxy")
-                .build();
-
-        lukeEntity = Entity.identify(luke).withId("luke-entity-001");
-        leiaEntity = Entity.identify(leia).withId("leia-entity-002");
-        vaderEntity = Entity.identify(vader).withId("vader-entity-003");
     }
 
     @Nested
-    @DisplayName("Tests de la méthode get")
     class GetTests {
 
         @Test
         void should_return_user_when_token_exists_and_isvalid() {
             // Given
-            when(kvStore.get(TOKEN_KEY_PREFIX + LUKE_TOKEN)).thenReturn(Optional.of(lukeEntity));
+            when(kvStore.get(TOKEN_KEY_PREFIX + LUKE_TOKEN)).thenReturn(Optional.of(UserSamples.LUKE));
 
             // When
-            Optional<Entity<User>> result = adapter.get(LUKE_TOKEN);
+            Optional<Entity<User>> result = adapter.get(TOKEN_KEY_PREFIX + LUKE_TOKEN);
 
             // Then
-            assertThat(result)
-                    .isPresent()
-                    .hasValueSatisfying(entity -> {
-                        assertThat(entity.id()).isEqualTo("luke-entity-001");
-                        assertThat(entity.self().login()).isEqualTo("luke.skywalker");
-                        assertThat(entity.self().name()).isEqualTo("Luke Skywalker");
-                        assertThat(entity.self().mail()).isEqualTo("luke@rebelalliance.galaxy");
-                    });
+            assertThat(result).isPresent()
+                    .hasValueSatisfying(entity -> SoftAssertions.assertSoftly(softly -> {
+                        softly.assertThat(entity.id()).isEqualTo(UserSamples.LUKE.id());
+                        softly.assertThat(entity.self().login()).isEqualTo(UserSamples.LUKE.self().login());
+                        softly.assertThat(entity.self().name()).isEqualTo(UserSamples.LUKE.self().name());
+                        softly.assertThat(entity.self().mail()).isEqualTo(UserSamples.LUKE.self().mail());
+                    }));
 
             verify(kvStore).get(TOKEN_KEY_PREFIX + LUKE_TOKEN);
             verify(kvStore, never()).remove(any());
@@ -104,7 +72,7 @@ class ResetPasswordTokenStoreAdapterTest {
             when(kvStore.get(TOKEN_KEY_PREFIX + INVALID_TOKEN)).thenReturn(Optional.empty());
 
             // When
-            Optional<Entity<User>> result = adapter.get(INVALID_TOKEN);
+            Optional<Entity<User>> result = adapter.get(TOKEN_KEY_PREFIX + INVALID_TOKEN);
 
             // Then
             assertThat(result).isEmpty();
@@ -120,7 +88,7 @@ class ResetPasswordTokenStoreAdapterTest {
             when(kvStore.get(TOKEN_KEY_PREFIX + VADER_TOKEN)).thenReturn(Optional.of(invalidObject));
 
             // When
-            Optional<Entity<User>> result = adapter.get(VADER_TOKEN);
+            Optional<Entity<User>> result = adapter.get(TOKEN_KEY_PREFIX + VADER_TOKEN);
 
             // Then
             assertThat(result).isEmpty();
@@ -136,7 +104,7 @@ class ResetPasswordTokenStoreAdapterTest {
             when(kvStore.get(TOKEN_KEY_PREFIX + VADER_TOKEN)).thenReturn(Optional.of(nonUserEntity));
 
             // When
-            Optional<Entity<User>> result = adapter.get(VADER_TOKEN);
+            Optional<Entity<User>> result = adapter.get(TOKEN_KEY_PREFIX + VADER_TOKEN);
 
             // Then
             assertThat(result).isEmpty();
@@ -148,20 +116,19 @@ class ResetPasswordTokenStoreAdapterTest {
         @Test
         void should_handle_different_users_correctly() {
             // Given
-            when(kvStore.get(TOKEN_KEY_PREFIX + LEIA_TOKEN)).thenReturn(Optional.of(leiaEntity));
+            when(kvStore.get(TOKEN_KEY_PREFIX + LEIA_TOKEN)).thenReturn(Optional.of(UserSamples.OBIWAN));
 
             // When
-            Optional<Entity<User>> result = adapter.get(LEIA_TOKEN);
+            Optional<Entity<User>> result = adapter.get(TOKEN_KEY_PREFIX + LEIA_TOKEN);
 
             // Then
-            assertThat(result)
-                    .isPresent()
-                    .hasValueSatisfying(entity -> {
-                        assertThat(entity.id()).isEqualTo("leia-entity-002");
-                        assertThat(entity.self().login()).isEqualTo("princess.leia");
-                        assertThat(entity.self().name()).isEqualTo("Princess Leia Organa");
-                        assertThat(entity.self().mail()).isEqualTo("leia@rebelalliance.galaxy");
-                    });
+            assertThat(result).isPresent()
+                    .hasValueSatisfying(entity -> SoftAssertions.assertSoftly(softly -> {
+                        softly.assertThat(entity.id()).isEqualTo(UserSamples.OBIWAN.id());
+                        softly.assertThat(entity.self().login()).isEqualTo(UserSamples.OBIWAN.self().login());
+                        softly.assertThat(entity.self().name()).isEqualTo(UserSamples.OBIWAN.self().name());
+                        softly.assertThat(entity.self().mail()).isEqualTo(UserSamples.OBIWAN.self().mail());
+                    }));
         }
     }
 
@@ -174,12 +141,12 @@ class ResetPasswordTokenStoreAdapterTest {
             Duration ttl = Duration.ofMinutes(30);
 
             // When
-            adapter.store(LUKE_TOKEN, lukeEntity, ttl);
+            adapter.store(TOKEN_KEY_PREFIX + LUKE_TOKEN, UserSamples.LUKE, ttl);
 
             // Then
             verify(kvStore).put(
                     assertArg(key -> assertThat(key).isEqualTo(TOKEN_KEY_PREFIX + LUKE_TOKEN)),
-                    assertArg(user -> assertThat(user).isEqualTo(lukeEntity)),
+                    assertArg(user -> assertThat(user).isEqualTo(UserSamples.LUKE)),
                     assertArg(ttlCaptor -> assertThat(ttlCaptor).isEqualTo(ttl))
             );
         }
@@ -191,12 +158,12 @@ class ResetPasswordTokenStoreAdapterTest {
             Duration longTtl = Duration.ofHours(2);
 
             // When
-            adapter.store(LEIA_TOKEN, leiaEntity, shortTtl);
-            adapter.store(VADER_TOKEN, vaderEntity, longTtl);
+            adapter.store(TOKEN_KEY_PREFIX + LEIA_TOKEN, UserSamples.OBIWAN, shortTtl);
+            adapter.store(TOKEN_KEY_PREFIX + VADER_TOKEN, UserSamples.DSIDIOUS, longTtl);
 
             // Then
-            verify(kvStore).put(TOKEN_KEY_PREFIX + LEIA_TOKEN, leiaEntity, shortTtl);
-            verify(kvStore).put(TOKEN_KEY_PREFIX + VADER_TOKEN, vaderEntity, longTtl);
+            verify(kvStore).put(TOKEN_KEY_PREFIX + LEIA_TOKEN, UserSamples.OBIWAN, shortTtl);
+            verify(kvStore).put(TOKEN_KEY_PREFIX + VADER_TOKEN, UserSamples.DSIDIOUS, longTtl);
             verify(kvStore, times(2)).put(any(String.class), any(Entity.class), any(Duration.class));
         }
 
@@ -205,7 +172,7 @@ class ResetPasswordTokenStoreAdapterTest {
         void should_throw_null_pointer_exception_when_hashed_token_isnull() {
             // When/Then
             Duration ttl = Duration.ofMinutes(30);
-            assertThatThrownBy(() -> adapter.store(null, lukeEntity, ttl))
+            assertThatThrownBy(() -> adapter.store(null, UserSamples.LUKE, ttl))
                     .isInstanceOf(NullPointerException.class);
 
             verify(kvStore, never()).put(any(), any(), any(Duration.class));
@@ -216,7 +183,7 @@ class ResetPasswordTokenStoreAdapterTest {
         void should_throw_null_pointer_exception_when_user_isnull() {
             // When/Then
             Duration ttl = Duration.ofMinutes(30);
-            assertThatThrownBy(() -> adapter.store(LUKE_TOKEN, null, ttl))
+            assertThatThrownBy(() -> adapter.store(TOKEN_KEY_PREFIX + LUKE_TOKEN, null, ttl))
                     .isInstanceOf(NullPointerException.class);
 
             verify(kvStore, never()).put(any(), any(), any(Duration.class));
@@ -226,7 +193,7 @@ class ResetPasswordTokenStoreAdapterTest {
         @SuppressWarnings("DataFlowIssue")
         void should_throw_null_pointer_exception_when_ttl_isnull() {
             // When/Then
-            assertThatThrownBy(() -> adapter.store(LUKE_TOKEN, lukeEntity, null))
+            assertThatThrownBy(() -> adapter.store(TOKEN_KEY_PREFIX + LUKE_TOKEN, UserSamples.LUKE, null))
                     .isInstanceOf(NullPointerException.class);
 
             verify(kvStore, never()).put(any(), any(), any(Duration.class));
@@ -238,18 +205,16 @@ class ResetPasswordTokenStoreAdapterTest {
 
         @Test
         void should_remove_token_from_store() {
-            // When
-            adapter.remove(LUKE_TOKEN);
+            adapter.remove(TOKEN_KEY_PREFIX + LUKE_TOKEN);
 
-            // Then
             verify(kvStore).remove(TOKEN_KEY_PREFIX + LUKE_TOKEN);
         }
 
         @Test
         void should_remove_different_tokens() {
             // When
-            adapter.remove(LEIA_TOKEN);
-            adapter.remove(VADER_TOKEN);
+            adapter.remove(TOKEN_KEY_PREFIX + LEIA_TOKEN);
+            adapter.remove(TOKEN_KEY_PREFIX + VADER_TOKEN);
 
             // Then
             verify(kvStore).remove(TOKEN_KEY_PREFIX + LEIA_TOKEN);
@@ -260,7 +225,7 @@ class ResetPasswordTokenStoreAdapterTest {
         @Test
         void should_call_remove_even_with_non_existent_token() {
             // When
-            adapter.remove("death-star-plans-token");
+            adapter.remove(TOKEN_KEY_PREFIX + "death-star-plans-token");
 
             // Then
             verify(kvStore).remove(TOKEN_KEY_PREFIX + "death-star-plans-token");
@@ -268,11 +233,8 @@ class ResetPasswordTokenStoreAdapterTest {
 
         @Test
         void should_handle_empty_tokens() {
-            // When
-            adapter.remove("");
-
-            // Then
-            verify(kvStore).remove(TOKEN_KEY_PREFIX);
+            Assertions.assertThatThrownBy(() -> adapter.remove(""))
+                    .isInstanceOf(IllegalArgumentException.class);
         }
     }
 
@@ -283,45 +245,23 @@ class ResetPasswordTokenStoreAdapterTest {
         void should_handle_complete_lifecycle() {
             // Given
             Duration ttl = Duration.ofHours(1);
-            when(kvStore.get(TOKEN_KEY_PREFIX + LUKE_TOKEN)).thenReturn(Optional.of(lukeEntity));
+            when(kvStore.get(TOKEN_KEY_PREFIX + LUKE_TOKEN)).thenReturn(Optional.of(UserSamples.LUKE));
 
             // When - Store
-            adapter.store(LUKE_TOKEN, lukeEntity, ttl);
+            adapter.store(TOKEN_KEY_PREFIX + LUKE_TOKEN, UserSamples.LUKE, ttl);
 
             // When - Get
-            Optional<Entity<User>> retrieved = adapter.get(LUKE_TOKEN);
+            Optional<Entity<User>> actual = adapter.get(TOKEN_KEY_PREFIX + LUKE_TOKEN);
 
             // When - Remove
-            adapter.remove(LUKE_TOKEN);
+            adapter.remove(TOKEN_KEY_PREFIX + LUKE_TOKEN);
 
             // Then
-            assertThat(retrieved).isPresent().contains(lukeEntity);
+            assertThat(actual).isPresent().contains(UserSamples.LUKE);
 
-            verify(kvStore).put(TOKEN_KEY_PREFIX + LUKE_TOKEN, lukeEntity, ttl);
+            verify(kvStore).put(TOKEN_KEY_PREFIX + LUKE_TOKEN, UserSamples.LUKE, ttl);
             verify(kvStore).get(TOKEN_KEY_PREFIX + LUKE_TOKEN);
             verify(kvStore).remove(TOKEN_KEY_PREFIX + LUKE_TOKEN);
-        }
-
-        @Test
-        void should_prefix_all_keys_correctly() {
-            // Given
-            String[] tokens = {"jedi-council", "sith-lord", "rebel-scum"};
-            Duration ttl = Duration.ofMinutes(45);
-
-            // When
-            for (String token : tokens) {
-                adapter.store(token, lukeEntity, ttl);
-                adapter.get(token);
-                adapter.remove(token);
-            }
-
-            // Then
-            for (String token : tokens) {
-                String expectedKey = TOKEN_KEY_PREFIX + token;
-                verify(kvStore).put(expectedKey, lukeEntity, ttl);
-                verify(kvStore).get(expectedKey);
-                verify(kvStore).remove(expectedKey);
-            }
         }
     }
 }

@@ -21,7 +21,10 @@ public class KeyValuePersistenceStoreAdapter implements KeyValuePersistencePort 
     @Override
     @SuppressWarnings("unchecked")
     public Optional<Entity<User>> get(@NonNull String hashedToken) {
-        return kvStore.get(requireNonNull(hashedToken))
+        if (requireNonNull(hashedToken).trim().isEmpty()) {
+            throw new IllegalArgumentException("Token must not be empty");
+        }
+        return kvStore.get(hashedToken)
                 .flatMap(obj -> {
                     if (obj instanceof Entity<?> entity && entity.self() instanceof User) {
                         return Optional.of((Entity<User>) entity);
@@ -33,12 +36,17 @@ public class KeyValuePersistenceStoreAdapter implements KeyValuePersistencePort 
 
     @Override
     public void store(@NonNull String hashedToken, @NonNull Entity<User> user, @NonNull Duration ttl) {
-        kvStore.put(requireNonNull(hashedToken),
-                requireNonNull(user), requireNonNull(ttl, "ttl must not be null"));
+        if (requireNonNull(hashedToken).trim().isEmpty()) {
+            throw new IllegalArgumentException("Token must not be empty");
+        }
+        kvStore.put(hashedToken, requireNonNull(user), requireNonNull(ttl, "ttl must not be null"));
     }
 
     @Override
     public void remove(@NonNull String hashedToken) {
-        kvStore.remove(requireNonNull(hashedToken));
+        if (requireNonNull(hashedToken).trim().isEmpty()) {
+            throw new IllegalArgumentException("Token must not be empty");
+        }
+        kvStore.remove(hashedToken);
     }
 }

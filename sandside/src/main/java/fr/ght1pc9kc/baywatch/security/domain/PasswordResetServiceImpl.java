@@ -28,12 +28,12 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.BaywatchLogsMarkers.AUDIT;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.LOGIN;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.MAIL;
 import static fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort.MailTemplateType.PASSWORD_RESET;
-import static java.util.Objects.nonNull;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -51,6 +51,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     private final KeyValuePersistencePort keyValuePersistencePort;
 
     @Override
+    @SuppressWarnings("ConstantValue")
     public Mono<Void> askPasswordReset(@NotNull String email) {
         if (email.isBlank()) {
             return Mono.empty().then();
@@ -59,15 +60,17 @@ public class PasswordResetServiceImpl implements PasswordResetService {
                 .contextWrite(AuthenticationFacade.withSystemAuthentication())
                 .switchIfEmpty(userService.list(PageRequest.one(Criteria.property(MAIL).eq(email)))
                         .contextWrite(AuthenticationFacade.withSystemAuthentication()))
-                .next()
+                .single()
+                .doOnSuccess(user -> log.atInfo().addArgument(user.self().login())
+                        .log("Send password reset to {} successfully"))
+                .doOnError(NoSuchElementException.class, _ ->
+                        log.atWarn().addArgument(email).log("No user found for email: {}"))
+                .doOnError(IndexOutOfBoundsException.class, _ ->
+                        log.atWarn().addArgument(email).log("More than one user found for email: {}"))
+                .onErrorComplete()
                 .map(this::generateToken)
                 .flatMap(this::sendPasswordResetMail)
-                .doOnSuccess(user -> {
-                    if (nonNull(user)) {
-                        log.atInfo().addArgument(user.self().login())
-                                .log("Send password reset to {} successfully");
-                    }
-                }).then();
+                .then();
     }
 
     private Tuple2<Entity<User>, String> generateToken(Entity<User> user) {
