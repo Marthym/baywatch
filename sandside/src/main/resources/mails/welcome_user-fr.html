@@ -2,81 +2,64 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Bienvenue !</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenue sur ${applicationName}</title>
 </head>
-<body style="margin:0; padding:0; background-color:#f4f6f8; font-family: Arial, Helvetica, sans-serif;">
-
-<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f8; padding:20px;">
+<body style="margin:0; padding:0; background-color:#111827; font-family:Arial, Helvetica, sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#111827; margin:0; padding:0;">
     <tr>
-        <td align="center">
-
-            <!-- Container -->
-            <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:8px; overflow:hidden;">
-
-                <!-- Header -->
+        <td align="center" style="padding:24px 12px;">
+            <table role="presentation" width="640" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:640px; background-color:#1B263E;">
                 <tr>
-                    <td style="background-color:#4f46e5; padding:20px; text-align:center;">
-              <span style="color:#ffffff; font-size:24px; font-weight:bold;">
-                🎉 Bienvenue !
-              </span>
+                    <td style="background-color:#ff5555; padding:24px 28px; color:#ffeee9;">
+                        <p style="margin:0; font-size:12px; letter-spacing:1px; text-transform:uppercase; font-weight:bold;">
+                            ${applicationName}
+                        </p>
+                        <h1 style="margin:10px 0 0; font-size:28px; line-height:34px; font-weight:bold; color:#ffeee9;">
+                            Bienvenue, ${username}
+                        </h1>
                     </td>
                 </tr>
-
-                <!-- Content -->
                 <tr>
-                    <td style="padding:30px; color:#333333; font-size:16px; line-height:1.5;">
-                        <p style="margin-top:0;">
-                            Bonjour <strong>${username}</strong>,
+                    <td style="padding:28px; background-color:#1B263E; color:#d1d5db; font-size:16px; line-height:24px;">
+                        <p style="margin:0 0 16px;">
+                            Votre compte <strong style="color:#ffeee9;">${applicationName}</strong> est presque pret.
+                        </p>
+                        <p style="margin:0 0 20px;">
+                            Confirmez votre adresse email pour activer votre acces.
                         </p>
 
-                        <p>
-                            Nous sommes ravis de t’accueillir sur <strong>${applicationName}</strong> 😊
-                            Il ne reste plus qu’une petite étape pour activer ton compte.
-                        </p>
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
+                            <tr>
+                                <td align="center" bgcolor="#ff5555" style="background-color:#ff5555;">
+                                    <a href="${baseUrl}/password/validation?token=${token}" style="display:inline-block; padding:14px 22px; font-size:15px; line-height:15px; color:#ffeee9; text-decoration:none; font-weight:bold;">
+                                        Confirmer mon adresse email
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
 
-                        <p style="text-align:center; margin:30px 0;">
-                            <!-- Button -->
-                            <a href="${baseUrl}/password/validation?token=${token}"
-                               style="
-                     background-color:#4f46e5;
-                     color:#ffffff;
-                     text-decoration:none;
-                     padding:14px 24px;
-                     border-radius:6px;
-                     font-weight:bold;
-                     display:inline-block;
-                   ">
-                                ✅ Confirmer mon adresse email
-                            </a>
-                        </p>
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 18px; background-color:#374151;">
+                            <tr>
+                                <td style="padding:12px; font-size:13px; line-height:20px; color:#1ad5ff; word-break:break-all;">
+                                    ${baseUrl}/password/validation?token=${token}
+                                </td>
+                            </tr>
+                        </table>
 
-                        <p>
-                            Si le bouton ne fonctionne pas, copie-colle simplement ce lien dans ton navigateur :
-                        </p>
-
-                        <p style="word-break:break-all; color:#4f46e5;">
-                            ${baseUrl}/password/validation?token=${token}
-                        </p>
-
-                        <p>
-                            À très bientôt,<br>
-                            <strong>L’équipe ${applicationName}</strong>
+                        <p style="margin:0; font-size:14px; line-height:22px; color:#e5e7eb;">
+                            Si le bouton ne fonctionne pas, copiez-collez le lien ci-dessus dans votre navigateur.
                         </p>
                     </td>
                 </tr>
-
-                <!-- Footer -->
                 <tr>
-                    <td style="background-color:#f4f6f8; padding:15px; text-align:center; font-size:12px; color:#666666;">
-                        Cet email a été envoyé automatiquement, merci de ne pas y répondre.
+                    <td style="padding:18px 28px; background-color:#4B5563; color:#e5e7eb; font-size:12px; line-height:18px;">
+                        Cet email est envoye automatiquement, merci de ne pas y repondre.
                     </td>
                 </tr>
-
             </table>
-
         </td>
     </tr>
 </table>
-
 </body>
 </html>
