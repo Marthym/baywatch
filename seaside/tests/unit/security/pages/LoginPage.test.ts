@@ -20,7 +20,8 @@ describe('LoginPage', () => {
                 plugins: [i18n, createRouter({
                     history: createWebHashHistory(),
                     routes: [
-                        { path: '/', component: LoginPage, name: 'test' }
+                        { path: '/', component: LoginPage, name: 'test' },
+                        { path: '/login/:state', component: LoginPage, name: 'security-recover-password' },
                     ],
                 })],
                 provide: { store: $store },

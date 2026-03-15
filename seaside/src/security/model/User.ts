@@ -1,17 +1,10 @@
-import { email, forward, InferInput, minLength, object, partialCheck, pipe, string } from 'valibot';
+import { email, InferInput, minLength, object, pipe, string } from 'valibot';
 
 export const UserAccountFormSchema = pipe(object({
     login: pipe(string(), minLength(3, 'security.register.message.login.too.short')),
     name: pipe(string(), minLength(3, 'security.register.message.name.too.short')),
     mail: pipe(string(), email('security.register.message.mail.invalid.format')),
-    password: pipe(string(), minLength(8, 'security.register.message.password.too.short')),
-    passwordConfirm: pipe(string(), minLength(8, 'security.register.message.confirm.too.short')),
-}), forward(partialCheck(
-        [['password'], ['passwordConfirm']],
-        (input) => input.password === input.passwordConfirm,
-        'security.register.message.confirm.different.password',
-    ),
-    ['passwordConfirm']));
+}));
 
 export type UserAccountForm = InferInput<typeof UserAccountFormSchema>;
 

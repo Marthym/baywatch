@@ -43,14 +43,14 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
 import CurtainModal, { CurtainModalSlot } from '@/common/components/CurtainModal.vue';
-import { UserAccountFormSchema, UserCreated } from '@/security/model/User';
+import { UserAccountForm, UserAccountFormSchema, UserCreated } from '@/security/model/User';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/solid';
 import { userCreate } from '@/security/services/UserService';
 import notificationService from '@/services/notification/NotificationService';
 import { useI18n } from 'vue-i18n';
 import { Router, useRouter } from 'vue-router';
 import { TranslatorFunction } from '@/i18n';
-import { isValiError, ValiError } from 'valibot';
+import { isValiError, parse, ValiError } from 'valibot';
 
 const CLOSE_EVENT: string = 'close';
 
@@ -68,11 +68,10 @@ export default class CreateAccountComponent extends Vue {
   private readonly t!: TranslatorFunction;
   private errors: Map<string, string> = new Map<string, string>([]);
 
-  private account: UserCreated = {
+  private account: UserAccountForm = {
     login: '',
     name: '',
     mail: '',
-    roles: [],
   };
 
   private close(): void {
@@ -81,6 +80,8 @@ export default class CreateAccountComponent extends Vue {
 
   private onRegisterClick(curtainModal: CurtainModalSlot): void {
     try {
+      parse(UserAccountFormSchema, this.account);
+
       const user: UserCreated = {
         login: this.account.login,
         name: this.account.name,
@@ -109,7 +110,7 @@ export default class CreateAccountComponent extends Vue {
         this.handleValiError(e as ValiError<typeof UserAccountFormSchema>);
       }
       notificationService.pushSimpleError(this.t('security.register.message.formValidationError'));
-      console.error(this.errors);
+      console.debug(this.errors);
     }
   }
 
