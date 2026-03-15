@@ -8,8 +8,8 @@ import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.InvalidTokenException;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.PasswordEvaluationException;
-import fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.KeyValuePersistencePort;
+import fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
@@ -41,7 +41,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     private static final int TOKEN_SIZE = 32;
     private static final Duration TOKEN_TTL = Duration.ofMinutes(15);
     private static final SecureRandom RANDOM = new SecureRandom();
-    private static final String TOKEN_KEY_PREFIX = "security:reset-password:";
+    private static final String TOKEN_KEY_PREFIX = KeyValuePersistencePort.RESET_PASSWORD_PREFIX;
     private static final Base64.Encoder BASE64_URL_ENCODER = Base64.getUrlEncoder().withoutPadding();
 
     private final AuthenticationFacade authFacade;
@@ -80,7 +80,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
             byte[] keyBytes = digest.digest(token.getBytes(StandardCharsets.UTF_8));
             String key = BASE64_URL_ENCODER.encodeToString(keyBytes);
 
-            keyValuePersistencePort.store(TOKEN_KEY_PREFIX+key, user, TOKEN_TTL);
+            keyValuePersistencePort.store(TOKEN_KEY_PREFIX + key, user, TOKEN_TTL);
             return Tuples.of(user, token);
         } catch (NoSuchAlgorithmException e) {
             throw new SecurityException("Unable to generate reset password token", e);
@@ -106,13 +106,13 @@ public class PasswordResetServiceImpl implements PasswordResetService {
                     }
 
                 }).flatMap(key -> {
-                    Entity<User> user = keyValuePersistencePort.get(TOKEN_KEY_PREFIX+key)
+                    Entity<User> user = keyValuePersistencePort.get(TOKEN_KEY_PREFIX + key)
                             .map(e -> e.convert(u -> u.withPassword(newPassword)))
                             .orElseThrow(() -> new InvalidTokenException("Invalid or expired token !"));
                     return passwordChecker.checkPasswordStrength(user.self())
                             .<Entity<User>>handle((eval, sink) -> {
                                 if (eval.isSecure()) {
-                                    keyValuePersistencePort.remove(TOKEN_KEY_PREFIX+key);
+                                    keyValuePersistencePort.remove(TOKEN_KEY_PREFIX + key);
                                     sink.next(user);
                                 } else {
                                     sink.error(new PasswordEvaluationException(eval.message()));

@@ -25,7 +25,7 @@ public class WelcomeMailUserSubscriber {
     private static final int TOKEN_SIZE = 32;
     private static final Duration TOKEN_TTL = Duration.ofMinutes(15);
     private static final SecureRandom RANDOM = new SecureRandom();
-    private static final String TOKEN_KEY_PREFIX = "security:welcome:";
+    private static final String TOKEN_KEY_PREFIX = KeyValuePersistencePort.RESET_PASSWORD_PREFIX;
     private static final Base64.Encoder BASE64_URL_ENCODER = Base64.getUrlEncoder().withoutPadding();
 
     private final MailSenderPort mailSender;

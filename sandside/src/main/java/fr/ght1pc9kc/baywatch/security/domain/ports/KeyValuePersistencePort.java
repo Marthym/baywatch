@@ -8,6 +8,8 @@ import java.time.Duration;
 import java.util.Optional;
 
 public interface KeyValuePersistencePort {
+    String RESET_PASSWORD_PREFIX = "security:reset-password:";
+
     Optional<Entity<User>> get(@NotNull String hashedToken);
 
     void store(@NotNull String hashedToken, @NotNull Entity<User> user, @NotNull Duration ttl);
