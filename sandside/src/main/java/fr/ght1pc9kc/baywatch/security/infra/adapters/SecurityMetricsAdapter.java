@@ -2,7 +2,7 @@ package fr.ght1pc9kc.baywatch.security.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
-import fr.ght1pc9kc.baywatch.security.infra.persistence.UserRepository;
+import fr.ght1pc9kc.baywatch.security.infra.adapters.persistence.UserRepository;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;

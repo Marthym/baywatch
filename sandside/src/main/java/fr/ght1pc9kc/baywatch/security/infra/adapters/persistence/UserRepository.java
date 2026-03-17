@@ -1,0 +1,192 @@
+package fr.ght1pc9kc.baywatch.security.infra.adapters.persistence;
+
+import fr.ght1pc9kc.baywatch.common.domain.QueryContext;
+import fr.ght1pc9kc.baywatch.common.infra.DatabaseQualifier;
+import fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRecord;
+import fr.ght1pc9kc.baywatch.dsl.tables.records.UsersRolesRecord;
+import fr.ght1pc9kc.baywatch.security.api.model.User;
+import fr.ght1pc9kc.baywatch.security.domain.exceptions.ConstraintViolationPersistenceException;
+import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
+import fr.ght1pc9kc.baywatch.security.infra.mappers.UserMapper;
+import fr.ght1pc9kc.entity.api.Entity;
+import fr.ght1pc9kc.juery.jooq.filter.JooqConditionVisitor;
+import fr.ght1pc9kc.juery.jooq.pagination.JooqPagination;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.jooq.Condition;
+import org.jooq.Cursor;
+import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.Query;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.Select;
+import org.jooq.conf.RenderQuotedNames;
+import org.jooq.exception.IntegrityConstraintViolationException;
+import org.jooq.impl.DSL;
+import org.springframework.core.NestedExceptionUtils;
+import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
+import static fr.ght1pc9kc.baywatch.common.infra.mappers.PropertiesMappers.USER_PROPERTIES_MAPPING;
+import static fr.ght1pc9kc.baywatch.dsl.tables.FeedsUsers.FEEDS_USERS;
+import static fr.ght1pc9kc.baywatch.dsl.tables.NewsUserState.NEWS_USER_STATE;
+import static fr.ght1pc9kc.baywatch.dsl.tables.Users.USERS;
+import static fr.ght1pc9kc.baywatch.dsl.tables.UsersRoles.USERS_ROLES;
+
+@Slf4j
+@Repository
+@RequiredArgsConstructor
+@SuppressWarnings("BlockingMethodInNonBlockingContext")
+public class UserRepository implements UserPersistencePort {
+    private static final JooqConditionVisitor JOOQ_CONDITION_VISITOR =
+            new JooqConditionVisitor(PropertiesMappers.USER_PROPERTIES_MAPPING::get);
+
+    private final @DatabaseQualifier Scheduler databaseScheduler;
+    private final DSLContext dsl;
+    private final UserMapper userMapper;
+
+    @Override
+    public Mono<Entity<User>> get(String id) {
+        return list(QueryContext.id(id)).next();
+    }
+
+    @Override
+    @SuppressWarnings("resource")
+    public Flux<Entity<User>> list(QueryContext qCtx) {
+        Condition conditions = qCtx.filter().accept(JOOQ_CONDITION_VISITOR);
+        Select<Record> select = JooqPagination.apply(
+                qCtx.pagination(), USER_PROPERTIES_MAPPING,
+                dsl.select(USERS.fields()).select(DSL.groupConcat(USERS_ROLES.USRO_ROLE).as(USERS_ROLES.USRO_ROLE.getName()))
+                        .from(USERS)
+                        .leftJoin(USERS_ROLES).on(USERS_ROLES.USRO_USER_ID.eq(USERS.USER_ID))
+                        .where(conditions)
+                        .groupBy(USERS.fields()));
+
+        return Flux.<Record>create(sink -> {
+                    Cursor<Record> cursor = select.fetchLazy();
+                    sink.onRequest(n -> {
+                        int count = (int) n;
+                        Result<Record> rs = cursor.fetchNext(count);
+                        rs.forEach(sink::next);
+                        if (rs.size() < count) {
+                            cursor.close();
+                            sink.complete();
+                        }
+                    }).onDispose(cursor::close);
+                }).limitRate(Integer.MAX_VALUE - 1).subscribeOn(databaseScheduler)
+                .map(userMapper::recordToUserEntity);
+    }
+
+    @Override
+    public Flux<Entity<User>> list() {
+        return list(QueryContext.empty());
+    }
+
+    @Override
+    public Mono<Integer> count(QueryContext qCtx) {
+        Condition conditions = qCtx.filter().accept(JOOQ_CONDITION_VISITOR);
+        return Mono.fromCallable(() -> dsl.fetchCount(dsl.selectFrom(USERS).where(conditions)))
+                .subscribeOn(databaseScheduler);
+    }
+
+    @Override
+    public Flux<Entity<User>> persist(Collection<Entity<User>> toPersist) {
+        List<UsersRecord> usersRecords = toPersist.stream()
+                .map(userMapper::entityUserToRecord)
+                .toList();
+        List<UsersRolesRecord> usersRolesRecords = toPersist.stream()
+                .flatMap(user -> user.self().roles().stream().distinct()
+                        .map(role -> userMapper.permissionToRecord(role).setUsroUserId(user.id())))
+                .toList();
+
+        return Mono.fromCallable(() -> dsl.transactionResult(tx -> {
+                    int[] insertedUsers = tx.dsl().batchInsert(usersRecords).execute();
+                    if (!usersRolesRecords.isEmpty()) {
+                        tx.dsl().batchInsert(usersRolesRecords).execute();
+                    }
+                    return insertedUsers;
+                }))
+                .subscribeOn(databaseScheduler)
+                .flatMapMany(insertedCount -> {
+                    log.debug("{} user(s) inserted successfully.", Arrays.stream(insertedCount).sum());
+                    return Flux.fromIterable(toPersist);
+                }).onErrorMap(IntegrityConstraintViolationException.class, e -> {
+                    Throwable rootCause = Optional.ofNullable(NestedExceptionUtils.getRootCause(e))
+                            .orElse(e);
+                    DSLContext dslContext = DSL.using(dsl.dialect(), dsl.settings().withRenderQuotedNames(RenderQuotedNames.NEVER));
+                    for (Map.Entry<String, Field<?>> prop : USER_PROPERTIES_MAPPING.entrySet()) {
+                        if (rootCause.getMessage().contains("failed: " + dslContext.render(prop.getValue()))) {
+                            return new ConstraintViolationPersistenceException(prop.getKey(), e);
+                        }
+                    }
+                    return new ConstraintViolationPersistenceException("unknown", e);
+                });
+    }
+
+    @Override
+    public Mono<Entity<User>> update(Entity<User> user) {
+        UsersRecord usersRecord = userMapper.entityUserToRecord(user);
+        List<UsersRolesRecord> usersRolesRecords = user.self().roles().stream().distinct()
+                .map(r -> userMapper.permissionToRecord(r).setUsroUserId(user.id()))
+                .toList();
+
+        return Mono.fromCallable(() -> dsl.transactionResult(tx -> {
+                    tx.dsl().deleteFrom(USERS_ROLES).where(USERS_ROLES.USRO_USER_ID.eq(user.id())).execute();
+                    if (!usersRolesRecords.isEmpty()) {
+                        tx.dsl().batchInsert(usersRolesRecords).execute();
+                    }
+                    int updated = tx.dsl().executeUpdate(usersRecord);
+                    if (updated <= 0) {
+                        throw new NoSuchElementException(String.format("User %s does not exists !", user.id()));
+                    }
+                    return updated;
+                })).subscribeOn(databaseScheduler)
+                .then(get(user.id()));
+    }
+
+    @Override
+    public Mono<Integer> delete(Collection<String> ids) {
+        return Mono.fromCallable(() ->
+                dsl.transactionResult(tx -> {
+                    DSLContext txDsl = tx.dsl();
+                    txDsl.deleteFrom(FEEDS_USERS).where(FEEDS_USERS.FEUS_USER_ID.in(ids)).execute();
+                    txDsl.deleteFrom(NEWS_USER_STATE).where(NEWS_USER_STATE.NURS_USER_ID.in(ids)).execute();
+                    txDsl.deleteFrom(USERS_ROLES).where(USERS_ROLES.USRO_USER_ID.in(ids)).execute();
+                    return txDsl.deleteFrom(USERS).where(USERS.USER_ID.in(ids)).execute();
+                })).subscribeOn(databaseScheduler);
+    }
+
+    @Override
+    public Mono<Entity<User>> persist(String userId, Collection<String> roles) {
+        Query[] queries = roles.stream().map(role ->
+                dsl.insertInto(USERS_ROLES)
+                        .columns(USERS_ROLES.USRO_USER_ID, USERS_ROLES.USRO_ROLE)
+                        .values(userId, role)
+                        .onDuplicateKeyIgnore()
+        ).toArray(Query[]::new);
+        return Mono.fromCallable(() -> dsl.batch(queries).execute())
+                .subscribeOn(databaseScheduler)
+                .then(get(userId));
+    }
+
+    @Override
+    public Mono<Void> delete(String role, Collection<String> userIds) {
+        return Mono.fromCallable(() -> dsl.deleteFrom(USERS_ROLES)
+                        .where(USERS_ROLES.USRO_USER_ID.in(userIds)
+                                .and(USERS_ROLES.USRO_ROLE.eq(role)))
+                        .execute())
+                .subscribeOn(databaseScheduler)
+                .then();
+    }
+}

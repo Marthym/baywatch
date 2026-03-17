@@ -9,8 +9,8 @@ import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.PasswordEvaluation;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.PasswordEvaluationException;
+import fr.ght1pc9kc.baywatch.security.domain.ports.KeyValuePersistencePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort;
-import fr.ght1pc9kc.baywatch.security.domain.ports.ResetPasswordTokenPort;
 import fr.ght1pc9kc.baywatch.tests.samples.UserSamples;
 import fr.ght1pc9kc.juery.api.PageRequest;
 import org.assertj.core.api.Assertions;
@@ -47,7 +47,7 @@ class PasswordResetServiceImplTest {
 
     private MailSenderPort mailSenderPortMock;
     private UserService userServiceMock;
-    private ResetPasswordTokenPort resetPasswordTokenPortMock;
+    private KeyValuePersistencePort keyValuePersistencePortMock;
     private PasswordChecker passwordCheckerMock;
 
     @BeforeEach
@@ -69,13 +69,14 @@ class PasswordResetServiceImplTest {
 
         userServiceMock = mock(UserService.class);
         when(userServiceMock.get(anyString())).thenReturn(Mono.just(OBIWAN));
+        when(userServiceMock.list(any(PageRequest.class))).thenReturn(Flux.just(OBIWAN));
         when(userServiceMock.update(any())).thenReturn(Mono.just(OBIWAN));
 
-        resetPasswordTokenPortMock = mock(ResetPasswordTokenPort.class);
-        when(resetPasswordTokenPortMock.get(anyString())).thenReturn(Optional.of(OBIWAN));
+        keyValuePersistencePortMock = mock(KeyValuePersistencePort.class);
+        when(keyValuePersistencePortMock.get(anyString())).thenReturn(Optional.of(OBIWAN));
 
         tested = new PasswordResetServiceImpl(
-                authenticationFacade, userServiceMock, passwordCheckerMock, mailSenderPortMock, resetPasswordTokenPortMock);
+                authenticationFacade, userServiceMock, passwordCheckerMock, mailSenderPortMock, keyValuePersistencePortMock);
     }
 
     @Test
@@ -188,10 +189,10 @@ class PasswordResetServiceImplTest {
         StepVerifier.create(tested.resetPassword("valid-token", "newPassword"))
                 .verifyComplete();
 
-        verify(resetPasswordTokenPortMock).get(assertArg(actual ->
-                Assertions.assertThat(actual).isEqualTo("OXoqnFv14szsOMJZa2grsb0F_m5OzqbBDPQnVf8iVAM")));
-        verify(resetPasswordTokenPortMock).remove(assertArg(actual ->
-                Assertions.assertThat(actual).isEqualTo("OXoqnFv14szsOMJZa2grsb0F_m5OzqbBDPQnVf8iVAM")));
+        verify(keyValuePersistencePortMock).get(assertArg(actual ->
+                Assertions.assertThat(actual).isEqualTo("security:reset-password:OXoqnFv14szsOMJZa2grsb0F_m5OzqbBDPQnVf8iVAM")));
+        verify(keyValuePersistencePortMock).remove(assertArg(actual ->
+                Assertions.assertThat(actual).isEqualTo("security:reset-password:OXoqnFv14szsOMJZa2grsb0F_m5OzqbBDPQnVf8iVAM")));
         verify(passwordCheckerMock).checkPasswordStrength(assertArg((User actual) ->
                 Assertions.assertThat(actual.password()).isEqualTo("newPassword")));
         verify(userServiceMock).update(assertArg(actual ->
@@ -206,9 +207,9 @@ class PasswordResetServiceImplTest {
         StepVerifier.create(tested.resetPassword("valid-token", "newPassword"))
                 .verifyError(PasswordEvaluationException.class);
 
-        verify(resetPasswordTokenPortMock).get(assertArg(actual ->
-                Assertions.assertThat(actual).isEqualTo("OXoqnFv14szsOMJZa2grsb0F_m5OzqbBDPQnVf8iVAM")));
-        verify(resetPasswordTokenPortMock, never()).remove(anyString());
+        verify(keyValuePersistencePortMock).get(assertArg(actual ->
+                Assertions.assertThat(actual).isEqualTo("security:reset-password:OXoqnFv14szsOMJZa2grsb0F_m5OzqbBDPQnVf8iVAM")));
+        verify(keyValuePersistencePortMock, never()).remove(anyString());
         verify(passwordCheckerMock).checkPasswordStrength(assertArg((User actual) ->
                 Assertions.assertThat(actual.password()).isEqualTo("newPassword")));
         verify(userServiceMock, never()).update(any());

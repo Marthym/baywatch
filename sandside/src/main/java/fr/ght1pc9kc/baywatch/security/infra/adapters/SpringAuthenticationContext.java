@@ -2,11 +2,13 @@ package fr.ght1pc9kc.baywatch.security.infra.adapters;
 
 import fr.ght1pc9kc.baywatch.common.api.model.ClientInfoContext;
 import fr.ght1pc9kc.baywatch.common.infra.filters.ReactiveClientInfoContextHolder;
+import fr.ght1pc9kc.baywatch.common.infra.filters.ReactiveLocaleContextHolder;
 import fr.ght1pc9kc.baywatch.security.api.AuthenticationFacade;
 import fr.ght1pc9kc.baywatch.security.api.model.Permission;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.entity.api.Entity;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.i18n.LocaleContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -15,6 +17,8 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
+
+import java.util.Locale;
 
 /**
  * Implementation of the {@link AuthenticationFacade} using Spring context.
@@ -34,6 +38,13 @@ public class SpringAuthenticationContext implements AuthenticationFacade {
     @Override
     public Mono<ClientInfoContext> getClientInfoContext() {
         return ReactiveClientInfoContextHolder.getContext();
+    }
+
+    @Override
+    public Mono<Locale> getContextLocale() {
+        return ReactiveLocaleContextHolder.getContext()
+                .mapNotNull(LocaleContext::getLocale)
+                .switchIfEmpty(Mono.fromCallable(Locale::getDefault));
     }
 
     @Override

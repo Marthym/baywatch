@@ -1,4 +1,4 @@
-name: Gitleaks
+name: TruffleHog
 
 on:
   push:
@@ -12,14 +12,14 @@ permissions:
   pull-requests: read
 
 jobs:
-  gitleaks:
+  trufflehog:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 #v2.3.9
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_VERSION: latest
+      - name: Secret Scanning
+        uses: trufflesecurity/trufflehog@041f07e9df901a1038a528e5525b0226d04dd5ea #v3.93.6
+        with:
+          extra_args: --results=verified,unknown

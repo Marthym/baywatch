@@ -16,6 +16,7 @@ import fr.ght1pc9kc.baywatch.notify.domain.ports.NotifyClientInfoPort;
 import fr.ght1pc9kc.entity.api.Entity;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.CaseUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.jetbrains.annotations.NotNull;
@@ -23,6 +24,7 @@ import org.jetbrains.annotations.VisibleForTesting;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.time.Clock;
 import java.time.Duration;
@@ -37,7 +39,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static fr.ght1pc9kc.baywatch.notify.domain.model.NotifyConstants.MATE_PREFIX;
+import static java.util.Objects.isNull;
 
+@Slf4j
 @RequiredArgsConstructor
 public class MailClientImpl implements MailClient {
     private static final int MAX_MAIL_TO_ADDRESS = 5;
@@ -46,6 +50,7 @@ public class MailClientImpl implements MailClient {
     private final NotifyClientInfoPort localeFacade;
     private final MailQueuePersistencePort queuePersistencePort;
     private final Set<String> whitelistIps;
+    private final String applicationName;
 
     private final UlidFactory ulidFactory = UlidFactory.newMonotonicInstance();
 
@@ -60,13 +65,21 @@ public class MailClientImpl implements MailClient {
     public Mono<Void> send(MailTemplateName template, String to, EnumMap<TemplateVariable, String> variables) {
         Instant now = clock.instant();
         return localeFacade.getRemoteAddress()
+                .onErrorResume(ex -> {
+                    log.warn("No client info in context, unable to activate limit rate on mail send.");
+                    log.debug("STACKTRACE", ex);
+                    return Mono.just(new InetSocketAddress("127.0.0.1", 0));
+                })
                 .handle((ip, sink) -> {
+                    if (isNull(ip.getAddress())) {
+                        sink.error(new MailLimitExceededException(String.format("No client IP info for %s ! Block mail send !", to)));
+                    }
                     String hostAddress = ip.getAddress().getHostAddress();
                     if (whitelistIps.contains(hostAddress)) {
                         sink.next(ip);
                         return;
                     }
-                    int count = Objects.requireNonNull(limiter.get(hostAddress + "@" + to, k -> new AtomicInteger(1)))
+                    int count = Objects.requireNonNull(limiter.get(hostAddress + "@" + to, _ -> new AtomicInteger(1)))
                             .getAndIncrement();
                     if (count > MAX_MAIL_TO_ADDRESS) {
                         sink.error(new MailLimitExceededException(String.format("Too many mail send to %s", to)));
@@ -90,14 +103,15 @@ public class MailClientImpl implements MailClient {
                 .flatMap(t -> localeFacade.getBaseUrl()
                         .switchIfEmpty(Mono.just(URI.create("http://localhost")))
                         .map(baseUrl -> {
-                    var collectedTemplateVariables = new EnumMap<>(t.getT1().self());
-                    collectedTemplateVariables.putAll(t.getT1().self());
-                    collectedTemplateVariables.put(TemplateVariable.BASE_URL, String.format("%s://%s", baseUrl.getScheme(), baseUrl.getAuthority()));
-                    collectedTemplateVariables.putAll(variables);
-                    return Tuples.of(t.getT1().convert(ignore ->
-                            Map.copyOf(collectedTemplateVariables)), t.getT2());
+                            var collectedTemplateVariables = new EnumMap<>(t.getT1().self());
+                            collectedTemplateVariables.putAll(t.getT1().self());
+                            collectedTemplateVariables.put(TemplateVariable.BASE_URL, String.format("%s://%s", baseUrl.getScheme(), baseUrl.getAuthority()));
+                            collectedTemplateVariables.put(TemplateVariable.APPLICATION_NAME, applicationName);
+                            collectedTemplateVariables.putAll(variables);
+                            return Tuples.of(t.getT1().convert(ignore ->
+                                    Map.copyOf(collectedTemplateVariables)), t.getT2());
 
-                })).map(t -> {
+                        })).map(t -> {
                     Map<String, String> valueMap = t.getT1().self().entrySet().stream()
                             .map(e -> Map.entry(
                                     CaseUtils.toCamelCase(e.getKey().name(), false, '_'),
@@ -105,12 +119,12 @@ public class MailClientImpl implements MailClient {
                     StringSubstitutor interpolator = new StringSubstitutor(valueMap);
                     return Entity.identify(Mail.builder()
                                     .to(to)
-                                    .subject(interpolator.replace(t.getT2().self().subject()))
-                                    .message(interpolator.replace(t.getT2().self().body()))
+                                    .subject(interpolator.replace(t.getT2().subject()))
+                                    .message(interpolator.replace(t.getT2().body()))
                                     .build())
                             .meta(MailMeta.createdAt, now)
                             .meta(MailMeta.createdBy, t.getT1().id())
-                            .meta(MailMeta.template, t.getT2().id())
+                            .meta(MailMeta.template, t.getT2().id().name())
                             .withId(MATE_PREFIX + ulidFactory.create().toString());
                 })
                 .flatMap(queuePersistencePort::push);

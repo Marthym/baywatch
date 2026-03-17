@@ -12,6 +12,8 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 
+import java.util.Locale;
+
 /**
  * Facade used to get the connected user.
  */
@@ -25,6 +27,8 @@ public interface AuthenticationFacade {
     Mono<Entity<User>> getConnectedUser();
 
     Mono<ClientInfoContext> getClientInfoContext();
+
+    Mono<Locale> getContextLocale();
 
     /**
      * Update the {@link org.reactivestreams.Publisher} context with a specific authentication

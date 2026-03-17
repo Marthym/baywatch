@@ -22,6 +22,7 @@ import static java.util.function.Predicate.not;
 @Slf4j
 @RequiredArgsConstructor
 public class PasswordServiceImpl implements PasswordChecker {
+
     private final AuthenticationFacade authFacade;
     private final PasswordStrengthChecker passwordChecker;
     private final ClientInfoFacade clientInfoFacade;

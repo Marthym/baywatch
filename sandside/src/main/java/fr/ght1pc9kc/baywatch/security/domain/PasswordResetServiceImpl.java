@@ -8,8 +8,8 @@ import fr.ght1pc9kc.baywatch.security.api.UserService;
 import fr.ght1pc9kc.baywatch.security.api.model.User;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.InvalidTokenException;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.PasswordEvaluationException;
+import fr.ght1pc9kc.baywatch.security.domain.ports.KeyValuePersistencePort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort;
-import fr.ght1pc9kc.baywatch.security.domain.ports.ResetPasswordTokenPort;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
 import fr.ght1pc9kc.juery.api.PageRequest;
@@ -28,12 +28,12 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import static fr.ght1pc9kc.baywatch.common.api.model.BaywatchLogsMarkers.AUDIT;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.LOGIN;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.MAIL;
 import static fr.ght1pc9kc.baywatch.security.domain.ports.MailSenderPort.MailTemplateType.PASSWORD_RESET;
-import static java.util.Objects.nonNull;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -41,15 +41,17 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     private static final int TOKEN_SIZE = 32;
     private static final Duration TOKEN_TTL = Duration.ofMinutes(15);
     private static final SecureRandom RANDOM = new SecureRandom();
+    private static final String TOKEN_KEY_PREFIX = KeyValuePersistencePort.RESET_PASSWORD_PREFIX;
     private static final Base64.Encoder BASE64_URL_ENCODER = Base64.getUrlEncoder().withoutPadding();
 
     private final AuthenticationFacade authFacade;
     private final UserService userService;
     private final PasswordChecker passwordChecker;
     private final MailSenderPort mailSenderPort;
-    private final ResetPasswordTokenPort resetPasswordTokenPort;
+    private final KeyValuePersistencePort keyValuePersistencePort;
 
     @Override
+    @SuppressWarnings("ConstantValue")
     public Mono<Void> askPasswordReset(@NotNull String email) {
         if (email.isBlank()) {
             return Mono.empty().then();
@@ -58,15 +60,17 @@ public class PasswordResetServiceImpl implements PasswordResetService {
                 .contextWrite(AuthenticationFacade.withSystemAuthentication())
                 .switchIfEmpty(userService.list(PageRequest.one(Criteria.property(MAIL).eq(email)))
                         .contextWrite(AuthenticationFacade.withSystemAuthentication()))
-                .next()
+                .single()
+                .doOnSuccess(user -> log.atInfo().addArgument(user.self().login())
+                        .log("Send password reset to {} successfully"))
+                .doOnError(NoSuchElementException.class, _ ->
+                        log.atWarn().addArgument(email).log("No user found for email: {}"))
+                .doOnError(IndexOutOfBoundsException.class, _ ->
+                        log.atWarn().addArgument(email).log("More than one user found for email: {}"))
+                .onErrorComplete()
                 .map(this::generateToken)
                 .flatMap(this::sendPasswordResetMail)
-                .doOnSuccess(user -> {
-                    if (nonNull(user)) {
-                        log.atInfo().addArgument(user.self().login())
-                                .log("Send password reset to {} successfully");
-                    }
-                }).then();
+                .then();
     }
 
     private Tuple2<Entity<User>, String> generateToken(Entity<User> user) {
@@ -79,7 +83,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
             byte[] keyBytes = digest.digest(token.getBytes(StandardCharsets.UTF_8));
             String key = BASE64_URL_ENCODER.encodeToString(keyBytes);
 
-            resetPasswordTokenPort.store(key, user, TOKEN_TTL);
+            keyValuePersistencePort.store(TOKEN_KEY_PREFIX + key, user, TOKEN_TTL);
             return Tuples.of(user, token);
         } catch (NoSuchAlgorithmException e) {
             throw new SecurityException("Unable to generate reset password token", e);
@@ -105,13 +109,13 @@ public class PasswordResetServiceImpl implements PasswordResetService {
                     }
 
                 }).flatMap(key -> {
-                    Entity<User> user = resetPasswordTokenPort.get(key)
+                    Entity<User> user = keyValuePersistencePort.get(TOKEN_KEY_PREFIX + key)
                             .map(e -> e.convert(u -> u.withPassword(newPassword)))
                             .orElseThrow(() -> new InvalidTokenException("Invalid or expired token !"));
                     return passwordChecker.checkPasswordStrength(user.self())
                             .<Entity<User>>handle((eval, sink) -> {
                                 if (eval.isSecure()) {
-                                    resetPasswordTokenPort.remove(key);
+                                    keyValuePersistencePort.remove(TOKEN_KEY_PREFIX + key);
                                     sink.next(user);
                                 } else {
                                     sink.error(new PasswordEvaluationException(eval.message()));

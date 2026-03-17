@@ -8,6 +8,7 @@ import fr.ght1pc9kc.baywatch.notify.domain.ports.NotifyClientInfoPort;
 import fr.ght1pc9kc.baywatch.notify.domain.services.MailClientImpl;
 import fr.ght1pc9kc.baywatch.notify.infra.config.NotifyConfigurationProperties;
 import lombok.experimental.Delegate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -22,11 +23,11 @@ public class MailClientAdapter implements MailClient {
     public MailClientAdapter(
             MailTemplateService mailTemplateService, NotifyAuthenticationPort notifyAuthenticationPort,
             NotifyClientInfoPort localeFacadePort, MailQueuePersistencePort mailQueuePersistencePort,
-            NotifyConfigurationProperties configurationProperties) {
+            NotifyConfigurationProperties configurationProperties, @Value("${spring.application.name}") String applicationName) {
         Set<String> whitelistedIps = Stream.of(configurationProperties.mailer().whitelistIps().split(","))
                 .collect(Collectors.toUnmodifiableSet());
         this.delegate = new MailClientImpl(
                 mailTemplateService, notifyAuthenticationPort, localeFacadePort, mailQueuePersistencePort,
-                whitelistedIps);
+                whitelistedIps, applicationName);
     }
 }

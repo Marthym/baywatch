@@ -17,8 +17,8 @@ import fr.ght1pc9kc.baywatch.security.domain.exceptions.UnauthorizedOperation;
 import fr.ght1pc9kc.baywatch.security.domain.exceptions.UserCreateException;
 import fr.ght1pc9kc.baywatch.security.domain.model.PersonalFeed;
 import fr.ght1pc9kc.baywatch.security.domain.ports.AuthorizationPersistencePort;
-import fr.ght1pc9kc.baywatch.security.domain.ports.NotificationPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.TechwatchModulePort;
+import fr.ght1pc9kc.baywatch.security.domain.ports.UserEventPublisherPort;
 import fr.ght1pc9kc.baywatch.security.domain.ports.UserPersistencePort;
 import fr.ght1pc9kc.entity.api.Entity;
 import fr.ght1pc9kc.juery.api.Criteria;
@@ -27,6 +27,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -38,17 +39,16 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-import static fr.ght1pc9kc.baywatch.common.api.DefaultMeta.NO_ONE;
 import static fr.ght1pc9kc.baywatch.common.api.model.BaywatchLogsMarkers.AUDIT;
 import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ID;
-import static fr.ght1pc9kc.baywatch.common.api.model.EntitiesProperties.ROLES;
 import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdAt;
 import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.createdBy;
-import static fr.ght1pc9kc.baywatch.notify.api.model.EventType.USER_NOTIFICATION;
+import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.locale;
+import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.loginIP;
+import static fr.ght1pc9kc.baywatch.common.api.model.UserMeta.userAgent;
 import static fr.ght1pc9kc.baywatch.security.api.model.RoleUtils.hasRole;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static java.util.function.Predicate.not;
 
 @Slf4j
 @AllArgsConstructor
@@ -60,7 +60,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     private final UserPersistencePort userRepository;
     private final AuthorizationPersistencePort authorizationRepository;
     private final TechwatchModulePort techwatchModulePort;
-    private final NotificationPort notificationPort;
+    private final UserEventPublisherPort userEventPublisherPort;
     private final AuthenticationFacade authFacade;
     private final PasswordService passwordService;
     private final Clock clock;
@@ -91,11 +91,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
     public Mono<Entity<User>> create(User user) {
         String userId = String.format("%s%s", ID_PREFIX, idGenerator.create());
         Instant now = clock.instant();
-        return passwordService.checkPasswordStrength(user)
-                .flatMap(eval -> (eval.isSecure())
-                        ? Mono.just(user.withPassword(passwordService.encode(user.password())))
-                        : Mono.error(new IllegalArgumentException(eval.message())))
-
+        return managePasswordSecurity(user)
                 .flatMap(withPassword -> authFacade.getConnectedUser()
                         .<String>handle((u, sink) -> {
                             if (hasRole(u.self(), Role.ADMIN)) {
@@ -106,9 +102,20 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                         })
                         .switchIfEmpty(Mono.just(userId))
 
+                        .flatMap(currentUserId -> authFacade.getClientInfoContext()
+                                .switchIfEmpty(Mono.error(() ->
+                                        new UserCreateException("No context found for user", List.of("ip", "userAgent", "baseUrl"))))
+                                .map(ctx -> Tuples.of(currentUserId, ctx)))
+
+                        .flatMap(t -> authFacade.getContextLocale()
+                                .map(locale -> Tuples.of(t.getT1(), t.getT2(), locale)))
+
                         .map(currentUserId -> Entity.identify(withPassword)
                                 .meta(createdAt, now)
-                                .meta(createdBy, currentUserId)
+                                .meta(createdBy, currentUserId.getT1())
+                                .meta(loginIP, currentUserId.getT2().ip().getHostString())
+                                .meta(userAgent, currentUserId.getT2().userAgent())
+                                .meta(locale, currentUserId.getT3())
                                 .withId(userId)))
 
                 .flatMap(createdUser -> userRepository.persist(List.of(createdUser)).single())
@@ -122,15 +129,32 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                                 String.format("Unable to create User, %s unavailable !", e.getPropertyField()),
                                 List.of(e.getPropertyField()), e))
 
-                .flatMap(this::notifyAdmins);
+                .flatMap(userEventPublisherPort::publish);
     }
 
-    private Mono<Entity<User>> notifyAdmins(Entity<User> newUser) {
-        return userRepository.list(QueryContext.all(Criteria.property(ROLES).eq(Role.ADMIN.toString())))
-                .filter(not(admin -> admin.id().equals(newUser.meta(createdBy).orElse(NO_ONE))))
-                .map(admin -> notificationPort.send(admin.id(), USER_NOTIFICATION,
-                        String.format("New user %s created by %s.", newUser.self().login(), newUser.meta(createdBy).orElse(NO_ONE))))
-                .then(Mono.just(newUser));
+    /**
+     * Manage password security for user creation.
+     * If the password is null, create a dummy random secure password.
+     * If the password is not null, check password strength and encode if secure.
+     *
+     * @param user User entity to be validated
+     * @return Mono<User> with password encoded if secure, error otherwise
+     */
+    private Mono<User> managePasswordSecurity(User user) {
+        User withRoles = (user.roles().isEmpty())
+                ? user.withRoles(Role.USER.toString())
+                : user;
+
+        if (isNull(withRoles.password())) {
+            return passwordService.generateSecurePassword(1).next()
+                    .map(passwordService::encode)
+                    .map(withRoles::withPassword);
+        }
+
+        return passwordService.checkPasswordStrength(withRoles)
+                .flatMap(eval -> (eval.isSecure())
+                        ? Mono.just(withRoles.withPassword(passwordService.encode(withRoles.password())))
+                        : Mono.error(new IllegalArgumentException(eval.message())));
     }
 
     @Override
@@ -252,7 +276,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                                     ? Mono.error(() -> new UnauthorizedOperation("Unauthorized grant operation !"))
                                     : Mono.just(currentUser));
 
-                }).flatMap(currentUser -> userRepository.persist(
+                }).flatMap(_ -> userRepository.persist(
                         grantedUserId, permissions.stream().map(Permission::toString).distinct().toList()))
 
                 // Do not grant if not loginIn
@@ -267,19 +291,19 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
             } else {
                 return Mono.error(() -> new UnauthorizedOperation("Unauthorized revoke operation !"));
             }
-        }).flatMap(currentUser ->
+        }).flatMap(_ ->
                 userRepository.delete(permission.toString(), userIds.stream().distinct().toList()));
     }
 
     @Override
     public Mono<Void> remove(Collection<Permission> permissions) {
         return authorizeAllData()
-                .flatMap(currentUser -> authorizationRepository.remove(permissions));
+                .flatMap(_ -> authorizationRepository.remove(permissions));
     }
 
     @Override
     public Flux<String> listGrantedUsers(Permission permission) {
-        return authorizeAllData().flatMapMany(ignored ->
+        return authorizeAllData().flatMapMany(_ ->
                 authorizationRepository.grantees(permission));
     }
 
@@ -288,7 +312,7 @@ public final class UserServiceImpl implements UserService, AuthorizationService 
                 .switchIfEmpty(Mono.error(new UnauthenticatedUser(AUTHENTICATION_NOT_FOUND)))
                 .filter(u -> (hasRole(u.self(), Role.ADMIN)
                         || (hasRole(u.self(), Role.USER) && original.id().equals(u.id()))))
-                .map(u -> original)
+                .map(_ -> original)
                 .switchIfEmpty(Mono.just(Entity.identify(original.self().toBuilder()
                                 .clearRoles()
                                 .password(null)
