@@ -1,0 +1,17 @@
+[sinks.loki]
+type = "loki"
+inputs = ["docker_logs_post", "nginx_otela_geoip"]
+endpoint = "http://loki:3100"
+remove_label_fields = true
+remove_structured_metadata_fields = true
+
+[sinks.loki.encoding]
+codec = "text"
+
+[sinks.loki.labels]
+service_name = "{{ service.name }}"
+"container_*" = "{{ container }}"
+site = "{{ site}}"
+
+[sinks.loki.structured_metadata]
+"*" = "{{ metadata }}"

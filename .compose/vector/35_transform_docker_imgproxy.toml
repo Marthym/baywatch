@@ -1,0 +1,22 @@
+[transforms.docker_logs_imgproxy]
+type = "remap"
+inputs = ["route_docker_logs.imgproxy"]
+source = '''
+  .service.name = "imgproxy"
+  if !exists(.metadata) { .metadata = {} }
+
+  app, app_err = parse_json(.message)
+  if app_err == null {
+    .timestamp = app.time
+    .metadata.level = downcase(string(app.level) ?? "")
+    if app.error != null {
+      .message = string(app.error) ?? .message
+    } else if app.msg != null {
+      .message = string(app.msg) ?? .message
+    }
+    if app.request_id != null {
+      .thread = app.request_id
+    }
+  }
+
+'''

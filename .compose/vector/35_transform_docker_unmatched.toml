@@ -1,0 +1,10 @@
+[transforms.docker_logs_unmatched]
+type = "remap"
+inputs = ["route_docker_logs._unmatched"]
+source = '''
+  .service.name = "_unmatched"
+  if !exists(.metadata) { .metadata = {} }
+  .metadata.level = "warn"
+
+  log(., level: "warn")
+'''

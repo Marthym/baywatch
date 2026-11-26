@@ -1,0 +1,16 @@
+[transforms.docker_logs_baywatch]
+type = "remap"
+inputs = ["route_docker_logs.baywatch"]
+source = '''
+  .service.name = "baywatch"
+  if !exists(.metadata) { .metadata = {} }
+
+
+  app, app_err = parse_json(.message)
+  if app_err == null {
+    .metadata = merge!(.metadata, app)
+    .message = del(.metadata.message)
+    .metadata.level = downcase(string(.metadata.level) ?? "info")
+  }
+
+'''

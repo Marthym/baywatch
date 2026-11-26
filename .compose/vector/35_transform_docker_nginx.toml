@@ -1,0 +1,44 @@
+[transforms.docker_logs_nginx]
+type = "remap"
+inputs = ["route_docker_logs.nginx"]
+source = '''
+  .service.name = "nginx"
+  if !exists(.metadata) { .metadata = {} }
+
+  parsed_main, err = parse_nginx_log(.message, "main")
+  if (err == null) {
+    .metadata = merge!(.metadata, parsed_main)
+    .message = del(.metadata.request)
+
+  } else {
+    parsed_combined, err = parse_nginx_log(.message, "combined")
+    if (err == null) {
+      .metadata = merge!(.metadata, parsed_combined)
+      .message = del(.metadata.request)
+
+    } else {
+      parsed_error, err = parse_nginx_log(.message, "error")
+      if (err == null) {
+        .metadata = merge!(.metadata, parsed_error)
+        .message = del(.metadata.message)
+        .metadata.level = del(.metadata.severity)
+
+      } else {
+        log(err, level: "error")
+      }
+    }
+  }
+
+  if exists(.metadata.status) {
+    .metadata.status = to_int!(.metadata.status)
+    if .metadata.status >= 500 {
+      .metadata.level = "error"
+    } else if .metadata.status >= 400 {
+      .metadata.level = "warn"
+    } else if .metadata.status >= 100 {
+      .metadata.level = "info"
+    } else {
+      .metadata.level = "debug"
+    }
+  }
+'''

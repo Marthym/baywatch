@@ -11,9 +11,7 @@ networks:
 services:
 
   baywatch:
-    image: 'ghcr.io/marthym/baywatch:2.2.0-SNAPSHOT'
-    depends_on:
-      - opentelemetry
+    image: ghcr.io/marthym/baywatch:2.3.0-SNAPSHOT
     labels:
       application: baywatch
     read_only: true
@@ -21,7 +19,9 @@ services:
       BAYWATCH_DNS_SERVERS: 9.9.9.9, 8.8.8.8, 2620:fe::fe
       BAYWATCH_GRAPHQL_INTROSPECTION: true
       BAYWATCH_HOME: /var/lib/baywatch
-      BAYWATCH_IMGPROXY_ENABLE: 'false'
+      BAYWATCH_IMGPROXY_ENABLE: true
+      BAYWATCH_IMGPROXY_SALT: "c20a3becb08164a79bffa4"
+      BAYWATCH_IMGPROXY_SIGNKEY: "ad27d1a476e2d0f6326c76f275ed"
       BAYWATCH_LOG_LEVEL: DEBUG
       SPRING_MAIN_BANNER-MODE: off
       SPRING_PROFILES_ACTIVE: json-logging
@@ -56,8 +56,8 @@ services:
       IMGPROXY_AUTO_AVIF: true
       IMGPROXY_ENFORCE_AVIF: true
       IMGPROXY_KEY: "ad27d1a476e2d0f6326c76f275ed"
-      IMGPROXY_LOG_FORMAT: pretty
-      IMGPROXY_LOG_LEVEL: debug
+      IMGPROXY_LOG_FORMAT: json #pretty
+      IMGPROXY_LOG_LEVEL: info
       IMGPROXY_MAX_SRC_RESOLUTION: 20.5
       IMGPROXY_PATH_PREFIX: "/img"
       IMGPROXY_PRESETS: |
@@ -70,10 +70,28 @@ services:
     networks:
       - bwnet
 
+  nginx:
+    image: dhi.io/nginx:1.29.6-debian13-dev
+    restart: unless-stopped
+    read_only: true
+    ports:
+      - 80:80
+    tmpfs:
+      - /run/nginx:exec,mode=777,uid=1000,gid=1000
+    volumes:
+      - ./.compose/nginx/cache:/var/cache/nginx
+      - ./.compose/nginx/data:/var/lib/data:ro
+      - ./.compose/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./.compose/nginx/ssl:/etc/nginx/ssl:ro
+    logging:
+      driver: journald
+      options:
+        tag: 'nginx'
+    networks:
+      - bwnet
+
   prometheus:
-    image: prom/prometheus:v2.43.0
-    depends_on:
-      - opentelemetry
+    image: prom/prometheus:v3.9.1
     networks:
       - bwnet
     command:
@@ -86,7 +104,7 @@ services:
       - prometheus_data:/prometheus
 
   loki:
-    image: grafana/loki:2.8.1
+    image: grafana/loki:3.6.5
     networks:
       - bwnet
     command:
@@ -97,11 +115,10 @@ services:
       options:
         max-size: 10m
     volumes:
-      - ./.compose/loki/local-config.yaml:/etc/loki/local-config.yaml
       - loki_data:/loki
 
   grafana:
-    image: grafana/grafana:8.5.22
+    image: grafana/grafana:12.3.3
     user: "472"
     depends_on:
       - prometheus
@@ -122,26 +139,22 @@ services:
       - grafana_data:/var/lib/grafana
       - ./.compose/grafana/provisioning/:/etc/grafana/provisioning/
 
-  opentelemetry:
-    image: otel/opentelemetry-collector-contrib:0.75.0
-    depends_on:
-      - loki
+  vector:
+    image: dhi.io/vector:0.54.0-debian13-dev
     user: '0:0'
-    command:
-      - '--config=/etc/otel/receiver_filelog_container.yaml'
-      - '--config=/etc/otel/receiver_prometheus.yaml'
-      - '--config=/etc/otel/processor_batch.yaml'
-      - '--config=/etc/otel/processor_attributes.yaml'
-      - '--config=/etc/otel/exporter_loki.yaml'
-      - '--config=/etc/otel/exporter_logging.yaml'
-      - '--config=/etc/otel/exporter_prometheus.yaml'
-      - '--config=/etc/otel/service.yaml'
+    read_only: true
+    command: ['--config', '/etc/vector/*.toml']
     logging:
       driver: local
       options:
         max-size: 10m
+    tmpfs:
+      - /var/lib/vector:exec
+    volumes:
+      - './.compose/vector:/etc/vector:ro'
+      - './.compose/vector/GeoLite2-City.mmdb:/var/lib/geoip/GeoLite2-City.mmdb:ro'
+      - '/var/lib/docker/containers:/var/lib/docker/containers:ro'
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+      - '/:/rootfs:ro,rslave'
     networks:
       - bwnet
-    volumes:
-      - './.compose/opentelemetry:/etc/otel:ro'
-      - '/home/docker/containers:/var/lib/docker/containers:ro'

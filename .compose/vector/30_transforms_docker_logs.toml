@@ -1,0 +1,28 @@
+[transforms.docker_logs_processed]
+type = "remap"
+inputs = ["docker_logs"]
+source = '''
+
+.metadata.container_id = del(.container_id)
+.container.name = del(.container_name)
+.container.image = del(.image)
+.service.name = "docker"
+
+'''
+
+[transforms.docker_logs_post]
+type = "remap"
+inputs = [
+    "docker_logs_nginx",
+    "docker_logs_baywatch",
+    "docker_logs_imgproxy",
+    "docker_logs_unmatched",
+]
+source = '''
+
+if exists(.severity) { .metadata.level = del(.severity) }
+if exists(.metadata.level) { .metadata.level = downcase!(.metadata.level) } else {.metadata.level = "info"}
+del(.attrs); del(.metadata.stream); del(.time); del(.metadata.label)
+del(.metadata.message)
+
+'''

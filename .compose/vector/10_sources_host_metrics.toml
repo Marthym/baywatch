@@ -1,0 +1,3 @@
+[sources.host_metrics]
+type = "host_metrics"
+scrape_interval_secs = 30

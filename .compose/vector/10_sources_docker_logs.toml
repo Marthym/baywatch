@@ -1,0 +1,3 @@
+[sources.docker_logs]
+type = "docker_logs"
+include_containers = ["baywatch-nginx", "baywatch-imgproxy", "baywatch-baywatch" ]

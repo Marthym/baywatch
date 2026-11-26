@@ -1,6 +1,7 @@
 HELP.md
 target/
 *.db
+*.mmdb
 .attach_*
 .DS_Store
 

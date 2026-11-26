@@ -1,0 +1,114 @@
+[enrichment_tables.otela_geoip]
+type = "geoip"
+path = "/var/lib/geoip/GeoLite2-City.mmdb"
+
+[transforms.nginx_otela_lines]
+type = "filter"
+inputs = ["docker_logs_nginx"]
+condition = 'contains(string!(.message), "POST /otela")'
+
+[transforms.nginx_otela_parsed]
+type = "remap"
+inputs = ["nginx_otela_lines"]
+source = '''
+    .service.name = "otela"
+    req = string(.message) ?? ""
+    req_parts = split(req, " ")
+    if length(req_parts) < 2 {
+      abort
+    }
+
+    .path = string!(req_parts[1])
+    if !starts_with(.path, "/otela") {
+      abort
+    }
+
+    path_parts = split_path(.path)
+    if length(path_parts) < 2 {
+      abort
+    }
+    payload_url = path_parts[-1]
+    payload_json_raw, payload_err = decode_base64(payload_url)
+    if payload_err != null {
+      abort
+    }
+
+    payload_json, parse_payload_err = parse_json(string(payload_json_raw))
+    if parse_payload_err != null {
+      abort
+    }
+
+    .metadata.ip = "127.0.0.1"
+    if exists(.metadata.remote_addr) { .metadata.ip = del(.metadata.remote_addr) }
+    if exists(.metadata.http_x_forwarded_for) { .metadata.ip = del(.metadata.http_x_forwarded_for) }
+
+    ua_raw = string(.metadata.http_user_agent) ?? ""
+    .metadata.navigator = ""
+    .metadata.os = ""
+    .metadata.platform = "desktop"
+
+    ua = parse_user_agent(ua_raw)
+    .metadata.navigator = string(ua.browser.family) ?? ""
+    .metadata.os = string(ua.os.family) ?? ""
+    ua_device = downcase(string(ua.device.category) ?? "")
+    if ua_device == "mobile" || ua_device == "tablet" || ua_device == "wearable" || ua_device == "smarttv" {
+      .metadata.platform = "mobile"
+    } else if ua_device == "pc" || ua_device == "desktop" {
+      .metadata.platform = "desktop"
+    }
+
+    if .metadata.navigator == "" {
+      .metadata.navigator = ua_raw
+    }
+
+    .site = ""
+    .metadata.path = "/"
+    http_referer = string!(.metadata.http_referer)
+    if http_referer != "-" && http_referer != "" {
+      parsed_service, parsed_service_err = parse_url(http_referer)
+      if parsed_service_err == null && parsed_service.host != null {
+        .site = string(parsed_service.host) ?? ""
+      }
+      if parsed_service_err == null && parsed_service.path != null {
+        .metadata.path = decode_percent(string(parsed_service.path) ?? "")
+      }
+    }
+    if .site == "" && .referer != "direct" {
+      .site = .referer
+    }
+    if .site == "" {
+      abort
+    }
+
+    .metadata.referer = string(payload_json.referer) ?? "direct"
+    if .metadata.referer == "" {
+      .metadata.referer = "direct"
+    }
+    if starts_with(.metadata.referer, "http://") || starts_with(.metadata.referer, "https://") {
+      parsed_referer, parsed_referer_err = parse_url(.metadata.referer)
+      if parsed_referer_err == null && parsed_referer.host != null {
+        .metadata.referer = string(parsed_referer.host) ?? .metadata.referer
+      }
+    }
+
+    .metadata.title = string(payload_json.title) ?? "-"
+    .message = del(.metadata.path)
+
+    del(.metadata.body_bytes_size); del(.metadata.http_referer); del(.metadata.http_user_agent);
+
+'''
+
+[transforms.nginx_otela_geoip]
+type = "remap"
+inputs = ["nginx_otela_parsed"]
+source = '''
+    .metadata.latitude = ""
+    .metadata.longitude = ""
+    geo, geo_err = get_enrichment_table_record("otela_geoip", { "ip": .metadata.ip })
+    if geo_err == null {
+      if geo != null {
+        .metadata.latitude = to_string(geo.latitude) ?? ""
+        .metadata.longitude = to_string(geo.longitude) ?? ""
+      }
+    }
+'''

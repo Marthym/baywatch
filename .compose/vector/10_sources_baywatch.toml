@@ -1,0 +1,10 @@
+
+[sources.baywatch_prometheus]
+type = "prometheus_scrape"
+endpoints = ["http://baywatch:8081/actuator/prometheus"]
+scrape_interval_secs = 5
+
+[sources.baywatch_prometheus.auth]
+strategy = "basic"
+user = "prometheus"
+password = "prometheus"

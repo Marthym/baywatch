@@ -1,0 +1,4 @@
+[sinks.prometheus]
+type = "prometheus_exporter"
+inputs = ["host_metrics", "baywatch_prometheus"]
+address = "0.0.0.0:9091"

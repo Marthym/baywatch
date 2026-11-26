@@ -1,0 +1,17 @@
+
+[transforms.route_docker_logs]
+type = "exclusive_route"
+inputs = [ "docker_logs_processed" ]
+
+[[transforms.route_docker_logs.routes]]
+name = "nginx"
+condition = "match(string!(.container.image), r'^.*nginx.*$')"
+
+[[transforms.route_docker_logs.routes]]
+name = "baywatch"
+condition = "match(string!(.container.image), r'^.*baywatch.*$')"
+
+[[transforms.route_docker_logs.routes]]
+name = "imgproxy"
+condition = "match(string!(.container.image), r'^.*imgproxy.*$')"
+
