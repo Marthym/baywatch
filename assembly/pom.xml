@@ -84,7 +84,7 @@
                 <configuration>
                     <from>
                         <image>
-                            gcr.io/distroless/java25-debian13@sha256:965f5a27fac19dd1211d2d7c9ea7a18d9f45e986f070d63d9e00cf2bf44d3744
+                            gcr.io/distroless/java25-debian13@sha256:4618e7a1a1f5177222985347e1ffd503076f6be5837b89c8fd02800bd8551bde
                         </image>
                     </from>
                     <to>
